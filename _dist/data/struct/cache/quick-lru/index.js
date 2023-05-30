@@ -1,4 +1,4 @@
-let QuickLRU$1 = class QuickLRU extends Map {
+class QuickLRU extends Map {
 	constructor(options = {}) {
 		super();
 
@@ -278,12 +278,7 @@ let QuickLRU$1 = class QuickLRU extends Map {
 	get [Symbol.toStringTag]() {
 		return JSON.stringify([...this.entriesAscending()]);
 	}
-};
+}
 
-/**
- * @type {import('quick-lru').default}
- */
-const QuickLRU = QuickLRU$1;
-
-export { QuickLRU };
+export { QuickLRU as default };
 //# sourceMappingURL=index.js.map

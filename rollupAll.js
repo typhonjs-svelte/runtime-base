@@ -71,11 +71,10 @@ const rollupConfigs = [
       input: {
          input: 'src/data/struct/cache/quick-lru/index.js',
          plugins: [
-            importsExternal(),
             resolve(resolveOptions),
-            generateDTS.plugin(dtsPluginOptions)
          ]
       },
+      copyDTS: './node_modules/quick-lru/index.d.ts',
       output: {
          file: '_dist/data/struct/cache/quick-lru/index.js',
          format: 'es',
