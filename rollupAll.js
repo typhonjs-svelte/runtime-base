@@ -82,6 +82,22 @@ const rollupConfigs = [
          sourcemap
       }
    },
+   {
+      input: {
+         input: 'src/data/format/unicode/index.js',
+         plugins: [
+            importsExternal(),
+            resolve(resolveOptions),
+            generateDTS.plugin(dtsPluginOptions)
+         ]
+      },
+      output: {
+         file: '_dist/data/format/unicode/index.js',
+         format: 'es',
+         generatedCode: { constBindings: true },
+         sourcemap
+      }
+   },
 
    // {
    //    input: {

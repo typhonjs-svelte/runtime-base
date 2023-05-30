@@ -28,6 +28,10 @@
       "types": "./_dist/data/format/msgpack/index.d.ts",
       "import": "./_dist/data/format/msgpack/index.js"
     },
+    "./data/format/unicode": {
+      "types": "./_dist/data/format/unicode/index.d.ts",
+      "import": "./_dist/data/format/unicode/index.js"
+    },
     "./data/struct/cache/quick-lru": {
       "types": "./_dist/data/struct/cache/quick-lru/index.d.ts",
       "import": "./_dist/data/struct/cache/quick-lru/index.js"
@@ -77,6 +81,7 @@
     "@typhonjs-build-test/rollup-external-imports": "^0.0.1",
     "@typhonjs-config/eslint-config": "^0.6.0",
     "@typhonjs-plugin/manager": "^0.0.16",
+    "@typhonjs-svelte/unicode": "github:typhonjs-svelte/unicode",
     "@typhonjs-utils/object": "^0.0.14",
     "eslint": "^8",
     "fflate": "^0.8.0",
