@@ -1,0 +1,29 @@
+/**
+ * Loads https://github.com/typhonjs-config/eslint-config/blob/main/esm/2022/browser.js
+ *
+ * NPM: https://www.npmjs.com/package/@typhonjs-config/eslint-config
+ */
+{
+  "extends": [
+    "@typhonjs-config/eslint-config/esm/2022/browser",
+    "@typhonjs-config/eslint-config/esm/2022/no-undefined-types"
+  ],
+
+  // Prevents overwriting any built in globals from node & browser environments. `event / window.event` shadowing is
+  // allowed due to being a common variable name and an uncommonly used browser feature.
+  "rules": {
+    "no-shadow": ["error", {
+      "builtinGlobals": true,
+      "hoist": "all",
+      "allow": [
+        "document",
+        "event",
+        "length",
+        "name",
+        "parent",
+        "status",
+        "top"
+      ]
+    }]
+  }
+}
