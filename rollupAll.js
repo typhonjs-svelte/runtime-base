@@ -19,6 +19,38 @@ const resolveOptions = { browser: true };
 const rollupConfigs = [
    {
       input: {
+         input: 'src/data/compress/index.js',
+         plugins: [
+            importsExternal(),
+            resolve(resolveOptions),
+            generateDTS.plugin(dtsPluginOptions)
+         ]
+      },
+      output: {
+         file: '_dist/data/compress/index.js',
+         format: 'es',
+         generatedCode: { constBindings: true },
+         sourcemap
+      }
+   },
+   {
+      input: {
+         input: 'src/data/format/base64/index.js',
+         plugins: [
+            importsExternal(),
+            resolve(resolveOptions),
+            generateDTS.plugin(dtsPluginOptions)
+         ]
+      },
+      output: {
+         file: '_dist/data/format/base64/index.js',
+         format: 'es',
+         generatedCode: { constBindings: true },
+         sourcemap
+      }
+   },
+   {
+      input: {
          input: 'src/data/format/json5/index.js',
          plugins: [
             commonjs(),
