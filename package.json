@@ -20,6 +20,10 @@
       "types": "./_dist/data/format/msgpack/index.d.ts",
       "import": "./_dist/data/format/msgpack/index.js"
     },
+    "./data/struct/cache/quick-lru": {
+      "types": "./_dist/data/struct/cache/quick-lru/index.d.ts",
+      "import": "./_dist/data/struct/cache/quick-lru/index.js"
+    },
     "./data/struct/search/trie": {
       "types": "./_dist/data/struct/search/trie/index.d.ts",
       "import": "./_dist/data/struct/search/trie/index.js"
@@ -71,6 +75,7 @@
     "json5": "^2.2.3",
     "klona": "2.0.6",
     "msgpackr": "^1.9.2",
+    "quick-lru": "^6.1.1",
     "rollup": "^3",
     "striptags": "github:typhonjs-svelte/striptags",
     "upath": "^2.0.1"

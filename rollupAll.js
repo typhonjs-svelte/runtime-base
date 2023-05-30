@@ -67,6 +67,22 @@ const rollupConfigs = [
    //       sourcemap
    //    }
    // },
+   {
+      input: {
+         input: 'src/data/struct/cache/quick-lru/index.js',
+         plugins: [
+            importsExternal(),
+            resolve(resolveOptions),
+            generateDTS.plugin(dtsPluginOptions)
+         ]
+      },
+      output: {
+         file: '_dist/data/struct/cache/quick-lru/index.js',
+         format: 'es',
+         generatedCode: { constBindings: true },
+         sourcemap
+      }
+   },
 
    {
       input: {
