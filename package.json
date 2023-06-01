@@ -28,6 +28,10 @@
       "types": "./_dist/data/format/msgpack/index.d.ts",
       "import": "./_dist/data/format/msgpack/index.js"
     },
+    "./data/format/msgpack/compress": {
+      "types": "./_dist/data/format/msgpack/compress/index.d.ts",
+      "import": "./_dist/data/format/msgpack/compress/index.js"
+    },
     "./data/format/unicode": {
       "types": "./_dist/data/format/unicode/index.d.ts",
       "import": "./_dist/data/format/unicode/index.js"
@@ -39,6 +43,10 @@
     "./data/struct/search/trie": {
       "types": "./_dist/data/struct/search/trie/index.d.ts",
       "import": "./_dist/data/struct/search/trie/index.js"
+    },
+    "./data/struct/store/reducer": {
+      "types": "./_dist/data/struct/store/reducer/index.d.ts",
+      "import": "./_dist/data/struct/store/reducer/index.js"
     },
     "./math/gl-matrix": {
       "types": "./_dist/math/gl-matrix/index.d.ts",
@@ -81,8 +89,9 @@
     "@typhonjs-build-test/rollup-external-imports": "^0.0.1",
     "@typhonjs-config/eslint-config": "^0.6.0",
     "@typhonjs-plugin/manager": "^0.0.16",
+    "@typhonjs-svelte/dynamic-reducer": "^0.0.8",
     "@typhonjs-svelte/unicode": "github:typhonjs-svelte/unicode",
-    "@typhonjs-utils/object": "^0.0.14",
+    "@typhonjs-utils/object": "^0.0.15",
     "eslint": "^8",
     "fflate": "^0.8.0",
     "gl-matrix": "github:typhonjs-svelte/gl-matrix-dist-test#glmatrix-next",

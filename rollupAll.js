@@ -84,6 +84,22 @@ const rollupConfigs = [
    },
    {
       input: {
+         input: 'src/data/format/msgpack/compress/index.js',
+         plugins: [
+            importsExternal(),
+            resolve(resolveOptions),
+            generateDTS.plugin(dtsPluginOptions)
+         ]
+      },
+      output: {
+         file: '_dist/data/format/msgpack/compress/index.js',
+         format: 'es',
+         generatedCode: { constBindings: true },
+         sourcemap
+      }
+   },
+   {
+      input: {
          input: 'src/data/format/unicode/index.js',
          plugins: [
             importsExternal(),
@@ -99,6 +115,21 @@ const rollupConfigs = [
       }
    },
 
+   {
+      input: {
+         input: 'src/data/struct/cache/quick-lru/index.js',
+         plugins: [
+            resolve(resolveOptions),
+         ]
+      },
+      copyDTS: './node_modules/quick-lru/index.d.ts',
+      output: {
+         file: '_dist/data/struct/cache/quick-lru/index.js',
+         format: 'es',
+         generatedCode: { constBindings: true },
+         sourcemap
+      }
+   },
    // {
    //    input: {
    //       input: 'src/data/struct/search/trie/index.js',
@@ -117,14 +148,15 @@ const rollupConfigs = [
    // },
    {
       input: {
-         input: 'src/data/struct/cache/quick-lru/index.js',
+         input: 'src/data/struct/store/reducer/index.js',
          plugins: [
+            importsExternal(),
             resolve(resolveOptions),
+            generateDTS.plugin(dtsPluginOptions)
          ]
       },
-      copyDTS: './node_modules/quick-lru/index.d.ts',
       output: {
-         file: '_dist/data/struct/cache/quick-lru/index.js',
+         file: '_dist/data/struct/store/reducer/index.js',
          format: 'es',
          generatedCode: { constBindings: true },
          sourcemap
@@ -270,7 +302,7 @@ for (const config of rollupConfigs)
 
    const copyDTS = config.copyDTS;
    const skipDTS = config.skipDTS ?? false;
-   const dtsFile = config.dtsFile ?? config.output.file ?? config.file;
+   const dtsFile = config.dtsFile ?? config.output.file ?? config.file; // eslint-disable-line no-unused-vars
    const outFile = config.output.file ?? config.file;
 
    // Skip generating some DTS files.
