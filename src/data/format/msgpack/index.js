@@ -1,1 +1,1 @@
-export * from 'msgpackr'
+export * from 'msgpackr';

@@ -86,6 +86,112 @@ function getAccessorList(data) {
     return _getAccessorList(data);
 }
 /**
+ * Provides a method to determine if the passed in Svelte component has a getter & setter accessor.
+ *
+ * @param {object}   object - An object.
+ *
+ * @param {string}   accessor - Accessor to test.
+ *
+ * @returns {boolean} Whether the component has the getter and setter for accessor.
+ */
+function hasAccessor(object, accessor) {
+    if (typeof object !== 'object' || object === null || object === void 0) {
+        return false;
+    }
+    // Check for instance accessor.
+    const iDescriptor = Object.getOwnPropertyDescriptor(object, accessor);
+    if (iDescriptor !== void 0 && iDescriptor.get !== void 0 && iDescriptor.set !== void 0) {
+        return true;
+    }
+    // Walk parent prototype chain. Check for descriptor at each prototype level.
+    for (let o = Object.getPrototypeOf(object); o; o = Object.getPrototypeOf(o)) {
+        const descriptor = Object.getOwnPropertyDescriptor(o, accessor);
+        if (descriptor !== void 0 && descriptor.get !== void 0 && descriptor.set !== void 0) {
+            return true;
+        }
+    }
+    return false;
+}
+/**
+ * Provides a method to determine if the passed in Svelte component has a getter accessor.
+ *
+ * @param {object}   object - An object.
+ *
+ * @param {string}   accessor - Accessor to test.
+ *
+ * @returns {boolean} Whether the component has the getter for accessor.
+ */
+function hasGetter(object, accessor) {
+    if (typeof object !== 'object' || object === null || object === void 0) {
+        return false;
+    }
+    // Check for instance accessor.
+    const iDescriptor = Object.getOwnPropertyDescriptor(object, accessor);
+    if (iDescriptor !== void 0 && iDescriptor.get !== void 0) {
+        return true;
+    }
+    // Walk parent prototype chain. Check for descriptor at each prototype level.
+    for (let o = Object.getPrototypeOf(object); o; o = Object.getPrototypeOf(o)) {
+        const descriptor = Object.getOwnPropertyDescriptor(o, accessor);
+        if (descriptor !== void 0 && descriptor.get !== void 0) {
+            return true;
+        }
+    }
+    return false;
+}
+/**
+ * Returns whether the target is or has the given prototype walking up the prototype chain.
+ *
+ * @param {unknown}  target - Any target to test.
+ *
+ * @param {new (...args: any[]) => any} Prototype - Prototype function / class constructor to find.
+ *
+ * @returns {boolean} Target matches prototype.
+ */
+function hasPrototype(target, Prototype) {
+    /* c8 ignore next */
+    if (typeof target !== 'function') {
+        return false;
+    }
+    if (target === Prototype) {
+        return true;
+    }
+    // Walk parent prototype chain. Check for descriptor at each prototype level.
+    for (let proto = Object.getPrototypeOf(target); proto; proto = Object.getPrototypeOf(proto)) {
+        if (proto === Prototype) {
+            return true;
+        }
+    }
+    return false;
+}
+/**
+ * Provides a method to determine if the passed in Svelte component has a setter accessor.
+ *
+ * @param {object}   object - An object.
+ *
+ * @param {string}   accessor - Accessor to test.
+ *
+ * @returns {boolean} Whether the component has the setter for accessor.
+ */
+function hasSetter(object, accessor) {
+    if (typeof object !== 'object' || object === null || object === void 0) {
+        return false;
+    }
+    // Check for instance accessor.
+    const iDescriptor = Object.getOwnPropertyDescriptor(object, accessor);
+    if (iDescriptor !== void 0 && iDescriptor.set !== void 0) {
+        return true;
+    }
+    // Walk parent prototype chain. Check for descriptor at each prototype level.
+    for (let o = Object.getPrototypeOf(object); o; o = Object.getPrototypeOf(o)) {
+        const descriptor = Object.getOwnPropertyDescriptor(o, accessor);
+        if (descriptor !== void 0 && descriptor.set !== void 0) {
+            return true;
+        }
+    }
+    return false;
+}
+/**
  * Tests for whether an object is async iterable.
  *
  * @param {unknown} value - Any value.
@@ -93,7 +199,7 @@ function getAccessorList(data) {
  * @returns {boolean} Whether value is async iterable.
  */
 function isAsyncIterable(value) {
-    if (value === null || value === void 0 || typeof value !== 'object') {
+    if (typeof value !== 'object' || value === null || value === void 0) {
         return false;
     }
     return Symbol.asyncIterator in value;
@@ -780,112 +886,6 @@ function klona(x) {
 	}
 
 	return tmp || x;
-}
-
-/**
- * Provides a method to determine if the passed in Svelte component has a getter accessor.
- *
- * @param {*}        object - An object.
- *
- * @param {string}   accessor - Accessor to test.
- *
- * @returns {boolean} Whether the component has the getter for accessor.
- */
-function hasGetter(object, accessor)
-{
-   if (object === null || object === void 0) { return false; }
-
-   // Check for instance accessor.
-   const iDescriptor = Object.getOwnPropertyDescriptor(object, accessor);
-   if (iDescriptor !== void 0 && iDescriptor.get !== void 0) { return true; }
-
-   // Walk parent prototype chain. Check for descriptor at each prototype level.
-   for (let o = Object.getPrototypeOf(object); o; o = Object.getPrototypeOf(o))
-   {
-      const descriptor = Object.getOwnPropertyDescriptor(o, accessor);
-      if (descriptor !== void 0 && descriptor.get !== void 0) { return true; }
-   }
-
-   return false;
-}
-
-/**
- * Provides a method to determine if the passed in Svelte component has a getter & setter accessor.
- *
- * @param {*}        object - An object.
- *
- * @param {string}   accessor - Accessor to test.
- *
- * @returns {boolean} Whether the component has the getter and setter for accessor.
- */
-function hasAccessor(object, accessor)
-{
-   if (object === null || object === void 0) { return false; }
-
-   // Check for instance accessor.
-   const iDescriptor = Object.getOwnPropertyDescriptor(object, accessor);
-   if (iDescriptor !== void 0 && iDescriptor.get !== void 0 && iDescriptor.set !== void 0) { return true; }
-
-   // Walk parent prototype chain. Check for descriptor at each prototype level.
-   for (let o = Object.getPrototypeOf(object); o; o = Object.getPrototypeOf(o))
-   {
-      const descriptor = Object.getOwnPropertyDescriptor(o, accessor);
-      if (descriptor !== void 0 && descriptor.get !== void 0 && descriptor.set !== void 0) { return true; }
-   }
-
-   return false;
-}
-
-/**
- * Provides a method to determine if the passed in Svelte component has a setter accessor.
- *
- * @param {*}        object - An object.
- *
- * @param {string}   accessor - Accessor to test.
- *
- * @returns {boolean} Whether the component has the setter for accessor.
- */
-function hasSetter(object, accessor)
-{
-   if (object === null || object === void 0) { return false; }
-
-   // Check for instance accessor.
-   const iDescriptor = Object.getOwnPropertyDescriptor(object, accessor);
-   if (iDescriptor !== void 0 && iDescriptor.set !== void 0) { return true; }
-
-   // Walk parent prototype chain. Check for descriptor at each prototype level.
-   for (let o = Object.getPrototypeOf(object); o; o = Object.getPrototypeOf(o))
-   {
-      const descriptor = Object.getOwnPropertyDescriptor(o, accessor);
-      if (descriptor !== void 0 && descriptor.set !== void 0) { return true; }
-   }
-
-   return false;
-}
-
-/**
- * Returns whether the target is or has the given prototype walking up the prototype chain.
- *
- * @param {*}  target - Any target to test.
- *
- * @param {Function} Prototype - Prototype function / class constructor to find.
- *
- * @returns {boolean} Target matches prototype.
- */
-function hasPrototype(target, Prototype)
-{
-   /* c8 ignore next */
-   if (typeof target !== 'function') { return false; }
-
-   if (target === Prototype) { return true; }
-
-   // Walk parent prototype chain. Check for descriptor at each prototype level.
-   for (let proto = Object.getPrototypeOf(target); proto; proto = Object.getPrototypeOf(proto))
-   {
-      if (proto === Prototype) { return true; }
-   }
-
-   return false;
 }
 
 export { deepFreeze, deepMerge, depthTraverse, getAccessorList, hasAccessor, hasGetter, hasPrototype, hasSetter, isAsyncIterable, isIterable, isObject, isPlainObject, klona, objectKeys, objectSize, safeAccess, safeBatchSet, safeEqual, safeSet, safeSetAll, validate, validateArray, validateEntry, validateEntryOrArray };

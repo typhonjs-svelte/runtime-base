@@ -47,6 +47,46 @@ declare function depthTraverse(data: object | [], func: Function, modify?: boole
  */
 declare function getAccessorList(data: object): string[];
 /**
+ * Provides a method to determine if the passed in Svelte component has a getter & setter accessor.
+ *
+ * @param {object}   object - An object.
+ *
+ * @param {string}   accessor - Accessor to test.
+ *
+ * @returns {boolean} Whether the component has the getter and setter for accessor.
+ */
+declare function hasAccessor(object: object, accessor: string): boolean;
+/**
+ * Provides a method to determine if the passed in Svelte component has a getter accessor.
+ *
+ * @param {object}   object - An object.
+ *
+ * @param {string}   accessor - Accessor to test.
+ *
+ * @returns {boolean} Whether the component has the getter for accessor.
+ */
+declare function hasGetter(object: object, accessor: string): boolean;
+/**
+ * Returns whether the target is or has the given prototype walking up the prototype chain.
+ *
+ * @param {unknown}  target - Any target to test.
+ *
+ * @param {new (...args: any[]) => any} Prototype - Prototype function / class constructor to find.
+ *
+ * @returns {boolean} Target matches prototype.
+ */
+declare function hasPrototype(target: unknown, Prototype: new (...args: any[]) => any): boolean;
+/**
+ * Provides a method to determine if the passed in Svelte component has a setter accessor.
+ *
+ * @param {object}   object - An object.
+ *
+ * @param {string}   accessor - Accessor to test.
+ *
+ * @returns {boolean} Whether the component has the setter for accessor.
+ */
+declare function hasSetter(object: object, accessor: string): boolean;
+/**
  * Tests for whether an object is async iterable.
  *
  * @param {unknown} value - Any value.
@@ -271,48 +311,6 @@ interface JSONObject {
 }
 interface JSONArray extends Array<JSONValue> {
 }
-
-/**
- * Provides a method to determine if the passed in Svelte component has a getter accessor.
- *
- * @param {*}        object - An object.
- *
- * @param {string}   accessor - Accessor to test.
- *
- * @returns {boolean} Whether the component has the getter for accessor.
- */
-declare function hasGetter(object: any, accessor: string): boolean;
-/**
- * Provides a method to determine if the passed in Svelte component has a getter & setter accessor.
- *
- * @param {*}        object - An object.
- *
- * @param {string}   accessor - Accessor to test.
- *
- * @returns {boolean} Whether the component has the getter and setter for accessor.
- */
-declare function hasAccessor(object: any, accessor: string): boolean;
-/**
- * Provides a method to determine if the passed in Svelte component has a setter accessor.
- *
- * @param {*}        object - An object.
- *
- * @param {string}   accessor - Accessor to test.
- *
- * @returns {boolean} Whether the component has the setter for accessor.
- */
-declare function hasSetter(object: any, accessor: string): boolean;
-
-/**
- * Returns whether the target is or has the given prototype walking up the prototype chain.
- *
- * @param {*}  target - Any target to test.
- *
- * @param {Function} Prototype - Prototype function / class constructor to find.
- *
- * @returns {boolean} Target matches prototype.
- */
-declare function hasPrototype(target: any, Prototype: Function): boolean;
 
 declare function klona<T>(input: T): T;
 
