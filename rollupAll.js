@@ -129,22 +129,51 @@ const rollupConfigs = [
          sourcemap
       }
    },
-   // {
-   //    input: {
-   //       input: 'src/data/struct/search/trie/index.js',
-   //       plugins: [
-   //          importsExternal(),
-   //          resolve(resolveOptions),
-   //          generateDTS.plugin(dtsPluginOptions)
-   //       ]
-   //    },
-   //    output: {
-   //       file: '_dist/data/struct/search/trie/index.js',
-   //       format: 'es',
-   //       generatedCode: { constBindings: true },
-   //       sourcemap
-   //    }
-   // },
+   {
+      input: {
+         input: 'src/data/struct/hash/array/index.js',
+         plugins: [
+            importsExternal()
+         ]
+      },
+      copyDTS: './node_modules/@typhonjs-svelte/trie-search/dist-trl/hash/index.d.ts',
+      output: {
+         file: '_dist/data/struct/hash/array/index.js',
+         format: 'es',
+         generatedCode: { constBindings: true },
+         sourcemap
+      }
+   },
+   {
+      input: {
+         input: 'src/data/struct/search/trie/index.js',
+         plugins: [
+            importsExternal()
+         ]
+      },
+      copyDTS: './node_modules/@typhonjs-svelte/trie-search/dist-trl/trie/index.d.ts',
+      output: {
+         file: '_dist/data/struct/search/trie/index.js',
+         format: 'es',
+         generatedCode: { constBindings: true },
+         sourcemap
+      }
+   },
+   {
+      input: {
+         input: 'src/data/struct/search/trie/query/index.js',
+         plugins: [
+            importsExternal()
+         ]
+      },
+      copyDTS: './node_modules/@typhonjs-svelte/trie-search/dist-trl/query/index.d.ts',
+      output: {
+         file: '_dist/data/struct/search/trie/query/index.js',
+         format: 'es',
+         generatedCode: { constBindings: true },
+         sourcemap
+      }
+   },
    {
       input: {
          input: 'src/data/struct/store/reducer/index.js',
@@ -318,6 +347,12 @@ for (const config of rollupConfigs)
       console.log(`Copying TS Declaration: ${copyDTS}`);
 
       let fileData = fs.readFileSync(copyDTS, 'utf-8');
+
+      // For #runtime from external TRL libraries.
+      fileData = fileData.replaceAll('#runtime/', '@typhonjs-svelte/runtime-base/');
+
+      // For #svelte from external TRL libraries.
+      fileData = fileData.replaceAll('#svelte', 'svelte');
 
       // For @typhonjs-plugin/manager
       fileData = fileData.replaceAll('@typhonjs-plugin/manager/eventbus',

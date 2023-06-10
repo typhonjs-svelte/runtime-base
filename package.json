@@ -9,7 +9,9 @@
   ],
   "sideEffects": false,
   "imports": {
-    "#runtime/*": "@typhonjs-svelte/runtime-base/*"
+    "#runtime/*": "@typhonjs-svelte/runtime-base/*",
+    "#svelte": "svelte",
+    "#svelte/*": "svelte/*"
   },
   "exports": {
     "./data/compress": {
@@ -90,14 +92,14 @@
     "@typhonjs-config/eslint-config": "^0.6.0",
     "@typhonjs-plugin/manager": "^0.0.16",
     "@typhonjs-svelte/dynamic-reducer": "^0.0.8",
-    "@typhonjs-svelte/unicode": "github:typhonjs-svelte/unicode",
-    "@typhonjs-utils/object": "^0.0.15",
+    "@typhonjs-svelte/trie-search": "^0.0.1",
+    "@typhonjs-svelte/unicode": "^0.0.0",
+    "@typhonjs-utils/object": "^0.0.16",
     "eslint": "^8",
     "fflate": "^0.8.0",
     "gl-matrix": "github:typhonjs-svelte/gl-matrix-dist-test#glmatrix-next",
     "js-base64": "^3.7.5",
     "json5": "^2.2.3",
-    "klona": "2.0.6",
     "msgpackr": "^1.9.2",
     "quick-lru": "^6.1.1",
     "rollup": "^3",
