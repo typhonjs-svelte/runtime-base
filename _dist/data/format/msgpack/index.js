@@ -926,10 +926,10 @@ const recordDefinition = (id, highByte) => {
 currentExtensions[0] = () => {}; // notepack defines extension 0 to mean undefined, so use that as the default here
 currentExtensions[0].noBuffer = true;
 
-let glbl = typeof globalThis === 'object' ? globalThis : window;
+let errors = { Error, TypeError, ReferenceError };
 currentExtensions[0x65] = () => {
 	let data = read();
-	return (glbl[data[0]] || Error)(data[1])
+	return (errors[data[0]] || Error)(data[1])
 };
 
 currentExtensions[0x69] = (data) => {
@@ -967,6 +967,7 @@ currentExtensions[0x73] = () => new Set(read());
 
 const typedArrays = ['Int8','Uint8','Uint8Clamped','Int16','Uint16','Int32','Uint32','Float32','Float64','BigInt64','BigUint64'].map(type => type + 'Array');
 
+let glbl = typeof globalThis === 'object' ? globalThis : window;
 currentExtensions[0x74] = (data) => {
 	let typeCode = data[0];
 	let typedArrayName = typedArrays[typeCode];
@@ -1461,7 +1462,7 @@ class Packr extends Unpackr {
 					targetView.setFloat64(position, value);
 					position += 8;
 				}
-			} else if (type === 'object') {
+			} else if (type === 'object' || type === 'function') {
 				if (!value)
 					target[position++] = 0xc0;
 				else {
@@ -1566,8 +1567,18 @@ class Packr extends Unpackr {
 						if (Array.isArray(value)) {
 							packArray(value);
 						} else {
-							if (value.toJSON) // use this as an alternate mechanism for expressing how to serialize
-								return pack(value.toJSON());
+							// use this as an alternate mechanism for expressing how to serialize
+							if (value.toJSON) {
+								const json = value.toJSON();
+								// if for some reason value.toJSON returns itself it'll loop forever
+								if (json !== value)
+									return pack(json)
+							}
+							
+							// if there is a writeFunction, use it, otherwise just encode as undefined
+							if (type === 'function')
+								return pack(this.writeFunction && this.writeFunction(value));
+							
 							// no extension found, write as object
 							writeObject(value, !value.hasOwnProperty); // if it doesn't have hasOwnProperty, don't do hasOwnProperty checks
 						}
@@ -1602,14 +1613,12 @@ class Packr extends Unpackr {
 					target[position++] = 0;
 					target[position++] = 0;
 				}
-			} else if (type === 'function') {
-				pack(this.writeFunction && this.writeFunction()); // if there is a writeFunction, use it, otherwise just encode as undefined
 			} else {
 				throw new Error('Unknown type: ' + type)
 			}
 		};
 
-		const writeObject = this.useRecords === false ? this.variableMapSize ? (object) => {
+		const writePlainObject = (this.variableMapSize || this.coercibleKeyAsNumber) ? (object) => {
 			// this method is slightly slower, but generates "preferred serialization" (optimally small for smaller objects)
 			let keys = Object.keys(object);
 			let length = keys.length;
@@ -1625,9 +1634,19 @@ class Packr extends Unpackr {
 				position += 4;
 			}
 			let key;
-			for (let i = 0; i < length; i++) {
-				pack(key = keys[i]);
-				pack(object[key]);
+			if (this.coercibleKeyAsNumber) {
+				for (let i = 0; i < length; i++) {
+					key = keys[i];
+					let num = Number(key);
+					pack(isNaN(num) ? key : num);
+					pack(object[key]);
+				}
+
+			} else {
+				for (let i = 0; i < length; i++) {
+					pack(key = keys[i]);
+					pack(object[key]);
+				}
 			}
 		} :
 		(object, safePrototype) => {
@@ -1644,7 +1663,9 @@ class Packr extends Unpackr {
 			}
 			target[objectOffset++ + start] = size >> 8;
 			target[objectOffset + start] = size & 0xff;
-		} :
+		};
+
+		const writeRecord = this.useRecords === false ? writePlainObject :
 		(options.progressiveRecords && !useTwoByteRecords) ?  // this is about 2% faster for highly stable structures, since it only requires one for-in loop (but much more expensive when new structure needs to be written)
 		(object, safePrototype) => {
 			let nextTransition, transition = structures.transitions || (structures.transitions = Object.create(null));
@@ -1716,6 +1737,14 @@ class Packr extends Unpackr {
 				if (safePrototype || object.hasOwnProperty(key))
 					pack(object[key]);
 		};
+
+		// craete reference to useRecords if useRecords is a function
+		const checkUseRecords = typeof this.useRecords == 'function' && this.useRecords;
+		
+		const writeObject = checkUseRecords ? (object, safePrototype) => {
+			checkUseRecords(object) ? writeRecord(object,safePrototype) : writePlainObject(object,safePrototype);
+		} : writeRecord;
+
 		const makeRoom = (end) => {
 			let newSize;
 			if (end > 0x1000000) {

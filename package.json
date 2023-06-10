@@ -100,7 +100,7 @@
     "gl-matrix": "github:typhonjs-svelte/gl-matrix-dist-test#glmatrix-next",
     "js-base64": "^3.7.5",
     "json5": "^2.2.3",
-    "msgpackr": "^1.9.2",
+    "msgpackr": "^1.9.5",
     "quick-lru": "^6.1.1",
     "rollup": "^3",
     "striptags": "github:typhonjs-svelte/striptags",

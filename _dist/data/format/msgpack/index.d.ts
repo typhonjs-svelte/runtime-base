@@ -9,13 +9,14 @@ declare enum FLOAT32_OPTIONS {
 
 interface Options {
 	useFloat32?: FLOAT32_OPTIONS
-	useRecords?: boolean
+	useRecords?: boolean | ((value:any)=> boolean)
 	structures?: {}[]
 	moreTypes?: boolean
 	sequential?: boolean
 	structuredClone?: boolean
 	mapsAsObjects?: boolean
 	variableMapSize?: boolean
+	coercibleKeyAsNumber?: boolean
 	copyBuffers?: boolean
 	bundleStrings?: boolean
 	useTimestamp32?: boolean
@@ -34,8 +35,8 @@ interface Options {
 	onInvalidDate?: () => any
 }
 interface Extension {
-	Class: Function
-	type: number
+	Class?: Function
+	type?: number
 	pack?(value: any): Buffer | Uint8Array
 	unpack?(messagePack: Buffer | Uint8Array): any	
 	read?(datum: any): any
