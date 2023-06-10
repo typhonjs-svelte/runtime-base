@@ -1,7 +1,10 @@
+declare function klona<T>(input: T): T;
+
 /**
  * Provides common object manipulation utilities including depth traversal, obtaining accessors, safely setting values /
  * equality tests, and validation.
  */
+
 /**
  * Freezes all entries traversed that are objects including entries in arrays.
  *
@@ -312,6 +315,4 @@ interface JSONObject {
 interface JSONArray extends Array<JSONValue> {
 }
 
-declare function klona<T>(input: T): T;
-
-export { SafeSetOperation, ValidationEntry, deepFreeze, deepMerge, depthTraverse, getAccessorList, hasAccessor, hasGetter, hasPrototype, hasSetter, isAsyncIterable, isIterable, isObject, isPlainObject, klona, objectKeys, objectSize, safeAccess, safeBatchSet, safeEqual, safeSet, safeSetAll, validate, validateArray, validateEntry, validateEntryOrArray };
+export { JSONArray, JSONObject, JSONValue, Primitive, SafeSetOperation, ValidationEntry, deepFreeze, deepMerge, depthTraverse, getAccessorList, hasAccessor, hasGetter, hasPrototype, hasSetter, isAsyncIterable, isIterable, isObject, isPlainObject, klona, objectKeys, objectSize, safeAccess, safeBatchSet, safeEqual, safeSet, safeSetAll, validate, validateArray, validateEntry, validateEntryOrArray };
