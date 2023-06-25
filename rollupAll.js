@@ -259,7 +259,9 @@ const rollupConfigs = [
    {
       input: {
          input: 'src/plugin/manager/index.js',
+         external: ['@typhonjs-plugin/manager/eventbus'],
          plugins: [
+            importsExternal(),
             resolve(resolveOptions),
          ]
       },
@@ -268,13 +270,18 @@ const rollupConfigs = [
          file: '_dist/plugin/manager/index.js',
          format: 'es',
          generatedCode: { constBindings: true },
+         paths: {
+            '@typhonjs-plugin/manager/eventbus': '@typhonjs-svelte/runtime-base/plugin/manager/eventbus'
+         },
          sourcemap
       }
    },
    {
       input: {
          input: 'src/plugin/manager/eventbus/index.js',
+         external: ['@typhonjs-plugin/manager/*', '@typhonjs-svelte/runtime-base/*'],
          plugins: [
+            importsExternal(),
             resolve(resolveOptions),
          ]
       },
@@ -289,7 +296,9 @@ const rollupConfigs = [
    {
       input: {
          input: 'src/plugin/manager/eventbus/buses/index.js',
+         external: ['@typhonjs-plugin/manager/eventbus'],
          plugins: [
+            importsExternal(),
             resolve(resolveOptions),
          ]
       },
@@ -298,6 +307,9 @@ const rollupConfigs = [
          file: '_dist/plugin/manager/eventbus/buses/index.js',
          format: 'es',
          generatedCode: { constBindings: true },
+         paths: {
+            '@typhonjs-plugin/manager/eventbus': '@typhonjs-svelte/runtime-base/plugin/manager/eventbus'
+         },
          sourcemap
       }
    },
