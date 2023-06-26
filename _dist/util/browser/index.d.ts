@@ -1,3 +1,11 @@
+interface StateMachineOptions {
+    readonly allowedTags?: Set<string>;
+    readonly disallowedTags?: Set<string>;
+    readonly tagReplacementText: string;
+    readonly encodePlaintextTagDelimiters: boolean;
+}
+declare function striptags(text: string, options?: Partial<StateMachineOptions>): string;
+
 /**
  * Provides several helpful utility methods for accessibility and keyboard navigation.
  */
@@ -341,4 +349,4 @@ declare class TJSStyleManager {
     #private;
 }
 
-export { A11yFocusSource, A11yHelper, BrowserSupports, ClipboardAccess, StackingContext, StyleParse, TJSStyleManager, getStackingContext };
+export { A11yFocusSource, A11yHelper, BrowserSupports, ClipboardAccess, StackingContext, StyleParse, TJSStyleManager, getStackingContext, striptags };
