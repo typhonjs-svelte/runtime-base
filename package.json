@@ -102,6 +102,10 @@
       "types": "./_dist/util/object/index.d.ts",
       "import": "./_dist/util/object/index.js"
     },
+    "./util/store": {
+      "types": "./_dist/util/store/index.d.ts",
+      "import": "./_dist/util/store/index.js"
+    },
     "./package.json": "./package.json"
   },
   "devDependencies": {
