@@ -86,6 +86,14 @@
       "types": "./_dist/plugin/manager/eventbus/buses/index.d.ts",
       "import": "./_dist/plugin/manager/eventbus/buses/index.js"
     },
+    "./util/async": {
+      "types": "./_dist/util/async/index.d.ts",
+      "import": "./_dist/util/async/index.js"
+    },
+    "./util/browser": {
+      "types": "./_dist/util/browser/index.d.ts",
+      "import": "./_dist/util/browser/index.js"
+    },
     "./util/object": {
       "types": "./_dist/util/object/index.d.ts",
       "import": "./_dist/util/object/index.js"
