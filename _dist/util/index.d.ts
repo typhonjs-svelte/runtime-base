@@ -33,17 +33,28 @@ declare class Hashing {
     static uuidv4(): string;
 }
 
+/**
+ * Provides utility functions for strings.
+ */
 declare class Strings {
+    /**
+     * Escape a given input string prefacing special characters with backslashes for use in a regular expression.
+     *
+     * @param {string}   string - An un-escaped input string.
+     *
+     * @returns {string} The escaped string suitable for use in a regular expression.
+     */
+    static escape(string: string): string;
     /**
      * Normalizes a string.
      *
-     * @param {string}   query - A string to normalize for comparisons.
+     * @param {string}   string - A string to normalize for comparisons.
      *
      * @returns {string} Cleaned string.
      *
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/normalize
      */
-    static normalize(query: string): string;
+    static normalize(string: string): string;
 }
 
 /**
