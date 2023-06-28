@@ -58,6 +58,10 @@
       "types": "./_dist/data/struct/store/reducer/index.d.ts",
       "import": "./_dist/data/struct/store/reducer/index.js"
     },
+    "./data/struct/store/reducer/array-object": {
+      "types": "./_dist/data/struct/store/reducer/array-object/index.d.ts",
+      "import": "./_dist/data/struct/store/reducer/array-object/index.js"
+    },
     "./math/gl-matrix": {
       "types": "./_dist/math/gl-matrix/index.d.ts",
       "import": "./_dist/math/gl-matrix/index.js"

@@ -190,6 +190,22 @@ const rollupConfigs = [
          sourcemap
       }
    },
+   {
+      input: {
+         input: 'src/data/struct/store/reducer/array-object/index.js',
+         plugins: [
+            importsExternal(),
+            resolve(resolveOptions),
+            generateDTS.plugin(dtsPluginOptions)
+         ]
+      },
+      output: {
+         file: '_dist/data/struct/store/reducer/array-object/index.js',
+         format: 'es',
+         generatedCode: { constBindings: true },
+         sourcemap
+      }
+   },
 
    {
       input: {
