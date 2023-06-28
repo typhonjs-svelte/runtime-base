@@ -1,5 +1,3 @@
-import * as _svelte_store from 'svelte/store';
-
 /**
  * Provides a basic test for a given variable to test if it has the shape of a readable store by having a `subscribe`
  * function.
@@ -51,7 +49,7 @@ declare function isWritableStore(store: any): boolean;
  *
  * @returns {import('#svelte/store').Writable<T>} Wrapped store.
  */
-declare function storeCallback<T>(store: _svelte_store.Writable<T>, setCallback: (store?: _svelte_store.Writable<T>, value?: T) => void): _svelte_store.Writable<T>;
+declare function storeCallback<T>(store: any, setCallback: (store?: any, value?: T) => void): any;
 /**
  * Subscribes to the given store with the update function provided and ignores the first automatic
  * update. All future updates are dispatched to the update function.
@@ -63,7 +61,7 @@ declare function storeCallback<T>(store: _svelte_store.Writable<T>, setCallback:
  *
  * @returns {import('#svelte/store').Unsubscriber} Store unsubscribe function.
  */
-declare function subscribeIgnoreFirst(store: _svelte_store.Readable<any> | _svelte_store.Writable<any>, update: any): _svelte_store.Unsubscriber;
+declare function subscribeIgnoreFirst(store: any | any, update: any): any;
 /**
  * Subscribes to the given store with two update functions provided. The first function is invoked on the initial
  * subscription. All future updates are dispatched to the update function.
@@ -77,6 +75,6 @@ declare function subscribeIgnoreFirst(store: _svelte_store.Readable<any> | _svel
  *
  * @returns {import('#svelte/store').Unsubscriber} Store unsubscribe function.
  */
-declare function subscribeFirstRest(store: _svelte_store.Readable<any> | _svelte_store.Writable<any>, first: any, update: any): _svelte_store.Unsubscriber;
+declare function subscribeFirstRest(store: any | any, first: any, update: any): any;
 
 export { isReadableStore, isUpdatableStore, isWritableStore, storeCallback, subscribeFirstRest, subscribeIgnoreFirst };

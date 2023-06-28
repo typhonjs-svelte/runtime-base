@@ -1,4 +1,3 @@
-import * as _svelte_store from 'svelte/store';
 import { DynArrayReducer } from '@typhonjs-svelte/runtime-base/data/struct/store/reducer';
 
 /**
@@ -45,7 +44,7 @@ declare class ObjectEntryStore {
 /**
  * @template [T=import('./').BaseArrayObjectEntryStore]
  */
-declare class ArrayObjectStore<T = BaseArrayObjectEntryStore> {
+declare class ArrayObjectStore<T = any> {
     /**
      * @returns {ObjectEntryStore} The default object entry store constructor.
      */
@@ -144,7 +143,7 @@ declare class ArrayObjectStore<T = BaseArrayObjectEntryStore> {
  * @template [T=import('./').BaseArrayObjectEntryStore]
  * @augments {ArrayObjectStore<T>}
  */
-declare class CrudArrayObjectStore<T = BaseArrayObjectEntryStore> extends ArrayObjectStore<T> {
+declare class CrudArrayObjectStore<T = any> extends ArrayObjectStore<T> {
     /**
      * @param {object}                  [opts] - Optional parameters.
      *
@@ -211,7 +210,7 @@ type ArrayObjectStoreParams = {
     manualUpdate?: boolean;
 };
 type ArrayObjectUpdateData = boolean | object | undefined;
-type BaseArrayObjectEntryStore = _svelte_store.Writable<any> & {
+type BaseArrayObjectEntryStore = any & {
     get id(): string;
 };
 

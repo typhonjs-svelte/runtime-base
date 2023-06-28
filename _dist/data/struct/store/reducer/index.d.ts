@@ -1,5 +1,3 @@
-import * as _svelte_store from 'svelte/store';
-
 /**
  * Provides a managed Map with non-destructive reducing / filtering / sorting capabilities with subscription /
  * Svelte store support.
@@ -971,8 +969,8 @@ declare class DynReducerHelper {
     static get filters(): {
         regexObjectQuery: (properties: string | Iterable<string>, options?: {
             caseSensitive?: boolean;
-            store?: _svelte_store.Writable<string>;
-        }) => ((data: {}) => boolean) & _svelte_store.Writable<string>;
+            store?: any;
+        }) => any;
     };
 }
 

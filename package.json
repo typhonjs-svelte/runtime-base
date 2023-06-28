@@ -125,14 +125,17 @@
     "@typhonjs-utils/object": "^0.0.17",
     "eslint": "^8",
     "fflate": "^0.8.0",
-    "gl-matrix": "github:typhonjs-svelte/gl-matrix-dist-test#glmatrix-next",
+    "gl-matrix": "github:typhonjs-svelte-scratch/gl-matrix-dist-test#glmatrix-next",
     "js-base64": "^3.7.5",
     "json5": "^2.2.3",
     "msgpackr": "^1.9.5",
     "quick-lru": "^6.1.1",
     "rollup": "^3",
-    "striptags": "github:typhonjs-svelte/striptags",
+    "striptags": "github:typhonjs-svelte-scratch/striptags",
     "upath": "^2.0.1"
+  },
+  "peerDependencies": {
+    "svelte": ">=4.x.x"
   },
   "engines": {
     "node": ">=14.18"
@@ -141,7 +144,9 @@
   "keywords": [
     "TyphonJS",
     "Svelte",
-    "library"
+    "library",
+    "runtime",
+    "base"
   ],
   "scripts": {
     "build": "node rollupAll.js",
