@@ -1,3 +1,8 @@
+import { writable, get } from 'svelte/store';
+import { Strings } from '@typhonjs-svelte/runtime-base/util';
+import { isIterable } from '@typhonjs-svelte/runtime-base/util/object';
+import { isWritableStore } from '@typhonjs-svelte/runtime-base/util/store';
+
 class DynReducerUtils {
     /**
      * Checks for array equality between two arrays of numbers.
@@ -1944,5 +1949,130 @@ class DynMapReducer {
     }
 }
 
-export { DynArrayReducer, DynArrayReducerDerived, DynMapReducer, DynMapReducerDerived };
+/**
+ * Creates a filter function to compare objects by a give property key against a regex test. The returned function
+ * is also a writable Svelte store that builds a regex from the stores value.
+ *
+ * This filter function can be used w/ a dynamic reducer and bound as a store to input elements.
+ *
+ * @param {string|Iterable<string>}   properties - Property key to compare.
+ *
+ * @param {object}   [opts] - Optional parameters.
+ *
+ * @param {boolean}  [opts.caseSensitive=false] - When true regex test is case-sensitive.
+ *
+ * @param {import('#svelte/store').Writable<string>}  [opts.store] - Use the provided store to instead of creating
+ *        a default writable store.
+ *
+ * @returns {((data: object) => boolean) & import('#svelte/store').Writable<string>} The query string filter.
+ */
+function regexObjectQuery(properties, { caseSensitive = false, store } = {})
+{
+   let keyword = '';
+   let regex;
+
+   if (store !== void 0 && !isWritableStore(store))
+   {
+      throw new TypeError(`createObjectQuery error: 'store' is not a writable store.`);
+   }
+
+   const storeKeyword = store ? store : writable(keyword);
+
+   // If an existing store is provided then set initial values.
+   if (store)
+   {
+      const current = get(store);
+
+      if (typeof current === 'string')
+      {
+         keyword = Strings.normalize(current);
+         regex = new RegExp(Strings.escape(keyword), caseSensitive ? '' : 'i');
+      }
+      else
+      {
+         store.set(keyword);
+      }
+   }
+
+   /**
+    * If there is no filter keyword / regex then do not filter otherwise filter based on the regex
+    * created from the search input element.
+    *
+    * @param {object} data - Data object to test against regex.
+    *
+    * @returns {boolean} AnimationStore filter state.
+    */
+   function filterQuery(data)
+   {
+      if (keyword === '' || !regex) { return true; }
+
+      if (isIterable(properties))
+      {
+         for (const property of properties)
+         {
+            if (regex.test(Strings.normalize(data?.[property]))) { return true; }
+         }
+
+         return false;
+      }
+      else
+      {
+         return regex.test(Strings.normalize(data?.[properties]));
+      }
+   }
+
+   /**
+    * Create a custom store that changes when the search keyword changes.
+    *
+    * @param {(string) => void} handler - A callback function that accepts strings.
+    *
+    * @returns {import('#svelte/store').Unsubscriber} Store unsubscribe function.
+    */
+   filterQuery.subscribe = (handler) =>
+   {
+      return storeKeyword.subscribe(handler);
+   };
+
+   /**
+    * Set
+    *
+    * @param {string}   value - A new value for the keyword / regex test.
+    */
+   filterQuery.set = (value) =>
+   {
+      if (typeof value === 'string')
+      {
+         keyword = Strings.normalize(value);
+         regex = new RegExp(Strings.escape(keyword), caseSensitive ? '' : 'i');
+         storeKeyword.set(keyword);
+      }
+   };
+
+   return filterQuery;
+}
+
+const filters = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    regexObjectQuery: regexObjectQuery
+});
+
+/**
+ * Provides helper functions to create dynamic store driven filters and sort functions for dynamic reducers. The
+ * returned functions are also Svelte stores and can be added to a reducer as well as used as a store.
+ */
+class DynReducerHelper
+{
+   /**
+    * Returns the following filter functions:
+    * - regexObjectQuery(property, options); suitable for object reducers matching one or more properties against
+    *   the store value as a regex. Optional parameters to set case sensitivity and passing in an existing store.
+    *
+    * @returns {{
+    *    regexObjectQuery: (properties: string|Iterable<string>, options?: {caseSensitive?: boolean, store?: import('#svelte/store').Writable<string>}) => (((data: {}) => boolean) & import('#svelte/store').Writable<string>)
+    * }} All available filters.
+    */
+   static get filters() { return filters; }
+}
+
+export { DynArrayReducer, DynArrayReducerDerived, DynMapReducer, DynMapReducerDerived, DynReducerHelper };
 //# sourceMappingURL=index.js.map

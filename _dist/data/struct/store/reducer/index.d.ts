@@ -1,3 +1,5 @@
+import * as _svelte_store from 'svelte/store';
+
 /**
  * Provides a managed Map with non-destructive reducing / filtering / sorting capabilities with subscription /
  * Svelte store support.
@@ -952,4 +954,26 @@ declare class DynArrayReducerDerived<T> implements IDynDerivedReducer<T[], numbe
     subscribe(handler: (value: DynArrayReducerDerived<T>) => void): () => void;
 }
 
-export { DynArrayData, DynArrayReducer, DynArrayReducerDerived, DynCompareFn, DynDataArrayCreate, DynDataDerivedCreate, DynDataFilter, DynDataMapCreate, DynDataOptions, DynDataSort, DynFilterFn, DynMapData, DynMapReducer, DynMapReducerDerived, DynOptionsArrayCreate, DynOptionsDerivedCreate, DynOptionsMapCreate, IDynArrayReducerCtor, IDynDerivedReducer, IDynDerivedReducerCtor, IDynMapReducerCtor };
+/**
+ * Provides helper functions to create dynamic store driven filters and sort functions for dynamic reducers. The
+ * returned functions are also Svelte stores and can be added to a reducer as well as used as a store.
+ */
+declare class DynReducerHelper {
+    /**
+     * Returns the following filter functions:
+     * - regexObjectQuery(property, options); suitable for object reducers matching one or more properties against
+     *   the store value as a regex. Optional parameters to set case sensitivity and passing in an existing store.
+     *
+     * @returns {{
+     *    regexObjectQuery: (properties: string|Iterable<string>, options?: {caseSensitive?: boolean, store?: import('#svelte/store').Writable<string>}) => (((data: {}) => boolean) & import('#svelte/store').Writable<string>)
+     * }} All available filters.
+     */
+    static get filters(): {
+        regexObjectQuery: (properties: string | Iterable<string>, options?: {
+            caseSensitive?: boolean;
+            store?: _svelte_store.Writable<string>;
+        }) => ((data: {}) => boolean) & _svelte_store.Writable<string>;
+    };
+}
+
+export { DynArrayData, DynArrayReducer, DynArrayReducerDerived, DynCompareFn, DynDataArrayCreate, DynDataDerivedCreate, DynDataFilter, DynDataMapCreate, DynDataOptions, DynDataSort, DynFilterFn, DynMapData, DynMapReducer, DynMapReducerDerived, DynOptionsArrayCreate, DynOptionsDerivedCreate, DynOptionsMapCreate, DynReducerHelper, IDynArrayReducerCtor, IDynDerivedReducer, IDynDerivedReducerCtor, IDynMapReducerCtor };
