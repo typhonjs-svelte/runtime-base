@@ -4,6 +4,9 @@ import {
 
 import { storeGenerator }  from '#runtime/svelte/store/web-storage';
 
+export * from './TJSLocalStorageBCMP.js';
+export * from './TJSSessionStorageBCMP.js';
+
 /**
  * Provides all MessagePack enabled `localStorage` store helper functions. Data is compressed and converted to base64.
  */
