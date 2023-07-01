@@ -90,6 +90,14 @@
       "types": "./_dist/plugin/manager/eventbus/buses/index.d.ts",
       "import": "./_dist/plugin/manager/eventbus/buses/index.js"
     },
+    "./svelte/store/web-storage": {
+      "types": "./_dist/svelte/store/web-storage/index.d.ts",
+      "import": "./_dist/svelte/store/web-storage/index.js"
+    },
+    "./svelte/store/web-storage/msgpack": {
+      "types": "./_dist/svelte/store/web-storage/msgpack/index.d.ts",
+      "import": "./_dist/svelte/store/web-storage/msgpack/index.js"
+    },
     "./util": {
       "types": "./_dist/util/index.d.ts",
       "import": "./_dist/util/index.js"
@@ -120,6 +128,7 @@
     "@typhonjs-config/eslint-config": "^0.6.3",
     "@typhonjs-plugin/manager": "^0.0.16",
     "@typhonjs-svelte/dynamic-reducer": "^0.0.8",
+    "@typhonjs-svelte/simple-web-storage": "^0.3.2",
     "@typhonjs-svelte/trie-search": "^0.0.1",
     "@typhonjs-svelte/unicode": "^0.0.0",
     "@typhonjs-utils/object": "^0.0.17",

@@ -113,7 +113,6 @@ const rollupConfigs = [
          sourcemap
       }
    },
-
    {
       input: {
          input: 'src/data/struct/cache/quick-lru/index.js',
@@ -329,6 +328,40 @@ const rollupConfigs = [
          sourcemap
       }
    },
+
+   {
+      input: {
+         input: 'src/svelte/store/web-storage/index.js',
+         plugins: [
+            importsExternal(),
+            resolve(resolveOptions),
+            generateDTS.plugin(dtsPluginOptions)
+         ]
+      },
+      output: {
+         file: '_dist/svelte/store/web-storage/index.js',
+         format: 'es',
+         generatedCode: { constBindings: true },
+         sourcemap
+      }
+   },
+   {
+      input: {
+         input: 'src/svelte/store/web-storage/msgpack/index.js',
+         plugins: [
+            importsExternal(),
+            resolve(resolveOptions),
+            generateDTS.plugin(dtsPluginOptions)
+         ]
+      },
+      output: {
+         file: '_dist/svelte/store/web-storage/msgpack/index.js',
+         format: 'es',
+         generatedCode: { constBindings: true },
+         sourcemap
+      }
+   },
+
    {
       input: {
          input: 'src/util/index.js',
