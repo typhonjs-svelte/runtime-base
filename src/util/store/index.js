@@ -81,19 +81,19 @@ export function isWritableStore(store)
  *
  * @template T
  *
- * @param {import('#svelte/store').Writable<T>} store - A store to wrap.
+ * @param {import('svelte/store').Writable<T>} store - A store to wrap.
  *
- * @param {(store?: import('#svelte/store').Writable<T>, value?: T) => void} setCallback - A callback to invoke after
+ * @param {(store?: import('svelte/store').Writable<T>, value?: T) => void} setCallback - A callback to invoke after
  *        store set.
  *
- * @returns {import('#svelte/store').Writable<T>} Wrapped store.
+ * @returns {import('svelte/store').Writable<T>} Wrapped store.
  */
 export function storeCallback(store, setCallback)
 {
    if (!isWritableStore(store)) { throw new TypeError(`'store' is not a writable store.`); }
    if (typeof setCallback !== 'function') { throw new TypeError(`'setCallback' is not a function.`); }
 
-   /** @type {import('#svelte/store').Writable<T>} */
+   /** @type {import('svelte/store').Writable<T>} */
    return {
       set: (value) =>
       {
@@ -111,12 +111,12 @@ export function storeCallback(store, setCallback)
  * Subscribes to the given store with the update function provided and ignores the first automatic
  * update. All future updates are dispatched to the update function.
  *
- * @param {import('#svelte/store').Readable | import('#svelte/store').Writable} store -
+ * @param {import('svelte/store').Readable | import('svelte/store').Writable} store -
  *  Store to subscribe to...
  *
- * @param {import('#svelte/store').Updater} update - function to receive future updates.
+ * @param {import('svelte/store').Updater} update - function to receive future updates.
  *
- * @returns {import('#svelte/store').Unsubscriber} Store unsubscribe function.
+ * @returns {import('svelte/store').Unsubscriber} Store unsubscribe function.
  */
 export function subscribeIgnoreFirst(store, update)
 {
@@ -139,14 +139,14 @@ export function subscribeIgnoreFirst(store, update)
  * Subscribes to the given store with two update functions provided. The first function is invoked on the initial
  * subscription. All future updates are dispatched to the update function.
  *
- * @param {import('#svelte/store').Readable | import('#svelte/store').Writable} store -
+ * @param {import('svelte/store').Readable | import('svelte/store').Writable} store -
  *  Store to subscribe to...
  *
- * @param {import('#svelte/store').Updater} first - Function to receive first update.
+ * @param {import('svelte/store').Updater} first - Function to receive first update.
  *
- * @param {import('#svelte/store').Updater} update - Function to receive future updates.
+ * @param {import('svelte/store').Updater} update - Function to receive future updates.
  *
- * @returns {import('#svelte/store').Unsubscriber} Store unsubscribe function.
+ * @returns {import('svelte/store').Unsubscriber} Store unsubscribe function.
  */
 export function subscribeFirstRest(store, first, update)
 {

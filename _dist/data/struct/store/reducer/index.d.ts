@@ -1,3 +1,6 @@
+
+import * as svelte_store from 'svelte/store';
+
 /**
  * Provides a managed Map with non-destructive reducing / filtering / sorting capabilities with subscription /
  * Svelte store support.
@@ -963,14 +966,14 @@ declare class DynReducerHelper {
      *   the store value as a regex. Optional parameters to set case sensitivity and passing in an existing store.
      *
      * @returns {{
-     *    regexObjectQuery: (properties: string|Iterable<string>, options?: {caseSensitive?: boolean, store?: import('#svelte/store').Writable<string>}) => (((data: {}) => boolean) & import('#svelte/store').Writable<string>)
+     *    regexObjectQuery: (properties: string|Iterable<string>, options?: {caseSensitive?: boolean, store?: import('svelte/store').Writable<string>}) => (((data: {}) => boolean) & import('svelte/store').Writable<string>)
      * }} All available filters.
      */
     static get filters(): {
         regexObjectQuery: (properties: string | Iterable<string>, options?: {
             caseSensitive?: boolean;
-            store?: any;
-        }) => any;
+            store?: svelte_store.Writable<string>;
+        }) => ((data: {}) => boolean) & svelte_store.Writable<string>;
     };
 }
 

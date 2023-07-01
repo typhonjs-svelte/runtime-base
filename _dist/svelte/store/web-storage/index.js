@@ -165,7 +165,7 @@ class TJSWebStorage
 
    /**
     * @type {(Map<string, {
-    *    store: import('#svelte/store').Writable,
+    *    store: import('svelte/store').Writable,
     *    deserialize?: (value: string, ...rest: any[]) => any,
     *    serialize?: (value: any, ...rest: any[]) => string
     * }>)}
@@ -214,7 +214,7 @@ class TJSWebStorage
     *
     * @param {import('./').StorageStores} [storageStores] - Additional store creation options.
     *
-    * @returns {import('#svelte/store').Writable<T>} The new store.
+    * @returns {import('svelte/store').Writable<T>} The new store.
     */
    #createStore(key, defaultValue = void 0, storageStores)
    {
@@ -317,7 +317,7 @@ class TJSWebStorage
     *
     * @param {import('./').StorageStores} [storageStores] - Additional store creation options.
     *
-    * @returns {import('#svelte/store').Writable<T>} The Svelte store for this key.
+    * @returns {import('svelte/store').Writable<T>} The Svelte store for this key.
     */
    getStore(key, defaultValue, storageStores)
    {

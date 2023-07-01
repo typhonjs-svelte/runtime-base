@@ -1,3 +1,6 @@
+
+
+import * as svelte_store from 'svelte/store';
 import { Stores, Readable, StartStopNotifier, Writable, StoresValues, Subscriber, Updater, Unsubscriber } from 'svelte/store';
 
 /**
@@ -115,9 +118,9 @@ declare class TJSWebStorage {
      *
      * @param {import('./').StorageStores} [storageStores] - Additional store creation options.
      *
-     * @returns {import('#svelte/store').Writable<T>} The Svelte store for this key.
+     * @returns {import('svelte/store').Writable<T>} The Svelte store for this key.
      */
-    getStore<T>(key: string, defaultValue?: T, storageStores?: StorageStores): any;
+    getStore<T>(key: string, defaultValue?: T, storageStores?: StorageStores): svelte_store.Writable<T>;
     /**
      * Sets the value for the given key in storage API.
      *

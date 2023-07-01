@@ -27,6 +27,6 @@ export * from './ObjectEntryStore.js';
 
 /* eslint-disable */  // jsdoc/valid-types doesn't like the import in typedef. TODO: verify in future eslint-plugin-jsdoc version
 /**
- * @typedef {import('#svelte/store').Writable & { get id: string }} BaseArrayObjectEntryStore
+ * @typedef {import('svelte/store').Writable & { get id: string }} BaseArrayObjectEntryStore
  */
 /* eslint-enable */
