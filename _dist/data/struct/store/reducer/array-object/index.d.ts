@@ -3,7 +3,7 @@ import * as svelte_store from 'svelte/store';
 import { DynArrayReducer } from '@typhonjs-svelte/runtime-base/data/struct/store/reducer';
 
 /**
- * Provides a base implementation for store entries in {@link ArrayObjectStore}.
+ * Provides a base implementation for store entries in {@link import('./').ArrayObjectStore}.
  *
  * In particular providing the required getting / accessor for the 'id' property.
  */
@@ -52,7 +52,7 @@ declare class ArrayObjectStore<T = BaseArrayObjectEntryStore> {
      */
     static get EntryStore(): ObjectEntryStore;
     /**
-     * @param {import('./index.js').ArrayObjectStoreParams} params -
+     * @param {import('./').ArrayObjectStoreParams} params -
      */
     constructor({ StoreClass, defaultData, childDebounce, dataReducer, manualUpdate }?: ArrayObjectStoreParams);
     /**
@@ -129,7 +129,7 @@ declare class ArrayObjectStore<T = BaseArrayObjectEntryStore> {
     /**
      * Updates subscribers.
      *
-     * @param {import('./index.js').ArrayObjectUpdateData}  [update] -
+     * @param {import('./').ArrayObjectUpdateData}  [update] -
      */
     updateSubscribers(update?: ArrayObjectUpdateData): void;
     /**
@@ -153,7 +153,7 @@ declare class CrudArrayObjectStore<T = BaseArrayObjectEntryStore> extends ArrayO
      *
      * @param {object}                  [opts.extraData] -
      *
-     * @param {import('./index.js').ArrayObjectStoreParams}  [opts.rest] - Rest of ArrayObjectStore parameters.
+     * @param {import('./').ArrayObjectStoreParams}  [opts.rest] - Rest of ArrayObjectStore parameters.
      */
     constructor({ crudDispatch, extraData, ...rest }?: {
         crudDispatch?: CrudDispatch;
@@ -186,28 +186,27 @@ type CrudDispatch = (data: {
 
 type ArrayObjectStoreParams = {
     /**
-     * - The entry store class that is instantiated.
+     * The entry store class that is instantiated.
      */
     StoreClass: BaseArrayObjectEntryStore;
     /**
-     * - An array of default data objects.
+     * An array of default data objects.
      */
     defaultData?: object[];
     /**
-     * - An integer between and including 0 - 1000; a debounce time in
-     * milliseconds for child store subscriptions to invoke
-     * {@link ArrayObjectStore.updateSubscribers } notifying subscribers to this array
-     * store.
+     * An integer between and including 0 - 1000; a debounce time in
+     * milliseconds for child store subscriptions to invoke `ArrayObjectStore.updateSubscribers` notifying
+     * subscribers to this array store.
      */
     childDebounce?: number;
     /**
-     * - When true a DynArrayReducer will be instantiated wrapping store
-     *    data and accessible from {@link ArrayObjectStore.dataReducer }.
+     * When true a DynArrayReducer will be instantiated wrapping store
+     * data and accessible from `ArrayObjectStore.dataReducer`.
      */
     dataReducer?: boolean;
     /**
-     * - When true {@link ArrayObjectStore.updateSubscribers } must be
-     * invoked with a single boolean parameter for subscribers to be updated.
+     * When true `ArrayObjectStore.updateSubscribers` must be invoked
+     * with a single boolean parameter for subscribers to be updated.
      */
     manualUpdate?: boolean;
 };

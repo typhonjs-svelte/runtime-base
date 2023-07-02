@@ -85,10 +85,10 @@ type StorageStores = {
 };
 
 /**
- * Provides the base Storage API store manager. It is recommended to use {@link TJSLocalStorage} &
- * {@link TJSSessionStorage} for standard browser local and session storage use cases. TJSWebStorage exists to provide
- * additional customization options for custom Storage API compatible storage instances and custom serialization
- * configuration.
+ * Provides the base Storage API store manager. It is recommended to use {@link import('./').TJSLocalStorage} &
+ * {@link import('./').TJSSessionStorage} for standard browser local and session storage use cases. TJSWebStorage exists
+ * to provide additional customization options for custom Storage API compatible storage instances and custom
+ * serialization configuration.
  */
 declare class TJSWebStorage {
     /**

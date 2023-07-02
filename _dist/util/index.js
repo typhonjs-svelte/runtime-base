@@ -77,7 +77,7 @@ class Strings
     */
    static escape(string)
    {
-      return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+      return string.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
    }
 
    /**

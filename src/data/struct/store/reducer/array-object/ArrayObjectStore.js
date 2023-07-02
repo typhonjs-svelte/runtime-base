@@ -60,7 +60,7 @@ export class ArrayObjectStore
    static get EntryStore() { return ObjectEntryStore; }
 
    /**
-    * @param {import('./index.js').ArrayObjectStoreParams} params -
+    * @param {import('./').ArrayObjectStoreParams} params -
     */
    constructor({ StoreClass, defaultData = [], childDebounce = 250, dataReducer = false, manualUpdate = false } = {})
    {
@@ -408,7 +408,7 @@ export class ArrayObjectStore
    /**
     * Updates subscribers.
     *
-    * @param {import('./index.js').ArrayObjectUpdateData}  [update] -
+    * @param {import('./').ArrayObjectUpdateData}  [update] -
     */
    updateSubscribers(update)
    {

@@ -153,10 +153,10 @@ sessionStores.readable;
 sessionStores.writable;
 
 /**
- * Provides the base Storage API store manager. It is recommended to use {@link TJSLocalStorage} &
- * {@link TJSSessionStorage} for standard browser local and session storage use cases. TJSWebStorage exists to provide
- * additional customization options for custom Storage API compatible storage instances and custom serialization
- * configuration.
+ * Provides the base Storage API store manager. It is recommended to use {@link import('./').TJSLocalStorage} &
+ * {@link import('./').TJSSessionStorage} for standard browser local and session storage use cases. TJSWebStorage exists
+ * to provide additional customization options for custom Storage API compatible storage instances and custom
+ * serialization configuration.
  */
 class TJSWebStorage
 {
@@ -249,7 +249,7 @@ class TJSWebStorage
     */
    #getStore(key, defaultValue = void 0, storageStores)
    {
-      let storeEntry = this.#stores.get(key);
+      const storeEntry = this.#stores.get(key);
       if (storeEntry) { return storeEntry.store; }
 
       const store = this.#createStore(key, defaultValue, storageStores);
