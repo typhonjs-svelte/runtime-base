@@ -364,6 +364,22 @@ const rollupConfigs = [
          sourcemap
       }
    },
+   {
+      input: {
+         input: 'src/svelte/store/writable-derived/index.js',
+         plugins: [
+            importsExternal(),
+            resolve(resolveOptions),
+            generateDTS.plugin(dtsPluginOptions)
+         ]
+      },
+      output: {
+         file: '_dist/svelte/store/writable-derived/index.js',
+         format: 'es',
+         generatedCode: { constBindings: true },
+         sourcemap
+      }
+   },
 
    {
       input: {
