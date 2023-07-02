@@ -102,6 +102,10 @@
       "types": "./_dist/svelte/store/web-storage/msgpack/index.d.ts",
       "import": "./_dist/svelte/store/web-storage/msgpack/index.js"
     },
+    "./svelte/transition": {
+      "types": "./_dist/svelte/transition/index.d.ts",
+      "import": "./_dist/svelte/transition/index.js"
+    },
     "./util": {
       "types": "./_dist/util/index.d.ts",
       "import": "./_dist/util/index.js"
