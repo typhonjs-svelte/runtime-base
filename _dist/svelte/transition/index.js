@@ -3,7 +3,7 @@ import { lerp } from '@typhonjs-svelte/runtime-base/math/interpolate';
 import { fade, slide } from 'svelte/transition';
 
 /**
- * Provides a rotate transition. For options `easing` is applied to to the rotate transition. The default easing is
+ * Provides a rotate transition. For options `easing` is applied to the rotate transition. The default easing is
  * linear.
  *
  * Note: that when reversing the transition that time goes from `1 - 0`, so if specific options are applied for
