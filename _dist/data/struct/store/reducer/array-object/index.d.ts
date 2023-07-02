@@ -31,11 +31,12 @@ declare class ObjectEntryStore {
     get id(): string;
     toJSON(): any;
     /**
-     * @param {function(object): void} handler - Callback function that is invoked on update / changes.
+     * @param {import('svelte/store').Subscriber<object>} handler - Callback function that is invoked on update /
+     *        changes.
      *
-     * @returns {(function(): void)} Unsubscribe function.
+     * @returns {import('svelte/store').Unsubscriber} Unsubscribe function.
      */
-    subscribe(handler: (arg0: object) => void): (() => void);
+    subscribe(handler: svelte_store.Subscriber<object>): svelte_store.Unsubscriber;
     /**
      * @protected
      */
@@ -121,11 +122,11 @@ declare class ArrayObjectStore<T = BaseArrayObjectEntryStore> {
     set(updateList: T[]): void;
     toJSON(): T[];
     /**
-     * @param {function(T[]): void} handler - Callback function that is invoked on update / changes.
+     * @param {import('svelte/store').Subscriber<T[]>} handler - Callback function that is invoked on update / changes.
      *
-     * @returns {(function(): void)} Unsubscribe function.
+     * @returns {import('svelte/store').Unsubscriber} Unsubscribe function.
      */
-    subscribe(handler: (arg0: T[]) => void): (() => void);
+    subscribe(handler: svelte_store.Subscriber<T[]>): svelte_store.Unsubscriber;
     /**
      * Updates subscribers.
      *

@@ -45,7 +45,7 @@ export class ArrayObjectStore
    /**
     * Stores the subscribers.
     *
-    * @type {(function(T[]): void)[]}
+    * @type {import('svelte/store').Subscriber<T[]>}
     */
    #subscriptions = [];
 
@@ -387,9 +387,9 @@ export class ArrayObjectStore
 // -------------------------------------------------------------------------------------------------------------------
 
    /**
-    * @param {function(T[]): void} handler - Callback function that is invoked on update / changes.
+    * @param {import('svelte/store').Subscriber<T[]>} handler - Callback function that is invoked on update / changes.
     *
-    * @returns {(function(): void)} Unsubscribe function.
+    * @returns {import('svelte/store').Unsubscriber} Unsubscribe function.
     */
    subscribe(handler)
    {
