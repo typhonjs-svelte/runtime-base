@@ -595,18 +595,18 @@ class A11yHelper
 }
 
 /**
- * @typedef {object} A11yFocusSource - Provides essential data to return focus to an HTMLElement after a series of UI
+ * @typedef {object} A11yFocusSource Provides essential data to return focus to an HTMLElement after a series of UI
  * actions like working with context menus and modal dialogs.
  *
- * @property {boolean} [debug] - When true logs to console the actions taken in {@link A11yHelper.applyFocusSource}.
+ * @property {boolean} [debug] When true logs to console the actions taken in {@link A11yHelper.applyFocusSource}.
  *
- * @property {Iterable<HTMLElement|string>} [focusEl] - List of targets to attempt to focus.
+ * @property {Iterable<HTMLElement|string>} [focusEl] List of targets to attempt to focus.
  *
- * @property {string} [source] - The source of the event: 'keyboard' for instance.
+ * @property {string} [source] The source of the event: 'keyboard' for instance.
  *
- * @property {number} [x] - Potential X coordinate of initial event.
+ * @property {number} [x] Potential X coordinate of initial event.
  *
- * @property {number} [y] - Potential Y coordinate of initial event.
+ * @property {number} [y] Potential Y coordinate of initial event.
  */
 
 /**

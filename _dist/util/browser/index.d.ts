@@ -146,28 +146,28 @@ declare class A11yHelper {
     static isFocusSource(data: HTMLElement | string): boolean;
 }
 /**
- * - Provides essential data to return focus to an HTMLElement after a series of UI
+ * Provides essential data to return focus to an HTMLElement after a series of UI
  * actions like working with context menus and modal dialogs.
  */
 type A11yFocusSource = {
     /**
-     * - When true logs to console the actions taken in {@link A11yHelper.applyFocusSource }.
+     * When true logs to console the actions taken in {@link A11yHelper.applyFocusSource }.
      */
     debug?: boolean;
     /**
-     * - List of targets to attempt to focus.
+     * List of targets to attempt to focus.
      */
     focusEl?: Iterable<HTMLElement | string>;
     /**
-     * - The source of the event: 'keyboard' for instance.
+     * The source of the event: 'keyboard' for instance.
      */
     source?: string;
     /**
-     * - Potential X coordinate of initial event.
+     * Potential X coordinate of initial event.
      */
     x?: number;
     /**
-     * - Potential Y coordinate of initial event.
+     * Potential Y coordinate of initial event.
      */
     y?: number;
 };
