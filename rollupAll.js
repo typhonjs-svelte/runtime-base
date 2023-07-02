@@ -366,6 +366,22 @@ const rollupConfigs = [
    },
    {
       input: {
+         input: 'src/svelte/animate/index.js',
+         plugins: [
+            importsExternal(),
+            resolve(resolveOptions),
+            generateDTS.plugin(dtsPluginOptions)
+         ]
+      },
+      output: {
+         file: '_dist/svelte/animate/index.js',
+         format: 'es',
+         generatedCode: { constBindings: true },
+         sourcemap
+      }
+   },
+   {
+      input: {
          input: 'src/svelte/store/web-storage/index.js',
          plugins: [
             importsExternal(),

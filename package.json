@@ -98,6 +98,10 @@
       "types": "./_dist/svelte/action/dom/index.d.ts",
       "import": "./_dist/svelte/action/dom/index.js"
     },
+    "./svelte/animate": {
+      "types": "./_dist/svelte/animate/index.d.ts",
+      "import": "./_dist/svelte/animate/index.js"
+    },
     "./svelte/store/web-storage": {
       "types": "./_dist/svelte/store/web-storage/index.d.ts",
       "import": "./_dist/svelte/store/web-storage/index.js"
