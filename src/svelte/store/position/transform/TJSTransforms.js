@@ -767,12 +767,6 @@ function s_GET_ORIGIN_TRANSLATION(transformOrigin, width, height, output)
          vector[1] = height;
          Mat4.fromTranslation(output[1], vector);
          break;
-
-      // No valid transform origin parameter; set identity.
-      // default:
-      //    Mat4.identity(output[0]);
-      //    Mat4.identity(output[1]);
-      //    break;
    }
 
    return output;
