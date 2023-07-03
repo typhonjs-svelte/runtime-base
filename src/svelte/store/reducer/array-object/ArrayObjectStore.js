@@ -1,4 +1,4 @@
-import { DynArrayReducer }    from '#runtime/data/struct/store/reducer';
+import { DynArrayReducer }    from '#runtime/svelte/store/reducer';
 
 import {
    Hashing,

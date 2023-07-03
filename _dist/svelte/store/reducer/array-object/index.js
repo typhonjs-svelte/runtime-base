@@ -1,4 +1,4 @@
-import { DynArrayReducer } from '@typhonjs-svelte/runtime-base/data/struct/store/reducer';
+import { DynArrayReducer } from '@typhonjs-svelte/runtime-base/svelte/store/reducer';
 import { Hashing, Timing } from '@typhonjs-svelte/runtime-base/util';
 import { isObject, klona } from '@typhonjs-svelte/runtime-base/util/object';
 import { isWritableStore, subscribeIgnoreFirst } from '@typhonjs-svelte/runtime-base/util/store';

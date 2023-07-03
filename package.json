@@ -54,14 +54,6 @@
       "types": "./_dist/data/struct/search/trie/query/index.d.ts",
       "import": "./_dist/data/struct/search/trie/query/index.js"
     },
-    "./data/struct/store/reducer": {
-      "types": "./_dist/data/struct/store/reducer/index.d.ts",
-      "import": "./_dist/data/struct/store/reducer/index.js"
-    },
-    "./data/struct/store/reducer/array-object": {
-      "types": "./_dist/data/struct/store/reducer/array-object/index.d.ts",
-      "import": "./_dist/data/struct/store/reducer/array-object/index.js"
-    },
     "./math/gl-matrix": {
       "types": "./_dist/math/gl-matrix/index.d.ts",
       "import": "./_dist/math/gl-matrix/index.js"
@@ -109,6 +101,14 @@
     "./svelte/store/position": {
       "types": "./_dist/svelte/store/position/index.d.ts",
       "import": "./_dist/svelte/store/position/index.js"
+    },
+    "./svelte/store/reducer": {
+      "types": "./_dist/svelte/store/reducer/index.d.ts",
+      "import": "./_dist/svelte/store/reducer/index.js"
+    },
+    "./svelte/store/reducer/array-object": {
+      "types": "./_dist/svelte/store/reducer/array-object/index.d.ts",
+      "import": "./_dist/svelte/store/reducer/array-object/index.js"
     },
     "./svelte/store/web-storage": {
       "types": "./_dist/svelte/store/web-storage/index.d.ts",

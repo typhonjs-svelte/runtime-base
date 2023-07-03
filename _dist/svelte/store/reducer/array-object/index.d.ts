@@ -1,6 +1,6 @@
 
 import * as svelte_store from 'svelte/store';
-import { DynArrayReducer } from '@typhonjs-svelte/runtime-base/data/struct/store/reducer';
+import { DynArrayReducer } from '@typhonjs-svelte/runtime-base/svelte/store/reducer';
 
 /**
  * Provides a base implementation for store entries in {@link import('./').ArrayObjectStore}.
