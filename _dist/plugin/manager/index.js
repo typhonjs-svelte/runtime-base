@@ -128,14 +128,14 @@ class PluginEntry
    /**
     * An EventbusProxy associated with the plugin wrapping the plugin manager eventbus.
     *
-    * @type {import('#eventbus').EventbusProxy}
+    * @type {import('#manager/eventbus').EventbusProxy}
     */
    #eventbusProxy;
 
    /**
     * Stores the proxied event names, callback functions, context and guarded state when this plugin is disabled.
     *
-    * @type {Array<[string, Function, object, import('#eventbus').EventOptionsOut]>}
+    * @type {Array<[string, Function, object, import('#manager/eventbus').EventOptionsOut]>}
     */
    #events;
 
@@ -148,8 +148,8 @@ class PluginEntry
     *
     * @param {object}      instance - The loaded plugin instance.
     *
-    * @param {import('#eventbus').EventbusProxy}  eventbusProxy - The EventbusProxy associated with the plugin wrapping
-    *        the plugin manager eventbus.
+    * @param {import('#manager/eventbus').EventbusProxy}  eventbusProxy - The EventbusProxy associated with the plugin
+    *        wrapping the plugin manager eventbus.
     */
    constructor(name, data, instance, eventbusProxy = void 0)
    {
@@ -236,7 +236,7 @@ class PluginEntry
    /**
     * Get associated EventbusProxy.
     *
-    * @returns {import('#eventbus').EventbusProxy} Associated EventbusProxy.
+    * @returns {import('#manager/eventbus').EventbusProxy} Associated EventbusProxy.
     */
    get eventbusProxy() { return this.#eventbusProxy; }
 
@@ -258,7 +258,7 @@ class PluginEntry
    /**
     * Set associated EventbusProxy.
     *
-    * @param {import('#eventbus').EventbusProxy} eventbusProxy - EventbusProxy instance to associate.
+    * @param {import('#manager/eventbus').EventbusProxy} eventbusProxy - EventbusProxy instance to associate.
     */
    set eventbusProxy(eventbusProxy) { this.#eventbusProxy = eventbusProxy; }
 
@@ -405,7 +405,7 @@ class PluginInvokeEvent
       /**
        * Unique data available in each plugin invoked.
        *
-       * @type {import('#eventbus').EventbusProxy} - The active EventbusProxy for that particular plugin.
+       * @type {import('#manager/eventbus').EventbusProxy} - The active EventbusProxy for that particular plugin.
        */
       this.eventbus = null;
 
@@ -770,7 +770,7 @@ class PluginInvokeSupport
     *
     * @param {object}     opts - An options object.
     *
-    * @param {import('#eventbus').Eventbus}   opts.eventbus - The eventbus to disassociate.
+    * @param {import('#manager/eventbus').Eventbus}   opts.eventbus - The eventbus to disassociate.
     *
     * @param {string}     opts.eventPrepend - The current event prepend.
     */
@@ -1251,9 +1251,9 @@ class PluginInvokeSupport
     *
     * @param {object}     opts - An options object.
     *
-    * @param {import('#eventbus').Eventbus}   opts.oldEventbus - The old eventbus to disassociate.
+    * @param {import('#manager/eventbus').Eventbus}   opts.oldEventbus - The old eventbus to disassociate.
     *
-    * @param {import('#eventbus').Eventbus}   opts.newEventbus - The new eventbus to associate.
+    * @param {import('#manager/eventbus').Eventbus}   opts.newEventbus - The new eventbus to associate.
     *
     * @param {string}     opts.oldPrepend - The old event prepend.
     *

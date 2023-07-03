@@ -22,10 +22,10 @@ declare class PluginEntry {
      *
      * @param {object}      instance - The loaded plugin instance.
      *
-     * @param {import('#eventbus').EventbusProxy}  eventbusProxy - The EventbusProxy associated with the plugin wrapping
-     *        the plugin manager eventbus.
+     * @param {import('#manager/eventbus').EventbusProxy}  eventbusProxy - The EventbusProxy associated with the plugin
+     *        wrapping the plugin manager eventbus.
      */
-    constructor(name: string, data: PluginData, instance: object, eventbusProxy?: any);
+    constructor(name: string, data: PluginData, instance: object, eventbusProxy?: _manager_eventbus.EventbusProxy);
     /**
      * Get plugin data.
      *
@@ -63,15 +63,15 @@ declare class PluginEntry {
     /**
      * Set associated EventbusProxy.
      *
-     * @param {import('#eventbus').EventbusProxy} eventbusProxy - EventbusProxy instance to associate.
+     * @param {import('#manager/eventbus').EventbusProxy} eventbusProxy - EventbusProxy instance to associate.
      */
-    set eventbusProxy(arg: any);
+    set eventbusProxy(arg: _manager_eventbus.EventbusProxy);
     /**
      * Get associated EventbusProxy.
      *
-     * @returns {import('#eventbus').EventbusProxy} Associated EventbusProxy.
+     * @returns {import('#manager/eventbus').EventbusProxy} Associated EventbusProxy.
      */
-    get eventbusProxy(): any;
+    get eventbusProxy(): _manager_eventbus.EventbusProxy;
     /**
      * Set plugin instance.
      *
@@ -619,9 +619,9 @@ declare class PluginInvokeEvent {
     /**
      * Unique data available in each plugin invoked.
      *
-     * @type {import('#eventbus').EventbusProxy} - The active EventbusProxy for that particular plugin.
+     * @type {import('#manager/eventbus').EventbusProxy} - The active EventbusProxy for that particular plugin.
      */
-    eventbus: any;
+    eventbus: _manager_eventbus.EventbusProxy;
     /**
      * Unique data available in each plugin invoked.
      *
@@ -713,12 +713,12 @@ declare class PluginInvokeSupport implements MyInterface {
      *
      * @param {object}     opts - An options object.
      *
-     * @param {import('#eventbus').Eventbus}   opts.eventbus - The eventbus to disassociate.
+     * @param {import('#manager/eventbus').Eventbus}   opts.eventbus - The eventbus to disassociate.
      *
      * @param {string}     opts.eventPrepend - The current event prepend.
      */
     destroy({ eventbus, eventPrepend }: {
-        eventbus: any;
+        eventbus: _manager_eventbus.Eventbus;
         eventPrepend: string;
     }): Promise<void>;
     /**
@@ -857,17 +857,17 @@ declare class PluginInvokeSupport implements MyInterface {
      *
      * @param {object}     opts - An options object.
      *
-     * @param {import('#eventbus').Eventbus}   opts.oldEventbus - The old eventbus to disassociate.
+     * @param {import('#manager/eventbus').Eventbus}   opts.oldEventbus - The old eventbus to disassociate.
      *
-     * @param {import('#eventbus').Eventbus}   opts.newEventbus - The new eventbus to associate.
+     * @param {import('#manager/eventbus').Eventbus}   opts.newEventbus - The new eventbus to associate.
      *
      * @param {string}     opts.oldPrepend - The old event prepend.
      *
      * @param {string}     opts.newPrepend - The new event prepend.
      */
     setEventbus({ oldEventbus, newEventbus, oldPrepend, newPrepend }: {
-        oldEventbus: any;
-        newEventbus: any;
+        oldEventbus: _manager_eventbus.Eventbus;
+        newEventbus: _manager_eventbus.Eventbus;
         oldPrepend: string;
         newPrepend: string;
     }): void;
