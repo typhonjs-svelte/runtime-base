@@ -3566,6 +3566,7 @@ function s_GET_ORIGIN_TRANSLATION(transformOrigin, width, height, output)
 
    switch (transformOrigin)
    {
+      default: // By default, null / no transform is 'top left'.
       case 'top left':
          vector[0] = vector[1] = 0;
          Mat4.fromTranslation(output[0], vector);
@@ -3596,7 +3597,6 @@ function s_GET_ORIGIN_TRANSLATION(transformOrigin, width, height, output)
          Mat4.fromTranslation(output[1], vector);
          break;
 
-      case null: // By default null / no transform is center.
       case 'center':
          vector[0] = -width * 0.5;
          vector[1] = -height * 0.5;
@@ -3642,10 +3642,10 @@ function s_GET_ORIGIN_TRANSLATION(transformOrigin, width, height, output)
          break;
 
       // No valid transform origin parameter; set identity.
-      default:
-         Mat4.identity(output[0]);
-         Mat4.identity(output[1]);
-         break;
+      // default:
+      //    Mat4.identity(output[0]);
+      //    Mat4.identity(output[1]);
+      //    break;
    }
 
    return output;
@@ -4684,8 +4684,7 @@ function s_UPDATE_ELEMENT(el, updateData)
 
    if (changeSet.transformOrigin)
    {
-      // When set to 'center' we can simply set the transform to null which is center by default.
-      el.style.transformOrigin = data.transformOrigin === 'center' ? null : data.transformOrigin;
+      el.style.transformOrigin = data.transformOrigin;
    }
 
    // Update all transforms in order added to transforms object.
@@ -4728,8 +4727,7 @@ function s_UPDATE_ELEMENT_ORTHO(el, updateData)
 
    if (changeSet.transformOrigin)
    {
-      // When set to 'center' we can simply set the transform to null which is center by default.
-      el.style.transformOrigin = data.transformOrigin === 'center' ? null : data.transformOrigin;
+      el.style.transformOrigin = data.transformOrigin;
    }
 
    // Update all transforms in order added to transforms object.

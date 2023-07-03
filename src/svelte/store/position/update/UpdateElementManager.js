@@ -210,8 +210,7 @@ function s_UPDATE_ELEMENT(el, updateData)
 
    if (changeSet.transformOrigin)
    {
-      // When set to 'center' we can simply set the transform to null which is center by default.
-      el.style.transformOrigin = data.transformOrigin === 'center' ? null : data.transformOrigin;
+      el.style.transformOrigin = data.transformOrigin;
    }
 
    // Update all transforms in order added to transforms object.
@@ -254,8 +253,7 @@ function s_UPDATE_ELEMENT_ORTHO(el, updateData)
 
    if (changeSet.transformOrigin)
    {
-      // When set to 'center' we can simply set the transform to null which is center by default.
-      el.style.transformOrigin = data.transformOrigin === 'center' ? null : data.transformOrigin;
+      el.style.transformOrigin = data.transformOrigin;
    }
 
    // Update all transforms in order added to transforms object.
