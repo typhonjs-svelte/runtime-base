@@ -693,7 +693,6 @@ function s_GET_ORIGIN_TRANSLATION(transformOrigin, width, height, output)
 
    switch (transformOrigin)
    {
-      default: // By default, null / no transform is 'top left'.
       case 'top left':
          vector[0] = vector[1] = 0;
          Mat4.fromTranslation(output[0], vector);
@@ -724,6 +723,8 @@ function s_GET_ORIGIN_TRANSLATION(transformOrigin, width, height, output)
          Mat4.fromTranslation(output[1], vector);
          break;
 
+      // By default, null / no transform is 'center'.
+      case null:
       case 'center':
          vector[0] = -width * 0.5;
          vector[1] = -height * 0.5;
@@ -766,6 +767,12 @@ function s_GET_ORIGIN_TRANSLATION(transformOrigin, width, height, output)
          vector[0] = width;
          vector[1] = height;
          Mat4.fromTranslation(output[1], vector);
+         break;
+
+      // No valid transform origin parameter; set identity.
+      default:
+         Mat4.identity(output[0]);
+         Mat4.identity(output[1]);
          break;
    }
 
