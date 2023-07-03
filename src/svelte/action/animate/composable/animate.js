@@ -1,4 +1,5 @@
-import { Timing } from '#runtime/util';
+import { Timing }    from '#runtime/util';
+import { isObject }  from '#runtime/util/object';
 
 /**
  * Defines an `Element.animate` animation from provided keyframes and options.
@@ -31,7 +32,7 @@ export function animate({ duration = 600, keyframes = [], options, event = 'clic
        */
       function createAnimation()
       {
-         element.animate(keyframes, typeof options === 'object' && options !== null ? options : duration);
+         element.animate(keyframes, isObject(options) ? options : duration);
       }
 
       const eventFn = Number.isInteger(debounce) && debounce > 0 ? Timing.debounce(createAnimation, debounce) :

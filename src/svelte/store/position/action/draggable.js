@@ -342,7 +342,7 @@ class DraggableOptions
          get: () => { return this.#easeOptions; },
          set: (newEaseOptions) =>
          {
-            if (newEaseOptions === null || typeof newEaseOptions !== 'object')
+            if (!isObject(newEaseOptions))
             {
                throw new TypeError(`'easeOptions' is not an object.`);
             }

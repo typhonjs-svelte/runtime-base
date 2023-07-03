@@ -1,3 +1,5 @@
+import { isObject }  from '#runtime/util/object';
+
 /**
  * Provides an action to apply style properties provided as an object.
  *
@@ -12,7 +14,7 @@ export function applyStyles(node, properties)
    /** Sets properties on node. */
    function setProperties()
    {
-      if (typeof properties !== 'object') { return; }
+      if (!isObject(properties)) { return; }
 
       for (const prop of Object.keys(properties))
       {

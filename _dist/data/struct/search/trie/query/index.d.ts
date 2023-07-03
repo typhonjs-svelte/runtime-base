@@ -1,5 +1,5 @@
 import { ITrieSearchReducer, TrieSearch } from '@typhonjs-svelte/runtime-base/data/struct/search/trie';
-import { DynArrayReducer } from '@typhonjs-svelte/runtime-base/data/struct/store/reducer';
+import { DynArrayReducer } from '@typhonjs-svelte/runtime-base/svelte/store/reducer';
 import { Writable } from 'svelte/store';
 
 /**

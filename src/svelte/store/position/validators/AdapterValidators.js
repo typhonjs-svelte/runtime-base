@@ -100,7 +100,7 @@ export class AdapterValidators
       {
          const validatorType = typeof validator;
 
-         if (validatorType !== 'function' && validatorType !== 'object' || validator === null)
+         if ((validatorType !== 'function' && validatorType !== 'object') || validator === null)
          {
             throw new TypeError(`AdapterValidator error: 'validator' is not a function or object.`);
          }

@@ -1,6 +1,7 @@
 import { tick } from 'svelte';
 import { subscribeFirstRest } from '@typhonjs-svelte/runtime-base/util/store';
 import { Timing } from '@typhonjs-svelte/runtime-base/util';
+import { isObject } from '@typhonjs-svelte/runtime-base/util/object';
 
 /**
  * Defines an `Element.animate` animation from provided keyframes and options.
@@ -33,7 +34,7 @@ function animate({ duration = 600, keyframes = [], options, event = 'click', deb
        */
       function createAnimation()
       {
-         element.animate(keyframes, typeof options === 'object' && options !== null ? options : duration);
+         element.animate(keyframes, isObject(options) ? options : duration);
       }
 
       const eventFn = Number.isInteger(debounce) && debounce > 0 ? Timing.debounce(createAnimation, debounce) :

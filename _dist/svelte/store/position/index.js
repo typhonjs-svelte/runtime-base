@@ -1391,7 +1391,7 @@ class AnimationGroupAPI
                // Returned data from callback is null / undefined, so skip this position instance.
                if (actualFromData === null || actualFromData === void 0) { continue; }
 
-               if (typeof actualFromData !== 'object')
+               if (!isObject(actualFromData))
                {
                   throw new TypeError(`AnimationGroupAPI.from error: fromData callback function iteration(${
                    index}) failed to return an object.`);
@@ -1405,7 +1405,7 @@ class AnimationGroupAPI
                // Returned data from callback is null / undefined, so skip this position instance.
                if (actualOptions === null || actualOptions === void 0) { continue; }
 
-               if (typeof actualOptions !== 'object')
+               if (!isObject(actualOptions))
                {
                   throw new TypeError(`AnimationGroupAPI.from error: options callback function iteration(${
                    index}) failed to return an object.`);
@@ -1437,7 +1437,7 @@ class AnimationGroupAPI
          {
             actualFromData = fromData(callbackOptions);
 
-            if (typeof actualFromData !== 'object')
+            if (!isObject(actualFromData))
             {
                throw new TypeError(
                 `AnimationGroupAPI.from error: fromData callback function failed to return an object.`);
@@ -1448,7 +1448,7 @@ class AnimationGroupAPI
          {
             actualOptions = options(callbackOptions);
 
-            if (typeof actualOptions !== 'object')
+            if (!isObject(actualOptions))
             {
                throw new TypeError(
                 `AnimationGroupAPI.from error: options callback function failed to return an object.`);
@@ -1539,7 +1539,7 @@ class AnimationGroupAPI
                // Returned data from callback is null / undefined, so skip this position instance.
                if (actualFromData === null || actualFromData === void 0) { continue; }
 
-               if (typeof actualFromData !== 'object')
+               if (!isObject(actualFromData))
                {
                   throw new TypeError(`AnimationGroupAPI.fromTo error: fromData callback function iteration(${
                    index}) failed to return an object.`);
@@ -1553,7 +1553,7 @@ class AnimationGroupAPI
                // Returned data from callback is null / undefined, so skip this position instance.
                if (actualToData === null || actualToData === void 0) { continue; }
 
-               if (typeof actualToData !== 'object')
+               if (!isObject(actualToData))
                {
                   throw new TypeError(`AnimationGroupAPI.fromTo error: toData callback function iteration(${
                    index}) failed to return an object.`);
@@ -1567,7 +1567,7 @@ class AnimationGroupAPI
                // Returned data from callback is null / undefined, so skip this position instance.
                if (actualOptions === null || actualOptions === void 0) { continue; }
 
-               if (typeof actualOptions !== 'object')
+               if (!isObject(actualOptions))
                {
                   throw new TypeError(`AnimationGroupAPI.fromTo error: options callback function iteration(${
                    index}) failed to return an object.`);
@@ -1599,7 +1599,7 @@ class AnimationGroupAPI
          {
             actualFromData = fromData(callbackOptions);
 
-            if (typeof actualFromData !== 'object')
+            if (!isObject(actualFromData))
             {
                throw new TypeError(
                 `AnimationGroupAPI.fromTo error: fromData callback function failed to return an object.`);
@@ -1610,7 +1610,7 @@ class AnimationGroupAPI
          {
             actualToData = toData(callbackOptions);
 
-            if (typeof actualToData !== 'object')
+            if (!isObject(actualToData))
             {
                throw new TypeError(
                 `AnimationGroupAPI.fromTo error: toData callback function failed to return an object.`);
@@ -1621,7 +1621,7 @@ class AnimationGroupAPI
          {
             actualOptions = options(callbackOptions);
 
-            if (typeof actualOptions !== 'object')
+            if (!isObject(actualOptions))
             {
                throw new TypeError(
                 `AnimationGroupAPI.fromTo error: options callback function failed to return an object.`);
@@ -1703,7 +1703,7 @@ class AnimationGroupAPI
                // Returned data from callback is null / undefined, so skip this position instance.
                if (actualToData === null || actualToData === void 0) { continue; }
 
-               if (typeof actualToData !== 'object')
+               if (!isObject(actualToData))
                {
                   throw new TypeError(`AnimationGroupAPI.to error: toData callback function iteration(${
                    index}) failed to return an object.`);
@@ -1717,7 +1717,7 @@ class AnimationGroupAPI
                // Returned data from callback is null / undefined, so skip this position instance.
                if (actualOptions === null || actualOptions === void 0) { continue; }
 
-               if (typeof actualOptions !== 'object')
+               if (!isObject(actualOptions))
                {
                   throw new TypeError(`AnimationGroupAPI.to error: options callback function iteration(${
                    index}) failed to return an object.`);
@@ -1749,7 +1749,7 @@ class AnimationGroupAPI
          {
             actualToData = toData(callbackOptions);
 
-            if (typeof actualToData !== 'object')
+            if (!isObject(actualToData))
             {
                throw new TypeError(
                 `AnimationGroupAPI.to error: toData callback function failed to return an object.`);
@@ -1760,7 +1760,7 @@ class AnimationGroupAPI
          {
             actualOptions = options(callbackOptions);
 
-            if (typeof actualOptions !== 'object')
+            if (!isObject(actualOptions))
             {
                throw new TypeError(
                 `AnimationGroupAPI.to error: options callback function failed to return an object.`);
@@ -1835,7 +1835,7 @@ class AnimationGroupAPI
                // Returned data from callback is null / undefined, so skip this position instance.
                if (actualOptions === null || actualOptions === void 0) { continue; }
 
-               if (typeof actualOptions !== 'object')
+               if (!isObject(actualOptions))
                {
                   throw new TypeError(`AnimationGroupAPI.quickTo error: options callback function iteration(${
                    index}) failed to return an object.`);
@@ -1864,7 +1864,7 @@ class AnimationGroupAPI
          {
             actualOptions = options(callbackOptions);
 
-            if (typeof actualOptions !== 'object')
+            if (!isObject(actualOptions))
             {
                throw new TypeError(
                 `AnimationGroupAPI.quickTo error: options callback function failed to return an object.`);
@@ -1916,7 +1916,7 @@ class AnimationGroupAPI
                    */
                   const toDataIterable = isIterable(toData);
 
-                  if (!Number.isFinite(toData) && !toDataIterable && typeof toData !== 'object')
+                  if (!Number.isFinite(toData) && !toDataIterable && !isObject(toData))
                   {
                      throw new TypeError(`AnimationGroupAPI.quickTo error: toData callback function iteration(${
                       index}) failed to return a finite number, iterable list, or object.`);
@@ -1950,7 +1950,7 @@ class AnimationGroupAPI
 
                const toDataIterable = isIterable(toData);
 
-               if (!Number.isFinite(toData) && !toDataIterable && typeof toData !== 'object')
+               if (!Number.isFinite(toData) && !toDataIterable && !isObject(toData))
                {
                   throw new TypeError(`AnimationGroupAPI.quickTo error: toData callback function iteration(${
                    index}) failed to return a finite number, iterable list, or object.`);
@@ -2032,7 +2032,7 @@ class AnimationGroupAPI
                   // Returned data from callback is null / undefined, so skip this position instance.
                   if (actualOptions === null || actualOptions === void 0) { continue; }
 
-                  if (typeof actualOptions !== 'object')
+                  if (!isObject(actualOptions))
                   {
                      throw new TypeError(
                       `AnimationGroupAPI.quickTo.options error: options callback function iteration(${
@@ -2059,7 +2059,7 @@ class AnimationGroupAPI
 
                actualOptions = options(callbackOptions);
 
-               if (typeof actualOptions !== 'object')
+               if (!isObject(actualOptions))
                {
                   throw new TypeError(
                    `AnimationGroupAPI.quickTo error: options callback function failed to return an object.`);
@@ -2501,7 +2501,7 @@ class PositionStateAPI
       const defaultData = this.#dataSaved.get('#defaultData');
 
       // Quit early if there is no saved default data.
-      if (typeof defaultData !== 'object') { return false; }
+      if (!isObject(defaultData)) { return false; }
 
       // Cancel all animations for TJSPosition if there are currently any scheduled.
       if (this.#position.animate.isScheduled)
@@ -3751,7 +3751,7 @@ class AdapterValidators
       {
          const validatorType = typeof validator;
 
-         if (validatorType !== 'function' && validatorType !== 'object' || validator === null)
+         if ((validatorType !== 'function' && validatorType !== 'object') || validator === null)
          {
             throw new TypeError(`AdapterValidator error: 'validator' is not a function or object.`);
          }
@@ -5606,7 +5606,7 @@ class TJSPosition
     */
    set(position = {})
    {
-      if (typeof position !== 'object') { throw new TypeError(`Position - set error: 'position' is not an object.`); }
+      if (!isObject(position)) { throw new TypeError(`Position - set error: 'position' is not an object.`); }
 
       const parent = this.#parent;
 
@@ -5806,10 +5806,7 @@ class TJSPosition
          const defaultData = this.#state.getDefault();
 
          // Set default data after first set operation that has a target element.
-         if (typeof defaultData !== 'object')
-         {
-            this.#state.save({ name: '#defaultData', ...Object.assign({}, data) });
-         }
+         if (!isObject(defaultData)) { this.#state.save({ name: '#defaultData', ...Object.assign({}, data) }); }
 
          // If `immediateElementUpdate` is true in position data passed to `set` then update the element immediately.
          // This is for rAF based library integrations like GSAP.
@@ -6485,7 +6482,7 @@ class DraggableOptions
          get: () => { return this.#easeOptions; },
          set: (newEaseOptions) =>
          {
-            if (newEaseOptions === null || typeof newEaseOptions !== 'object')
+            if (!isObject(newEaseOptions))
             {
                throw new TypeError(`'easeOptions' is not an object.`);
             }

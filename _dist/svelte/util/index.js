@@ -143,7 +143,7 @@ async function outroAndDestroy(instance)
  */
 function parseTJSSvelteConfig(config, thisArg = void 0)
 {
-   if (typeof config !== 'object')
+   if (!isObject(config))
    {
       throw new TypeError(`parseSvelteConfig - 'config' is not an object:\n${JSON.stringify(config)}.`);
    }
@@ -183,7 +183,7 @@ function parseTJSSvelteConfig(config, thisArg = void 0)
    }
 
    if (config.context !== void 0 && typeof config.context !== 'function' && !(config.context instanceof Map) &&
-    typeof config.context !== 'object')
+    !isObject(config.context))
    {
       throw new TypeError(
        `parseSvelteConfig - 'context' is not a Map, function or object for config:\n${JSON.stringify(config)}.`);
@@ -199,7 +199,7 @@ function parseTJSSvelteConfig(config, thisArg = void 0)
    }
 
    // `options` stores `injectApp`, `injectEventbus`, and `selectorElement`.
-   if (config.options !== void 0 && typeof config.options !== 'object')
+   if (config.options !== void 0 && !isObject(config.options))
    {
       throw new TypeError(
        `parseSvelteConfig - 'options' is not an object for config:\n${JSON.stringify(config)}.`);

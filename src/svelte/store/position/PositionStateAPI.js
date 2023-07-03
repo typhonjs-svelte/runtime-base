@@ -1,7 +1,9 @@
 import { linear }       from '#svelte/easing';
 
 import { lerp }         from '#runtime/math/interpolate';
-import { isIterable }   from '#runtime/util/object';
+import {
+   isIterable,
+   isObject }           from '#runtime/util/object';
 
 export class PositionStateAPI
 {
@@ -87,7 +89,7 @@ export class PositionStateAPI
       const defaultData = this.#dataSaved.get('#defaultData');
 
       // Quit early if there is no saved default data.
-      if (typeof defaultData !== 'object') { return false; }
+      if (!isObject(defaultData)) { return false; }
 
       // Cancel all animations for TJSPosition if there are currently any scheduled.
       if (this.#position.animate.isScheduled)

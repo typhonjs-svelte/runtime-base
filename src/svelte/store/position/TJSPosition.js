@@ -860,7 +860,7 @@ export class TJSPosition
     */
    set(position = {})
    {
-      if (typeof position !== 'object') { throw new TypeError(`Position - set error: 'position' is not an object.`); }
+      if (!isObject(position)) { throw new TypeError(`Position - set error: 'position' is not an object.`); }
 
       const parent = this.#parent;
 
@@ -1066,10 +1066,7 @@ export class TJSPosition
          const defaultData = this.#state.getDefault();
 
          // Set default data after first set operation that has a target element.
-         if (typeof defaultData !== 'object')
-         {
-            this.#state.save({ name: '#defaultData', ...Object.assign({}, data) });
-         }
+         if (!isObject(defaultData)) { this.#state.save({ name: '#defaultData', ...Object.assign({}, data) }); }
 
          // If `immediateElementUpdate` is true in position data passed to `set` then update the element immediately.
          // This is for rAF based library integrations like GSAP.
