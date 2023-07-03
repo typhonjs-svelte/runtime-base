@@ -444,6 +444,22 @@ const rollupConfigs = [
          sourcemap
       }
    },
+   {
+      input: {
+         input: 'src/svelte/util/index.js',
+         plugins: [
+            importsExternal(),
+            resolve(resolveOptions),
+            generateDTS.plugin(dtsPluginOptions)
+         ]
+      },
+      output: {
+         file: '_dist/svelte/util/index.js',
+         format: 'es',
+         generatedCode: { constBindings: true },
+         sourcemap
+      }
+   },
 
    {
       input: {

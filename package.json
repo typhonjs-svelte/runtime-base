@@ -118,6 +118,10 @@
       "types": "./_dist/svelte/transition/index.d.ts",
       "import": "./_dist/svelte/transition/index.js"
     },
+    "./svelte/util": {
+      "types": "./_dist/svelte/util/index.d.ts",
+      "import": "./_dist/svelte/util/index.js"
+    },
     "./util": {
       "types": "./_dist/util/index.d.ts",
       "import": "./_dist/util/index.js"
