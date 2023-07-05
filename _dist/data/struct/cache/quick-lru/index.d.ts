@@ -1,4 +1,4 @@
-export interface Options<KeyType, ValueType> {
+interface Options<KeyType, ValueType> {
 	/**
 	The maximum number of milliseconds an item should remain in the cache.
 
@@ -24,7 +24,7 @@ export interface Options<KeyType, ValueType> {
 	onEviction?: (key: KeyType, value: ValueType) => void;
 }
 
-export default class QuickLRU<KeyType, ValueType> extends Map implements Iterable<[KeyType, ValueType]> {
+declare class QuickLRU<KeyType, ValueType> extends Map implements Iterable<[KeyType, ValueType]> {
 	/**
 	The stored item count.
 	*/
@@ -121,3 +121,5 @@ export default class QuickLRU<KeyType, ValueType> extends Map implements Iterabl
 	*/
 	entriesDescending(): IterableIterator<[KeyType, ValueType]>;
 }
+
+export { Options, QuickLRU };

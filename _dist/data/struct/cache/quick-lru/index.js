@@ -280,5 +280,5 @@ class QuickLRU extends Map {
 	}
 }
 
-export { QuickLRU as default };
+export { QuickLRU };
 //# sourceMappingURL=index.js.map
