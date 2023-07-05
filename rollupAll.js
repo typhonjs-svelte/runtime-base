@@ -59,9 +59,9 @@ const rollupConfigs = [
             commonjs(),
             importsExternal(),
             resolve(resolveOptions),
-            generateDTS.plugin(dtsPluginOptions)
          ]
       },
+      copyDTS: './src/data/format/json5/index.d.ts',
       output: {
          file: '_dist/data/format/json5/index.js',
          format: 'es',

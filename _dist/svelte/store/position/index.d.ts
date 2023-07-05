@@ -992,7 +992,7 @@ declare class TJSPosition {
     /**
      * Returns the associated {@link import('./').TJSPositionParent} instance.
      *
-     * @returns {import('./').TJSPositionParent} The TJSPositionParent instance.
+     * @returns {import('./index').TJSPositionParent} The TJSPositionParent instance.
      */
     get parent(): any;
     /**
