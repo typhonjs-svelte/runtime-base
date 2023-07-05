@@ -2,7 +2,7 @@ import { isIterable } from '#runtime/util/object';
 
 /**
  * Provides a readable store to track keys actively pressed. KeyStore is designed to be used with the
- * {@link import('./').keyforward} action.
+ * {@link keyforward} action.
  */
 export class KeyStore
 {

@@ -4,7 +4,7 @@ import { isObject, klona } from '@typhonjs-svelte/runtime-base/util/object';
 import { isWritableStore, subscribeIgnoreFirst } from '@typhonjs-svelte/runtime-base/util/store';
 
 /**
- * Provides a base implementation for store entries in {@link import('./').ArrayObjectStore}.
+ * Provides a base implementation for store entries in {@link ArrayObjectStore}.
  *
  * In particular providing the required getting / accessor for the 'id' property.
  */

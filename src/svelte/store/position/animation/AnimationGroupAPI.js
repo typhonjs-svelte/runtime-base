@@ -7,7 +7,7 @@ import { AnimationAPI }          from './AnimationAPI.js';
 import { AnimationGroupControl } from './AnimationGroupControl.js';
 
 /**
- * Provides a public API for grouping multiple {@link import('..').TJSPosition} animations together with the
+ * Provides a public API for grouping multiple {@link TJSPosition} animations together with the
  * AnimationManager.
  *
  * Note: To remove cyclic dependencies as this class provides the TJSPosition static / group Animation API `instanceof`

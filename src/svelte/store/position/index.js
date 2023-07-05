@@ -78,7 +78,7 @@ export * from './transform/index.js';
  */
 
 /**
- * @typedef {object} StorePosition Provides individual writable stores for {@link import('./').TJSPosition}.
+ * @typedef {object} StorePosition Provides individual writable stores for {@link TJSPosition}.
  *
  * @property {import('svelte/store').Readable<{width: number, height: number}>} dimension Readable store for dimension
  *           data.
@@ -227,11 +227,11 @@ export * from './transform/index.js';
  *
  * @property {number|undefined} minWidth -
  *
- * @property {object} rest The rest of any data submitted to {@link import('./').TJSPosition.set}
+ * @property {object} rest The rest of any data submitted to {@link TJSPosition.set}
  */
 
 /**
- * @callback ValidatorFn TJSPosition validator function that takes a {@link import('./').TJSPositionData} instance
+ * @callback ValidatorFn TJSPosition validator function that takes a {@link TJSPositionData} instance
  *           potentially modifying it or returning null if invalid.
  *
  * @param {ValidationData} valData Validation data.
@@ -245,7 +245,7 @@ export * from './transform/index.js';
  *
  * @property {*}           [id=undefined] An ID associated with this validator. Can be used to remove the validator.
  *
- * @property {ValidatorFn} validator TJSPosition validator function that takes a {@link import('../').TJSPositionData}
+ * @property {ValidatorFn} validator TJSPosition validator function that takes a {@link TJSPositionData}
  *           instance potentially modifying it or returning null if invalid.
  *
  * @property {number}      [weight=1] A number between 0 and 1 inclusive to position this validator against others.

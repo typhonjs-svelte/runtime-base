@@ -464,7 +464,7 @@ export class TJSPosition
    }
 
    /**
-    * Returns the associated {@link import('./').TJSPositionParent} instance.
+    * Returns the associated {@link TJSPositionParent} instance.
     *
     * @returns {import('./').TJSPositionParent} The TJSPositionParent instance.
     */
@@ -473,7 +473,7 @@ export class TJSPosition
    /**
     * Returns the state API.
     *
-    * @returns {PositionStateAPI} TJSPosition state API.
+    * @returns {import('./PositionStateAPI').PositionStateAPI} TJSPosition state API.
     */
    get state() { return this.#state; }
 
@@ -517,9 +517,9 @@ export class TJSPosition
    }
 
    /**
-    * Sets the associated {@link import('./').TJSPositionParent} instance. Resets the style cache and default data.
+    * Sets the associated {@link TJSPositionParent} instance. Resets the style cache and default data.
     *
-    * @param {import('./').TJSPositionParent | void} parent - A TJSPositionParent instance.
+    * @param {import('./').TJSPositionParent | undefined} parent - A TJSPositionParent instance.
     */
    set parent(parent)
    {

@@ -3,7 +3,7 @@ import { Hashing }   from '#runtime/util';
 import { isObject }  from '#runtime/util/object';
 
 /**
- * Provides a base implementation for store entries in {@link import('./').ArrayObjectStore}.
+ * Provides a base implementation for store entries in {@link ArrayObjectStore}.
  *
  * In particular providing the required getting / accessor for the 'id' property.
  */

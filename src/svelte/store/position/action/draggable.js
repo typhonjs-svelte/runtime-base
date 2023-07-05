@@ -6,7 +6,7 @@ import {
 
 /**
  * Provides an action to enable pointer dragging of an HTMLElement and invoke `position.set` on a given
- * {@link import('..').TJSPosition} instance provided. When the attached boolean store state changes the draggable
+ * {@link TJSPosition} instance provided. When the attached boolean store state changes the draggable
  * action is enabled or disabled.
  *
  * @param {HTMLElement}       node - The node associated with the action.

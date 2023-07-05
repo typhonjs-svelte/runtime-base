@@ -3,7 +3,7 @@ import * as svelte_store from 'svelte/store';
 import { DynArrayReducer } from '@typhonjs-svelte/runtime-base/svelte/store/reducer';
 
 /**
- * Provides a base implementation for store entries in {@link import('./').ArrayObjectStore}.
+ * Provides a base implementation for store entries in {@link ArrayObjectStore}.
  *
  * In particular providing the required getting / accessor for the 'id' property.
  */

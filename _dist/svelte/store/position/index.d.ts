@@ -106,7 +106,7 @@ declare class TJSPositionData {
 }
 
 /**
- * Provides the output data for {@link import('./').TJSTransforms.getData}.
+ * Provides the output data for {@link TJSTransforms.getData}.
  */
 declare class TJSTransformData {
     /**
@@ -226,7 +226,7 @@ declare class TJSTransforms {
     getCSSOrtho(data?: object): string;
     /**
      * Collects all data including a bounding rect, transform matrix, and points array of the given
-     * {@link import('../').TJSPositionData} instance with the applied local transform data.
+     * {@link TJSPositionData} instance with the applied local transform data.
      *
      * @param {import('../').TJSPositionData} position - The position data to process.
      *
@@ -296,7 +296,7 @@ declare class AnimationControl {
      */
     static get voidControl(): AnimationControl;
     /**
-     * @param {object|null} [animationData] - Animation data from {@link import('./AnimationAPI').AnimationAPI}.
+     * @param {object|null} [animationData] - Animation data from {@link AnimationAPI}.
      *
      * @param {boolean}     [willFinish] - Promise that tracks animation finished state.
      */
@@ -496,7 +496,7 @@ declare class PositionStateAPI {
     /**
      * Restores a saved positional state returning the data. Several optional parameters are available
      * to control whether the restore action occurs silently (no store / inline styles updates), animates
- -   * to the stored data, or simply sets the stored data. Restoring via {@link import('./animation').AnimationAPI.to}
+ -   * to the stored data, or simply sets the stored data. Restoring via {@link AnimationAPI.to}
      * allows specification of the duration, easing, and interpolate functions along with configuring a Promise to be
      * returned if awaiting the end of the animation.
      *
@@ -567,7 +567,7 @@ declare class PositionStateAPI {
 
 /**
  * Provides the storage and sequencing of managed position validators. Each validator added may be a bespoke function or
- * a {@link import('..').ValidatorData} object containing an `id`, `validator`, and `weight` attributes; `validator` is
+ * a {@link ValidatorData} object containing an `id`, `validator`, and `weight` attributes; `validator` is
  * the only required attribute.
  *
  * The `id` attribute can be anything that creates a unique ID for the validator; recommended strings or numbers. This
@@ -631,7 +631,7 @@ declare class AdapterValidators {
          */
         id?: any;
         /**
-         * TJSPosition validator function that takes a {@link import ('../').TJSPositionData}
+         * TJSPosition validator function that takes a {@link TJSPositionData }
          * instance potentially modifying it or returning null if invalid.
          */
         validator: ValidatorFn;
@@ -781,7 +781,7 @@ declare class Centered {
 }
 
 /**
- * Provides a public API for grouping multiple {@link import('..').TJSPosition} animations together with the
+ * Provides a public API for grouping multiple {@link TJSPosition} animations together with the
  * AnimationManager.
  *
  * Note: To remove cyclic dependencies as this class provides the TJSPosition static / group Animation API `instanceof`
@@ -984,21 +984,21 @@ declare class TJSPosition {
      */
     get elementUpdated(): Promise<number>;
     /**
-     * Sets the associated {@link import('./').TJSPositionParent} instance. Resets the style cache and default data.
+     * Sets the associated {@link TJSPositionParent} instance. Resets the style cache and default data.
      *
-     * @param {import('./').TJSPositionParent | void} parent - A TJSPositionParent instance.
+     * @param {import('./').TJSPositionParent | undefined} parent - A TJSPositionParent instance.
      */
     set parent(arg: any);
     /**
-     * Returns the associated {@link import('./').TJSPositionParent} instance.
+     * Returns the associated {@link TJSPositionParent} instance.
      *
-     * @returns {import('./index').TJSPositionParent} The TJSPositionParent instance.
+     * @returns {import('./').TJSPositionParent} The TJSPositionParent instance.
      */
     get parent(): any;
     /**
      * Returns the state API.
      *
-     * @returns {PositionStateAPI} TJSPosition state API.
+     * @returns {import('./PositionStateAPI').PositionStateAPI} TJSPosition state API.
      */
     get state(): PositionStateAPI;
     /**
@@ -1225,7 +1225,7 @@ declare function applyPosition(node: HTMLElement, position: TJSPosition): svelte
 
 /**
  * Provides an action to enable pointer dragging of an HTMLElement and invoke `position.set` on a given
- * {@link import('..').TJSPosition} instance provided. When the attached boolean store state changes the draggable
+ * {@link TJSPosition} instance provided. When the attached boolean store state changes the draggable
  * action is enabled or disabled.
  *
  * @param {HTMLElement}       node - The node associated with the action.
@@ -1400,7 +1400,7 @@ type ResizeObserverData = {
     offsetWidth: number | undefined;
 };
 /**
- * Provides individual writable stores for {@link import ('./').TJSPosition}.
+ * Provides individual writable stores for {@link TJSPosition }.
  */
 type StorePosition = {
     /**
@@ -1652,12 +1652,12 @@ type ValidationData = {
      */
     minWidth: number | undefined;
     /**
-     * The rest of any data submitted to {@link import ('./').TJSPosition.set}
+     * The rest of any data submitted to {@link TJSPosition.set }
      */
     rest: object;
 };
 /**
- * TJSPosition validator function that takes a {@link import ('./').TJSPositionData} instance
+ * TJSPosition validator function that takes a {@link TJSPositionData } instance
  *           potentially modifying it or returning null if invalid.
  */
 type ValidatorFn = (valData: ValidationData) => TJSPositionData | null;
@@ -1667,7 +1667,7 @@ type ValidatorData = {
      */
     id?: any;
     /**
-     * TJSPosition validator function that takes a {@link import ('../').TJSPositionData}
+     * TJSPosition validator function that takes a {@link TJSPositionData }
      * instance potentially modifying it or returning null if invalid.
      */
     validator: ValidatorFn;

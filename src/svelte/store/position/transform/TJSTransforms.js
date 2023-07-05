@@ -279,7 +279,7 @@ export class TJSTransforms
 
    /**
     * Collects all data including a bounding rect, transform matrix, and points array of the given
-    * {@link import('../').TJSPositionData} instance with the applied local transform data.
+    * {@link TJSPositionData} instance with the applied local transform data.
     *
     * @param {import('../').TJSPositionData} position - The position data to process.
     *
@@ -675,7 +675,7 @@ export class TJSTransforms
  * translation.
  *
  * This method is used internally, but may be useful if you need the origin translation matrices to transform
- * bespoke points based on any `transformOrigin` set in {@link import('../').TJSPositionData}.
+ * bespoke points based on any `transformOrigin` set in {@link TJSPositionData}.
  *
  * @param {string}   transformOrigin - The transform origin attribute from TJSPositionData.
  *
