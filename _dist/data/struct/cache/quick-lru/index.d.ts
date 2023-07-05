@@ -37,7 +37,7 @@ declare class QuickLRU<KeyType, ValueType> extends Map implements Iterable<[KeyT
 
 	@example
 	```
-	import QuickLRU from 'quick-lru';
+	import { QuickLRU } from '#runtime/data/struct/cache/quick-lru';
 
 	const lru = new QuickLRU({maxSize: 1000});
 

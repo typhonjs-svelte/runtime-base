@@ -123,7 +123,11 @@ const rollupConfigs = [
             resolve(resolveOptions),
             generateDTS.plugin({
                ...dtsPluginOptions,
-               checkDefaultPath: true
+               checkDefaultPath: true,
+               // Updates example code block.
+               dtsReplace: {
+                  "import QuickLRU from 'quick-lru'": "import { QuickLRU } from '#runtime/data/struct/cache/quick-lru'"
+               }
             })
          ]
       },
