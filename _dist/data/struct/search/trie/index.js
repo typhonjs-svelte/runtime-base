@@ -1,6 +1,6 @@
 import { HashArray, getValueFromKey } from '@typhonjs-svelte/runtime-base/data/struct/hash/array';
 export { getValueFromKey } from '@typhonjs-svelte/runtime-base/data/struct/hash/array';
-import QuickLRU from '@typhonjs-svelte/runtime-base/data/struct/cache/quick-lru';
+import { QuickLRU } from '@typhonjs-svelte/runtime-base/data/struct/cache/quick-lru';
 import { klona, isIterable, isObject } from '@typhonjs-svelte/runtime-base/util/object';
 
 /**
