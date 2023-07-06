@@ -34,14 +34,20 @@ import { isWritableStore } from '#runtime/util/store';
  *       <section animate:flipWithEvents />
  *    {/each}
  *
- * @param {(node: Element, data: { from: DOMRect, to: DOMRect }, params?: *) => import('svelte/animate').AnimationConfig} fn -
- *        A Svelte animation function.
+ * @param {(
+ *    node: Element,
+ *    data: { from: DOMRect, to: DOMRect },
+ *    ...rest: any
+ * ) => import('svelte/animate').AnimationConfig} fn - A Svelte animation function.
  *
  * @param {import('svelte/store').Writable<boolean>} [store] - An optional boolean writable store that is set to true
  *        when animation is active.
  *
- * @returns {(node: Element, data: { from: DOMRect, to: DOMRect }, params?: *) => import('svelte/animate').AnimationConfig}
- *          Wrapped animation function.
+ * @returns {(
+ *    node: Element,
+ *    data: { from: DOMRect, to: DOMRect },
+ *    ...rest: any
+ * ) => import('svelte/animate').AnimationConfig} Wrapped animation function.
  */
 export function animateEvents(fn, store = void 0)
 {
@@ -52,9 +58,9 @@ export function animateEvents(fn, store = void 0)
    let startFired = false;
    let endFired = false;
 
-   return (node, animations, params = {}) =>
+   return (node, animations, ...rest) =>
    {
-      const animationConfig = fn(node, animations, params);
+      const animationConfig = fn(node, animations, ...rest);
 
       // Store any existing tick function.
       const existingTick = animationConfig.tick;

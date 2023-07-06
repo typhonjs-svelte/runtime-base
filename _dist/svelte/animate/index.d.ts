@@ -35,21 +35,27 @@ import * as svelte_animate from 'svelte/animate';
  *       <section animate:flipWithEvents />
  *    {/each}
  *
- * @param {(node: Element, data: { from: DOMRect, to: DOMRect }, params?: *) => import('svelte/animate').AnimationConfig} fn -
- *        A Svelte animation function.
+ * @param {(
+ *    node: Element,
+ *    data: { from: DOMRect, to: DOMRect },
+ *    ...rest: any
+ * ) => import('svelte/animate').AnimationConfig} fn - A Svelte animation function.
  *
  * @param {import('svelte/store').Writable<boolean>} [store] - An optional boolean writable store that is set to true
  *        when animation is active.
  *
- * @returns {(node: Element, data: { from: DOMRect, to: DOMRect }, params?: *) => import('svelte/animate').AnimationConfig}
- *          Wrapped animation function.
+ * @returns {(
+ *    node: Element,
+ *    data: { from: DOMRect, to: DOMRect },
+ *    ...rest: any
+ * ) => import('svelte/animate').AnimationConfig} Wrapped animation function.
  */
 declare function animateEvents(fn: (node: Element, data: {
     from: DOMRect;
     to: DOMRect;
-}, params?: any) => svelte_animate.AnimationConfig, store?: svelte_store.Writable<boolean>): (node: Element, data: {
+}, ...rest: any) => svelte_animate.AnimationConfig, store?: svelte_store.Writable<boolean>): (node: Element, data: {
     from: DOMRect;
     to: DOMRect;
-}, params?: any) => svelte_animate.AnimationConfig;
+}, ...rest: any) => svelte_animate.AnimationConfig;
 
 export { animateEvents };
