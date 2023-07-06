@@ -11,20 +11,20 @@ import { fade, slide } from 'svelte/transition';
  *
  * @param {HTMLElement} node - The transition node.
  *
- * @param {object}      options - Optional parameters.
+ * @param {object}      [options] - Optional parameters.
  *
  * @param {number}      [options.delay] - Delay in ms before start of transition.
  *
  * @param {number}      [options.duration] - Total transition length in ms.
  *
- * @param {Function}    [options.easing=linear] - The easing function to apply to the rotate transition.
+ * @param {import('svelte/transition').EasingFunction}   [options.easing=linear] - The easing function to apply to the
+ *        rotate transition.
  *
  * @param {number}      [options.end=0] - End rotation in degrees.
  *
  * @param {number}      [options.initial=0] - Initial rotation in degrees.
  *
- * @returns {{duration: number, css: (function(*): string), delay: number, easing: (x: number) => number}}
- *  Transition object.
+ * @returns {import('svelte/transition').TransitionConfig} Transition config.
  */
 function rotate(node, options)
 {
@@ -54,24 +54,26 @@ function rotate(node, options)
  *
  * @param {HTMLElement} node - The transition node.
  *
- * @param {object}      options - Optional parameters.
+ * @param {object}      [options] - Optional parameters.
  *
  * @param {number}      [options.delay] - Delay in ms before start of transition.
  *
  * @param {number}      [options.duration] - Total transition length in ms.
  *
- * @param {Function}    [options.easing=linear] - The easing function to apply to both slide & fade transitions.
+ * @param {import('svelte/transition').EasingFunction}   [options.easing=linear] - The easing function to apply to both
+ *        slide & fade transitions.
  *
- * @param {Function}    [options.easingFade=linear] - The easing function to apply to the fade transition.
+ * @param {import('svelte/transition').EasingFunction}   [options.easingFade=linear] - The easing function to apply to
+ *        the fade transition.
  *
- * @param {Function}    [options.easingRotate=linear] - The easing function to apply to the rotate transition.
+ * @param {import('svelte/transition').EasingFunction}   [options.easingRotate=linear] - The easing function to apply
+ *        to the rotate transition.
  *
  * @param {number}      [options.end=0] - End rotation in degrees.
  *
  * @param {number}      [options.initial=0] - Initial rotation in degrees.
  *
- * @returns {{duration: number, css: (function(*): string), delay: number, easing: (x: number) => number}}
- *  Transition object.
+ * @returns {import('svelte/transition').TransitionConfig} Transition config.
  */
 function rotateFade(node, options)
 {
@@ -103,20 +105,22 @@ function rotateFade(node, options)
  *
  * @param {HTMLElement} node - The transition node.
  *
- * @param {object}      options - Optional parameters.
+ * @param {object}      [options] - Optional parameters.
  *
  * @param {number}      [options.delay] - Delay in ms before start of transition.
  *
  * @param {number}      [options.duration] - Total transition length in ms.
  *
- * @param {Function}    [options.easing=linear] - The easing function to apply to both slide & fade transitions.
+ * @param {import('svelte/transition').EasingFunction}   [options.easing=linear] - The easing function to apply to both
+ *        slide & fade transitions.
  *
- * @param {Function}    [options.easingFade=linear] - The easing function to apply to the fade transition.
+ * @param {import('svelte/transition').EasingFunction}   [options.easingFade=linear] - The easing function to apply to
+ *        the fade transition.
  *
- * @param {Function}    [options.easingSlide=linear] - The easing function to apply to the slide transition.
+ * @param {import('svelte/transition').EasingFunction}   [options.easingSlide=linear] - The easing function to apply to
+ *        the slide transition.
  *
- * @returns {{duration: number, css: (function(*): string), delay: number, easing: (x: number) => number}}
- *  Transition object.
+ * @returns {import('svelte/transition').TransitionConfig} Transition config.
  */
 function slideFade(node, options)
 {
@@ -143,15 +147,18 @@ function slideFade(node, options)
  * Converts a Svelte transition to an animation. Both transitions & animations use the same CSS / styles solution and
  * resulting data so wrap the transition function with the signature of an animation.
  *
- * @param {(node: Element, params?: object) => import('svelte/transition').TransitionConfig} fn -
+ * @param {(node: Element, ...rest: any[]) => import('svelte/transition').TransitionConfig} fn -
  *        A Svelte transition function.
  *
- * @returns {(node: Element, data: { from: DOMRect, to: DOMRect }, params?: object) => import('svelte/transition').TransitionConfig} -
- *          Transition function converted to an animation.
+ * @returns {(
+ *    node: Element,
+ *    data: { from: DOMRect, to: DOMRect },
+ *    ...rest: any
+ * ) => import('svelte/animation').AnimationConfig} - Transition function converted to an animation.
  */
 function toAnimation(fn)
 {
-   return (node, animations, params = {}) => fn(node, params);
+   return (node, animations, ...rest) => fn(node, ...rest);
 }
 
 /**

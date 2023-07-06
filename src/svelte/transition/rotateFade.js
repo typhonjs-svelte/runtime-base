@@ -12,24 +12,26 @@ import { lerp }   from '#runtime/math/interpolate';
  *
  * @param {HTMLElement} node - The transition node.
  *
- * @param {object}      options - Optional parameters.
+ * @param {object}      [options] - Optional parameters.
  *
  * @param {number}      [options.delay] - Delay in ms before start of transition.
  *
  * @param {number}      [options.duration] - Total transition length in ms.
  *
- * @param {Function}    [options.easing=linear] - The easing function to apply to both slide & fade transitions.
+ * @param {import('svelte/transition').EasingFunction}   [options.easing=linear] - The easing function to apply to both
+ *        slide & fade transitions.
  *
- * @param {Function}    [options.easingFade=linear] - The easing function to apply to the fade transition.
+ * @param {import('svelte/transition').EasingFunction}   [options.easingFade=linear] - The easing function to apply to
+ *        the fade transition.
  *
- * @param {Function}    [options.easingRotate=linear] - The easing function to apply to the rotate transition.
+ * @param {import('svelte/transition').EasingFunction}   [options.easingRotate=linear] - The easing function to apply
+ *        to the rotate transition.
  *
  * @param {number}      [options.end=0] - End rotation in degrees.
  *
  * @param {number}      [options.initial=0] - Initial rotation in degrees.
  *
- * @returns {{duration: number, css: (function(*): string), delay: number, easing: (x: number) => number}}
- *  Transition object.
+ * @returns {import('svelte/transition').TransitionConfig} Transition config.
  */
 export function rotateFade(node, options)
 {
