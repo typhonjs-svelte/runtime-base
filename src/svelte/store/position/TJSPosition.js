@@ -96,7 +96,7 @@ export class TJSPosition
    #positionChangeSet = new PositionChangeSet();
 
    /**
-    * @type {import('./').StorePosition}
+    * @type {import('./').TJSPositionStores}
     */
    #stores;
 
@@ -199,8 +199,9 @@ export class TJSPosition
    }
 
    /**
-    * @param {import('./').TJSPositionParent | import('./').TJSPositionOptionsAll}   [parent] - A potential parent
-    *        element or object w/ `elementTarget` getter. May also be the TJSPositionOptions object w/ 1 argument.
+    * @param {import('./').TJSPositionParent | import('./').TJSPositionOptionsAll}   [parent] - A
+    *        potential parent element or object w/ `elementTarget` getter. May also be the TJSPositionOptions object
+    *        w/ 1 argument.
     *
     * @param {import('./').TJSPositionOptionsAll}   [options] - Default values.
     */
@@ -480,7 +481,7 @@ export class TJSPosition
    /**
     * Returns the derived writable stores for individual data variables.
     *
-    * @returns {import('./').StorePosition} Derived / writable stores.
+    * @returns {import('./').TJSPositionStores} Derived / writable stores.
     */
    get stores() { return this.#stores; }
 
@@ -519,7 +520,7 @@ export class TJSPosition
    /**
     * Sets the associated {@link TJSPositionParent} instance. Resets the style cache and default data.
     *
-    * @param {import('./').TJSPositionParent | undefined} parent - A TJSPositionParent instance.
+    * @param {import('./').TJSPositionParent} parent - A TJSPositionParent instance.
     */
    set parent(parent)
    {
@@ -601,7 +602,7 @@ export class TJSPosition
    get top() { return this.#data.top; }
 
    /**
-    * @returns {string} transformOrigin
+    * @returns {import('./').TJSTransformOrigin} transformOrigin
     */
    get transformOrigin() { return this.#data.transformOrigin; }
 
@@ -727,7 +728,7 @@ export class TJSPosition
    }
 
    /**
-    * @param {string} transformOrigin -
+    * @param {import('./').TJSTransformOrigin} transformOrigin -
     */
    set transformOrigin(transformOrigin)
    {

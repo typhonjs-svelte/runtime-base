@@ -2,7 +2,6 @@ export * from './TJSPosition.js';
 export * from './TJSPositionData.js';
 
 export * from './action/index.js';
-export * from './transform/index.js';
 
 // From: position/animation/AnimationAPI.js --------------------------------------------------------------------------
 
@@ -53,9 +52,9 @@ export * from './transform/index.js';
  */
 
 /**
- * @typedef {HTMLElement | object} TJSPositionParent
- *
- * @property {Function} [elementTarget] Potentially returns any parent object.
+ * @typedef {HTMLElement | { elementTarget?: HTMLElement }} TJSPositionParent Defines the TJSPosition parent
+ * element. Provide either an HTMLElement directly or an object with an `elementTarget` property / accessor defining
+ * the parent HTMLElement.
  */
 
 /**
@@ -78,7 +77,7 @@ export * from './transform/index.js';
  */
 
 /**
- * @typedef {object} StorePosition Provides individual writable stores for {@link TJSPosition}.
+ * @typedef {object} TJSPositionStores Provides individual writable stores for {@link TJSPosition}.
  *
  * @property {import('svelte/store').Readable<{width: number, height: number}>} dimension Readable store for dimension
  *           data.

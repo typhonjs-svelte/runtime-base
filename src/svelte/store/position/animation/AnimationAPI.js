@@ -38,9 +38,9 @@ export class AnimationAPI
    #cleanup;
 
    /**
-    * @param {import('../').TJSPosition}       position -
+    * @param {import('../index.js').TJSPosition}       position -
     *
-    * @param {import('../').TJSPositionData}   data -
+    * @param {import('../index.js').TJSPositionData}   data -
     */
    constructor(position, data)
    {
@@ -77,7 +77,7 @@ export class AnimationAPI
     *
     * @param {Function}    interpolate -
     *
-    * @returns {AnimationControl} The associated animation control.
+    * @returns {import('#runtime/util/animate').TJSBasicAnimation} The associated animation control.
     */
    #addAnimation(initial, destination, duration, el, delay, ease, interpolate)
    {
@@ -171,7 +171,8 @@ export class AnimationAPI
    /**
     * Returns all currently scheduled AnimationControl instances for this TJSPosition instance.
     *
-    * @returns {AnimationControl[]} All currently scheduled animation controls for this TJSPosition instance.
+    * @returns {import('#runtime/util/animate').TJSBasicAnimation[]} All currently scheduled animation controls for
+    *          this TJSPosition instance.
     */
    getScheduled()
    {
@@ -181,7 +182,7 @@ export class AnimationAPI
    /**
     * Provides a tween from given position data to the current position.
     *
-    * @param {import('../').TJSPositionDataExtended} fromData - The starting position.
+    * @param {import('../index.js').TJSPositionDataExtended} fromData - The starting position.
     *
     * @param {object}         [opts] - Optional parameters.
     *
@@ -193,7 +194,8 @@ export class AnimationAPI
     *
     * @param {Function}       [opts.interpolate=lerp] - Interpolation function.
     *
-    * @returns {AnimationControl}  A control object that can cancel animation and provides a `finished` Promise.
+    * @returns {import('#runtime/util/animate').TJSBasicAnimation}  A control object that can cancel animation and
+    *          provides a `finished` Promise.
     */
    from(fromData, { delay = 0, duration = 1, ease = cubicOut, interpolate = lerp } = {})
    {
@@ -258,9 +260,9 @@ export class AnimationAPI
    /**
     * Provides a tween from given position data to the current position.
     *
-    * @param {import('../').TJSPositionDataExtended} fromData - The starting position.
+    * @param {import('../index.js').TJSPositionDataExtended} fromData - The starting position.
     *
-    * @param {import('../').TJSPositionDataExtended} toData - The ending position.
+    * @param {import('../index.js').TJSPositionDataExtended} toData - The ending position.
     *
     * @param {object}         [opts] - Optional parameters.
     *
@@ -272,7 +274,8 @@ export class AnimationAPI
     *
     * @param {Function}       [opts.interpolate=lerp] - Interpolation function.
     *
-    * @returns {AnimationControl}  A control object that can cancel animation and provides a `finished` Promise.
+    * @returns {import('#runtime/util/animate').TJSBasicAnimation}  A control object that can cancel animation and
+    *          provides a `finished` Promise.
     */
    fromTo(fromData, toData, { delay = 0, duration = 1, ease = cubicOut, interpolate = lerp } = {})
    {
@@ -349,7 +352,7 @@ export class AnimationAPI
    /**
     * Provides a tween to given position data from the current position.
     *
-    * @param {import('../').TJSPositionDataExtended} toData - The destination position.
+    * @param {import('../index.js').TJSPositionDataExtended} toData - The destination position.
     *
     * @param {object}         [opts] - Optional parameters.
     *
@@ -361,7 +364,8 @@ export class AnimationAPI
     *
     * @param {Function}       [opts.interpolate=lerp] - Interpolation function.
     *
-    * @returns {AnimationControl}  A control object that can cancel animation and provides a `finished` Promise.
+    * @returns {import('#runtime/util/animate').TJSBasicAnimation}  A control object that can cancel animation and
+    *          provides a `finished` Promise.
     */
    to(toData, { delay = 0, duration = 1, ease = cubicOut, interpolate = lerp } = {})
    {
@@ -435,7 +439,7 @@ export class AnimationAPI
     *
     * @param {Function}          [opts.interpolate=lerp] - Interpolation function.
     *
-    * @returns {import('../').quickToCallback} quick-to tween function.
+    * @returns {import('../index.js').quickToCallback} quick-to tween function.
     */
    quickTo(keys, { duration = 1, ease = cubicOut, interpolate = lerp } = {})
    {

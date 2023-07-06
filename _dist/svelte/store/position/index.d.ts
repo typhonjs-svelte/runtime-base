@@ -285,55 +285,11 @@ declare class TJSTransforms {
     #private;
 }
 
-/**
- * Provides a TJSBasicAnimation implementation for TJSPosition animation.
- */
-declare class AnimationControl {
-    /**
-     * Provides a static void / undefined AnimationControl that is automatically resolved.
-     *
-     * @returns {AnimationControl} Void AnimationControl
-     */
-    static get voidControl(): AnimationControl;
-    /**
-     * @param {object|null} [animationData] - Animation data from {@link AnimationAPI}.
-     *
-     * @param {boolean}     [willFinish] - Promise that tracks animation finished state.
-     */
-    constructor(animationData?: object | null, willFinish?: boolean);
-    /**
-     * Get a promise that resolves when animation is finished.
-     *
-     * @returns {Promise<void>}
-     */
-    get finished(): Promise<void>;
-    /**
-     * Returns whether this animation is currently active / animating.
-     *
-     * Note: a delayed animation may not be started / active yet. Use {@link AnimationControl.isFinished} to determine
-     * if an animation is actually finished.
-     *
-     * @returns {boolean} Animation active state.
-     */
-    get isActive(): boolean;
-    /**
-     * Returns whether this animation is completely finished.
-     *
-     * @returns {boolean} Animation finished state.
-     */
-    get isFinished(): boolean;
-    /**
-     * Cancels the animation.
-     */
-    cancel(): void;
-    #private;
-}
-
 declare class AnimationAPI {
     /**
-     * @param {import('../').TJSPosition}       position -
+     * @param {import('../index.js').TJSPosition}       position -
      *
-     * @param {import('../').TJSPositionData}   data -
+     * @param {import('../index.js').TJSPositionData}   data -
      */
     constructor(position: TJSPosition, data: TJSPositionData);
     /**
@@ -349,13 +305,14 @@ declare class AnimationAPI {
     /**
      * Returns all currently scheduled AnimationControl instances for this TJSPosition instance.
      *
-     * @returns {AnimationControl[]} All currently scheduled animation controls for this TJSPosition instance.
+     * @returns {import('#runtime/util/animate').TJSBasicAnimation[]} All currently scheduled animation controls for
+     *          this TJSPosition instance.
      */
-    getScheduled(): AnimationControl[];
+    getScheduled(): _runtime_util_animate.TJSBasicAnimation[];
     /**
      * Provides a tween from given position data to the current position.
      *
-     * @param {import('../').TJSPositionDataExtended} fromData - The starting position.
+     * @param {import('../index.js').TJSPositionDataExtended} fromData - The starting position.
      *
      * @param {object}         [opts] - Optional parameters.
      *
@@ -367,20 +324,21 @@ declare class AnimationAPI {
      *
      * @param {Function}       [opts.interpolate=lerp] - Interpolation function.
      *
-     * @returns {AnimationControl}  A control object that can cancel animation and provides a `finished` Promise.
+     * @returns {import('#runtime/util/animate').TJSBasicAnimation}  A control object that can cancel animation and
+     *          provides a `finished` Promise.
      */
     from(fromData: TJSPositionDataExtended, { delay, duration, ease, interpolate }?: {
         delay?: number;
         duration?: number;
         ease?: Function;
         interpolate?: Function;
-    }): AnimationControl;
+    }): _runtime_util_animate.TJSBasicAnimation;
     /**
      * Provides a tween from given position data to the current position.
      *
-     * @param {import('../').TJSPositionDataExtended} fromData - The starting position.
+     * @param {import('../index.js').TJSPositionDataExtended} fromData - The starting position.
      *
-     * @param {import('../').TJSPositionDataExtended} toData - The ending position.
+     * @param {import('../index.js').TJSPositionDataExtended} toData - The ending position.
      *
      * @param {object}         [opts] - Optional parameters.
      *
@@ -392,18 +350,19 @@ declare class AnimationAPI {
      *
      * @param {Function}       [opts.interpolate=lerp] - Interpolation function.
      *
-     * @returns {AnimationControl}  A control object that can cancel animation and provides a `finished` Promise.
+     * @returns {import('#runtime/util/animate').TJSBasicAnimation}  A control object that can cancel animation and
+     *          provides a `finished` Promise.
      */
     fromTo(fromData: TJSPositionDataExtended, toData: TJSPositionDataExtended, { delay, duration, ease, interpolate }?: {
         delay?: number;
         duration?: number;
         ease?: Function;
         interpolate?: Function;
-    }): AnimationControl;
+    }): _runtime_util_animate.TJSBasicAnimation;
     /**
      * Provides a tween to given position data from the current position.
      *
-     * @param {import('../').TJSPositionDataExtended} toData - The destination position.
+     * @param {import('../index.js').TJSPositionDataExtended} toData - The destination position.
      *
      * @param {object}         [opts] - Optional parameters.
      *
@@ -415,14 +374,15 @@ declare class AnimationAPI {
      *
      * @param {Function}       [opts.interpolate=lerp] - Interpolation function.
      *
-     * @returns {AnimationControl}  A control object that can cancel animation and provides a `finished` Promise.
+     * @returns {import('#runtime/util/animate').TJSBasicAnimation}  A control object that can cancel animation and
+     *          provides a `finished` Promise.
      */
     to(toData: TJSPositionDataExtended, { delay, duration, ease, interpolate }?: {
         delay?: number;
         duration?: number;
         ease?: Function;
         interpolate?: Function;
-    }): AnimationControl;
+    }): _runtime_util_animate.TJSBasicAnimation;
     /**
      * Returns a function that provides an optimized way to constantly update a to-tween.
      *
@@ -436,7 +396,7 @@ declare class AnimationAPI {
      *
      * @param {Function}          [opts.interpolate=lerp] - Interpolation function.
      *
-     * @returns {import('../').quickToCallback} quick-to tween function.
+     * @returns {import('../index.js').quickToCallback} quick-to tween function.
      */
     quickTo(keys: Iterable<string>, { duration, ease, interpolate }?: {
         duration?: number;
@@ -711,6 +671,9 @@ declare class TransformBounds {
     #private;
 }
 
+/**
+ * Provides a {@link TJSPositionInitialHelper} implementation to center to element being positioned.
+ */
 declare class Centered {
     /**
      * @param {object}      [options] - Initial options.
@@ -777,6 +740,50 @@ declare class Centered {
      * @returns {number} Calculated top constraint.
      */
     getTop(height: number): number;
+    #private;
+}
+
+/**
+ * Provides a TJSBasicAnimation implementation for TJSPosition animation.
+ */
+declare class AnimationControl {
+    /**
+     * Provides a static void / undefined AnimationControl that is automatically resolved.
+     *
+     * @returns {AnimationControl} Void AnimationControl
+     */
+    static get voidControl(): AnimationControl;
+    /**
+     * @param {object|null} [animationData] - Animation data from {@link AnimationAPI}.
+     *
+     * @param {boolean}     [willFinish] - Promise that tracks animation finished state.
+     */
+    constructor(animationData?: object | null, willFinish?: boolean);
+    /**
+     * Get a promise that resolves when animation is finished.
+     *
+     * @returns {Promise<void>}
+     */
+    get finished(): Promise<void>;
+    /**
+     * Returns whether this animation is currently active / animating.
+     *
+     * Note: a delayed animation may not be started / active yet. Use {@link AnimationControl.isFinished} to determine
+     * if an animation is actually finished.
+     *
+     * @returns {boolean} Animation active state.
+     */
+    get isActive(): boolean;
+    /**
+     * Returns whether this animation is completely finished.
+     *
+     * @returns {boolean} Animation finished state.
+     */
+    get isFinished(): boolean;
+    /**
+     * Cancels the animation.
+     */
+    cancel(): void;
     #private;
 }
 
@@ -938,8 +945,9 @@ declare class TJSPosition {
      */
     static duplicate(position: TJSPosition, options: TJSPositionOptions): TJSPosition;
     /**
-     * @param {import('./').TJSPositionParent | import('./').TJSPositionOptionsAll}   [parent] - A potential parent
-     *        element or object w/ `elementTarget` getter. May also be the TJSPositionOptions object w/ 1 argument.
+     * @param {import('./').TJSPositionParent | import('./').TJSPositionOptionsAll}   [parent] - A
+     *        potential parent element or object w/ `elementTarget` getter. May also be the TJSPositionOptions object
+     *        w/ 1 argument.
      *
      * @param {import('./').TJSPositionOptionsAll}   [options] - Default values.
      */
@@ -986,15 +994,15 @@ declare class TJSPosition {
     /**
      * Sets the associated {@link TJSPositionParent} instance. Resets the style cache and default data.
      *
-     * @param {import('./').TJSPositionParent | undefined} parent - A TJSPositionParent instance.
+     * @param {import('./').TJSPositionParent} parent - A TJSPositionParent instance.
      */
-    set parent(arg: any);
+    set parent(arg: TJSPositionParent);
     /**
      * Returns the associated {@link TJSPositionParent} instance.
      *
      * @returns {import('./').TJSPositionParent} The TJSPositionParent instance.
      */
-    get parent(): any;
+    get parent(): TJSPositionParent;
     /**
      * Returns the state API.
      *
@@ -1004,9 +1012,9 @@ declare class TJSPosition {
     /**
      * Returns the derived writable stores for individual data variables.
      *
-     * @returns {import('./').StorePosition} Derived / writable stores.
+     * @returns {import('./').TJSPositionStores} Derived / writable stores.
      */
-    get stores(): StorePosition;
+    get stores(): TJSPositionStores;
     /**
      * Returns the transform data for the readable store.
      *
@@ -1116,13 +1124,13 @@ declare class TJSPosition {
      */
     get top(): number;
     /**
-     * @param {string} transformOrigin -
+     * @param {import('./').TJSTransformOrigin} transformOrigin -
      */
-    set transformOrigin(arg: string);
+    set transformOrigin(arg: TJSTransformOrigin);
     /**
-     * @returns {string} transformOrigin
+     * @returns {import('./').TJSTransformOrigin} transformOrigin
      */
-    get transformOrigin(): string;
+    get transformOrigin(): TJSTransformOrigin;
     /**
      * @param {number|string|null} translateX -
      */
@@ -1373,7 +1381,14 @@ type TJSPositionOptions = {
     transformSubscribed: boolean;
 };
 type TJSPositionOptionsAll = TJSPositionOptions & TJSPositionData;
-type TJSPositionParent = HTMLElement | object;
+/**
+ * Defines the TJSPosition parent
+ * element. Provide either an HTMLElement directly or an object with an `elementTarget` property / accessor defining
+ * the parent HTMLElement.
+ */
+type TJSPositionParent = HTMLElement | {
+    elementTarget?: HTMLElement;
+};
 type TJSPositionable = {
     /**
      * An instance of TJSPosition that manages application positional
@@ -1402,7 +1417,7 @@ type ResizeObserverData = {
 /**
  * Provides individual writable stores for {@link TJSPosition }.
  */
-type StorePosition = {
+type TJSPositionStores = {
     /**
      * Readable store for dimension
      * data.
@@ -1686,4 +1701,4 @@ type ValidatorData = {
  */
 type TJSPositionValidatorOptions = ValidatorFn | ValidatorData | Iterable<ValidatorFn | ValidatorData>;
 
-export { ResizeObserverData, StorePosition, TJSPosition, TJSPositionData, TJSPositionDataExtended, TJSPositionGetOptions, TJSPositionInitialHelper, TJSPositionOptions, TJSPositionOptionsAll, TJSPositionParent, TJSPositionValidatorOptions, TJSPositionable, TJSTransformData, TJSTransformOrigin, TJSTransforms, ValidationData, ValidatorData, ValidatorFn, applyPosition, draggable, quickToCallback };
+export { AdapterValidators, AnimationAPI, AnimationGroupAPI, BasicBounds, Centered, PositionStateAPI, ResizeObserverData, TJSPosition, TJSPositionData, TJSPositionDataExtended, TJSPositionGetOptions, TJSPositionInitialHelper, TJSPositionOptions, TJSPositionOptionsAll, TJSPositionParent, TJSPositionStores, TJSPositionValidatorOptions, TJSPositionable, TJSTransformData, TJSTransformOrigin, TJSTransforms, TransformBounds, ValidationData, ValidatorData, ValidatorFn, applyPosition, draggable, quickToCallback };

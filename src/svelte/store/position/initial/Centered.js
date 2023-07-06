@@ -1,3 +1,6 @@
+/**
+ * Provides a {@link TJSPositionInitialHelper} implementation to center to element being positioned.
+ */
 export class Centered
 {
    /**
