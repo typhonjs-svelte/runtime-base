@@ -159,7 +159,7 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25",
     "@rollup/plugin-node-resolve": "^15",
-    "@typhonjs-build-test/esm-d-ts": "^0.0.27",
+    "@typhonjs-build-test/esm-d-ts": "^0.0.28",
     "@typhonjs-build-test/rollup-plugin-pkg-imports": "^0.0.2",
     "@typhonjs-config/eslint-config": "^0.6.3",
     "@typhonjs-plugin/manager": "^0.0.17",
@@ -184,7 +184,7 @@
     "svelte": ">=4.x.x"
   },
   "engines": {
-    "node": ">=14.18"
+    "node": ">=16"
   },
   "homepage": "https://github.com/typhonjs-svelte/runtime-base#readme",
   "keywords": [
