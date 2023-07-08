@@ -79,27 +79,29 @@ function isTJSSvelteConfig(config, raiseException = false)
 
 /* eslint-disable */  // jsdoc/valid-types doesn't like the Google closure constructor function. TODO: verify in future eslint-plugin-jsdoc version
 /**
- * @typedef {object} TJSSvelteConfig
+ * @typedef {object} TJSSvelteConfig Defines the TRL / client side configuration object to load a Svelte component.
  *
  * @property {({
  *    new(options: import('svelte').ComponentConstructorOptions):
  *     import('svelte').SvelteComponent | import('svelte').SvelteComponentTyped
- * })} class -
+ * })} class The Svelte component class / constructor function.
  *
- * @property {Element|Document|ShadowRoot}   [target=document.body] -
+ * @property {HTMLElement | ShadowRoot}   [target=document.body] A {@link HTMLElement} or {@link ShadowRoot} to
+ * render to. By default, `document.body` is used as the target if not otherwise defined.
  *
- * @property {Element} [anchor] -
+ * @property {HTMLElement} [anchor] A child of `target` to render the component immediately before.
  *
- * @property {() => Record<string, *> | Record<string, *>} [props] -
+ * @property {() => Record<string, *> | Record<string, *>} [props] Props to pass to the component.
  *
- * @property {() => (Record<string, *> | Map<string, *>) | Map<string, *> | Record<string, *>} [context] -
+ * @property {() => (Record<string, *> | Map<string, *>) | Map<string, *> | Record<string, *>} [context] The root-level
+ * context to pass to the component.
  *
- * @property {boolean}  [hydrate] -
+ * @property {boolean}  [hydrate] See description in main Svelte docs
+ * {@link https://svelte.dev/docs/client-side-component-api#creating-a-component | Creating a component.}
  *
- * @property {boolean} [intro] -
- *
- * @property {boolean}  [$$inline] -
- */
+ * @property {boolean} [intro] If true, will play transitions on initial render, rather than waiting for subsequent
+ * state changes.
+*/
 /* eslint-enable */
 
 /**
