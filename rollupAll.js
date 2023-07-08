@@ -457,7 +457,15 @@ const rollupConfigs = [
          plugins: [
             importsExternal(),
             resolve(resolveOptions),
-            generateDTS.plugin(dtsPluginOptions)
+            generateDTS.plugin({
+               ...dtsPluginOptions,
+               dtsReplace: {
+                  ...dtsPluginOptions.dtsReplace,
+                  // For now manually replace "type" to "export type"; see issue:
+                  // https://github.com/PixievoltNo1/svelte-writable-derived/issues/24
+                  '^type': 'export type'
+               }
+            })
          ]
       },
       output: {

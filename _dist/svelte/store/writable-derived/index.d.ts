@@ -3,17 +3,17 @@ import { Writable, Updater, Readable } from 'svelte/store';
 /** The minimal requirements of the
  * [writable store contract](https://svelte.dev/docs#component-format-script-4-prefix-stores-with-$-to-access-their-values-store-contract).
  */
-type MinimalWritable<T> = Pick<Writable<T>, "set" | "subscribe">;
+export type MinimalWritable<T> = Pick<Writable<T>, "set" | "subscribe">;
 
 /** Stores that may be used as origins. */
-type Stores = MinimalWritable<any> | [Readable<any>, ...Array<Readable<any>>] | Array<Readable<any>>;
+export type Stores = MinimalWritable<any> | [Readable<any>, ...Array<Readable<any>>] | Array<Readable<any>>;
 
 /** Values retrieved from origin stores. */
-type StoresValues<T> = T extends Readable<infer U> ? U :
+export type StoresValues<T> = T extends Readable<infer U> ? U :
     { [K in keyof T]: T[K] extends Readable<infer U> ? U : never };
 
 /** Values sent to origin stores. */
-type SetValues<T> = T extends MinimalWritable<infer U> ? U :
+export type SetValues<T> = T extends MinimalWritable<infer U> ? U :
     { [K in keyof T]?: T[K] extends MinimalWritable<infer U> ? U : never };
 
 /**
