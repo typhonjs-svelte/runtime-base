@@ -1,7 +1,7 @@
 {
   "name": "@typhonjs-svelte/runtime-base",
-  "version": "0.0.0",
-  "description": "Provides the base to the TyphonJS Runtime Library. This is the root of it all.",
+  "version": "0.1.0",
+  "description": "Provides the base to the TyphonJS Runtime Library including re-exported packages & all common packages.",
   "type": "module",
   "author": "Michael Leahy <support@typhonjs.io> (https://github.com/typhonrt)",
   "contributors": [
@@ -159,7 +159,7 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25",
     "@rollup/plugin-node-resolve": "^15",
-    "@typhonjs-build-test/esm-d-ts": "^0.0.29",
+    "@typhonjs-build-test/esm-d-ts": "^0.1.0",
     "@typhonjs-build-test/rollup-plugin-pkg-imports": "^0.0.2",
     "@typhonjs-config/eslint-config": "^0.6.3",
     "@typhonjs-plugin/manager": "^0.0.17",
