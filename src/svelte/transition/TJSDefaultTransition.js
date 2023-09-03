@@ -8,8 +8,15 @@ class TJSDefaultTransition
 {
    static #options = {};
 
+   static #default = () => void 0;
+
    /**
-    * @returns {{}}
+    * @returns {() => undefined} Default empty transition.
+    */
+   static get default() { return this.#default; }
+
+   /**
+    * @returns {{}} Default empty options.
     */
    static get options() { return this.#options; }
 }
