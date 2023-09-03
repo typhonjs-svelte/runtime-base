@@ -1,6 +1,6 @@
 import { writable, get } from 'svelte/store';
 import { Strings } from '@typhonjs-svelte/runtime-base/util';
-import { isIterable } from '@typhonjs-svelte/runtime-base/util/object';
+import { isIterable, safeAccess } from '@typhonjs-svelte/runtime-base/util/object';
 import { isWritableStore } from '@typhonjs-svelte/runtime-base/util/store';
 
 class DynReducerUtils {
@@ -1955,10 +1955,13 @@ class DynMapReducer {
  *
  * This filter function can be used w/ a dynamic reducer and bound as a store to input elements.
  *
- * @param {string|Iterable<string>}   properties - Property key to compare.
+ * @param {string|Iterable<string>}   accessors - Property key / accessors to lookup key to compare. To access deeper
+ *        entries into the object format the accessor string with `.` between entries to walk.
  *
  * @param {object}   [opts] - Optional parameters.
  *
+ * @param {boolean}  [opts.accessWarn=false] - When true warnings will be posted if accessor not retrieved.
+  *
  * @param {boolean}  [opts.caseSensitive=false] - When true regex test is case-sensitive.
  *
  * @param {import('svelte/store').Writable<string>}  [opts.store] - Use the provided store to instead of creating
@@ -1966,7 +1969,7 @@ class DynMapReducer {
  *
  * @returns {((data: object) => boolean) & import('svelte/store').Writable<string>} The query string filter.
  */
-function regexObjectQuery(properties, { caseSensitive = false, store } = {})
+function regexObjectQuery(accessors, { accessWarn = false, caseSensitive = false, store } = {})
 {
    let keyword = '';
    let regex;
@@ -2006,18 +2009,41 @@ function regexObjectQuery(properties, { caseSensitive = false, store } = {})
    {
       if (keyword === '' || !regex) { return true; }
 
-      if (isIterable(properties))
+      if (isIterable(accessors))
       {
-         for (const property of properties)
+         for (const accessor of accessors)
          {
-            if (regex.test(Strings.normalize(data?.[property]))) { return true; }
+            const value = safeAccess(data, accessor);
+            if (typeof value !== 'string')
+            {
+               if (accessWarn)
+               {
+                  console.warn(`regexObjectQuery warning: could not access string data from '${accessor}'.`);
+               }
+
+               continue;
+            }
+
+            if (regex.test(Strings.normalize(value))) { return true; }
          }
 
          return false;
       }
       else
       {
-         return regex.test(Strings.normalize(data?.[properties]));
+         const value = safeAccess(data, accessors);
+
+         if (typeof value !== 'string')
+         {
+            if (accessWarn)
+            {
+               console.warn(`regexObjectQuery warning: could not access string data from '${accessors}'.`);
+            }
+
+            return false;
+         }
+
+         return regex.test(Strings.normalize(value));
       }
    }
 
@@ -2064,11 +2090,13 @@ class DynReducerHelper
 {
    /**
     * Returns the following filter functions:
-    * - regexObjectQuery(property, options); suitable for object reducers matching one or more properties against
-    *   the store value as a regex. Optional parameters to set case sensitivity and passing in an existing store.
+    * - regexObjectQuery(accessors, options); suitable for object reducers matching one or more property keys /
+    *   accessors against the store value as a regex. To access deeper entries into the object format the accessor
+    *   string with `.` between entries to walk. Optional parameters include logging access warnings, case sensitivity,
+    *   and passing in an existing store.
     *
     * @returns {{
-    *    regexObjectQuery: (properties: string|Iterable<string>, options?: {caseSensitive?: boolean, store?: import('svelte/store').Writable<string>}) => (((data: {}) => boolean) & import('svelte/store').Writable<string>)
+    *    regexObjectQuery: (accessors: string|Iterable<string>, options?: {accessWarn?: boolean, caseSensitive?: boolean, store?: import('svelte/store').Writable<string>}) => (((data: {}) => boolean) & import('svelte/store').Writable<string>)
     * }} All available filters.
     */
    static get filters() { return filters; }

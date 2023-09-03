@@ -175,7 +175,6 @@ type CrudArrayObjectStoreParamProps = {
     extraData?: object;
 };
 /**
- *
  * A function that accepts an object w/ 'action', 'moduleId', 'key' properties and optional 'id' / UUIDv4 string and
  * 'data' property.
  */

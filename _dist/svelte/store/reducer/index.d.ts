@@ -962,15 +962,18 @@ declare class DynArrayReducerDerived<T> implements IDynDerivedReducer<T[], numbe
 declare class DynReducerHelper {
     /**
      * Returns the following filter functions:
-     * - regexObjectQuery(property, options); suitable for object reducers matching one or more properties against
-     *   the store value as a regex. Optional parameters to set case sensitivity and passing in an existing store.
+     * - regexObjectQuery(accessors, options); suitable for object reducers matching one or more property keys /
+     *   accessors against the store value as a regex. To access deeper entries into the object format the accessor
+     *   string with `.` between entries to walk. Optional parameters include logging access warnings, case sensitivity,
+     *   and passing in an existing store.
      *
      * @returns {{
-     *    regexObjectQuery: (properties: string|Iterable<string>, options?: {caseSensitive?: boolean, store?: import('svelte/store').Writable<string>}) => (((data: {}) => boolean) & import('svelte/store').Writable<string>)
+     *    regexObjectQuery: (accessors: string|Iterable<string>, options?: {accessWarn?: boolean, caseSensitive?: boolean, store?: import('svelte/store').Writable<string>}) => (((data: {}) => boolean) & import('svelte/store').Writable<string>)
      * }} All available filters.
      */
     static get filters(): {
-        regexObjectQuery: (properties: string | Iterable<string>, options?: {
+        regexObjectQuery: (accessors: string | Iterable<string>, options?: {
+            accessWarn?: boolean;
             caseSensitive?: boolean;
             store?: svelte_store.Writable<string>;
         }) => ((data: {}) => boolean) & svelte_store.Writable<string>;

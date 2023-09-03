@@ -129,9 +129,18 @@ declare function toAnimation(fn: (node: Element, ...rest: any[]) => svelte_trans
  */
 declare class TJSDefaultTransition {
     /**
-     * @returns {{}}
+     * @returns {() => undefined} Default empty transition.
+     */
+    static get default(): () => undefined;
+    /**
+     * @returns {{}} Default empty options.
      */
     static get options(): {};
 }
 
-export { TJSDefaultTransition, rotate, rotateFade, slideFade, toAnimation };
+/**
+ * Defines the shape of a transition function.
+ */
+type TransitionFunction = (node: Element, namedParameters?: object) => svelte_transition.TransitionConfig;
+
+export { TJSDefaultTransition, TransitionFunction, rotate, rotateFade, slideFade, toAnimation };

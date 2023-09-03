@@ -591,8 +591,7 @@ declare class AdapterValidators {
          */
         id?: any;
         /**
-         * TJSPosition validator function that takes a {@link TJSPositionData }
-         * instance potentially modifying it or returning null if invalid.
+         * TJSPosition validator function that takes a {@link TJSPositionData }instance potentially modifying it or returning null if invalid.
          */
         validator: ValidatorFn;
         /**
@@ -1682,8 +1681,7 @@ type ValidatorData = {
      */
     id?: any;
     /**
-     * TJSPosition validator function that takes a {@link TJSPositionData }
-     * instance potentially modifying it or returning null if invalid.
+     * TJSPosition validator function that takes a {@link TJSPositionData }instance potentially modifying it or returning null if invalid.
      */
     validator: ValidatorFn;
     /**
