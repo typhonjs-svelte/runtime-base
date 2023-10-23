@@ -9,15 +9,22 @@
  *
  * @param {Element} node -
  *
- * @returns {StackingContext} The closest parent stacking context
+ * @param {Window} [activeWindow=globalThis] The target active window as applicable.
+ *
+ * @returns {StackingContext | undefined} The closest parent stacking context or undefined if none.
+ *
  */
-export function getStackingContext(node)
+export function getStackingContext(node, activeWindow = globalThis)
 {
+   const activeDocument = activeWindow.document;
+
    // the root element (HTML).
    if (!node || node.nodeName === 'HTML')
    {
-      return { node: document.documentElement, reason: 'root' };
+      return { node: activeDocument.documentElement, reason: 'root' };
    }
+
+
 
    // handle shadow root elements.
    if (node.nodeName === '#document-fragment')
@@ -25,7 +32,7 @@ export function getStackingContext(node)
       return getStackingContext(node.host);
    }
 
-   const computedStyle = globalThis.getComputedStyle(node);
+   const computedStyle = activeWindow.getComputedStyle(node);
 
    // position: fixed or sticky.
    if (computedStyle.position === 'fixed' || computedStyle.position === 'sticky')
@@ -117,7 +124,7 @@ export function getStackingContext(node)
    // an item with a z-index value other than "auto".
    if (computedStyle.zIndex !== 'auto')
    {
-      const parentStyle = globalThis.getComputedStyle(node.parentNode);
+      const parentStyle = activeWindow.getComputedStyle(node.parentNode);
       // with a flex|inline-flex parent.
       if (parentStyle.display === 'flex' || parentStyle.display === 'inline-flex')
       {
