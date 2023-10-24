@@ -8,6 +8,15 @@ import {
 export class A11yHelper
 {
    /**
+    * Provides the event constructor names to duck type against. This is necessary for when HTML nodes / elements are
+    * moved to another browser window as `instanceof` checks will fail.
+    *
+    * @type {Set<string>}
+    */
+   static #eventTypesAll = new Set(['KeyboardEvent', 'MouseEvent', 'PointerEvent']);
+   static #eventTypesPointer = new Set(['MouseEvent', 'PointerEvent']);
+
+   /**
     * Apply focus to the HTMLElement targets in a given A11yFocusSource data object. An iterable list `options.focusEl`
     * can contain HTMLElements or selector strings. If multiple focus targets are provided in a list then the first
     * valid target found will be focused. If focus target is a string then a lookup via `document.querySelector` is
@@ -275,9 +284,11 @@ export class A11yHelper
          };
       }
 
-      if (!(event instanceof KeyboardEvent) && !(event instanceof MouseEvent))
+      // Perform duck typing on event constructor name.
+      if (!A11yHelper.#eventTypesAll.has(event?.constructor?.name))
       {
-         throw new TypeError(`A11yHelper.getFocusSource error: 'event' is not a KeyboardEvent or MouseEvent.`);
+         throw new TypeError(
+          `A11yHelper.getFocusSource error: 'event' is not a KeyboardEvent, MouseEvent, or PointerEvent.`);
       }
 
       if (x !== void 0 && !Number.isInteger(x))
@@ -300,7 +311,8 @@ export class A11yHelper
 
       const result = { debug };
 
-      if (event instanceof MouseEvent)
+      // Perform duck typing on event constructor name.
+      if (A11yHelper.#eventTypesPointer.has(event?.constructor?.name))
       {
          // Firefox currently (1/23) does not correctly determine the location of a keyboard originated
          // context menu location, so calculate position from middle of the event target.

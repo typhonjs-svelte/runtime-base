@@ -12,17 +12,24 @@ export class ClipboardAccess
     * Note: Always returns `undefined` when `navigator.clipboard` is not available or the clipboard contains the
     * empty string.
     *
+    * @param {Window} [activeWindow=globalThis] Optional active current window.
+    *
     * @returns {Promise<string|undefined>} The current clipboard text or undefined.
     */
-   static async readText()
+   static async readText(activeWindow = globalThis)
    {
       let result;
 
-      if (globalThis?.navigator?.clipboard)
+      if (Object.prototype.toString.call(activeWindow) !== '[object Window]')
+      {
+         throw new TypeError(`ClipboardAccess.readText error: 'activeWindow' is not a Window or WindowProxy.`);
+      }
+
+      if (activeWindow?.navigator?.clipboard)
       {
          try
          {
-            result = await globalThis.navigator.clipboard.readText();
+            result = await activeWindow.navigator.clipboard.readText();
          }
          catch (err) { /**/ }
       }
@@ -36,29 +43,36 @@ export class ClipboardAccess
     *
     * @param {string}   text - Text to copy to the browser clipboard.
     *
+    * @param {Window} [activeWindow=globalThis] Optional active current window.
+    *
     * @returns {Promise<boolean>} Copy successful.
     */
-   static async writeText(text)
+   static async writeText(text, activeWindow = globalThis)
    {
       if (typeof text !== 'string')
       {
          throw new TypeError(`ClipboardAccess.writeText error: 'text' is not a string.`);
       }
 
+      if (Object.prototype.toString.call(activeWindow) !== '[object Window]')
+      {
+         throw new TypeError(`ClipboardAccess.writeText error: 'activeWindow' is not a Window or WindowProxy.`);
+      }
+
       let success = false;
 
-      if (globalThis?.navigator?.clipboard)
+      if (activeWindow?.navigator?.clipboard)
       {
          try
          {
-            await globalThis.navigator.clipboard.writeText(text);
+            await activeWindow.navigator.clipboard.writeText(text);
             success = true;
          }
          catch (err) { /**/ }
       }
-      else if (globalThis?.document?.execCommand instanceof Function)
+      else if (activeWindow?.document?.execCommand instanceof Function)
       {
-         const textArea = globalThis.document.createElement('textarea');
+         const textArea = activeWindow.document.createElement('textarea');
 
          // Place in the top-left corner of screen regardless of scroll position.
          textArea.style.position = 'fixed';
@@ -83,17 +97,17 @@ export class ClipboardAccess
 
          textArea.value = text;
 
-         globalThis.document.body.appendChild(textArea);
+         activeWindow.document.body.appendChild(textArea);
          textArea.focus();
          textArea.select();
 
          try
          {
-            success = document.execCommand('copy');
+            success = activeWindow.document.execCommand('copy');
          }
          catch (err) { /**/ }
 
-         document.body.removeChild(textArea);
+         activeWindow.document.body.removeChild(textArea);
       }
 
       return success;
