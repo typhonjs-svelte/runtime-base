@@ -24,8 +24,6 @@ export function getStackingContext(node, activeWindow = globalThis)
       return { node: activeDocument.documentElement, reason: 'root' };
    }
 
-
-
    // handle shadow root elements.
    if (node.nodeName === '#document-fragment')
    {
