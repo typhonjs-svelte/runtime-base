@@ -3,7 +3,7 @@ import { isIterable } from '#runtime/util/object';
 /**
  * Finds any parent element from the source element that matches and contains the CSS ID / class data specified.
  *
- * @param {{ source: HTMLElement, id?: string, class?: string | Iterable<string> }} options - Search options.
+ * @param {{ source: Element | EventTarget, id?: string, class?: string | Iterable<string> }} options - Search options.
  *
  * @returns {HTMLElement | undefined} The matching parent element if any.
  */
@@ -15,7 +15,7 @@ export function findParentElement(options)
 
    const classDataIterable = isIterable(classData);
 
-   if (!source instanceof HTMLElement) { throw new TypeError(`'source' is not an HTMLElement.`); }
+   if (!source instanceof Element) { throw new TypeError(`'source' is not an Element.`); }
 
    if (id !== void 0 && typeof id !== 'string') { throw new TypeError(`'id' is not a string.`); }
 
