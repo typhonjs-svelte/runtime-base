@@ -5,7 +5,7 @@ import { isIterable } from '#runtime/util/object';
  *
  * @param {{ source: Element | EventTarget, id?: string, class?: string | Iterable<string> }} options - Search options.
  *
- * @returns {HTMLElement | undefined} The matching parent element if any.
+ * @returns {Element | undefined} The matching parent element if any.
  */
 export function findParentElement(options)
 {
