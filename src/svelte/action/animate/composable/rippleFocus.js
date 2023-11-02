@@ -2,8 +2,11 @@
  * Defines the classic Material Design ripple effect as an action that is attached to an elements focus and blur events.
  * `rippleFocus` is a wrapper around the returned action. This allows it to be easily used as a prop.
  *
- * Note: A negative one translateZ transform is applied to the added span allowing other content to be layered on top
+ * Note: A negative one translateZ transform is applied to the added spans allowing other content to be layered on top
  * with a positive translateZ.
+ *
+ * Note: The ripple effect requires the `efx` element to have overflow hidden. This is set inline when the effect is
+ * applied.
  *
  * If providing the `selectors` option a target child element will be registered for the focus events otherwise the
  * first child is targeted with a final fallback of the element assigned to this action.
@@ -25,6 +28,9 @@ export function rippleFocus({ duration = 300, background = 'rgba(255, 255, 255, 
 {
    return (element) =>
    {
+      // Ripple requires the efx element to have the overflow hidden due to rendering content outside the boundary.
+      element.style.overflow = 'hidden';
+
       const targetEl = typeof selectors === 'string' ? element.querySelector(selectors) :
        element.firstChild instanceof HTMLElement ? element.firstChild : element;
 

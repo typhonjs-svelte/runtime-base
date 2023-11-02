@@ -7,6 +7,9 @@ import { Timing } from '#runtime/util';
  * Note: A negative one translateZ transform is applied to the added spans allowing other content to be layered on top
  * with a positive translateZ.
  *
+ * Note: The ripple effect requires the `efx` element to have overflow hidden. This is set inline when the effect is
+ * applied.
+ *
  * Styling: There is a single CSS variable `--tjs-action-ripple-background` that can be set to control the background.
  *
  * @param {object}   [opts] - Optional parameters.
@@ -29,6 +32,9 @@ export function ripple({ duration = 600, background = 'rgba(255, 255, 255, 0.7)'
 {
    return (element) =>
    {
+      // Ripple requires the efx element to have the overflow hidden due to rendering content outside the boundary.
+      element.style.overflow = 'hidden';
+
       /**
        * Creates the ripple effect.
        *
