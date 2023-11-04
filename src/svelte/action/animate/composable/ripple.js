@@ -23,12 +23,14 @@ import { Timing } from '#runtime/util';
  *
  * @param {string}   [opts.keyCode='Enter'] - Key code to trigger for any applicable key events.
  *
+ * @param {boolean}   [opts.contextmenu=false] - Add triggering for context menu key and click.
+ *
  * @param {number}   [opts.debounce=undefined] - Add a debounce to incoming events in milliseconds.
  *
  * @returns {import('svelte/action').Action} Actual action.
  */
 export function ripple({ duration = 600, background = 'rgba(255, 255, 255, 0.7)', events = ['click', 'keyup'],
- keyCode = 'Enter', debounce } = {})
+ keyCode = 'Enter', contextmenu = false, debounce } = {})
 {
    return (element) =>
    {
@@ -114,6 +116,8 @@ export function ripple({ duration = 600, background = 'rgba(255, 255, 255, 0.7)'
          }
       }
 
+      if (contextmenu) { element.addEventListener('contextmenu', eventFn); }
+
       return {
          destroy: () =>
          {
@@ -128,6 +132,8 @@ export function ripple({ duration = 600, background = 'rgba(255, 255, 255, 0.7)'
                   element.removeEventListener(event, eventFn);
                }
             }
+
+            if (contextmenu) { element.removeEventListener('contextmenu', eventFn); }
          }
       };
    };
