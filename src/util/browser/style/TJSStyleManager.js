@@ -48,12 +48,10 @@ export class TJSStyleManager
    {
       if (typeof docKey !== 'string') { throw new TypeError(`StyleManager error: 'docKey' is not a string.`); }
 
-      // TODO: Verify 'document' type from Popout FVTT module. For some reason the popout document trips this
-      //  unintentionally.
-      // if (!(document instanceof Document))
-      // {
-      //    throw new TypeError(`TJSStyleManager error: 'document' is not an instance of Document.`);
-      // }
+      if (Object.prototype.toString.call(document) !== '[object HTMLDocument]')
+      {
+         throw new TypeError(`TJSStyleManager error: 'document' is not an instance of HTMLDocument.`);
+      }
 
       if (typeof selector !== 'string') { throw new TypeError(`StyleManager error: 'selector' is not a string.`); }
 
