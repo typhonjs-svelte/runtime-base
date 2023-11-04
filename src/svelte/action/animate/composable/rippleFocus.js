@@ -8,7 +8,7 @@
  * Note: The ripple effect requires the `efx` element to have overflow hidden. This is set inline when the effect is
  * applied.
  *
- * If providing the `selectors` option a target child element will be registered for the focus events otherwise the
+ * If providing the `selector` option a target child element will be registered for the focus events otherwise the
  * first child is targeted with a final fallback of the element assigned to this action.
  *
  * Styling: There is a single CSS variable `--tjs-action-ripple-background-focus` that can be set to control the
@@ -16,22 +16,22 @@
  *
  * @param {object}   [opts] - Optional parameters.
  *
- * @param {number}   [opts.duration=600] - Duration in milliseconds.
+ * @param {number}   [opts.duration=300] - Duration in milliseconds.
  *
  * @param {string}   [opts.background='rgba(255, 255, 255, 0.7)'] - A valid CSS background attribute.
  *
- * @param {string}   [opts.selectors] - A valid CSS selectors string.
+ * @param {string}   [opts.selector] - A valid CSS selector string.
  *
  * @returns {import('svelte/action').Action} Actual action.
  */
-export function rippleFocus({ duration = 300, background = 'rgba(255, 255, 255, 0.7)', selectors } = {})
+export function rippleFocus({ duration = 300, background = 'rgba(255, 255, 255, 0.7)', selector } = {})
 {
    return (element) =>
    {
       // Ripple requires the efx element to have the overflow hidden due to rendering content outside the boundary.
       element.style.overflow = 'hidden';
 
-      const targetEl = typeof selectors === 'string' ? element.querySelector(selectors) :
+      const targetEl = typeof selector === 'string' ? element.querySelector(selector) :
        element.firstChild instanceof HTMLElement ? element.firstChild : element;
 
       let span = void 0;
@@ -89,7 +89,7 @@ export function rippleFocus({ duration = 300, background = 'rgba(255, 255, 255, 
          // the app / screen. If the next pointer down occurs on the target element the focus callback occurs before
          // pointer down in Chrome and Firefox.
          const actualX = clientX >= 0 ? clientX : elementRect.left + (elementRect.width / 2);
-         const actualY = clientX >= 0 ? clientY : elementRect.top + (elementRect.height / 2);
+         const actualY = clientY >= 0 ? clientY : elementRect.top + (elementRect.height / 2);
 
          const diameter = Math.max(elementRect.width, elementRect.height);
          const radius = diameter / 2;
