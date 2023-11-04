@@ -17,15 +17,16 @@ export class A11yHelper
    static #eventTypesPointer = new Set(['MouseEvent', 'PointerEvent']);
 
    /**
-    * Apply focus to the HTMLElement targets in a given A11yFocusSource data object. An iterable list `options.focusEl`
-    * can contain HTMLElements or selector strings. If multiple focus targets are provided in a list then the first
-    * valid target found will be focused. If focus target is a string then a lookup via `document.querySelector` is
-    * performed. In this case you should provide a unique selector for the desired focus target.
+    * Apply focus to the HTMLElement / SVGElement targets in a given A11yFocusSource data object. An iterable list
+    * `options.focusEl` can contain HTMLElement / SVGElements or selector strings. If multiple focus targets are
+    * provided in a list then the first valid target found will be focused. If focus target is a string then a lookup
+    * via `document.querySelector` is performed. In this case you should provide a unique selector for the desired
+    * focus target.
     *
     * Note: The body of this method is postponed to the next clock tick to allow any changes in the DOM to occur that
     * might alter focus targets before applying.
     *
-    * @param {A11yFocusSource|{ focusSource: A11yFocusSource }}   options - The focus options instance to apply.
+    * @param {A11yFocusSource | { focusSource: A11yFocusSource }}   options - The focus options instance to apply.
     */
    static applyFocusSource(options)
    {
@@ -42,12 +43,13 @@ export class A11yHelper
          {
             if (debug)
             {
-               console.debug(`A11yHelper.applyFocusSource debug - Attempting to apply focus target: `, focusOpts.focusEl);
+               console.debug(`A11yHelper.applyFocusSource debug - Attempting to apply focus target: `,
+                focusOpts.focusEl);
             }
 
             for (const target of focusOpts.focusEl)
             {
-               if (target instanceof HTMLElement && target.isConnected)
+               if ((target instanceof HTMLElement || target instanceof SVGElement) && target.isConnected)
                {
                   target.focus();
                   if (debug)
@@ -59,7 +61,7 @@ export class A11yHelper
                else if (typeof target === 'string')
                {
                   const element = document.querySelector(target);
-                  if (element instanceof HTMLElement && element.isConnected)
+                  if ((element instanceof HTMLElement || element instanceof SVGElement) && element.isConnected)
                   {
                      element.focus();
                      if (debug)
@@ -85,15 +87,15 @@ export class A11yHelper
    /**
     * Returns first focusable element within a specified element.
     *
-    * @param {HTMLElement|Document} [element=document] - Optional element to start query.
+    * @param {HTMLElement | SVGElement | Document} [element=document] - Optional element to start query.
     *
     * @param {object} [options] - Optional parameters.
     *
     * @param {Iterable<string>} [options.ignoreClasses] - Iterable list of classes to ignore elements.
     *
-    * @param {Set<HTMLElement>} [options.ignoreElements] - Set of elements to ignore.
+    * @param {Set<HTMLElement | SVGElement>} [options.ignoreElements] - Set of elements to ignore.
     *
-    * @returns {HTMLElement} First focusable child element
+    * @returns {HTMLElement | SVGElement} First focusable child element.
     */
    static getFirstFocusableElement(element = document, options)
    {
@@ -105,7 +107,7 @@ export class A11yHelper
    /**
     * Returns all focusable elements within a specified element.
     *
-    * @param {HTMLElement|Document} [element=document] Optional element to start query.
+    * @param {HTMLElement | SVGElement | Document} [element=document] Optional element to start query.
     *
     * @param {object}            [options] - Optional parameters.
     *
@@ -113,17 +115,17 @@ export class A11yHelper
     *
     * @param {Iterable<string>}  [options.ignoreClasses] - Iterable list of classes to ignore elements.
     *
-    * @param {Set<HTMLElement>}  [options.ignoreElements] - Set of elements to ignore.
+    * @param {Set<HTMLElement | SVGElement>}  [options.ignoreElements] - Set of elements to ignore.
     *
     * @param {string}            [options.selectors] - Custom list of focusable selectors for `querySelectorAll`.
     *
-    * @returns {Array<HTMLElement>} Child keyboard focusable
+    * @returns {Array<HTMLElement | SVGElement>} Child keyboard focusable
     */
    static getFocusableElements(element = document, { anchorHref = true, ignoreClasses, ignoreElements, selectors } = {})
    {
-      if (!(element instanceof HTMLElement) && !(element instanceof Document))
+      if (!(element instanceof HTMLElement) && !(element instanceof SVGElement) && !(element instanceof Document))
       {
-         throw new TypeError(`'element' is not a HTMLElement or Document instance.`);
+         throw new TypeError(`'element' is not a HTMLElement, SVGElement, or Document instance.`);
       }
 
       if (typeof anchorHref !== 'boolean')
@@ -233,11 +235,12 @@ export class A11yHelper
     *
     * @param {object} options - Options
     *
-    * @param {KeyboardEvent|MouseEvent}   [options.event] - The source DOM event.
+    * @param {KeyboardEvent | MouseEvent}   [options.event] - The source DOM event.
     *
     * @param {boolean} [options.debug] - When true {@link A11yHelper.applyFocusSource} logs focus target data.
     *
-    * @param {HTMLElement|string} [options.focusEl] - A specific HTMLElement or selector string as the focus target.
+    * @param {HTMLElement | SVGElement | string} [options.focusEl] - A specific HTMLElement / SVGElement or selector
+    *        string as the focus target.
     *
     * @param {number}   [options.x] - Used when an event isn't provided; integer of event source in screen space.
     *
@@ -252,10 +255,11 @@ export class A11yHelper
     */
    static getFocusSource({ event, x, y, focusEl, debug = false })
    {
-      if (focusEl !== void 0 && !(focusEl instanceof HTMLElement) && typeof focusEl !== 'string')
+      if (focusEl !== void 0 && !(focusEl instanceof HTMLElement) && !(focusEl instanceof SVGElement) &&
+       typeof focusEl !== 'string')
       {
          throw new TypeError(
-          `A11yHelper.getFocusSource error: 'focusEl' is not a HTMLElement or string.`);
+          `A11yHelper.getFocusSource error: 'focusEl' is not a HTMLElement, SVGElement, or string.`);
       }
 
       if (debug !== void 0 && typeof debug !== 'boolean')
@@ -301,12 +305,12 @@ export class A11yHelper
          throw new TypeError(`A11yHelper.getFocusSource error: 'y' is not a number.`);
       }
 
-      /** @type {HTMLElement} */
+      /** @type {HTMLElement | SVGElement} */
       const targetEl = event.target;
 
-      if (!(targetEl instanceof HTMLElement))
+      if (!(targetEl instanceof HTMLElement) && !(targetEl instanceof SVGElement))
       {
-         throw new TypeError(`A11yHelper.getFocusSource error: 'event.target' is not an HTMLElement.`);
+         throw new TypeError(`A11yHelper.getFocusSource error: 'event.target' is not an HTMLElement or SVGElement.`);
       }
 
       const result = { debug };
@@ -347,15 +351,15 @@ export class A11yHelper
    /**
     * Returns first focusable element within a specified element.
     *
-    * @param {HTMLElement|Document} [element=document] - Optional element to start query.
+    * @param {HTMLElement | SVGElement | Document} [element=document] - Optional element to start query.
     *
     * @param {object} [options] - Optional parameters.
     *
     * @param {Iterable<string>} [options.ignoreClasses] - Iterable list of classes to ignore elements.
     *
-    * @param {Set<HTMLElement>} [options.ignoreElements] - Set of elements to ignore.
+    * @param {Set<HTMLElement | SVGElement>} [options.ignoreElements] - Set of elements to ignore.
     *
-    * @returns {HTMLElement} First focusable child element
+    * @returns {HTMLElement | SVGElement} First focusable child element
     */
    static getLastFocusableElement(element = document, options)
    {
@@ -367,7 +371,7 @@ export class A11yHelper
    /**
     * Tests if the given element is focusable.
     *
-    * @param {HTMLElement} [el] - Element to test.
+    * @param {HTMLElement | SVGElement} [el] - Element to test.
     *
     * @param {object} [options] - Optional parameters.
     *
@@ -379,7 +383,8 @@ export class A11yHelper
     */
    static isFocusable(el, { anchorHref = true, ignoreClasses } = {})
    {
-      if (el === void 0 || el === null || !(el instanceof HTMLElement) || el?.hidden || !el?.isConnected)
+      if (el === void 0 || el === null || !(el instanceof HTMLElement) || !(el instanceof SVGElement) || el?.hidden ||
+       !el?.isConnected)
       {
          return false;
       }
@@ -423,23 +428,23 @@ export class A11yHelper
    /**
     * Convenience method to check if the given data is a valid focus source.
     *
-    * @param {HTMLElement|string}   data - Either an HTMLElement or selector string.
+    * @param {HTMLElement | SVGElement | string}   data - Either an HTMLElement, SVGElement, or selector string.
     *
     * @returns {boolean} Is valid focus source.
     */
    static isFocusSource(data)
    {
-      return data instanceof HTMLElement || typeof data === 'string';
+      return data instanceof HTMLElement || data instanceof SVGElement || typeof data === 'string';
    }
 }
 
 /**
- * @typedef {object} A11yFocusSource Provides essential data to return focus to an HTMLElement after a series of UI
- * actions like working with context menus and modal dialogs.
+ * @typedef {object} A11yFocusSource Provides essential data to return focus to an HTMLElement / SVGElement after a
+ * series of UI actions like working with context menus and modal dialogs.
  *
  * @property {boolean} [debug] When true logs to console the actions taken in {@link A11yHelper.applyFocusSource}.
  *
- * @property {Iterable<HTMLElement|string>} [focusEl] List of targets to attempt to focus.
+ * @property {Iterable<HTMLElement | SVGElement | string>} [focusEl] List of targets to attempt to focus.
  *
  * @property {string} [source] The source of the event: 'keyboard' for instance.
  *
