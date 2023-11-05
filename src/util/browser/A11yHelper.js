@@ -4,6 +4,8 @@ import {
 
 /**
  * Provides several helpful utility methods for accessibility and keyboard navigation.
+ *
+ * Note: Global debugging can be enabled by setting `A11yHelper.debug = true`.
  */
 export class A11yHelper
 {
@@ -15,6 +17,28 @@ export class A11yHelper
     */
    static #eventTypesAll = new Set(['KeyboardEvent', 'MouseEvent', 'PointerEvent']);
    static #eventTypesPointer = new Set(['MouseEvent', 'PointerEvent']);
+
+   /**
+    * You can set global focus debugging enabled by setting `A11yHelper.debug = true`.
+    *
+    * @type {boolean}
+    */
+   static #globalDebug = false;
+
+   /**
+    * @returns {boolean} Global debugging enabled.
+    */
+   static get debug() { return this.#globalDebug; }
+
+   /**
+    * @param {boolean}  debug - Global debug enabled
+    */
+   static set debug(debug)
+   {
+      if (typeof debug !== 'boolean') { throw new TypeError(`'debug' is not a boolean.`); }
+
+      this.#globalDebug = debug;
+   }
 
    /**
     * Apply focus to the HTMLElement / SVGElement targets in a given A11yFocusSource data object. An iterable list
@@ -37,7 +61,7 @@ export class A11yHelper
 
       setTimeout(() =>
       {
-         const debug = typeof focusOpts.debug === 'boolean' ? focusOpts.debug : false;
+         const debug = typeof focusOpts.debug === 'boolean' ? this.debug || focusOpts.debug : this.debug;
 
          if (isIterable(focusOpts.focusEl))
          {
@@ -255,8 +279,7 @@ export class A11yHelper
     */
    static getFocusSource({ event, x, y, focusEl, debug = false })
    {
-      if (focusEl !== void 0 && !(focusEl instanceof HTMLElement) && !(focusEl instanceof SVGElement) &&
-       typeof focusEl !== 'string')
+      if (focusEl !== void 0 && !this.isFocusSource(focusEl))
       {
          throw new TypeError(
           `A11yHelper.getFocusSource error: 'focusEl' is not a HTMLElement, SVGElement, or string.`);
@@ -266,6 +289,8 @@ export class A11yHelper
       {
          throw new TypeError(`A11yHelper.getFocusSource error: 'debug' is not a boolean.`);
       }
+
+      const debugEnabled = typeof debug === 'boolean' ? this.debug || debug : this.debug;
 
       // Handle the case when no event is provided and x, y, or focusEl is explicitly defined.
       if (event === void 0)
@@ -280,12 +305,19 @@ export class A11yHelper
             throw new TypeError(`A11yHelper.getFocusSource error: 'event' not defined and 'y' is not a number.`);
          }
 
-         return {
+         const result = {
             debug,
             focusEl: focusEl !== void 0 ? [focusEl] : void 0,
             x,
             y,
          };
+
+         if (debugEnabled)
+         {
+            console.debug(`A11yHelper.getFocusSource debug: generated 'focusSource' without event: `, result);
+         }
+
+         return result;
       }
 
       // Perform duck typing on event constructor name.
@@ -306,11 +338,44 @@ export class A11yHelper
       }
 
       /** @type {HTMLElement | SVGElement} */
-      const targetEl = event.target;
+      let targetEl;
 
-      if (!(targetEl instanceof HTMLElement) && !(targetEl instanceof SVGElement))
+      if (event)
       {
-         throw new TypeError(`A11yHelper.getFocusSource error: 'event.target' is not an HTMLElement or SVGElement.`);
+         if (A11yHelper.isFocusable(event.target))
+         {
+            targetEl = event.target;
+            if (debugEnabled)
+            {
+               console.debug(`A11yHelper.getFocusSource debug: 'targetEl' set to event.target: `, targetEl);
+            }
+         }
+         else if (A11yHelper.isFocusable(event.currentTarget))
+         {
+            targetEl = event.currentTarget;
+            if (debugEnabled)
+            {
+               console.debug(`A11yHelper.getFocusSource debug: 'targetEl' set to event.currentTarget: `, targetEl);
+            }
+         }
+         else
+         {
+            if (debugEnabled)
+            {
+               console.debug(
+                `A11yHelper.getFocusSource debug: 'event.target' / 'event.currentTarget' are not focusable.`);
+               console.debug(`A11yHelper.getFocusSource debug: 'event.target': `, event.target);
+               console.debug(`A11yHelper.getFocusSource debug: 'event.currentTarget': `, event.currentTarget);
+            }
+         }
+
+         if (targetEl)
+         {
+            if (!(targetEl instanceof HTMLElement) && !(targetEl instanceof SVGElement))
+            {
+               throw new TypeError(`A11yHelper.getFocusSource error: 'targetEl' is not an HTMLElement or SVGElement.`);
+            }
+         }
       }
 
       const result = { debug };
@@ -323,26 +388,44 @@ export class A11yHelper
          // Firefox fires a mouse event for the context menu key.
          if (event?.button !== 2 && event.type === 'contextmenu')
          {
-            const rect = targetEl.getBoundingClientRect();
+            // Always include x / y coordinates and targetEl may not be defined.
+            const rectTarget = targetEl ?? event.target;
+
+            const rect = rectTarget.getBoundingClientRect();
+            result.source = 'keyboard';
             result.x = x ?? rect.left + (rect.width / 2);
             result.y = y ?? rect.top + (rect.height / 2);
-            result.focusEl = focusEl !== void 0 ? [targetEl, focusEl] : [targetEl];
-            result.source = 'keyboard';
+            result.focusEl = targetEl ? [targetEl] : [];
+
+            if (focusEl) { result.focusEl.push(focusEl); }
          }
          else
          {
+            result.source = 'pointer';
             result.x = x ?? event.pageX;
             result.y = y ?? event.pageY;
-            result.focusEl = focusEl !== void 0 ? [focusEl] : void 0;
+            result.focusEl = targetEl ? [targetEl] : [];
+
+            if (focusEl) { result.focusEl.push(focusEl); }
          }
       }
       else
       {
-         const rect = targetEl.getBoundingClientRect();
+         // Always include x / y coordinates and targetEl may not be defined.
+         const rectTarget = targetEl ?? event.target;
+
+         const rect = rectTarget.getBoundingClientRect();
+         result.source = 'keyboard';
          result.x = x ?? rect.left + (rect.width / 2);
          result.y = y ?? rect.top + (rect.height / 2);
-         result.focusEl = focusEl !== void 0 ? [targetEl, focusEl] : [targetEl];
-         result.source = 'keyboard';
+         result.focusEl = targetEl ? [targetEl] : [];
+
+         if (focusEl) { result.focusEl.push(focusEl); }
+      }
+
+      if (debugEnabled)
+      {
+         console.debug(`A11yHelper.getFocusSource debug: generated 'focusSource' with event: `, result);
       }
 
       return result;
@@ -383,7 +466,7 @@ export class A11yHelper
     */
    static isFocusable(el, { anchorHref = true, ignoreClasses } = {})
    {
-      if (el === void 0 || el === null || !(el instanceof HTMLElement) || !(el instanceof SVGElement) || el?.hidden ||
+      if (el === void 0 || el === null || (!(el instanceof HTMLElement) && !(el instanceof SVGElement)) || el?.hidden ||
        !el?.isConnected)
       {
          return false;
@@ -403,8 +486,8 @@ export class A11yHelper
       const contenteditableFocusable = typeof contenteditableAttr === 'string' &&
        (contenteditableAttr === '' || contenteditableAttr === 'true');
 
-      const tabindexAttr = el.getAttribute('tabindex');
-      const tabindexFocusable = typeof tabindexAttr === 'string' && tabindexAttr !== '-1';
+      const tabindexAttr = globalThis.parseInt(el.getAttribute('tabindex'));
+      const tabindexFocusable = Number.isInteger(tabindexAttr) && tabindexAttr >= 0;
 
       const isAnchor = el instanceof HTMLAnchorElement;
 
@@ -413,7 +496,7 @@ export class A11yHelper
         el instanceof HTMLInputElement || el instanceof HTMLObjectElement || el instanceof HTMLSelectElement ||
          el instanceof HTMLTextAreaElement)
       {
-         if (isAnchor && anchorHref && typeof el.getAttribute('href') !== 'string')
+         if (isAnchor && !tabindexFocusable && anchorHref && typeof el.getAttribute('href') !== 'string')
          {
             return false;
          }
