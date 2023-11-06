@@ -23,7 +23,7 @@ import { Timing } from '#runtime/util';
  *
  * @param {string}   [opts.keyCode='Enter'] - Key code to trigger for any applicable key events.
  *
- * @param {boolean}   [opts.contextmenu=false] - Add triggering for context menu key and click.
+ * @param {boolean}  [opts.contextmenu=false] - Add triggering for context menu key and click.
  *
  * @param {number}   [opts.debounce=undefined] - Add a debounce to incoming events in milliseconds.
  *
@@ -32,7 +32,7 @@ import { Timing } from '#runtime/util';
 export function ripple({ duration = 600, background = 'rgba(255, 255, 255, 0.7)', events = ['click', 'keyup'],
  keyCode = 'Enter', contextmenu = false, debounce } = {})
 {
-   return (element) =>
+   return (element, { disabled = false } = {}) =>
    {
       // Ripple requires the efx element to have the overflow hidden due to rendering content outside the boundary.
       element.style.overflow = 'hidden';
@@ -44,6 +44,8 @@ export function ripple({ duration = 600, background = 'rgba(255, 255, 255, 0.7)'
        */
       function createRipple(e)
       {
+         if (disabled) { return; }
+
          const elementRect = element.getBoundingClientRect();
 
          const diameter = Math.max(elementRect.width, elementRect.height);
@@ -95,6 +97,8 @@ export function ripple({ duration = 600, background = 'rgba(255, 255, 255, 0.7)'
        */
       function keyHandler(event)
       {
+         if (disabled) { return; }
+
          if (event?.code === keyCode) { createRipple(event); }
       }
 
@@ -119,6 +123,10 @@ export function ripple({ duration = 600, background = 'rgba(255, 255, 255, 0.7)'
       if (contextmenu) { element.addEventListener('contextmenu', eventFn); }
 
       return {
+         update: (options) =>
+         {
+            if (typeof options?.disabled === 'boolean') { disabled = options.disabled; }
+         },
          destroy: () =>
          {
             for (const event of events)

@@ -26,7 +26,7 @@
  */
 export function rippleFocus({ duration = 300, background = 'rgba(255, 255, 255, 0.7)', selector } = {})
 {
-   return (element) =>
+   return (element, { disabled = false } = {}) =>
    {
       // Ripple requires the efx element to have the overflow hidden due to rendering content outside the boundary.
       element.style.overflow = 'hidden';
@@ -45,6 +45,8 @@ export function rippleFocus({ duration = 300, background = 'rgba(255, 255, 255, 
        */
       function blurRipple()
       {
+         if (disabled) { return; }
+
          // When clicking outside the browser window or to another tab `document.activeElement` remains
          // the same despite blur being invoked; IE the target element.
          if (activeSpans.length === 0 || document.activeElement === targetEl) { return; }
@@ -82,6 +84,8 @@ export function rippleFocus({ duration = 300, background = 'rgba(255, 255, 255, 
        */
       function focusRipple()
       {
+         if (disabled) { return; }
+
          // If already focused and the span exists do not create another ripple effect.
          if (activeSpans.length > 0) { return; }
 
@@ -144,6 +148,8 @@ export function rippleFocus({ duration = 300, background = 'rgba(255, 255, 255, 
        */
       function onPointerDown(e)
       {
+         if (disabled) { return; }
+
          clientX = e.clientX;
          clientY = e.clientY;
       }
@@ -153,6 +159,14 @@ export function rippleFocus({ duration = 300, background = 'rgba(255, 255, 255, 
       targetEl.addEventListener('focus', focusRipple);
 
       return {
+         update: (options) =>
+         {
+            if (typeof options?.disabled === 'boolean')
+            {
+               disabled = options.disabled;
+               if (disabled) { blurRipple(); }
+            }
+         },
          destroy: () =>
          {
             targetEl.removeEventListener('pointerdown', onPointerDown);

@@ -25,13 +25,15 @@ import { isObject }  from '#runtime/util/object';
  */
 export function animate({ duration = 600, keyframes = [], options, event = 'click', debounce } = {})
 {
-   return (element) =>
+   return (element, { disabled = false } = {}) =>
    {
       /**
        * Creates WAAPI animation.
        */
       function createAnimation()
       {
+         if (disabled) { return; }
+
          element.animate(keyframes, isObject(options) ? options : duration);
       }
 
@@ -41,6 +43,10 @@ export function animate({ duration = 600, keyframes = [], options, event = 'clic
       element.addEventListener(event, eventFn);
 
       return {
+         update: (options) =>
+         {
+            if (typeof options?.disabled === 'boolean') { disabled = options.disabled; }
+         },
          destroy: () => element.removeEventListener(event, eventFn)
       };
    };
