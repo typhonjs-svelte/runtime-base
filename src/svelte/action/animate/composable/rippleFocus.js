@@ -34,9 +34,11 @@ export function rippleFocus({ duration = 300, background = 'rgba(255, 255, 255, 
       const targetEl = typeof selector === 'string' ? element.querySelector(selector) :
        element.firstChild instanceof HTMLElement ? element.firstChild : element;
 
-      let span = void 0;
       let clientX = -1;
       let clientY = -1;
+
+      /** @type {HTMLSpanElement[]} */
+      const activeSpans = [];
 
       /**
        * WAAPI ripple animation on blur.
@@ -45,33 +47,34 @@ export function rippleFocus({ duration = 300, background = 'rgba(255, 255, 255, 
       {
          // When clicking outside the browser window or to another tab `document.activeElement` remains
          // the same despite blur being invoked; IE the target element.
-         if (!(span instanceof HTMLElement) || document.activeElement === targetEl)
+         if (activeSpans.length === 0 || document.activeElement === targetEl) { return; }
+
+         for (const span of activeSpans)
          {
-            return;
+            const animation = span.animate(
+             [
+                {  // from
+                   transform: 'scale(3)',
+                   opacity: 0.3,
+                },
+                {  // to
+                   transform: 'scale(.7)',
+                   opacity: 0.0,
+                }
+             ],
+             {
+                duration,
+                fill: 'forwards'
+             });
+
+            animation.onfinish = () =>
+            {
+               if (span.isConnected) { span.remove(); }
+            };
          }
 
-         const animation = span.animate(
-         [
-            {  // from
-               transform: 'scale(3)',
-               opacity: 0.3,
-            },
-            {  // to
-               transform: 'scale(.7)',
-               opacity: 0.0,
-            }
-         ],
-         {
-            duration,
-            fill: 'forwards'
-         });
-
-         animation.onfinish = () =>
-         {
-            clientX = clientY = -1;
-            if (span && span.isConnected) { span.remove(); }
-            span = void 0;
-         };
+         // Remove all active spans as they are now animating out.
+         activeSpans.length = 0;
       }
 
       /**
@@ -80,7 +83,7 @@ export function rippleFocus({ duration = 300, background = 'rgba(255, 255, 255, 
       function focusRipple()
       {
          // If already focused and the span exists do not create another ripple effect.
-         if (span instanceof HTMLElement) { return; }
+         if (activeSpans.length > 0) { return; }
 
          const elementRect = element.getBoundingClientRect();
 
@@ -96,7 +99,7 @@ export function rippleFocus({ duration = 300, background = 'rgba(255, 255, 255, 
          const left = `${actualX - (elementRect.left + radius)}px`;
          const top = `${actualY - (elementRect.top + radius)}px`;
 
-         span = document.createElement('span');
+         const span = document.createElement('span');
 
          span.style.position = 'absolute';
          span.style.width = `${diameter}px`;
@@ -113,6 +116,8 @@ export function rippleFocus({ duration = 300, background = 'rgba(255, 255, 255, 
 
          element.prepend(span);
 
+         activeSpans.push(span);
+
          span.animate([
             {  // from
                transform: 'scale(.7)',
@@ -127,6 +132,9 @@ export function rippleFocus({ duration = 300, background = 'rgba(255, 255, 255, 
             duration,
             fill: 'forwards'
          });
+
+         // Reset stored pointer position.
+         clientX = clientY = -1;
       }
 
       /**
