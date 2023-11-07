@@ -10,6 +10,9 @@ import { Timing } from '#runtime/util';
  * Note: The ripple effect requires the `efx` element to have overflow hidden. This is set inline when the effect is
  * applied.
  *
+ * Note: A CustomEvent `efx-trigger` is handled in cases when explicit triggering is necessary. This event should
+ * have the actual source event as a property of `detail`.
+ *
  * Styling: There is a single CSS variable `--tjs-action-ripple-background` that can be set to control the background.
  *
  * @param {object}   [opts] - Optional parameters.
@@ -91,6 +94,19 @@ export function ripple({ duration = 600, background = 'rgba(255, 255, 255, 0.7)'
       }
 
       /**
+       * Handles a custom event trigger `efx-trigger`. The `CustomEvent` should have an `event` object accessible from
+       * `detail`.
+       *
+       * @param {CustomEvent} event - CustomEvent.
+       */
+      function customHandler(event)
+      {
+         const actual = event?.detail?.event;
+
+         if (actual instanceof KeyboardEvent || actual instanceof MouseEvent) { createRipple(actual); }
+      }
+
+      /**
        * Handles any key event and only triggers the ripple effect if key code matches.
        *
        * @param {KeyboardEvent}  event -
@@ -104,6 +120,9 @@ export function ripple({ duration = 600, background = 'rgba(255, 255, 255, 0.7)'
 
       const eventFn = Number.isInteger(debounce) && debounce > 0 ? Timing.debounce(createRipple, debounce) :
        createRipple;
+
+      const customEventFn = Number.isInteger(debounce) && debounce > 0 ? Timing.debounce(customHandler, debounce) :
+       customHandler;
 
       const keyEventFn = Number.isInteger(debounce) && debounce > 0 ? Timing.debounce(keyHandler, debounce) :
        keyHandler;
@@ -119,6 +138,8 @@ export function ripple({ duration = 600, background = 'rgba(255, 255, 255, 0.7)'
             element.addEventListener(event, eventFn);
          }
       }
+
+      element.addEventListener('efx-trigger', customEventFn);
 
       if (contextmenu) { element.addEventListener('contextmenu', eventFn); }
 
@@ -140,6 +161,8 @@ export function ripple({ duration = 600, background = 'rgba(255, 255, 255, 0.7)'
                   element.removeEventListener(event, eventFn);
                }
             }
+
+            element.removeEventListener('efx-trigger', customEventFn);
 
             if (contextmenu) { element.removeEventListener('contextmenu', eventFn); }
          }
