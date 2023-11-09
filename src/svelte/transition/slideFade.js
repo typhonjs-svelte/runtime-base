@@ -9,6 +9,8 @@ import { linear }       from '#svelte/easing';
  *
  * @param {object}      [options] - Optional parameters.
  *
+ * @param {'x' | 'y'}   [options.axis] - The sliding axis.
+ *
  * @param {number}      [options.delay] - Delay in ms before start of transition.
  *
  * @param {number}      [options.duration] - Total transition length in ms.
@@ -26,15 +28,15 @@ import { linear }       from '#svelte/easing';
  */
 export function slideFade(node, options)
 {
-   const fadeEasing = options.easingFade || options.easing || linear;
-   const slideEasing = options.easingSlide || options.easing || linear;
+   const fadeEasing = options.easingFade ?? options.easing ?? linear;
+   const slideEasing = options.easingSlide ?? options.easing ?? linear;
 
    const fadeTransition = fade(node);
-   const slideTransition = slide(node);
+   const slideTransition = slide(node, { axis: options.axis });
 
    return {
-      delay: options.delay || 0,
-      duration: options.duration || 500,
+      delay: options.delay ?? 0,
+      duration: options.duration ?? 500,
       easing: linear,
       css: (t) =>
       {
