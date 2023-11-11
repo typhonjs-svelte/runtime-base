@@ -520,6 +520,16 @@ export class A11yHelper
       return typeof data === 'string' || (data?.nodeType === Node.ELEMENT_NODE && typeof data?.focus === 'function');
    }
 
+   /**
+    * Perform a parent traversal from the current active element attempting to match the given element to test whether
+    * current active element is within that element.
+    *
+    * @param {Element}  element - An element to match in parent traversal from the active element.
+    *
+    * @param {Window}   [activeWindow=globalThis] The active window to use for the current active element.
+    *
+    * @returns {boolean} Whether there is focus within the given element.
+    */
    static isFocusWithin(element, activeWindow = globalThis)
    {
       if (element === void 0 || element === null || element?.hidden || !element?.isConnected) { return false; }
