@@ -73,9 +73,9 @@ export class A11yHelper
 
             for (const target of focusOpts.focusEl)
             {
-               if ((target instanceof HTMLElement || target instanceof SVGElement) && target.isConnected)
+               if (target?.nodeType === Node.ELEMENT_NODE && target?.isConnected)
                {
-                  target.focus();
+                  target?.focus();
                   if (debug)
                   {
                      console.debug(`A11yHelper.applyFocusSource debug - Applied focus to target: `, target);
@@ -85,9 +85,9 @@ export class A11yHelper
                else if (typeof target === 'string')
                {
                   const element = document.querySelector(target);
-                  if ((element instanceof HTMLElement || element instanceof SVGElement) && element.isConnected)
+                  if (element?.nodeType === Node.ELEMENT_NODE && element?.isConnected)
                   {
-                     element.focus();
+                     element?.focus();
                      if (debug)
                      {
                         console.debug(`A11yHelper.applyFocusSource debug - Applied focus to target: `, element);
@@ -147,7 +147,7 @@ export class A11yHelper
     */
    static getFocusableElements(element = document, { anchorHref = true, ignoreClasses, ignoreElements, selectors } = {})
    {
-      if (!(element instanceof HTMLElement) && !(element instanceof SVGElement) && !(element instanceof Document))
+      if (element?.nodeType !== Node.ELEMENT_NODE && element?.nodeType !== Node.DOCUMENT_NODE)
       {
          throw new TypeError(`'element' is not a HTMLElement, SVGElement, or Document instance.`);
       }
@@ -371,7 +371,7 @@ export class A11yHelper
 
          if (targetEl)
          {
-            if (!(targetEl instanceof HTMLElement) && !(targetEl instanceof SVGElement))
+            if (targetEl?.nodeType !== Node.ELEMENT_NODE && typeof targetEl?.focus !== 'function')
             {
                throw new TypeError(`A11yHelper.getFocusSource error: 'targetEl' is not an HTMLElement or SVGElement.`);
             }
@@ -466,8 +466,8 @@ export class A11yHelper
     */
    static isFocusable(el, { anchorHref = true, ignoreClasses } = {})
    {
-      if (el === void 0 || el === null || (!(el instanceof HTMLElement) && !(el instanceof SVGElement)) || el?.hidden ||
-       !el?.isConnected)
+      if (el === void 0 || el === null || el?.hidden || !el?.isConnected || el?.nodeType !== Node.ELEMENT_NODE ||
+       typeof el?.focus !== 'function')
       {
          return false;
       }
@@ -517,7 +517,25 @@ export class A11yHelper
     */
    static isFocusSource(data)
    {
-      return data instanceof HTMLElement || data instanceof SVGElement || typeof data === 'string';
+      return typeof data === 'string' || (data?.nodeType === Node.ELEMENT_NODE && typeof data?.focus === 'function');
+   }
+
+   static isFocusWithin(element, activeWindow = globalThis)
+   {
+      if (element === void 0 || element === null || element?.hidden || !element?.isConnected) { return false; }
+
+      if (Object.prototype.toString.call(activeWindow) !== '[object Window]') { return false; }
+
+      let active = activeWindow.document.activeElement;
+
+      while (active)
+      {
+         if (active === element) { return true; }
+
+         active = active.parentElement;
+      }
+
+      return false;
    }
 }
 
