@@ -2,6 +2,8 @@ import { cubicOut }           from '#svelte/easing';
 
 import { lerp }               from '#runtime/math/interpolate';
 
+import { A11yHelper }         from '#runtime/util/browser';
+
 import {
    isIterable,
    isObject }                 from '#runtime/util/object';
@@ -214,8 +216,8 @@ export class AnimationAPI
       }
 
       // Cache any target element allowing AnimationManager to stop animation if it becomes disconnected from DOM.
-      const targetEl = parent instanceof HTMLElement ? parent : parent?.elementTarget;
-      const el = targetEl instanceof HTMLElement && targetEl.isConnected ? targetEl : void 0;
+      const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
+      const el = A11yHelper.isFocusTarget(targetEl) && targetEl.isConnected ? targetEl : void 0;
 
       if (!Number.isFinite(delay) || delay < 0)
       {
@@ -298,8 +300,8 @@ export class AnimationAPI
       }
 
       // Cache any target element allowing AnimationManager to stop animation if it becomes disconnected from DOM.
-      const targetEl = parent instanceof HTMLElement ? parent : parent?.elementTarget;
-      const el = targetEl instanceof HTMLElement && targetEl.isConnected ? targetEl : void 0;
+      const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
+      const el = A11yHelper.isFocusTarget(targetEl) && targetEl.isConnected ? targetEl : void 0;
 
       if (!Number.isFinite(delay) || delay < 0)
       {
@@ -383,8 +385,8 @@ export class AnimationAPI
       }
 
       // Cache any target element allowing AnimationManager to stop animation if it becomes disconnected from DOM.
-      const targetEl = parent instanceof HTMLElement ? parent : parent?.elementTarget;
-      const el = targetEl instanceof HTMLElement && targetEl.isConnected ? targetEl : void 0;
+      const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
+      const el = A11yHelper.isFocusTarget(targetEl) && targetEl.isConnected ? targetEl : void 0;
 
       if (!Number.isFinite(delay) || delay < 0)
       {
@@ -560,8 +562,8 @@ export class AnimationAPI
          setNumericDefaults(destination);
 
          // Set target element to animation data to track if it is removed from the DOM hence ending the animation.
-         const targetEl = parent instanceof HTMLElement ? parent : parent?.elementTarget;
-         animationData.el = targetEl instanceof HTMLElement && targetEl.isConnected ? targetEl : void 0;
+         const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
+         animationData.el = A11yHelper.isFocusTarget(targetEl) && targetEl.isConnected ? targetEl : void 0;
 
          // Reschedule the quickTo animation with AnimationManager as it is finished.
          if (animationData.finished)

@@ -1,5 +1,7 @@
 import { propertyStore }         from '#runtime/svelte/store/writable-derived';
 
+import { A11yHelper }            from '#runtime/util/browser';
+
 import {
    isIterable,
    isObject,
@@ -380,10 +382,10 @@ export class TJSPosition
       subscribeIgnoreFirst(this.#stores.resizeObserved, (resizeData) =>
       {
          const parent = this.#parent;
-         const el = parent instanceof HTMLElement ? parent : parent?.elementTarget;
+         const el = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
 
          // Only invoke set if there is a target element and the resize data has a valid offset width & height.
-         if (el instanceof HTMLElement && Number.isFinite(resizeData?.offsetWidth) &&
+         if (A11yHelper.isFocusTarget(el) && Number.isFinite(resizeData?.offsetWidth) &&
           Number.isFinite(resizeData?.offsetHeight))
          {
             this.set(data);
@@ -524,7 +526,7 @@ export class TJSPosition
     */
    set parent(parent)
    {
-      if (parent !== void 0 && !(parent instanceof HTMLElement) && !isObject(parent))
+      if (parent !== void 0 && !A11yHelper.isFocusTarget(parent) && !isObject(parent))
       {
          throw new TypeError(`'parent' is not an HTMLElement, object, or undefined.`);
       }
@@ -885,8 +887,8 @@ export class TJSPosition
       const transforms = this.#transforms;
 
       // Find the target HTML element and verify that it is connected storing it in `el`.
-      const targetEl = parent instanceof HTMLElement ? parent : parent?.elementTarget;
-      const el = targetEl instanceof HTMLElement && targetEl.isConnected ? targetEl : void 0;
+      const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
+      const el = A11yHelper.isFocusTarget(targetEl) && targetEl.isConnected ? targetEl : void 0;
 
       const changeSet = this.#positionChangeSet;
       const styleCache = this.#styleCache;

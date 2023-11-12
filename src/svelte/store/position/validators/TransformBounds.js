@@ -1,4 +1,5 @@
 import { clamp }              from '#runtime/math/util';
+import { A11yHelper }         from '#runtime/util/browser';
 
 import { TJSTransformData }   from '../transform/TJSTransformData.js';
 
@@ -80,7 +81,7 @@ export class TransformBounds
    {
       if (this.#lock) { return; }
 
-      if (element === void 0 || element === null || element instanceof HTMLElement)
+      if (element === void 0 || element === null || A11yHelper.isFocusTarget(element))
       {
          this.#element = element;
       }

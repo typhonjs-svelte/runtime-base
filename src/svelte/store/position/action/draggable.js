@@ -1,8 +1,10 @@
-import { cubicOut }  from '#svelte/easing';
+import { cubicOut }     from '#svelte/easing';
+
+import { A11yHelper }   from '#runtime/util/browser';
 
 import {
    isIterable,
-   isObject }        from '#runtime/util/object';
+   isObject }           from '#runtime/util/object';
 
 /**
  * Provides an action to enable pointer dragging of an HTMLElement and invoke `position.set` on a given
@@ -137,7 +139,7 @@ function draggable(node, { position, active = true, button = 0, storeDragging = 
 
       // Potentially ignore this event if `ignoreTargetClassList` is defined and the `event.target` has a matching
       // class.
-      if (ignoreTargetClassList !== void 0 && event.target instanceof HTMLElement)
+      if (ignoreTargetClassList !== void 0 && A11yHelper.isFocusTarget(event.target))
       {
          for (const targetClass of ignoreTargetClassList)
          {
@@ -147,7 +149,7 @@ function draggable(node, { position, active = true, button = 0, storeDragging = 
 
       // Potentially ignore this event if `hasTargetClassList` is defined and the `event.target` does not have any
       // matching class from the list.
-      if (hasTargetClassList !== void 0 && event.target instanceof HTMLElement)
+      if (hasTargetClassList !== void 0 && A11yHelper.isFocusTarget(event.target))
       {
          let foundTarget = false;
 

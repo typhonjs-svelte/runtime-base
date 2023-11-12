@@ -1,8 +1,10 @@
-import { writable }           from '#svelte/store';
+import { writable }        from '#svelte/store';
 
-import { propertyStore }      from '#runtime/svelte/store/writable-derived';
+import { propertyStore }   from '#runtime/svelte/store/writable-derived';
 
-import { StyleParse }         from '#runtime/util/browser';
+import {
+   A11yHelper,
+   StyleParse }            from '#runtime/util/browser';
 
 export class StyleCache
 {
@@ -71,7 +73,7 @@ export class StyleCache
     */
    get offsetHeight()
    {
-      if (this.el instanceof HTMLElement)
+      if (A11yHelper.isFocusTarget(this.el))
       {
          return this.resizeObserved.offsetHeight !== void 0 ? this.resizeObserved.offsetHeight : this.el.offsetHeight;
       }
@@ -88,7 +90,7 @@ export class StyleCache
     */
    get offsetWidth()
    {
-      if (this.el instanceof HTMLElement)
+      if (A11yHelper.isFocusTarget(this.el))
       {
          return this.resizeObserved.offsetWidth !== void 0 ? this.resizeObserved.offsetWidth : this.el.offsetWidth;
       }
@@ -109,7 +111,7 @@ export class StyleCache
    reset()
    {
       // Remove will-change inline style from previous element if it is still connected.
-      if (this.el instanceof HTMLElement && this.el.isConnected && !this.hasWillChange)
+      if (A11yHelper.isFocusTarget(this.el) && this.el.isConnected && !this.hasWillChange)
       {
          this.el.style.willChange = null;
       }

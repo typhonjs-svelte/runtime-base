@@ -1,3 +1,5 @@
+import { A11yHelper } from '#runtime/util/browser';
+
 /**
  * Provides a {@link TJSPositionInitialHelper} implementation to center to element being positioned.
  */
@@ -71,7 +73,7 @@ export class Centered
    {
       if (this.#lock) { return; }
 
-      if (element === void 0  || element === null || element instanceof HTMLElement)
+      if (element === void 0  || element === null || A11yHelper.isFocusTarget(element))
       {
          this.#element = element;
       }

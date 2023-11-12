@@ -1,3 +1,5 @@
+import { A11yHelper } from '#runtime/util/browser';
+
 /**
  * Defines the classic Material Design ripple effect as an action that is attached to an elements focus and blur events.
  * `rippleFocus` is a wrapper around the returned action. This allows it to be easily used as a prop.
@@ -32,7 +34,7 @@ export function rippleFocus({ duration = 300, background = 'rgba(255, 255, 255, 
       element.style.overflow = 'hidden';
 
       const targetEl = typeof selector === 'string' ? element.querySelector(selector) :
-       element.firstChild instanceof HTMLElement ? element.firstChild : element;
+       A11yHelper.isFocusTarget(element.firstChild) ? element.firstChild : element;
 
       let clientX = -1;
       let clientY = -1;

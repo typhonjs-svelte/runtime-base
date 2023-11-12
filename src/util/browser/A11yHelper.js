@@ -521,6 +521,19 @@ export class A11yHelper
    }
 
    /**
+    * Tests if the given `element` is a Element node and has a `focus` method.
+    *
+    * @param {Element}  element - Element to test for focus method.
+    *
+    * @returns {boolean} Whether the element has a focus method.
+    */
+   static isFocusTarget(element)
+   {
+      return element !== void 0 && element !== null && element?.nodeType === Node.ELEMENT_NODE &&
+       typeof element?.focus === 'function';
+   }
+
+   /**
     * Perform a parent traversal from the current active element attempting to match the given element to test whether
     * current active element is within that element.
     *
