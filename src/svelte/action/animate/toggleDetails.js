@@ -91,6 +91,7 @@ export function toggleDetails(details, { store, clickActive = true } = {})
       else
       {
          const a = details.offsetHeight;
+         if (animation) { animation.cancel(); }
          const b = summary.offsetHeight;
 
          details.dataset.closing = 'true';
