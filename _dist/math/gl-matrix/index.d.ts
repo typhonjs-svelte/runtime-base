@@ -4527,4 +4527,4 @@ declare class Mat2 extends Float32Array {
  */
 declare function EnableSwizzles(): void;
 
-export { EnableSwizzles, Mat2, Mat2Like, Mat2d, Mat2dLike, Mat3, Mat3Like, Mat4, Mat4Like, Quat, Quat2, Quat2Like, QuatLike, Vec2, Vec2Like, Vec3, Vec3Like, Vec4, Vec4Like };
+export { EnableSwizzles, Mat2, type Mat2Like, Mat2d, type Mat2dLike, Mat3, type Mat3Like, Mat4, type Mat4Like, Quat, Quat2, type Quat2Like, type QuatLike, Vec2, type Vec2Like, Vec3, type Vec3Like, Vec4, type Vec4Like };

@@ -89,4 +89,4 @@ declare function outroAndDestroy(instance: any): Promise<any>;
  */
 declare function parseTJSSvelteConfig(config: object, thisArg?: any): object;
 
-export { TJSSvelteConfig, isHMRProxy, isSvelteComponent, isTJSSvelteConfig, outroAndDestroy, parseTJSSvelteConfig };
+export { type TJSSvelteConfig, isHMRProxy, isSvelteComponent, isTJSSvelteConfig, outroAndDestroy, parseTJSSvelteConfig };

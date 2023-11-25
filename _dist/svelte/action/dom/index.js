@@ -1,6 +1,6 @@
 import { Timing } from '@typhonjs-svelte/runtime-base/util';
 import { isUpdatableStore, isWritableStore } from '@typhonjs-svelte/runtime-base/util/store';
-import { StyleParse } from '@typhonjs-svelte/runtime-base/util/browser';
+import { A11yHelper, StyleParse } from '@typhonjs-svelte/runtime-base/util/browser';
 import { isObject } from '@typhonjs-svelte/runtime-base/util/object';
 
 /**
@@ -86,7 +86,10 @@ function resizeObserver(node, target)
  */
 resizeObserver.updateCache = function(el)
 {
-   if (!(el instanceof HTMLElement)) { throw new TypeError(`resizeObserverUpdate error: 'el' is not an HTMLElement.`); }
+   if (!A11yHelper.isFocusTarget(el))
+   {
+      throw new TypeError(`resizeObserverUpdate error: 'el' is not an HTMLElement.`);
+   }
 
    const subscribers = s_MAP.get(el);
 
@@ -263,9 +266,9 @@ const s_RESIZE_OBSERVER = new ResizeObserver((entries) =>
  */
 function s_GET_UPDATE_TYPE(target)
 {
-   if (target?.resizeObserved instanceof Function) { return s_UPDATE_TYPES.resizeObserved; }
-   if (target?.setDimension instanceof Function) { return s_UPDATE_TYPES.setDimension; }
-   if (target?.setContentBounds instanceof Function) { return s_UPDATE_TYPES.setContentBounds; }
+   if (typeof target?.resizeObserved === 'function') { return s_UPDATE_TYPES.resizeObserved; }
+   if (typeof target?.setDimension === 'function') { return s_UPDATE_TYPES.setDimension; }
+   if (typeof target?.setContentBounds === 'function') { return s_UPDATE_TYPES.setContentBounds; }
 
    const targetType = typeof target;
 

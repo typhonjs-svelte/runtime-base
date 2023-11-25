@@ -30,4 +30,4 @@ type TJSBasicAnimation = {
     cancel: Function;
 };
 
-export { TJSBasicAnimation, nextAnimationFrame };
+export { type TJSBasicAnimation, nextAnimationFrame };

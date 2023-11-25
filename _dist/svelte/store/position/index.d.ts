@@ -591,7 +591,8 @@ declare class AdapterValidators {
          */
         id?: any;
         /**
-         * TJSPosition validator function that takes a {@link TJSPositionData }instance potentially modifying it or returning null if invalid.
+         * TJSPosition validator function that takes a {@link TJSPositionData }
+         * instance potentially modifying it or returning null if invalid.
          */
         validator: ValidatorFn;
         /**
@@ -1681,7 +1682,8 @@ type ValidatorData = {
      */
     id?: any;
     /**
-     * TJSPosition validator function that takes a {@link TJSPositionData }instance potentially modifying it or returning null if invalid.
+     * TJSPosition validator function that takes a {@link TJSPositionData }
+     * instance potentially modifying it or returning null if invalid.
      */
     validator: ValidatorFn;
     /**
@@ -1699,4 +1701,4 @@ type ValidatorData = {
  */
 type TJSPositionValidatorOptions = ValidatorFn | ValidatorData | Iterable<ValidatorFn | ValidatorData>;
 
-export { AdapterValidators, AnimationAPI, AnimationGroupAPI, BasicBounds, Centered, PositionStateAPI, ResizeObserverData, TJSPosition, TJSPositionData, TJSPositionDataExtended, TJSPositionGetOptions, TJSPositionInitialHelper, TJSPositionOptions, TJSPositionOptionsAll, TJSPositionParent, TJSPositionStores, TJSPositionValidatorOptions, TJSPositionable, TJSTransformData, TJSTransformOrigin, TJSTransforms, TransformBounds, ValidationData, ValidatorData, ValidatorFn, applyPosition, draggable, quickToCallback };
+export { AdapterValidators, AnimationAPI, AnimationGroupAPI, BasicBounds, Centered, PositionStateAPI, type ResizeObserverData, TJSPosition, TJSPositionData, type TJSPositionDataExtended, type TJSPositionGetOptions, type TJSPositionInitialHelper, type TJSPositionOptions, type TJSPositionOptionsAll, type TJSPositionParent, type TJSPositionStores, type TJSPositionValidatorOptions, type TJSPositionable, TJSTransformData, type TJSTransformOrigin, TJSTransforms, TransformBounds, type ValidationData, type ValidatorData, type ValidatorFn, applyPosition, draggable, type quickToCallback };

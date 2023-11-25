@@ -2,6 +2,7 @@ import { tick } from 'svelte';
 import { subscribeFirstRest } from '@typhonjs-svelte/runtime-base/util/store';
 import { Timing } from '@typhonjs-svelte/runtime-base/util';
 import { isObject } from '@typhonjs-svelte/runtime-base/util/object';
+import { A11yHelper } from '@typhonjs-svelte/runtime-base/util/browser';
 
 /**
  * Defines an `Element.animate` animation from provided keyframes and options.
@@ -27,13 +28,15 @@ import { isObject } from '@typhonjs-svelte/runtime-base/util/object';
  */
 function animate({ duration = 600, keyframes = [], options, event = 'click', debounce } = {})
 {
-   return (element) =>
+   return (element, { disabled = false } = {}) =>
    {
       /**
        * Creates WAAPI animation.
        */
       function createAnimation()
       {
+         if (disabled) { return; }
+
          element.animate(keyframes, isObject(options) ? options : duration);
       }
 
@@ -43,6 +46,10 @@ function animate({ duration = 600, keyframes = [], options, event = 'click', deb
       element.addEventListener(event, eventFn);
 
       return {
+         update: (options) =>
+         {
+            if (typeof options?.disabled === 'boolean') { disabled = options.disabled; }
+         },
          destroy: () => element.removeEventListener(event, eventFn)
       };
    };
@@ -91,6 +98,12 @@ function composable(...actions)
  * Note: A negative one translateZ transform is applied to the added spans allowing other content to be layered on top
  * with a positive translateZ.
  *
+ * Note: The ripple effect requires the `efx` element to have overflow hidden. This is set inline when the effect is
+ * applied.
+ *
+ * Note: A CustomEvent `efx-trigger` is handled in cases when explicit triggering is necessary. This event should
+ * have the actual source event as a property of `detail`.
+ *
  * Styling: There is a single CSS variable `--tjs-action-ripple-background` that can be set to control the background.
  *
  * @param {object}   [opts] - Optional parameters.
@@ -104,15 +117,20 @@ function composable(...actions)
  *
  * @param {string}   [opts.keyCode='Enter'] - Key code to trigger for any applicable key events.
  *
+ * @param {boolean}  [opts.contextmenu=false] - Add triggering for context menu key and click.
+ *
  * @param {number}   [opts.debounce=undefined] - Add a debounce to incoming events in milliseconds.
  *
  * @returns {import('svelte/action').Action} Actual action.
  */
 function ripple({ duration = 600, background = 'rgba(255, 255, 255, 0.7)', events = ['click', 'keyup'],
- keyCode = 'Enter', debounce } = {})
+ keyCode = 'Enter', contextmenu = false, debounce } = {})
 {
-   return (element) =>
+   return (element, { disabled = false } = {}) =>
    {
+      // Ripple requires the efx element to have the overflow hidden due to rendering content outside the boundary.
+      element.style.overflow = 'hidden';
+
       /**
        * Creates the ripple effect.
        *
@@ -120,6 +138,8 @@ function ripple({ duration = 600, background = 'rgba(255, 255, 255, 0.7)', event
        */
       function createRipple(e)
       {
+         if (disabled) { return; }
+
          const elementRect = element.getBoundingClientRect();
 
          const diameter = Math.max(elementRect.width, elementRect.height);
@@ -165,17 +185,35 @@ function ripple({ duration = 600, background = 'rgba(255, 255, 255, 0.7)', event
       }
 
       /**
+       * Handles a custom event trigger `efx-trigger`. The `CustomEvent` should have an `event` object accessible from
+       * `detail`.
+       *
+       * @param {CustomEvent} event - CustomEvent.
+       */
+      function customHandler(event)
+      {
+         const actual = event?.detail?.event;
+
+         if (actual instanceof KeyboardEvent || actual instanceof MouseEvent) { createRipple(actual); }
+      }
+
+      /**
        * Handles any key event and only triggers the ripple effect if key code matches.
        *
        * @param {KeyboardEvent}  event -
        */
       function keyHandler(event)
       {
+         if (disabled) { return; }
+
          if (event?.code === keyCode) { createRipple(event); }
       }
 
       const eventFn = Number.isInteger(debounce) && debounce > 0 ? Timing.debounce(createRipple, debounce) :
        createRipple;
+
+      const customEventFn = Number.isInteger(debounce) && debounce > 0 ? Timing.debounce(customHandler, debounce) :
+       customHandler;
 
       const keyEventFn = Number.isInteger(debounce) && debounce > 0 ? Timing.debounce(keyHandler, debounce) :
        keyHandler;
@@ -192,7 +230,15 @@ function ripple({ duration = 600, background = 'rgba(255, 255, 255, 0.7)', event
          }
       }
 
+      element.addEventListener('efx-trigger', customEventFn);
+
+      if (contextmenu) { element.addEventListener('contextmenu', eventFn); }
+
       return {
+         update: (options) =>
+         {
+            if (typeof options?.disabled === 'boolean') { disabled = options.disabled; }
+         },
          destroy: () =>
          {
             for (const event of events)
@@ -206,6 +252,10 @@ function ripple({ duration = 600, background = 'rgba(255, 255, 255, 0.7)', event
                   element.removeEventListener(event, eventFn);
                }
             }
+
+            element.removeEventListener('efx-trigger', customEventFn);
+
+            if (contextmenu) { element.removeEventListener('contextmenu', eventFn); }
          }
       };
    };
@@ -215,10 +265,13 @@ function ripple({ duration = 600, background = 'rgba(255, 255, 255, 0.7)', event
  * Defines the classic Material Design ripple effect as an action that is attached to an elements focus and blur events.
  * `rippleFocus` is a wrapper around the returned action. This allows it to be easily used as a prop.
  *
- * Note: A negative one translateZ transform is applied to the added span allowing other content to be layered on top
+ * Note: A negative one translateZ transform is applied to the added spans allowing other content to be layered on top
  * with a positive translateZ.
  *
- * If providing the `selectors` option a target child element will be registered for the focus events otherwise the
+ * Note: The ripple effect requires the `efx` element to have overflow hidden. This is set inline when the effect is
+ * applied.
+ *
+ * If providing the `selector` option a target child element will be registered for the focus events otherwise the
  * first child is targeted with a final fallback of the element assigned to this action.
  *
  * Styling: There is a single CSS variable `--tjs-action-ripple-background-focus` that can be set to control the
@@ -226,59 +279,67 @@ function ripple({ duration = 600, background = 'rgba(255, 255, 255, 0.7)', event
  *
  * @param {object}   [opts] - Optional parameters.
  *
- * @param {number}   [opts.duration=600] - Duration in milliseconds.
+ * @param {number}   [opts.duration=300] - Duration in milliseconds.
  *
  * @param {string}   [opts.background='rgba(255, 255, 255, 0.7)'] - A valid CSS background attribute.
  *
- * @param {string}   [opts.selectors] - A valid CSS selectors string.
+ * @param {string}   [opts.selector] - A valid CSS selector string.
  *
  * @returns {import('svelte/action').Action} Actual action.
  */
-function rippleFocus({ duration = 300, background = 'rgba(255, 255, 255, 0.7)', selectors } = {})
+function rippleFocus({ duration = 300, background = 'rgba(255, 255, 255, 0.7)', selector } = {})
 {
-   return (element) =>
+   return (element, { disabled = false } = {}) =>
    {
-      const targetEl = typeof selectors === 'string' ? element.querySelector(selectors) :
-       element.firstChild instanceof HTMLElement ? element.firstChild : element;
+      // Ripple requires the efx element to have the overflow hidden due to rendering content outside the boundary.
+      element.style.overflow = 'hidden';
 
-      let span = void 0;
+      const targetEl = typeof selector === 'string' ? element.querySelector(selector) :
+       A11yHelper.isFocusTarget(element.firstChild) ? element.firstChild : element;
+
       let clientX = -1;
       let clientY = -1;
+
+      /** @type {HTMLSpanElement[]} */
+      const activeSpans = [];
 
       /**
        * WAAPI ripple animation on blur.
        */
       function blurRipple()
       {
+         if (disabled) { return; }
+
          // When clicking outside the browser window or to another tab `document.activeElement` remains
          // the same despite blur being invoked; IE the target element.
-         if (!(span instanceof HTMLElement) || document.activeElement === targetEl)
+         if (activeSpans.length === 0 || document.activeElement === targetEl) { return; }
+
+         for (const span of activeSpans)
          {
-            return;
+            const animation = span.animate(
+             [
+                {  // from
+                   transform: 'scale(3)',
+                   opacity: 0.3,
+                },
+                {  // to
+                   transform: 'scale(.7)',
+                   opacity: 0.0,
+                }
+             ],
+             {
+                duration,
+                fill: 'forwards'
+             });
+
+            animation.onfinish = () =>
+            {
+               if (span.isConnected) { span.remove(); }
+            };
          }
 
-         const animation = span.animate(
-         [
-            {  // from
-               transform: 'scale(3)',
-               opacity: 0.3,
-            },
-            {  // to
-               transform: 'scale(.7)',
-               opacity: 0.0,
-            }
-         ],
-         {
-            duration,
-            fill: 'forwards'
-         });
-
-         animation.onfinish = () =>
-         {
-            clientX = clientY = -1;
-            if (span && span.isConnected) { span.remove(); }
-            span = void 0;
-         };
+         // Remove all active spans as they are now animating out.
+         activeSpans.length = 0;
       }
 
       /**
@@ -286,8 +347,10 @@ function rippleFocus({ duration = 300, background = 'rgba(255, 255, 255, 0.7)', 
        */
       function focusRipple()
       {
+         if (disabled) { return; }
+
          // If already focused and the span exists do not create another ripple effect.
-         if (span instanceof HTMLElement) { return; }
+         if (activeSpans.length > 0) { return; }
 
          const elementRect = element.getBoundingClientRect();
 
@@ -296,14 +359,14 @@ function rippleFocus({ duration = 300, background = 'rgba(255, 255, 255, 0.7)', 
          // the app / screen. If the next pointer down occurs on the target element the focus callback occurs before
          // pointer down in Chrome and Firefox.
          const actualX = clientX >= 0 ? clientX : elementRect.left + (elementRect.width / 2);
-         const actualY = clientX >= 0 ? clientY : elementRect.top + (elementRect.height / 2);
+         const actualY = clientY >= 0 ? clientY : elementRect.top + (elementRect.height / 2);
 
          const diameter = Math.max(elementRect.width, elementRect.height);
          const radius = diameter / 2;
          const left = `${actualX - (elementRect.left + radius)}px`;
          const top = `${actualY - (elementRect.top + radius)}px`;
 
-         span = document.createElement('span');
+         const span = document.createElement('span');
 
          span.style.position = 'absolute';
          span.style.width = `${diameter}px`;
@@ -320,6 +383,8 @@ function rippleFocus({ duration = 300, background = 'rgba(255, 255, 255, 0.7)', 
 
          element.prepend(span);
 
+         activeSpans.push(span);
+
          span.animate([
             {  // from
                transform: 'scale(.7)',
@@ -334,6 +399,9 @@ function rippleFocus({ duration = 300, background = 'rgba(255, 255, 255, 0.7)', 
             duration,
             fill: 'forwards'
          });
+
+         // Reset stored pointer position.
+         clientX = clientY = -1;
       }
 
       /**
@@ -343,6 +411,8 @@ function rippleFocus({ duration = 300, background = 'rgba(255, 255, 255, 0.7)', 
        */
       function onPointerDown(e)
       {
+         if (disabled) { return; }
+
          clientX = e.clientX;
          clientY = e.clientY;
       }
@@ -352,6 +422,14 @@ function rippleFocus({ duration = 300, background = 'rgba(255, 255, 255, 0.7)', 
       targetEl.addEventListener('focus', focusRipple);
 
       return {
+         update: (options) =>
+         {
+            if (typeof options?.disabled === 'boolean')
+            {
+               disabled = options.disabled;
+               if (disabled) { blurRipple(); }
+            }
+         },
          destroy: () =>
          {
             targetEl.removeEventListener('pointerdown', onPointerDown);
@@ -451,6 +529,7 @@ function toggleDetails(details, { store, clickActive = true } = {})
       else
       {
          const a = details.offsetHeight;
+         if (animation) { animation.cancel(); }
          const b = summary.offsetHeight;
 
          details.dataset.closing = 'true';

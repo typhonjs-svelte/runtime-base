@@ -155,4 +155,4 @@ declare namespace resizeObserver {
     function updateCache(el: HTMLElement): void;
 }
 
-export { ResizeObserverFunction, ResizeObserverObject, ResizeObserverObjectExtended, ResizeObserverTarget, alwaysBlur, applyScrolltop, applyStyles, autoBlur, isFocused, resizeObserver };
+export { type ResizeObserverFunction, type ResizeObserverObject, type ResizeObserverObjectExtended, type ResizeObserverTarget, alwaysBlur, applyScrolltop, applyStyles, autoBlur, isFocused, resizeObserver };

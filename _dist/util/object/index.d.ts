@@ -315,4 +315,4 @@ interface JSONObject {
 interface JSONArray extends Array<JSONValue> {
 }
 
-export { JSONArray, JSONObject, JSONValue, Primitive, SafeSetOperation, ValidationEntry, deepFreeze, deepMerge, depthTraverse, getAccessorList, hasAccessor, hasGetter, hasPrototype, hasSetter, isAsyncIterable, isIterable, isObject, isPlainObject, klona, objectKeys, objectSize, safeAccess, safeBatchSet, safeEqual, safeSet, safeSetAll, validate, validateArray, validateEntry, validateEntryOrArray };
+export { type JSONArray, type JSONObject, type JSONValue, type Primitive, type SafeSetOperation, type ValidationEntry, deepFreeze, deepMerge, depthTraverse, getAccessorList, hasAccessor, hasGetter, hasPrototype, hasSetter, isAsyncIterable, isIterable, isObject, isPlainObject, klona, objectKeys, objectSize, safeAccess, safeBatchSet, safeEqual, safeSet, safeSetAll, validate, validateArray, validateEntry, validateEntryOrArray };

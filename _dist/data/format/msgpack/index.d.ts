@@ -75,4 +75,4 @@ declare class PackrStream extends Transform {
 	constructor(options?: Options | { highWaterMark: number, emitClose: boolean, allowHalfOpen: boolean })
 }
 
-export { C1, Decoder, Encoder, FLOAT32_OPTIONS, Options, Packr, PackrStream, Unpackr, UnpackrStream, addExtension, clearSource, decode, encode, isNativeAccelerationEnabled, pack, roundFloat32, unpack, unpackMultiple };
+export { C1, Decoder, Encoder, FLOAT32_OPTIONS, type Options, Packr, PackrStream, Unpackr, UnpackrStream, addExtension, clearSource, decode, encode, isNativeAccelerationEnabled, pack, roundFloat32, unpack, unpackMultiple };

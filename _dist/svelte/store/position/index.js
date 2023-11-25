@@ -1,10 +1,10 @@
 import { propertyStore } from '@typhonjs-svelte/runtime-base/svelte/store/writable-derived';
+import { A11yHelper, StyleParse } from '@typhonjs-svelte/runtime-base/util/browser';
 import { isObject, isIterable, isPlainObject, hasSetter } from '@typhonjs-svelte/runtime-base/util/object';
 import { subscribeIgnoreFirst } from '@typhonjs-svelte/runtime-base/util/store';
 import { cubicOut, linear } from 'svelte/easing';
 import { lerp } from '@typhonjs-svelte/runtime-base/math/interpolate';
 import { writable } from 'svelte/store';
-import { StyleParse } from '@typhonjs-svelte/runtime-base/util/browser';
 import { Vec3, Mat4 } from '@typhonjs-svelte/runtime-base/math/gl-matrix';
 import { nextAnimationFrame } from '@typhonjs-svelte/runtime-base/util/animate';
 import { degToRad, clamp } from '@typhonjs-svelte/runtime-base/math/util';
@@ -676,8 +676,8 @@ class AnimationAPI
       }
 
       // Cache any target element allowing AnimationManager to stop animation if it becomes disconnected from DOM.
-      const targetEl = parent instanceof HTMLElement ? parent : parent?.elementTarget;
-      const el = targetEl instanceof HTMLElement && targetEl.isConnected ? targetEl : void 0;
+      const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
+      const el = A11yHelper.isFocusTarget(targetEl) && targetEl.isConnected ? targetEl : void 0;
 
       if (!Number.isFinite(delay) || delay < 0)
       {
@@ -760,8 +760,8 @@ class AnimationAPI
       }
 
       // Cache any target element allowing AnimationManager to stop animation if it becomes disconnected from DOM.
-      const targetEl = parent instanceof HTMLElement ? parent : parent?.elementTarget;
-      const el = targetEl instanceof HTMLElement && targetEl.isConnected ? targetEl : void 0;
+      const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
+      const el = A11yHelper.isFocusTarget(targetEl) && targetEl.isConnected ? targetEl : void 0;
 
       if (!Number.isFinite(delay) || delay < 0)
       {
@@ -845,8 +845,8 @@ class AnimationAPI
       }
 
       // Cache any target element allowing AnimationManager to stop animation if it becomes disconnected from DOM.
-      const targetEl = parent instanceof HTMLElement ? parent : parent?.elementTarget;
-      const el = targetEl instanceof HTMLElement && targetEl.isConnected ? targetEl : void 0;
+      const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
+      const el = A11yHelper.isFocusTarget(targetEl) && targetEl.isConnected ? targetEl : void 0;
 
       if (!Number.isFinite(delay) || delay < 0)
       {
@@ -1022,8 +1022,8 @@ class AnimationAPI
          setNumericDefaults(destination);
 
          // Set target element to animation data to track if it is removed from the DOM hence ending the animation.
-         const targetEl = parent instanceof HTMLElement ? parent : parent?.elementTarget;
-         animationData.el = targetEl instanceof HTMLElement && targetEl.isConnected ? targetEl : void 0;
+         const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
+         animationData.el = A11yHelper.isFocusTarget(targetEl) && targetEl.isConnected ? targetEl : void 0;
 
          // Reschedule the quickTo animation with AnimationManager as it is finished.
          if (animationData.finished)
@@ -2153,7 +2153,7 @@ class Centered
    {
       if (this.#lock) { return; }
 
-      if (element === void 0  || element === null || element instanceof HTMLElement)
+      if (element === void 0  || element === null || A11yHelper.isFocusTarget(element))
       {
          this.#element = element;
       }
@@ -2726,7 +2726,7 @@ class StyleCache
     */
    get offsetHeight()
    {
-      if (this.el instanceof HTMLElement)
+      if (A11yHelper.isFocusTarget(this.el))
       {
          return this.resizeObserved.offsetHeight !== void 0 ? this.resizeObserved.offsetHeight : this.el.offsetHeight;
       }
@@ -2743,7 +2743,7 @@ class StyleCache
     */
    get offsetWidth()
    {
-      if (this.el instanceof HTMLElement)
+      if (A11yHelper.isFocusTarget(this.el))
       {
          return this.resizeObserved.offsetWidth !== void 0 ? this.resizeObserved.offsetWidth : this.el.offsetWidth;
       }
@@ -2764,7 +2764,7 @@ class StyleCache
    reset()
    {
       // Remove will-change inline style from previous element if it is still connected.
-      if (this.el instanceof HTMLElement && this.el.isConnected && !this.hasWillChange)
+      if (A11yHelper.isFocusTarget(this.el) && this.el.isConnected && !this.hasWillChange)
       {
          this.el.style.willChange = null;
       }
@@ -4051,7 +4051,7 @@ class BasicBounds
    {
       if (this.#lock) { return; }
 
-      if (element === void 0  || element === null || element instanceof HTMLElement)
+      if (element === void 0  || element === null || A11yHelper.isFocusTarget(element))
       {
          this.#element = element;
       }
@@ -4248,7 +4248,7 @@ class TransformBounds
    {
       if (this.#lock) { return; }
 
-      if (element === void 0 || element === null || element instanceof HTMLElement)
+      if (element === void 0 || element === null || A11yHelper.isFocusTarget(element))
       {
          this.#element = element;
       }
@@ -5132,10 +5132,10 @@ class TJSPosition
       subscribeIgnoreFirst(this.#stores.resizeObserved, (resizeData) =>
       {
          const parent = this.#parent;
-         const el = parent instanceof HTMLElement ? parent : parent?.elementTarget;
+         const el = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
 
          // Only invoke set if there is a target element and the resize data has a valid offset width & height.
-         if (el instanceof HTMLElement && Number.isFinite(resizeData?.offsetWidth) &&
+         if (A11yHelper.isFocusTarget(el) && Number.isFinite(resizeData?.offsetWidth) &&
           Number.isFinite(resizeData?.offsetHeight))
          {
             this.set(data);
@@ -5276,7 +5276,7 @@ class TJSPosition
     */
    set parent(parent)
    {
-      if (parent !== void 0 && !(parent instanceof HTMLElement) && !isObject(parent))
+      if (parent !== void 0 && !A11yHelper.isFocusTarget(parent) && !isObject(parent))
       {
          throw new TypeError(`'parent' is not an HTMLElement, object, or undefined.`);
       }
@@ -5637,8 +5637,8 @@ class TJSPosition
       const transforms = this.#transforms;
 
       // Find the target HTML element and verify that it is connected storing it in `el`.
-      const targetEl = parent instanceof HTMLElement ? parent : parent?.elementTarget;
-      const el = targetEl instanceof HTMLElement && targetEl.isConnected ? targetEl : void 0;
+      const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
+      const el = A11yHelper.isFocusTarget(targetEl) && targetEl.isConnected ? targetEl : void 0;
 
       const changeSet = this.#positionChangeSet;
       const styleCache = this.#styleCache;
@@ -6284,7 +6284,7 @@ function draggable(node, { position, active = true, button = 0, storeDragging = 
 
       // Potentially ignore this event if `ignoreTargetClassList` is defined and the `event.target` has a matching
       // class.
-      if (ignoreTargetClassList !== void 0 && event.target instanceof HTMLElement)
+      if (ignoreTargetClassList !== void 0 && A11yHelper.isFocusTarget(event.target))
       {
          for (const targetClass of ignoreTargetClassList)
          {
@@ -6294,7 +6294,7 @@ function draggable(node, { position, active = true, button = 0, storeDragging = 
 
       // Potentially ignore this event if `hasTargetClassList` is defined and the `event.target` does not have any
       // matching class from the list.
-      if (hasTargetClassList !== void 0 && event.target instanceof HTMLElement)
+      if (hasTargetClassList !== void 0 && A11yHelper.isFocusTarget(event.target))
       {
          let foundTarget = false;
 

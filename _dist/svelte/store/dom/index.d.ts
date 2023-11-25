@@ -124,4 +124,4 @@ type KeyStoreOptions = {
  */
 declare function keyforward(node: HTMLElement, keyStore: KeyStore): svelte_action.ActionReturn<KeyStore>;
 
-export { KeyStore, KeyStoreOptions, keyforward };
+export { KeyStore, type KeyStoreOptions, keyforward };

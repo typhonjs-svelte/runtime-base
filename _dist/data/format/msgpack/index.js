@@ -163,8 +163,8 @@ class Unpackr {
 		}
 		return this.structures = loadedStructures
 	}
-	decode(source, end) {
-		return this.unpack(source, end)
+	decode(source, options) {
+		return this.unpack(source, options)
 	}
 }
 function checkedRead(options) {
@@ -1158,6 +1158,7 @@ class Packr extends Unpackr {
 			} else
 				position = (position + 7) & 0x7ffffff8; // Word align to make any future copying of this buffer faster
 			start = position;
+			if (encodeOptions & RESERVE_START_SPACE) position += (encodeOptions & 0xff);
 			referenceMap = packr.structuredClone ? new Map() : null;
 			if (packr.bundleStrings && typeof value !== 'string') {
 				bundledStrings = [];
@@ -1259,7 +1260,7 @@ class Packr extends Unpackr {
 						let newSharedData = prepareStructures(structures, packr);
 						if (packr.saveStructures(newSharedData, newSharedData.isCompatible) === false) {
 							// get updated structures and try again if the update failed
-							return packr.pack(value)
+							return packr.pack(value, encodeOptions)
 						}
 						packr.lastNamedStructuresLength = sharedLength;
 						return returnBuffer
@@ -1853,7 +1854,7 @@ class Packr extends Unpackr {
 			}
 		};
 		const writeStruct = (object, safePrototype) => {
-			let newPosition = writeStructSlots(object, target, position, structures, makeRoom, (value, newPosition, notifySharedUpdate) => {
+			let newPosition = writeStructSlots(object, target, start, position, structures, makeRoom, (value, newPosition, notifySharedUpdate) => {
 				if (notifySharedUpdate)
 					return hasSharedUpdate = true;
 				position = newPosition;
@@ -2121,6 +2122,7 @@ const Encoder = Packr;
 const { NEVER, ALWAYS, DECIMAL_ROUND, DECIMAL_FIT } = FLOAT32_OPTIONS;
 const REUSE_BUFFER_MODE = 512;
 const RESET_BUFFER_MODE = 1024;
+const RESERVE_START_SPACE = 2048;
 
 /**
  * Given an Iterable first argument, returns an Iterable where each value is packed as a Buffer

@@ -1961,7 +1961,7 @@ class DynMapReducer {
  * @param {object}   [opts] - Optional parameters.
  *
  * @param {boolean}  [opts.accessWarn=false] - When true warnings will be posted if accessor not retrieved.
-  *
+ *
  * @param {boolean}  [opts.caseSensitive=false] - When true regex test is case-sensitive.
  *
  * @param {import('svelte/store').Writable<string>}  [opts.store] - Use the provided store to instead of creating

@@ -175,6 +175,7 @@ type CrudArrayObjectStoreParamProps = {
     extraData?: object;
 };
 /**
+ *
  * A function that accepts an object w/ 'action', 'moduleId', 'key' properties and optional 'id' / UUIDv4 string and
  * 'data' property.
  */
@@ -215,4 +216,4 @@ type BaseArrayObjectEntryStore = svelte_store.Writable<any> & {
     get id(): string;
 };
 
-export { ArrayObjectStore, ArrayObjectStoreParams, ArrayObjectUpdateData, BaseArrayObjectEntryStore, CrudArrayObjectStore, CrudArrayObjectStoreParamProps, CrudArrayObjectStoreParams, CrudDispatch, ObjectEntryStore };
+export { ArrayObjectStore, type ArrayObjectStoreParams, type ArrayObjectUpdateData, type BaseArrayObjectEntryStore, CrudArrayObjectStore, type CrudArrayObjectStoreParamProps, type CrudArrayObjectStoreParams, type CrudDispatch, ObjectEntryStore };

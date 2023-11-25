@@ -44,6 +44,8 @@ interface InflateStreamOptions {
 interface InflateOptions extends InflateStreamOptions {
     /**
      * The buffer into which to write the decompressed data. Saves memory if you know the decompressed size in advance.
+     *
+     * Note that if the decompression result is larger than the size of this buffer, it will be truncated to fit.
      */
     out?: Uint8Array;
 }
@@ -58,6 +60,8 @@ interface GunzipStreamOptions extends InflateStreamOptions {
 interface GunzipOptions extends InflateStreamOptions {
     /**
      * The buffer into which to write the decompressed data. GZIP already encodes the output size, so providing this doesn't save memory.
+     *
+     * Note that if the decompression result is larger than the size of this buffer, it will be truncated to fit.
      */
     out?: Uint8Array;
 }
@@ -138,20 +142,20 @@ interface ZlibOptions extends DeflateOptions {
  * @param data The data output from the stream processor
  * @param final Whether this is the final block
  */
-declare type FlateStreamHandler = (data: Uint8Array, final: boolean) => void;
+type FlateStreamHandler = (data: Uint8Array, final: boolean) => void;
 /**
  * Handler for asynchronous data (de)compression streams
  * @param err Any error that occurred
  * @param data The data output from the stream processor
  * @param final Whether this is the final block
  */
-declare type AsyncFlateStreamHandler = (err: FlateError | null, data: Uint8Array, final: boolean) => void;
+type AsyncFlateStreamHandler = (err: FlateError | null, data: Uint8Array, final: boolean) => void;
 /**
  * Callback for asynchronous (de)compression methods
  * @param err Any error that occurred
  * @param data The resulting data. Only present if `err` is null
  */
-declare type FlateCallback = (err: FlateError | null, data: Uint8Array) => void;
+type FlateCallback = (err: FlateError | null, data: Uint8Array) => void;
 interface AsyncOptions {
     /**
      * Whether or not to "consume" the source data. This will make the typed array/buffer you pass in
@@ -460,7 +464,7 @@ declare function gzipSync(data: Uint8Array, opts?: GzipOptions): Uint8Array;
  * Handler for new GZIP members in concatenated GZIP streams. Useful for building indices used to perform random-access reads on compressed files.
  * @param offset The offset of the new member relative to the start of the stream
  */
-declare type GunzipMemberHandler = (offset: number) => void;
+type GunzipMemberHandler = (offset: number) => void;
 /**
  * Streaming single or multi-member GZIP decompression
  */
@@ -737,12 +741,12 @@ declare class Decompress {
      * @param opts The decompression options
      * @param cb The callback to call whenever data is decompressed
      */
-    constructor(opts: InflateStreamOptions, cb?: AsyncFlateStreamHandler);
+    constructor(opts: InflateStreamOptions, cb?: FlateStreamHandler);
     /**
      * Creates a decompression stream
      * @param cb The callback to call whenever data is decompressed
      */
-    constructor(cb?: AsyncFlateStreamHandler);
+    constructor(cb?: FlateStreamHandler);
     /**
      * Pushes a chunk to be decompressed
      * @param chunk The chunk to push
@@ -880,11 +884,11 @@ interface AsyncUnzipOptions extends UnzipOptions {
 /**
  * A file that can be used to create a ZIP archive
  */
-declare type ZippableFile = Uint8Array | Zippable | [Uint8Array | Zippable, ZipOptions];
+type ZippableFile = Uint8Array | Zippable | [Uint8Array | Zippable, ZipOptions];
 /**
  * A file that can be used to asynchronously create a ZIP archive
  */
-declare type AsyncZippableFile = Uint8Array | AsyncZippable | [Uint8Array | AsyncZippable, AsyncZipOptions];
+type AsyncZippableFile = Uint8Array | AsyncZippable | [Uint8Array | AsyncZippable, AsyncZipOptions];
 /**
  * The complete directory structure of a ZIPpable archive
  */
@@ -909,18 +913,18 @@ interface Unzipped {
  * @param data The string output from the stream processor
  * @param final Whether this is the final block
  */
-declare type StringStreamHandler = (data: string, final: boolean) => void;
+type StringStreamHandler = (data: string, final: boolean) => void;
 /**
  * Callback for asynchronous ZIP decompression
  * @param err Any error that occurred
  * @param data The decompressed ZIP archive
  */
-declare type UnzipCallback = (err: FlateError | null, data: Unzipped) => void;
+type UnzipCallback = (err: FlateError | null, data: Unzipped) => void;
 /**
  * Handler for streaming ZIP decompression
  * @param file The file that was found in the archive
  */
-declare type UnzipFileHandler = (file: UnzipFile) => void;
+type UnzipFileHandler = (file: UnzipFile) => void;
 /**
  * Streaming UTF-8 decoding
  */
@@ -1268,7 +1272,7 @@ interface UnzipFileInfo {
  * @param file The info for the current file being processed
  * @returns Whether or not to extract the current file
  */
-declare type UnzipFileFilter = (file: UnzipFileInfo) => boolean;
+type UnzipFileFilter = (file: UnzipFileInfo) => boolean;
 /**
  * Streaming file extraction from ZIP archives
  */
@@ -1401,4 +1405,4 @@ declare function unzip(data: Uint8Array, cb: UnzipCallback): AsyncTerminable;
  */
 declare function unzipSync(data: Uint8Array, opts?: UnzipOptions): Unzipped;
 
-export { AsyncGzip as AsyncCompress, AsyncDecompress, AsyncDeflate, AsyncDeflateOptions, AsyncFlateStreamHandler, AsyncGunzip, AsyncGunzipOptions, AsyncGzip, AsyncGzipOptions, AsyncInflate, AsyncInflateOptions, AsyncTerminable, AsyncUnzipInflate, AsyncUnzipOptions, AsyncUnzlib, AsyncUnzlibOptions, AsyncZipDeflate, AsyncZipOptions, AsyncZippable, AsyncZippableFile, AsyncZlib, AsyncZlibOptions, Gzip as Compress, DecodeUTF8, Decompress, Deflate, DeflateOptions, EncodeUTF8, FlateCallback, FlateError, FlateErrorCode, FlateStreamHandler, Gunzip, GunzipMemberHandler, GunzipOptions, GunzipStreamOptions, Gzip, GzipOptions, Inflate, InflateOptions, InflateStreamOptions, StringStreamHandler, Unzip, UnzipCallback, UnzipDecoder, UnzipDecoderConstructor, UnzipFile, UnzipFileFilter, UnzipFileHandler, UnzipFileInfo, UnzipInflate, UnzipOptions, UnzipPassThrough, Unzipped, Unzlib, UnzlibOptions, UnzlibStreamOptions, Zip, ZipAttributes, ZipDeflate, ZipInputFile, ZipOptions, ZipPassThrough, Zippable, ZippableFile, Zlib, ZlibOptions, gzip as compress, gzipSync as compressSync, decompress, decompressSync, deflate, deflateSync, gunzip, gunzipSync, gzip, gzipSync, inflate, inflateSync, strFromU8, strToU8, unzip, unzipSync, unzlib, unzlibSync, zip, zipSync, zlib, zlibSync };
+export { AsyncGzip as AsyncCompress, AsyncDecompress, AsyncDeflate, type AsyncDeflateOptions, type AsyncFlateStreamHandler, AsyncGunzip, type AsyncGunzipOptions, AsyncGzip, type AsyncGzipOptions, AsyncInflate, type AsyncInflateOptions, type AsyncTerminable, AsyncUnzipInflate, type AsyncUnzipOptions, AsyncUnzlib, type AsyncUnzlibOptions, AsyncZipDeflate, type AsyncZipOptions, type AsyncZippable, type AsyncZippableFile, AsyncZlib, type AsyncZlibOptions, Gzip as Compress, DecodeUTF8, Decompress, Deflate, type DeflateOptions, EncodeUTF8, type FlateCallback, type FlateError, FlateErrorCode, type FlateStreamHandler, Gunzip, type GunzipMemberHandler, type GunzipOptions, type GunzipStreamOptions, Gzip, type GzipOptions, Inflate, type InflateOptions, type InflateStreamOptions, type StringStreamHandler, Unzip, type UnzipCallback, type UnzipDecoder, type UnzipDecoderConstructor, type UnzipFile, type UnzipFileFilter, type UnzipFileHandler, type UnzipFileInfo, UnzipInflate, type UnzipOptions, UnzipPassThrough, type Unzipped, Unzlib, type UnzlibOptions, type UnzlibStreamOptions, Zip, type ZipAttributes, ZipDeflate, type ZipInputFile, type ZipOptions, ZipPassThrough, type Zippable, type ZippableFile, Zlib, type ZlibOptions, gzip as compress, gzipSync as compressSync, decompress, decompressSync, deflate, deflateSync, gunzip, gunzipSync, gzip, gzipSync, inflate, inflateSync, strFromU8, strToU8, unzip, unzipSync, unzlib, unzlibSync, zip, zipSync, zlib, zlibSync };

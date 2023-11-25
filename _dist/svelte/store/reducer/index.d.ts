@@ -980,4 +980,4 @@ declare class DynReducerHelper {
     };
 }
 
-export { DynArrayData, DynArrayReducer, DynArrayReducerDerived, DynCompareFn, DynDataArrayCreate, DynDataDerivedCreate, DynDataFilter, DynDataMapCreate, DynDataOptions, DynDataSort, DynFilterFn, DynMapData, DynMapReducer, DynMapReducerDerived, DynOptionsArrayCreate, DynOptionsDerivedCreate, DynOptionsMapCreate, DynReducerHelper, IDynArrayReducerCtor, IDynDerivedReducer, IDynDerivedReducerCtor, IDynMapReducerCtor };
+export { type DynArrayData, DynArrayReducer, DynArrayReducerDerived, type DynCompareFn, type DynDataArrayCreate, type DynDataDerivedCreate, type DynDataFilter, type DynDataMapCreate, type DynDataOptions, type DynDataSort, type DynFilterFn, type DynMapData, DynMapReducer, DynMapReducerDerived, type DynOptionsArrayCreate, type DynOptionsDerivedCreate, type DynOptionsMapCreate, DynReducerHelper, type IDynArrayReducerCtor, type IDynDerivedReducer, type IDynDerivedReducerCtor, type IDynMapReducerCtor };

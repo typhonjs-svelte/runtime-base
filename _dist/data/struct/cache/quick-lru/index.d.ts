@@ -1,4 +1,4 @@
-interface Options<KeyType, ValueType> {
+type Options<KeyType, ValueType> = {
 	/**
 	The maximum number of milliseconds an item should remain in the cache.
 
@@ -22,14 +22,10 @@ interface Options<KeyType, ValueType> {
 	Useful for side effects or for items like object URLs that need explicit cleanup (`revokeObjectURL`).
 	*/
 	onEviction?: (key: KeyType, value: ValueType) => void;
-}
+};
 
-declare class QuickLRU<KeyType, ValueType> extends Map implements Iterable<[KeyType, ValueType]> {
-	/**
-	The stored item count.
-	*/
-	readonly size: number;
-
+// eslint-disable-next-line @typescript-eslint/naming-convention
+declare class QuickLRU<KeyType, ValueType> extends Map<KeyType, ValueType> implements Iterable<[KeyType, ValueType]> {
 	/**
 	Simple ["Least Recently Used" (LRU) cache](https://en.m.wikipedia.org/wiki/Cache_replacement_policies#Least_Recently_Used_.28LRU.29).
 
@@ -102,6 +98,16 @@ declare class QuickLRU<KeyType, ValueType> extends Map implements Iterable<[KeyT
 	resize(maxSize: number): void;
 
 	/**
+	The stored item count.
+	*/
+	get size(): number;
+
+	/**
+	The set max size.
+	*/
+	get maxSize(): number;
+
+	/**
 	Iterable for all the keys.
 	*/
 	keys(): IterableIterator<KeyType>;
@@ -122,4 +128,4 @@ declare class QuickLRU<KeyType, ValueType> extends Map implements Iterable<[KeyT
 	entriesDescending(): IterableIterator<[KeyType, ValueType]>;
 }
 
-export { Options, QuickLRU };
+export { type Options, QuickLRU };

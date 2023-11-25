@@ -80,6 +80,8 @@ declare function rotateFade(node: HTMLElement, options?: {
  *
  * @param {object}      [options] - Optional parameters.
  *
+ * @param {'x' | 'y'}   [options.axis] - The sliding axis.
+ *
  * @param {number}      [options.delay] - Delay in ms before start of transition.
  *
  * @param {number}      [options.duration] - Total transition length in ms.
@@ -96,6 +98,7 @@ declare function rotateFade(node: HTMLElement, options?: {
  * @returns {import('svelte/transition').TransitionConfig} Transition config.
  */
 declare function slideFade(node: HTMLElement, options?: {
+    axis?: 'x' | 'y';
     delay?: number;
     duration?: number;
     easing?: svelte_transition.EasingFunction;
@@ -143,4 +146,4 @@ declare class TJSDefaultTransition {
  */
 type TransitionFunction = (node: Element, namedParameters?: object) => svelte_transition.TransitionConfig;
 
-export { TJSDefaultTransition, TransitionFunction, rotate, rotateFade, slideFade, toAnimation };
+export { TJSDefaultTransition, type TransitionFunction, rotate, rotateFade, slideFade, toAnimation };
