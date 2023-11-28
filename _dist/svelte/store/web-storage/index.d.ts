@@ -138,6 +138,37 @@ declare class TJSWebStorage {
      * @returns {boolean} The boolean swap for the given key.
      */
     swapItemBoolean(key: string, defaultValue?: boolean): boolean;
+    /**
+     * @template T
+     *
+     * Returns an iterable for the session storage keys from existing stores.
+     *
+     * @param {RegExp} [regex] - Optional regular expression to filter by storage keys.
+     *
+     * @returns {IterableIterator<[string, import('svelte/store').Writable<T>]>} Iterable iterator of keys and stores.
+     * @yields {import('svelte/store').Writable<T>}
+     */
+    entries<T_1>(regex?: RegExp): IterableIterator<[string, svelte_store.Writable<T_1>]>;
+    /**
+     * Returns an iterable for the session storage keys from existing stores.
+     *
+     * @param {RegExp} [regex] - Optional regular expression to filter by storage keys.
+     *
+     * @returns {IterableIterator<string>} Iterable iterator of session storage keys.
+     * @yields {string}
+     */
+    keys(regex?: RegExp): IterableIterator<string>;
+    /**
+     * @template T
+     *
+     * Returns an iterable for the session storage keys from existing stores.
+     *
+     * @param {RegExp} [regex] - Optional regular expression to filter by storage keys.
+     *
+     * @returns {IterableIterator<import('svelte/store').Writable<T>>} Iterable iterator of stores.
+     * @yields {import('svelte/store').Writable<T>}
+     */
+    values<T_2>(regex?: RegExp): IterableIterator<svelte_store.Writable<T_2>>;
     #private;
 }
 

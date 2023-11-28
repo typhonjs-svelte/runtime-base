@@ -27,28 +27,6 @@ export class TJSWebStorage
       this.#storageStores = storageStores;
    }
 
-
-   /**
-    * @param {string}   key - Storage key.
-    *
-    * @returns {(value: string, ...rest: any[]) => any} Deserialize function.
-    */
-   #getDeserialize(key)
-   {
-      return this.#stores.get(key)?.deserialize ?? this.#storageStores.deserialize;
-   }
-
-
-   /**
-    * @param {string}   key - Storage key.
-    *
-    * @returns {(value: any, ...rest: any[]) => string} Serialize function.
-    */
-   #getSerialize(key)
-   {
-      return this.#stores.get(key)?.serialize ?? this.#storageStores.serialize;
-   }
-
    /**
     * Creates a new store for the given key.
     *
@@ -78,6 +56,26 @@ export class TJSWebStorage
       const writable = storageStores?.writable ?? this.#storageStores.writable;
 
       return writable(key, defaultValue);
+   }
+
+   /**
+    * @param {string}   key - Storage key.
+    *
+    * @returns {(value: string, ...rest: any[]) => any} Deserialize function.
+    */
+   #getDeserialize(key)
+   {
+      return this.#stores.get(key)?.deserialize ?? this.#storageStores.deserialize;
+   }
+
+   /**
+    * @param {string}   key - Storage key.
+    *
+    * @returns {(value: any, ...rest: any[]) => string} Serialize function.
+    */
+   #getSerialize(key)
+   {
+      return this.#stores.get(key)?.serialize ?? this.#storageStores.serialize;
    }
 
    /**
@@ -208,5 +206,92 @@ export class TJSWebStorage
 
       store.set(newValue);
       return newValue;
+   }
+
+   // Iterators ------------------------------------------------------------------------------------------------------
+
+   /**
+    * @template T
+    *
+    * Returns an iterable for the session storage keys from existing stores.
+    *
+    * @param {RegExp} [regex] - Optional regular expression to filter by storage keys.
+    *
+    * @returns {IterableIterator<[string, import('svelte/store').Writable<T>]>} Iterable iterator of keys and stores.
+    * @yields {import('svelte/store').Writable<T>}
+    */
+   *entries(regex = void 0)
+   {
+      if (regex !== void 0 && !(regex instanceof RegExp)) { throw new TypeError(`'regex' is not a RegExp`); }
+
+      if (!this.#stores.size) { return void 0; }
+
+      if (regex)
+      {
+         for (const key of this.#stores.keys())
+         {
+            if (regex.test(key)) { yield [key, this.getStore(key)]; }
+         }
+      }
+      else
+      {
+         for (const key of this.#stores.keys()) { yield [key, this.getStore(key)]; }
+      }
+   }
+
+   /**
+    * Returns an iterable for the session storage keys from existing stores.
+    *
+    * @param {RegExp} [regex] - Optional regular expression to filter by storage keys.
+    *
+    * @returns {IterableIterator<string>} Iterable iterator of session storage keys.
+    * @yields {string}
+    */
+   *keys(regex = void 0)
+   {
+      if (regex !== void 0 && !(regex instanceof RegExp)) { throw new TypeError(`'regex' is not a RegExp`); }
+
+      if (!this.#stores.size) { return void 0; }
+
+      if (regex)
+      {
+         for (const key of this.#stores.keys())
+         {
+            if (regex.test(key)) { yield key; }
+         }
+      }
+      else
+      {
+         for (const key of this.#stores.keys()) { yield key; }
+      }
+   }
+
+   /**
+    * @template T
+    *
+    * Returns an iterable for the session storage keys from existing stores.
+    *
+    * @param {RegExp} [regex] - Optional regular expression to filter by storage keys.
+    *
+    * @returns {IterableIterator<import('svelte/store').Writable<T>>} Iterable iterator of stores.
+    * @yields {import('svelte/store').Writable<T>}
+    */
+   *values(regex = void 0)
+   {
+      if (regex !== void 0 && !(regex instanceof RegExp)) { throw new TypeError(`'regex' is not a RegExp`); }
+
+      if (!this.#stores.size) { return void 0; }
+
+      if (regex)
+      {
+         for (const key of this.#stores.keys())
+         {
+            if (regex.test(key)) { yield this.getStore(key); }
+         }
+      }
+      else
+      {
+         for (const key of this.#stores.keys()) { yield this.getStore(key); }
+      }
    }
 }
