@@ -213,7 +213,7 @@ export class TJSWebStorage
    /**
     * @template T
     *
-    * Returns an iterable for the session storage keys from existing stores.
+    * Returns an iterable for the session storage keys and stores.
     *
     * @param {RegExp} [regex] - Optional regular expression to filter by storage keys.
     *
@@ -269,14 +269,14 @@ export class TJSWebStorage
    /**
     * @template T
     *
-    * Returns an iterable for the session storage keys from existing stores.
+    * Returns an iterable for the session storage stores.
     *
     * @param {RegExp} [regex] - Optional regular expression to filter by storage keys.
     *
     * @returns {IterableIterator<import('svelte/store').Writable<T>>} Iterable iterator of stores.
     * @yields {import('svelte/store').Writable<T>}
     */
-   *values(regex = void 0)
+   *stores(regex = void 0)
    {
       if (regex !== void 0 && !(regex instanceof RegExp)) { throw new TypeError(`'regex' is not a RegExp`); }
 

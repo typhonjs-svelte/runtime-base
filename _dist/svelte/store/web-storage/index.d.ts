@@ -141,7 +141,7 @@ declare class TJSWebStorage {
     /**
      * @template T
      *
-     * Returns an iterable for the session storage keys from existing stores.
+     * Returns an iterable for the session storage keys and stores.
      *
      * @param {RegExp} [regex] - Optional regular expression to filter by storage keys.
      *
@@ -161,14 +161,14 @@ declare class TJSWebStorage {
     /**
      * @template T
      *
-     * Returns an iterable for the session storage keys from existing stores.
+     * Returns an iterable for the session storage stores.
      *
      * @param {RegExp} [regex] - Optional regular expression to filter by storage keys.
      *
      * @returns {IterableIterator<import('svelte/store').Writable<T>>} Iterable iterator of stores.
      * @yields {import('svelte/store').Writable<T>}
      */
-    values<T_2>(regex?: RegExp): IterableIterator<svelte_store.Writable<T_2>>;
+    stores<T_2>(regex?: RegExp): IterableIterator<svelte_store.Writable<T_2>>;
     #private;
 }
 
