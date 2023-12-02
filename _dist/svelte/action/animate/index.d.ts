@@ -129,12 +129,15 @@ declare function rippleFocus({ duration, background, selector }?: {
  *
  * @param {import('svelte/store').Writable<boolean>} opts.store - A boolean store.
  *
+ * @param {boolean} [opts.animate] - When true animate close / open state with WAAPI.
+ *
  * @param {boolean} [opts.clickActive] - When false click events are not handled.
  *
  * @returns {import('svelte/action').ActionReturn} Lifecycle functions.
  */
-declare function toggleDetails(details: HTMLDetailsElement, { store, clickActive }?: {
+declare function toggleDetails(details: HTMLDetailsElement, { store, animate, clickActive }?: {
     store: svelte_store.Writable<boolean>;
+    animate?: boolean;
     clickActive?: boolean;
 }): svelte_action.ActionReturn;
 

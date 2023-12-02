@@ -16,11 +16,13 @@ import { subscribeFirstRest } from '#runtime/util/store';
  *
  * @param {import('svelte/store').Writable<boolean>} opts.store - A boolean store.
  *
+ * @param {boolean} [opts.animate] - When true animate close / open state with WAAPI.
+ *
  * @param {boolean} [opts.clickActive] - When false click events are not handled.
  *
  * @returns {import('svelte/action').ActionReturn} Lifecycle functions.
  */
-export function toggleDetails(details, { store, clickActive = true } = {})
+export function toggleDetails(details, { store, animate = true, clickActive = true } = {})
 {
    /** @type {HTMLElement} */
    const summary = details.querySelector('summary');
@@ -49,29 +51,38 @@ export function toggleDetails(details, { store, clickActive = true } = {})
     *
     * @param {boolean} value -
     */
-   function animate(a, b, value)
+   function animateWAAPI(a, b, value)
    {
-      details.style.overflow = 'hidden';
-
       // Must guard when `b - a === 0`; add a small epsilon and wrap with Math.max.
       const duration = Math.max(0, 30 * Math.log(Math.abs(b - a) + Number.EPSILON));
 
-      animation = details.animate(
-       {
-          height: [`${a}px`, `${b}px`]
-       },
-       {
-          duration,
-          easing: 'ease-out'
-       }
-      );
+      if (animate)
+      {
+         details.style.overflow = 'hidden';
 
-      animation.onfinish = () =>
+         animation = details.animate(
+          {
+             height: [`${a}px`, `${b}px`]
+          },
+          {
+             duration,
+             easing: 'ease-out'
+          }
+         );
+
+         animation.onfinish = () =>
+         {
+            details.open = value;
+            details.dataset.closing = 'false';
+            details.style.overflow = null;
+         };
+      }
+      else
       {
          details.open = value;
          details.dataset.closing = 'false';
-         details.style.overflow = '';
-      };
+         details.style.overflow = null;
+      }
    }
 
    /**
@@ -86,7 +97,7 @@ export function toggleDetails(details, { store, clickActive = true } = {})
          details.open = true;
          const b = details.offsetHeight;
 
-         animate(a, b, true);
+         animateWAAPI(a, b, true);
       }
       else
       {
@@ -96,7 +107,7 @@ export function toggleDetails(details, { store, clickActive = true } = {})
 
          details.dataset.closing = 'true';
 
-         animate(a, b, false);
+         animateWAAPI(a, b, false);
       }
    }
 
