@@ -454,16 +454,33 @@ function rippleFocus({ duration = 300, background = 'rgba(255, 255, 255, 0.7)', 
  *
  * @param {import('svelte/store').Writable<boolean>} opts.store - A boolean store.
  *
- * @param {boolean} [opts.animate] - When true animate close / open state with WAAPI.
+ * @param {boolean} [opts.animate=true] - When true animate close / open state with WAAPI.
  *
- * @param {boolean} [opts.clickActive] - When false click events are not handled.
+ * @param {boolean} [opts.clickActive=true] - When false click events are not handled.
  *
  * @returns {import('svelte/action').ActionReturn} Lifecycle functions.
  */
 function toggleDetails(details, { store, animate = true, clickActive = true } = {})
 {
+   // Add closing data. Useful for animating chevron immediately while closing.
+   details.dataset.closing = 'false';
+
    /** @type {HTMLElement} */
-   const summary = details.querySelector('summary');
+   const summaryEl = details.querySelector('summary');
+
+   /** @type {HTMLElement} */
+   let contentEl = null;
+
+   // Find the first child that is not a summary element; this is the content element. When animating overflow is
+   // set to `hidden` to prevent scrollbars from activating.
+   for (const child of details.children)
+   {
+      if (child.tagName !== 'SUMMARY')
+      {
+         contentEl = child;
+         break;
+      }
+   }
 
    /** @type {Animation} */
    let animation;
@@ -472,7 +489,7 @@ function toggleDetails(details, { store, animate = true, clickActive = true } = 
    let open = details.open;  // eslint-disable-line no-shadow
 
    // The store sets initial open state and handles animation on further changes.
-   const unsubscribe = subscribeFirstRest(store, (value) => { open = value; details.open = open; }, async (value) =>
+   let unsubscribe = subscribeFirstRest(store, (value) => { open = value; details.open = open; }, async (value) =>
    {
       open = value;
 
@@ -497,6 +514,7 @@ function toggleDetails(details, { store, animate = true, clickActive = true } = 
       if (animate)
       {
          details.style.overflow = 'hidden';
+         if (contentEl) { contentEl.style.overflow = 'hidden'; }
 
          animation = details.animate(
           {
@@ -513,6 +531,7 @@ function toggleDetails(details, { store, animate = true, clickActive = true } = 
             details.open = value;
             details.dataset.closing = 'false';
             details.style.overflow = null;
+            if (contentEl) { contentEl.style.overflow = null; }
          };
       }
       else
@@ -520,6 +539,7 @@ function toggleDetails(details, { store, animate = true, clickActive = true } = 
          details.open = value;
          details.dataset.closing = 'false';
          details.style.overflow = null;
+         if (contentEl) { contentEl.style.overflow = null; }
       }
    }
 
@@ -541,7 +561,7 @@ function toggleDetails(details, { store, animate = true, clickActive = true } = 
       {
          const a = details.offsetHeight;
          if (animation) { animation.cancel(); }
-         const b = summary.offsetHeight;
+         const b = summaryEl.offsetHeight;
 
          details.dataset.closing = 'true';
 
@@ -563,13 +583,36 @@ function toggleDetails(details, { store, animate = true, clickActive = true } = 
       }
    }
 
-   summary.addEventListener('click', handleClick);
+   summaryEl.addEventListener('click', handleClick);
 
    return {
+      update(options)
+      {
+         if (options.store !== store)
+         {
+            if (typeof unsubscribe === 'function') { unsubscribe(); }
+            store = options.store;
+
+            unsubscribe = subscribeFirstRest(store, (value) => { open = value; details.open = open; }, async (value) =>
+            {
+               open = value;
+
+               // Await `tick` to allow any conditional logic in the template to complete updating before handling
+               // animation.
+               await tick();
+
+               handleAnimation();
+            });
+         }
+
+         if (typeof options.animate === 'boolean') { animate = options.animate; }
+
+         if (typeof options.clickActive === 'boolean') { clickActive = options.clickActive; }
+      },
       destroy()
       {
          unsubscribe();
-         summary.removeEventListener('click', handleClick);
+         summaryEl.removeEventListener('click', handleClick);
       }
    };
 }
