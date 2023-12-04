@@ -1,6 +1,8 @@
-import { tick }               from '#svelte';
+import { tick }         from '#svelte';
 
-import { subscribeFirstRest } from '#runtime/util/store';
+import {
+   isWritableStore,
+   subscribeFirstRest } from '#runtime/util/store';
 
 /**
  * Provides a toggle action for `details` HTML elements. The boolean store provided controls animation.
@@ -150,7 +152,7 @@ export function toggleDetails(details, { store, animate = true, clickActive = tr
    return {
       update(options)
       {
-         if (options.store !== store)
+         if (isWritableStore(options.store) && options.store !== store)
          {
             if (typeof unsubscribe === 'function') { unsubscribe(); }
             store = options.store;

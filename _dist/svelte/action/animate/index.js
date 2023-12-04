@@ -1,5 +1,5 @@
 import { tick } from 'svelte';
-import { subscribeFirstRest } from '@typhonjs-svelte/runtime-base/util/store';
+import { subscribeFirstRest, isWritableStore } from '@typhonjs-svelte/runtime-base/util/store';
 import { Timing } from '@typhonjs-svelte/runtime-base/util';
 import { isObject } from '@typhonjs-svelte/runtime-base/util/object';
 import { A11yHelper } from '@typhonjs-svelte/runtime-base/util/browser';
@@ -588,7 +588,7 @@ function toggleDetails(details, { store, animate = true, clickActive = true } = 
    return {
       update(options)
       {
-         if (options.store !== store)
+         if (isWritableStore(options.store) && options.store !== store)
          {
             if (typeof unsubscribe === 'function') { unsubscribe(); }
             store = options.store;
