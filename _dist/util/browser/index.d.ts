@@ -208,18 +208,18 @@ declare class A11yHelper {
      *
      * @param {Element | Document} [element=document] - Optional element to start query.
      *
-     * @param {object} [options] - Optional parameters.
+     * @param {object}            [options] - Optional parameters.
      *
-     * @param {Iterable<string>} [options.ignoreClasses] - Iterable list of classes to ignore elements.
+     * @param {Iterable<string>}  [options.ignoreClasses] - Iterable list of classes to ignore elements.
      *
-     * @param {Set<Element>} [options.ignoreElements] - Set of elements to ignore.
+     * @param {Set<Element>}      [options.ignoreElements] - Set of elements to ignore.
      *
-     * @returns {Element} First focusable child element.
+     * @returns {FocusableElement} First focusable child element.
      */
     static getFirstFocusableElement(element?: Element | Document, options?: {
         ignoreClasses?: Iterable<string>;
         ignoreElements?: Set<Element>;
-    }): Element;
+    }): FocusableElement;
     /**
      * Returns all focusable elements within a specified element.
      *
@@ -231,18 +231,18 @@ declare class A11yHelper {
      *
      * @param {Iterable<string>}  [options.ignoreClasses] - Iterable list of classes to ignore elements.
      *
-     * @param {Set<Element>}  [options.ignoreElements] - Set of elements to ignore.
+     * @param {Set<Element>}      [options.ignoreElements] - Set of elements to ignore.
      *
      * @param {string}            [options.selectors] - Custom list of focusable selectors for `querySelectorAll`.
      *
-     * @returns {Array<Element>} Child keyboard focusable
+     * @returns {Array<FocusableElement>} Child keyboard focusable elements.
      */
     static getFocusableElements(element?: Element | Document, { anchorHref, ignoreClasses, ignoreElements, selectors }?: {
         anchorHref?: boolean;
         ignoreClasses?: Iterable<string>;
         ignoreElements?: Set<Element>;
         selectors?: string;
-    }): Array<Element>;
+    }): Array<FocusableElement>;
     /**
      * Gets a A11yFocusSource object from the given DOM event allowing for optional X / Y screen space overrides.
      * Browsers (Firefox / Chrome) forwards a mouse event for the context menu keyboard button. Provides detection of
@@ -261,7 +261,7 @@ declare class A11yHelper {
      *
      * @param {boolean} [options.debug] - When true {@link A11yHelper.applyFocusSource} logs focus target data.
      *
-     * @param {Element | string} [options.focusEl] - A specific HTMLElement / SVGElement or selector
+     * @param {FocusableElement | string} [options.focusEl] - A specific HTMLElement / SVGElement or selector
      *        string as the focus target.
      *
      * @param {number}   [options.x] - Used when an event isn't provided; integer of event source in screen space.
@@ -278,7 +278,7 @@ declare class A11yHelper {
     static getFocusSource({ event, x, y, focusEl, debug }: {
         event?: KeyboardEvent | MouseEvent;
         debug?: boolean;
-        focusEl?: Element | string;
+        focusEl?: FocusableElement | string;
         x?: number;
         y?: number;
     }): A11yFocusSource;
@@ -293,12 +293,12 @@ declare class A11yHelper {
      *
      * @param {Set<Element>} [options.ignoreElements] - Set of elements to ignore.
      *
-     * @returns {Element} Last focusable child element.
+     * @returns {FocusableElement} Last focusable child element.
      */
     static getLastFocusableElement(element?: Element | Document, options?: {
         ignoreClasses?: Iterable<string>;
         ignoreElements?: Set<Element>;
-    }): Element;
+    }): FocusableElement;
     /**
      * Tests if the given element is focusable.
      *
@@ -345,6 +345,10 @@ declare class A11yHelper {
     static isFocusWithin(element: Element, activeWindow?: Window): boolean;
 }
 /**
+ * A focusable element; either HTMLElement or SvgElement.
+ */
+type FocusableElement = Element & HTMLOrSVGElement;
+/**
  * Provides essential data to return focus to an HTMLElement / SVGElement after a
  * series of UI actions like working with context menus and modal dialogs.
  */
@@ -356,7 +360,7 @@ type A11yFocusSource = {
     /**
      * List of targets to attempt to focus.
      */
-    focusEl?: Iterable<Element | string>;
+    focusEl?: Iterable<FocusableElement | string>;
     /**
      * The source of the event: 'keyboard' for instance.
      */
@@ -417,4 +421,4 @@ declare class ClipboardAccess {
     static writeText(text: string, activeWindow?: Window): Promise<boolean>;
 }
 
-export { type A11yFocusSource, A11yHelper, BrowserSupports, ClipboardAccess, type StackingContext, StyleParse, TJSStyleManager, getStackingContext, processHTML, striptags };
+export { type A11yFocusSource, A11yHelper, BrowserSupports, ClipboardAccess, type FocusableElement, type StackingContext, StyleParse, TJSStyleManager, getStackingContext, processHTML, striptags };

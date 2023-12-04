@@ -113,13 +113,13 @@ export class A11yHelper
     *
     * @param {Element | Document} [element=document] - Optional element to start query.
     *
-    * @param {object} [options] - Optional parameters.
+    * @param {object}            [options] - Optional parameters.
     *
-    * @param {Iterable<string>} [options.ignoreClasses] - Iterable list of classes to ignore elements.
+    * @param {Iterable<string>}  [options.ignoreClasses] - Iterable list of classes to ignore elements.
     *
-    * @param {Set<Element>} [options.ignoreElements] - Set of elements to ignore.
+    * @param {Set<Element>}      [options.ignoreElements] - Set of elements to ignore.
     *
-    * @returns {Element} First focusable child element.
+    * @returns {FocusableElement} First focusable child element.
     */
    static getFirstFocusableElement(element = document, options)
    {
@@ -139,11 +139,11 @@ export class A11yHelper
     *
     * @param {Iterable<string>}  [options.ignoreClasses] - Iterable list of classes to ignore elements.
     *
-    * @param {Set<Element>}  [options.ignoreElements] - Set of elements to ignore.
+    * @param {Set<Element>}      [options.ignoreElements] - Set of elements to ignore.
     *
     * @param {string}            [options.selectors] - Custom list of focusable selectors for `querySelectorAll`.
     *
-    * @returns {Array<Element>} Child keyboard focusable
+    * @returns {Array<FocusableElement>} Child keyboard focusable elements.
     */
    static getFocusableElements(element = document, { anchorHref = true, ignoreClasses, ignoreElements, selectors } = {})
    {
@@ -263,7 +263,7 @@ export class A11yHelper
     *
     * @param {boolean} [options.debug] - When true {@link A11yHelper.applyFocusSource} logs focus target data.
     *
-    * @param {Element | string} [options.focusEl] - A specific HTMLElement / SVGElement or selector
+    * @param {FocusableElement | string} [options.focusEl] - A specific HTMLElement / SVGElement or selector
     *        string as the focus target.
     *
     * @param {number}   [options.x] - Used when an event isn't provided; integer of event source in screen space.
@@ -442,7 +442,7 @@ export class A11yHelper
     *
     * @param {Set<Element>} [options.ignoreElements] - Set of elements to ignore.
     *
-    * @returns {Element} Last focusable child element.
+    * @returns {FocusableElement} Last focusable child element.
     */
    static getLastFocusableElement(element = document, options)
    {
@@ -563,12 +563,16 @@ export class A11yHelper
 }
 
 /**
+ * @typedef {Element & HTMLOrSVGElement} FocusableElement A focusable element; either HTMLElement or SvgElement.
+ */
+
+/**
  * @typedef {object} A11yFocusSource Provides essential data to return focus to an HTMLElement / SVGElement after a
  * series of UI actions like working with context menus and modal dialogs.
  *
  * @property {boolean} [debug] When true logs to console the actions taken in {@link A11yHelper.applyFocusSource}.
  *
- * @property {Iterable<Element | string>} [focusEl] List of targets to attempt to focus.
+ * @property {Iterable<FocusableElement | string>} [focusEl] List of targets to attempt to focus.
  *
  * @property {string} [source] The source of the event: 'keyboard' for instance.
  *
