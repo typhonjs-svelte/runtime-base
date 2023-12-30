@@ -39,10 +39,10 @@ type TJSSvelteConfig = {
      */
     class: new (options: svelte.ComponentConstructorOptions) => svelte.SvelteComponent | svelte.SvelteComponentTyped;
     /**
-     * A {@link HTMLElement } or {@link ShadowRoot } to
-     * render to. By default, `document.body` is used as the target if not otherwise defined.
+     * The target to render component to. By default,
+     * `document.body` is used as the target if not otherwise defined.
      */
-    target?: HTMLElement | ShadowRoot;
+    target?: Element | Document | ShadowRoot;
     /**
      * A child of `target` to render the component immediately before.
      */

@@ -86,8 +86,8 @@ function isTJSSvelteConfig(config, raiseException = false)
  *     import('svelte').SvelteComponent | import('svelte').SvelteComponentTyped
  * })} class The Svelte component class / constructor function.
  *
- * @property {HTMLElement | ShadowRoot}   [target=document.body] A {@link HTMLElement} or {@link ShadowRoot} to
- * render to. By default, `document.body` is used as the target if not otherwise defined.
+ * @property {Element | Document | ShadowRoot}   [target=document.body] The target to render component to. By default,
+ * `document.body` is used as the target if not otherwise defined.
  *
  * @property {HTMLElement} [anchor] A child of `target` to render the component immediately before.
  *

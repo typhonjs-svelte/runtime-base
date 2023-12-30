@@ -343,6 +343,12 @@ declare class A11yHelper {
      * @returns {boolean} Whether there is focus within the given element.
      */
     static isFocusWithin(element: Element, activeWindow?: Window): boolean;
+    /**
+     * Runs a media query to determine if the user / OS configuration is set up for reduced motion / animation.
+     *
+     * @returns {boolean} User prefers reduced motion.
+     */
+    static prefersReducedMotion(): boolean;
 }
 /**
  * A focusable element; either HTMLElement or SvgElement.
