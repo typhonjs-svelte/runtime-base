@@ -560,6 +560,16 @@ export class A11yHelper
 
       return false;
    }
+
+   /**
+    * Runs a media query to determine if the user / OS configuration is set up for reduced motion / animation.
+    *
+    * @returns {boolean} User prefers reduced motion.
+    */
+   static prefersReducedMotion()
+   {
+      return globalThis?.matchMedia('(prefers-reduced-motion: reduce)')?.matches ?? false;
+   }
 }
 
 /**
