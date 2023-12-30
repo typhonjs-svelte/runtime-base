@@ -189,6 +189,12 @@ declare class A11yHelper {
      */
     static get debug(): boolean;
     /**
+     * Runs a media query to determine if the user / OS configuration is set up for reduced motion / animation.
+     *
+     * @returns {boolean} User prefers reduced motion.
+     */
+    static get prefersReducedMotion(): boolean;
+    /**
      * Apply focus to the HTMLElement / SVGElement targets in a given A11yFocusSource data object. An iterable list
      * `options.focusEl` can contain HTMLElement / SVGElements or selector strings. If multiple focus targets are
      * provided in a list then the first valid target found will be focused. If focus target is a string then a lookup
@@ -343,12 +349,6 @@ declare class A11yHelper {
      * @returns {boolean} Whether there is focus within the given element.
      */
     static isFocusWithin(element: Element, activeWindow?: Window): boolean;
-    /**
-     * Runs a media query to determine if the user / OS configuration is set up for reduced motion / animation.
-     *
-     * @returns {boolean} User prefers reduced motion.
-     */
-    static prefersReducedMotion(): boolean;
 }
 /**
  * A focusable element; either HTMLElement or SvgElement.
