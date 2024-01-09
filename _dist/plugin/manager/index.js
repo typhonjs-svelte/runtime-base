@@ -1,89 +1,6 @@
 import { Eventbus, EventbusProxy, EventbusSecure } from '@typhonjs-svelte/runtime-base/plugin/manager/eventbus';
-
-/**
- * Provides a custom error for Node to combine CJS and ESM module not found errors.
- */
-class ModuleLoadError extends Error
-{
-   /**
-    * @param {object} options - Options object.
-    *
-    * @param {string} options.message - Error message.
-    *
-    * @param {string} options.code - Error code.
-    */
-   constructor({ message, code })
-   {
-      super(`[${code}] ${message}`);
-      this.name = 'ModuleLoadError';
-      this.code = code;
-   }
-}
-
-/**
- * URL matching RegExp
- *
- * @type {RegExp}
- */
-const s_URL_REGEX = /^(https?:\/\/|file:\/\/)/;
-
-class ModuleLoader
-{
-   /**
-    * @template M, E
-    *
-    * Loads an ES Module in the browser passing back an object containing info about the loading process.
-    *
-    * @param {object}      options - Options object.
-    *
-    * @param {string|URL}  options.modulepath - A module name, file path, or URL.
-    *
-    * @param {(M) => E}    [options.resolveModule] - An optional function which resolves the import to set `instance`.
-    *
-    * @returns {Promise<ModuleLoaderObj<M, E>>} The module / instance and data about the loading process.
-    */
-   static async load({ modulepath, resolveModule = void 0 })
-   {
-      if (!(modulepath instanceof URL) && typeof modulepath !== 'string')
-      {
-         throw new TypeError(`'modulepath' is not a string or URL`);
-      }
-
-      if (resolveModule !== void 0 && typeof resolveModule !== 'function')
-      {
-         throw new TypeError(`'resolveModule' is not a function`);
-      }
-
-      const loadpath = modulepath instanceof URL ? modulepath.toString() : modulepath;
-
-      const type = `import-${modulepath instanceof URL ||
-      (typeof modulepath === 'string' && modulepath.match(s_URL_REGEX)) ? 'url' : 'path'}`;
-
-      try
-      {
-         const module = await import(modulepath);
-
-         const instance = resolveModule !== void 0 ? resolveModule(module) : module;
-
-         return { filepath: loadpath, instance, isESM: true, loadpath, module, modulepath, type };
-      }
-      catch (error)
-      {
-         // In case the browser version of ModuleLoader is used on Node... The CJS and ESM loaders of Node have
-         // different error codes. Collect both of these as one error with clear stack trace from ModuleLoader.
-         /* istanbul ignore next */
-         if (error.code === 'MODULE_NOT_FOUND' || error.code === 'ERR_MODULE_NOT_FOUND')
-         {
-            throw new ModuleLoadError({
-               message: `import() failed to load ${loadpath}`,
-               code: 'ERR_MODULE_NOT_FOUND'
-            });
-         }
-
-         throw error;
-      }
-   }
-}
+import { ModuleLoader } from '@typhonjs-svelte/runtime-base/util/loader-module';
+import { isIterable, isObject, deepFreeze } from '@typhonjs-svelte/runtime-base/util/object';
 
 /**
  * Defines a class holding the data associated with a plugin including its instance.
@@ -128,14 +45,14 @@ class PluginEntry
    /**
     * An EventbusProxy associated with the plugin wrapping the plugin manager eventbus.
     *
-    * @type {import('#manager/eventbus').EventbusProxy}
+    * @type {import('#runtime/plugin/manager/eventbus').EventbusProxy}
     */
    #eventbusProxy;
 
    /**
     * Stores the proxied event names, callback functions, context and guarded state when this plugin is disabled.
     *
-    * @type {Array<[string, Function, object, import('#manager/eventbus').EventOptionsOut]>}
+    * @type {Array<[string, Function, object, import('#runtime/plugin/manager/eventbus').EventOptionsOut]>}
     */
    #events;
 
@@ -148,7 +65,7 @@ class PluginEntry
     *
     * @param {object}      instance - The loaded plugin instance.
     *
-    * @param {import('#manager/eventbus').EventbusProxy}  eventbusProxy - The EventbusProxy associated with the plugin
+    * @param {import('#runtime/plugin/manager/eventbus').EventbusProxy}  eventbusProxy - The EventbusProxy associated with the plugin
     *        wrapping the plugin manager eventbus.
     */
    constructor(name, data, instance, eventbusProxy = void 0)
@@ -236,7 +153,7 @@ class PluginEntry
    /**
     * Get associated EventbusProxy.
     *
-    * @returns {import('#manager/eventbus').EventbusProxy} Associated EventbusProxy.
+    * @returns {import('#runtime/plugin/manager/eventbus').EventbusProxy} Associated EventbusProxy.
     */
    get eventbusProxy() { return this.#eventbusProxy; }
 
@@ -258,7 +175,7 @@ class PluginEntry
    /**
     * Set associated EventbusProxy.
     *
-    * @param {import('#manager/eventbus').EventbusProxy} eventbusProxy - EventbusProxy instance to associate.
+    * @param {import('#runtime/plugin/manager/eventbus').EventbusProxy} eventbusProxy - EventbusProxy instance to associate.
     */
    set eventbusProxy(eventbusProxy) { this.#eventbusProxy = eventbusProxy; }
 
@@ -275,103 +192,6 @@ class PluginEntry
     * @param {object} instance - The plugin instance.
     */
    set instance(instance) { this.#instance = instance; }
-}
-
-/**
- * Provides common object manipulation utilities including depth traversal, obtaining accessors, safely setting values /
- * equality tests, and validation.
- */
-
-/**
- * @typedef {object} ValidationEntry - Provides data for a validation check.
- *
- * @property {string}               [type] - Optionally tests with a typeof check.
- *
- * @property {Array<*>|Function|Set<*>}  [expected] - Optional array, function, or set of expected values to test
- * against.
- *
- * @property {string}               [message] - Optional message to include.
- *
- * @property {boolean}              [required=true] - When false if the accessor is missing validation is skipped.
- *
- * @property {boolean}              [error=true] - When true and error is thrown otherwise a boolean is returned.
- */
-
-/**
- * Freezes all entries traversed that are objects including entries in arrays.
- *
- * @param {object|Array}   data - An object or array.
- *
- * @param {string[]}       skipFreezeKeys - An array of strings indicating keys of objects to not freeze.
- *
- * @returns {object|Array} The frozen object.
- */
-function deepFreeze(data, skipFreezeKeys = [])
-{
-   /* istanbul ignore if */
-   if (typeof data !== 'object') { throw new TypeError(`'data' is not an 'object'.`); }
-
-   /* istanbul ignore if */
-   if (!Array.isArray(skipFreezeKeys)) { throw new TypeError(`'skipFreezeKeys' is not an 'array'.`); }
-
-   return _deepFreeze(data, skipFreezeKeys);
-}
-
-/**
- * Tests for whether an object is iterable.
- *
- * @param {*} value - Any value.
- *
- * @returns {boolean} Whether object is iterable.
- */
-function isIterable(value)
-{
-   if (value === null || value === void 0 || typeof value !== 'object') { return false; }
-
-   return typeof value[Symbol.iterator] === 'function';
-}
-
-/**
- * Tests for whether object is not null and a typeof object.
- *
- * @param {*} value - Any value.
- *
- * @returns {boolean} Is it an object.
- */
-function isObject(value)
-{
-   return value !== null && typeof value === 'object';
-}
-
-// Module private ---------------------------------------------------------------------------------------------------
-
-/**
- * Private implementation of depth traversal.
- *
- * @param {object|Array}   data - An object or array.
- *
- * @param {string[]}       skipFreezeKeys - An array of strings indicating keys of objects to not freeze.
- *
- * @returns {*} The frozen object.
- * @ignore
- * @private
- */
-function _deepFreeze(data, skipFreezeKeys)
-{
-   if (Array.isArray(data))
-   {
-      for (let cntr = 0; cntr < data.length; cntr++) { _deepFreeze(data[cntr], skipFreezeKeys); }
-   }
-   else if (typeof data === 'object')
-   {
-      for (const key in data)
-      {
-         // eslint-disable-next-line no-prototype-builtins
-         if (data.hasOwnProperty(key) && !skipFreezeKeys.includes(key)) { _deepFreeze(data[key], skipFreezeKeys); }
-      }
-   }
-
-   return Object.freeze(data);
 }
 
 /**
@@ -405,7 +225,7 @@ class PluginInvokeEvent
       /**
        * Unique data available in each plugin invoked.
        *
-       * @type {import('#manager/eventbus').EventbusProxy} - The active EventbusProxy for that particular plugin.
+       * @type {import('#runtime/plugin/manager/eventbus').EventbusProxy} - The active EventbusProxy for that particular plugin.
        */
       this.eventbus = null;
 
@@ -770,7 +590,7 @@ class PluginInvokeSupport
     *
     * @param {object}     opts - An options object.
     *
-    * @param {import('#manager/eventbus').Eventbus}   opts.eventbus - The eventbus to disassociate.
+    * @param {import('#runtime/plugin/manager/eventbus').Eventbus}   opts.eventbus - The eventbus to disassociate.
     *
     * @param {string}     opts.eventPrepend - The current event prepend.
     */
@@ -1251,9 +1071,9 @@ class PluginInvokeSupport
     *
     * @param {object}     opts - An options object.
     *
-    * @param {import('#manager/eventbus').Eventbus}   opts.oldEventbus - The old eventbus to disassociate.
+    * @param {import('#runtime/plugin/manager/eventbus').Eventbus}   opts.oldEventbus - The old eventbus to disassociate.
     *
-    * @param {import('#manager/eventbus').Eventbus}   opts.newEventbus - The new eventbus to associate.
+    * @param {import('#runtime/plugin/manager/eventbus').Eventbus}   opts.newEventbus - The new eventbus to associate.
     *
     * @param {string}     opts.oldPrepend - The old event prepend.
     *
@@ -1492,7 +1312,7 @@ function resolveModule(module)
  * TODO: add wiki link
  *
  * @example
- * import PluginManager from '@typhonjs-plugin/manager';
+ * import { PluginManager } from '@typhonjs-plugin/manager';
  *
  * const pluginManager = new PluginManager();
  *
@@ -1515,21 +1335,21 @@ class PluginManager
    /**
     * Stores the associated eventbus.
     *
-    * @type {import('#manager/eventbus').Eventbus}
+    * @type {import('#runtime/plugin/manager/eventbus').Eventbus}
     */
    #eventbus = null;
 
    /**
     * Stores any EventbusProxy instances created, so that they may be automatically destroyed.
     *
-    * @type {import('#manager/eventbus').EventbusProxy[]}
+    * @type {import('#runtime/plugin/manager/eventbus').EventbusProxy[]}
     */
    #eventbusProxies = [];
 
    /**
     * Stores any EventbusSecure instances created, so that they may be automatically destroyed.
     *
-    * @type {import('#manager/eventbus').EventbusSecureObj[]}
+    * @type {import('#runtime/plugin/manager/eventbus').EventbusSecureObj[]}
     */
    #eventbusSecure = [];
 
@@ -1579,7 +1399,7 @@ class PluginManager
     *
     * @param {object}   [options] - Provides various configuration options:
     *
-    * @param {import('#manager/eventbus').Eventbus} [options.eventbus] - An instance of '@typhonjs-plugin/eventbus'
+    * @param {import('#runtime/plugin/manager/eventbus').Eventbus} [options.eventbus] - An instance of '@typhonjs-plugin/eventbus'
     *        used as the plugin eventbus. If not provided a default eventbus is created.
     *
     * @param {string}   [options.eventPrepend='plugin'] - A customized name to prepend PluginManager events on the
@@ -1771,7 +1591,7 @@ class PluginManager
          }
       }));
 
-      deepFreeze(pluginData, ['manager']);
+      deepFreeze(pluginData, new Set(['manager']));
 
       const eventbusProxy = this.#eventbus !== null && this.#eventbus !== void 0 ?
        new EventbusProxy(this.#eventbus) /* c8 ignore next */ : void 0;
@@ -1882,7 +1702,7 @@ class PluginManager
     * If an eventbus is assigned to this plugin manager then a new EventbusProxy wrapping this eventbus is returned.
     * It is added to `this.#eventbusProxies` so †hat the instances are destroyed when the plugin manager is destroyed.
     *
-    * @returns {import('#manager/eventbus').EventbusProxy} A proxy for the currently set Eventbus.
+    * @returns {import('#runtime/plugin/manager/eventbus').EventbusProxy} A proxy for the currently set Eventbus.
     */
    createEventbusProxy()
    {
@@ -1905,7 +1725,7 @@ class PluginManager
     *
     * @param {string}   [name] - Optional name for the EventbusSecure instance.
     *
-    * @returns {import('#manager/eventbus').EventbusSecure} A secure wrapper for the currently set Eventbus.
+    * @returns {import('#runtime/plugin/manager/eventbus').EventbusSecure} A secure wrapper for the currently set Eventbus.
     */
    createEventbusSecure(name = void 0)
    {
@@ -2061,7 +1881,7 @@ class PluginManager
    /**
     * Returns any associated eventbus.
     *
-    * @returns {import('#manager/eventbus').EventBus} The associated eventbus.
+    * @returns {import('#runtime/plugin/manager/eventbus').EventBus} The associated eventbus.
     */
    getEventbus()
    {
@@ -2695,7 +2515,7 @@ class PluginManager
     *
     * @param {object}     opts - An options object.
     *
-    * @param {import('#manager/eventbus').Eventbus}   opts.eventbus - The new eventbus to associate.
+    * @param {import('#runtime/plugin/manager/eventbus').Eventbus}   opts.eventbus - The new eventbus to associate.
     *
     * @param {string}     [opts.eventPrepend='plugins'] - An optional string to prepend to all of the event
     *                                                     binding targets.

@@ -21,6 +21,7 @@ interface Options {
 	bundleStrings?: boolean
 	useTimestamp32?: boolean
 	largeBigIntToFloat?: boolean
+	useBigIntExtension?: boolean
 	encodeUndefinedAsNil?: boolean
 	maxSharedStructures?: number
 	maxOwnStructures?: number

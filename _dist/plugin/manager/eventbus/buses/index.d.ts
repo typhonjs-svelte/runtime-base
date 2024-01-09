@@ -11,25 +11,25 @@
  * @module
  */
 
-import * as _manager_eventbus from '@typhonjs-svelte/runtime-base/plugin/manager/eventbus';
+import * as _runtime_plugin_manager_eventbus from '@typhonjs-svelte/runtime-base/plugin/manager/eventbus';
 
 /**
  * Provides a main eventbus instance.
  *
- * @type {import('#manager/eventbus').Eventbus}
+ * @type {import('@typhonjs-svelte/runtime-base/plugin/manager/eventbus').Eventbus}
  */
-declare const eventbus: _manager_eventbus.Eventbus;
+declare const eventbus: _runtime_plugin_manager_eventbus.Eventbus;
 /**
  * Provides an eventbus instance potentially for use with a plugin system.
  *
- * @type {import('#manager/eventbus').Eventbus}
+ * @type {import('@typhonjs-svelte/runtime-base/plugin/manager/eventbus').Eventbus}
  */
-declare const pluginEventbus: _manager_eventbus.Eventbus;
+declare const pluginEventbus: _runtime_plugin_manager_eventbus.Eventbus;
 /**
  * Provides an eventbus instance potentially for use for testing.
  *
- * @type {import('#manager/eventbus').Eventbus}
+ * @type {import('@typhonjs-svelte/runtime-base/plugin/manager/eventbus').Eventbus}
  */
-declare const testEventbus: _manager_eventbus.Eventbus;
+declare const testEventbus: _runtime_plugin_manager_eventbus.Eventbus;
 
 export { eventbus, pluginEventbus, testEventbus };

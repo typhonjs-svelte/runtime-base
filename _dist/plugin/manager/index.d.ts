@@ -6,7 +6,7 @@
  * @module
  */
 
-import * as _manager_eventbus from '@typhonjs-svelte/runtime-base/plugin/manager/eventbus';
+import * as _runtime_plugin_manager_eventbus from '@typhonjs-svelte/runtime-base/plugin/manager/eventbus';
 import { Eventbus } from '@typhonjs-svelte/runtime-base/plugin/manager/eventbus';
 
 /**
@@ -22,10 +22,10 @@ declare class PluginEntry {
      *
      * @param {object}      instance - The loaded plugin instance.
      *
-     * @param {import('#manager/eventbus').EventbusProxy}  eventbusProxy - The EventbusProxy associated with the plugin
+     * @param {import('@typhonjs-svelte/runtime-base/plugin/manager/eventbus').EventbusProxy}  eventbusProxy - The EventbusProxy associated with the plugin
      *        wrapping the plugin manager eventbus.
      */
-    constructor(name: string, data: PluginData, instance: object, eventbusProxy?: _manager_eventbus.EventbusProxy);
+    constructor(name: string, data: PluginData, instance: object, eventbusProxy?: _runtime_plugin_manager_eventbus.EventbusProxy);
     /**
      * Get plugin data.
      *
@@ -37,7 +37,7 @@ declare class PluginEntry {
      *
      * @param {boolean} enabled - New enabled state.
      */
-    set enabled(arg: boolean);
+    set enabled(enabled: boolean);
     /**
      * Get enabled.
      *
@@ -49,7 +49,7 @@ declare class PluginEntry {
      *
      * @param {object} importmeta - import.meta data.
      */
-    set importmeta(arg: any);
+    set importmeta(importmeta: any);
     /**
      * Get any stored import.meta object.
      *
@@ -63,21 +63,21 @@ declare class PluginEntry {
     /**
      * Set associated EventbusProxy.
      *
-     * @param {import('#manager/eventbus').EventbusProxy} eventbusProxy - EventbusProxy instance to associate.
+     * @param {import('@typhonjs-svelte/runtime-base/plugin/manager/eventbus').EventbusProxy} eventbusProxy - EventbusProxy instance to associate.
      */
-    set eventbusProxy(arg: _manager_eventbus.EventbusProxy);
+    set eventbusProxy(eventbusProxy: _runtime_plugin_manager_eventbus.EventbusProxy);
     /**
      * Get associated EventbusProxy.
      *
-     * @returns {import('#manager/eventbus').EventbusProxy} Associated EventbusProxy.
+     * @returns {import('@typhonjs-svelte/runtime-base/plugin/manager/eventbus').EventbusProxy} Associated EventbusProxy.
      */
-    get eventbusProxy(): _manager_eventbus.EventbusProxy;
+    get eventbusProxy(): _runtime_plugin_manager_eventbus.EventbusProxy;
     /**
      * Set plugin instance.
      *
      * @param {object} instance - The plugin instance.
      */
-    set instance(arg: any);
+    set instance(instance: any);
     /**
      * Get plugin instance.
      *
@@ -225,7 +225,7 @@ declare interface PluginSupportImpl {
  * TODO: add wiki link
  *
  * @example
- * import PluginManager from '@typhonjs-plugin/manager';
+ * import { PluginManager } from '@typhonjs-plugin/manager';
  *
  * const pluginManager = new PluginManager();
  *
@@ -249,7 +249,7 @@ declare class PluginManager {
      *
      * @param {object}   [options] - Provides various configuration options:
      *
-     * @param {import('#manager/eventbus').Eventbus} [options.eventbus] - An instance of '@typhonjs-plugin/eventbus'
+     * @param {import('@typhonjs-svelte/runtime-base/plugin/manager/eventbus').Eventbus} [options.eventbus] - An instance of '@typhonjs-plugin/eventbus'
      *        used as the plugin eventbus. If not provided a default eventbus is created.
      *
      * @param {string}   [options.eventPrepend='plugin'] - A customized name to prepend PluginManager events on the
@@ -264,7 +264,7 @@ declare class PluginManager {
      * implementation is available: {@link PluginInvokeSupport}
      */
     constructor(options?: {
-        eventbus?: _manager_eventbus.Eventbus;
+        eventbus?: _runtime_plugin_manager_eventbus.Eventbus;
         eventPrepend?: string;
         manager?: PluginManagerOptions;
         PluginSupport?: (PluginSupportConstructor | Iterable<PluginSupportConstructor>);
@@ -320,18 +320,18 @@ declare class PluginManager {
      * If an eventbus is assigned to this plugin manager then a new EventbusProxy wrapping this eventbus is returned.
      * It is added to `this.#eventbusProxies` so †hat the instances are destroyed when the plugin manager is destroyed.
      *
-     * @returns {import('#manager/eventbus').EventbusProxy} A proxy for the currently set Eventbus.
+     * @returns {import('@typhonjs-svelte/runtime-base/plugin/manager/eventbus').EventbusProxy} A proxy for the currently set Eventbus.
      */
-    createEventbusProxy(): _manager_eventbus.EventbusProxy;
+    createEventbusProxy(): _runtime_plugin_manager_eventbus.EventbusProxy;
     /**
      * If an eventbus is assigned to this plugin manager then a new EventbusSecure wrapping this eventbus is returned.
      * It is added to `this.#eventbusSecure` so †hat the instances are destroyed when the plugin manager is destroyed.
      *
      * @param {string}   [name] - Optional name for the EventbusSecure instance.
      *
-     * @returns {import('#manager/eventbus').EventbusSecure} A secure wrapper for the currently set Eventbus.
+     * @returns {import('@typhonjs-svelte/runtime-base/plugin/manager/eventbus').EventbusSecure} A secure wrapper for the currently set Eventbus.
      */
-    createEventbusSecure(name?: string): _manager_eventbus.EventbusSecure;
+    createEventbusSecure(name?: string): _runtime_plugin_manager_eventbus.EventbusSecure;
     /**
      * Destroys all managed plugins after unloading them.
      *
@@ -369,7 +369,7 @@ declare class PluginManager {
     /**
      * Returns any associated eventbus.
      *
-     * @returns {import('#manager/eventbus').EventBus} The associated eventbus.
+     * @returns {import('@typhonjs-svelte/runtime-base/plugin/manager/eventbus').EventBus} The associated eventbus.
      */
     getEventbus(): any;
     /**
@@ -556,13 +556,13 @@ declare class PluginManager {
      *
      * @param {object}     opts - An options object.
      *
-     * @param {import('#manager/eventbus').Eventbus}   opts.eventbus - The new eventbus to associate.
+     * @param {import('@typhonjs-svelte/runtime-base/plugin/manager/eventbus').Eventbus}   opts.eventbus - The new eventbus to associate.
      *
      * @param {string}     [opts.eventPrepend='plugins'] - An optional string to prepend to all of the event
      *                                                     binding targets.
      */
     setEventbus({ eventbus, eventPrepend }: {
-        eventbus: _manager_eventbus.Eventbus;
+        eventbus: _runtime_plugin_manager_eventbus.Eventbus;
         eventPrepend?: string;
     }): Promise<void>;
     /**
@@ -619,9 +619,9 @@ declare class PluginInvokeEvent {
     /**
      * Unique data available in each plugin invoked.
      *
-     * @type {import('#manager/eventbus').EventbusProxy} - The active EventbusProxy for that particular plugin.
+     * @type {import('@typhonjs-svelte/runtime-base/plugin/manager/eventbus').EventbusProxy} - The active EventbusProxy for that particular plugin.
      */
-    eventbus: _manager_eventbus.EventbusProxy;
+    eventbus: _runtime_plugin_manager_eventbus.EventbusProxy;
     /**
      * Unique data available in each plugin invoked.
      *
@@ -713,12 +713,12 @@ declare class PluginInvokeSupport implements MyInterface {
      *
      * @param {object}     opts - An options object.
      *
-     * @param {import('#manager/eventbus').Eventbus}   opts.eventbus - The eventbus to disassociate.
+     * @param {import('@typhonjs-svelte/runtime-base/plugin/manager/eventbus').Eventbus}   opts.eventbus - The eventbus to disassociate.
      *
      * @param {string}     opts.eventPrepend - The current event prepend.
      */
     destroy({ eventbus, eventPrepend }: {
-        eventbus: _manager_eventbus.Eventbus;
+        eventbus: _runtime_plugin_manager_eventbus.Eventbus;
         eventPrepend: string;
     }): Promise<void>;
     /**
@@ -857,17 +857,17 @@ declare class PluginInvokeSupport implements MyInterface {
      *
      * @param {object}     opts - An options object.
      *
-     * @param {import('#manager/eventbus').Eventbus}   opts.oldEventbus - The old eventbus to disassociate.
+     * @param {import('@typhonjs-svelte/runtime-base/plugin/manager/eventbus').Eventbus}   opts.oldEventbus - The old eventbus to disassociate.
      *
-     * @param {import('#manager/eventbus').Eventbus}   opts.newEventbus - The new eventbus to associate.
+     * @param {import('@typhonjs-svelte/runtime-base/plugin/manager/eventbus').Eventbus}   opts.newEventbus - The new eventbus to associate.
      *
      * @param {string}     opts.oldPrepend - The old event prepend.
      *
      * @param {string}     opts.newPrepend - The new event prepend.
      */
     setEventbus({ oldEventbus, newEventbus, oldPrepend, newPrepend }: {
-        oldEventbus: _manager_eventbus.Eventbus;
-        newEventbus: _manager_eventbus.Eventbus;
+        oldEventbus: _runtime_plugin_manager_eventbus.Eventbus;
+        newEventbus: _runtime_plugin_manager_eventbus.Eventbus;
         oldPrepend: string;
         newPrepend: string;
     }): void;
@@ -1044,4 +1044,4 @@ type PluginManagerOptions = {
     throwNoPlugin?: boolean;
 };
 
-export { DataOutPluginEnabled, DataOutPluginEvents, DataOutPluginRemoved, PluginConfig, PluginData, PluginEventData, PluginInvokeEvent, PluginInvokeSupport, PluginManager, PluginManagerOptions, PluginSupportConstructor, PluginSupportImpl, escapeTarget, isValidConfig };
+export { type DataOutPluginEnabled, type DataOutPluginEvents, type DataOutPluginRemoved, type PluginConfig, type PluginData, type PluginEventData, PluginInvokeEvent, PluginInvokeSupport, PluginManager, type PluginManagerOptions, type PluginSupportConstructor, type PluginSupportImpl, escapeTarget, isValidConfig };

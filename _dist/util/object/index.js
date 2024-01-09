@@ -272,7 +272,7 @@ function isIterable(value) {
     return Symbol.iterator in value;
 }
 /**
- * Tests for whether object is not null and a typeof object.
+ * Tests for whether object is not null, typeof object, and not an array.
  *
  * @param {unknown} value - Any value.
  *
@@ -380,10 +380,10 @@ function safeAccess(data, accessor, defaultValue) {
  */
 function safeBatchSet(data, accessors, value, operation = 'set', defaultAccessValue = 0, createMissing = true) {
     if (typeof data !== 'object') {
-        throw new TypeError(`safeBatchSet Error: 'data' is not an 'object'.`);
+        throw new TypeError(`safeBatchSet error: 'data' is not an 'object'.`);
     }
     if (!Array.isArray(accessors)) {
-        throw new TypeError(`safeBatchSet Error: 'accessors' is not an 'array'.`);
+        throw new TypeError(`safeBatchSet error: 'accessors' is not an 'array'.`);
     }
     if (typeof value === 'object') {
         accessors.forEach((accessor) => {
@@ -444,10 +444,10 @@ function safeEqual(source, target) {
  */
 function safeSet(data, accessor, value, operation = 'set', createMissing = true) {
     if (typeof data !== 'object') {
-        throw new TypeError(`safeSet Error: 'data' is not an 'object'.`);
+        throw new TypeError(`safeSet error: 'data' is not an 'object'.`);
     }
     if (typeof accessor !== 'string') {
-        throw new TypeError(`safeSet Error: 'accessor' is not a 'string'.`);
+        throw new TypeError(`safeSet error: 'accessor' is not a 'string'.`);
     }
     const access = accessor.split('.');
     // Walk through the given object by the accessor indexes.
@@ -512,10 +512,10 @@ function safeSet(data, accessor, value, operation = 'set', createMissing = true)
  */
 function safeSetAll(data, accessorValues, operation = 'set', createMissing = true) {
     if (typeof data !== 'object') {
-        throw new TypeError(`'data' is not an 'object'.`);
+        throw new TypeError(`safeSetAll error: 'data' is not an 'object'.`);
     }
     if (typeof accessorValues !== 'object') {
-        throw new TypeError(`'accessorValues' is not an 'object'.`);
+        throw new TypeError(`safeSetAll error: 'accessorValues' is not an 'object'.`);
     }
     for (const accessor of Object.keys(accessorValues)) {
         if (!Object.prototype.hasOwnProperty.call(accessorValues, accessor)) {
@@ -537,10 +537,10 @@ function safeSetAll(data, accessorValues, operation = 'set', createMissing = tru
  */
 function validate(data, validationData = {}, dataName = 'data') {
     if (typeof data !== 'object') {
-        throw new TypeError(`'${dataName}' is not an 'object'.`);
+        throw new TypeError(`validate error: '${dataName}' is not an 'object'.`);
     }
     if (typeof validationData !== 'object') {
-        throw new TypeError(`'validationData' is not an 'object'.`);
+        throw new TypeError(`validate error: 'validationData' is not an 'object'.`);
     }
     let result;
     for (const key of Object.keys(validationData)) {

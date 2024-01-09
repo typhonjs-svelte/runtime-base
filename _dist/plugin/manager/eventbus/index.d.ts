@@ -798,4 +798,4 @@ type EventOptionsOut = {
     type: 'async' | 'sync' | void;
 };
 
-export { EventData, EventMap, EventOptions, EventOptionsOut, Eventbus, EventbusEvents, EventbusProxy, EventbusSecure, EventbusSecureObj };
+export { type EventData, type EventMap, type EventOptions, type EventOptionsOut, Eventbus, type EventbusEvents, EventbusProxy, EventbusSecure, type EventbusSecureObj };
