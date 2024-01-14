@@ -108,7 +108,7 @@ const rollupConfigs = [
             importsExternal()
          ]
       },
-      copyDTS: './node_modules/@typhonjs-svelte/unicode/dist-trl/index.d.ts',
+      copyDTS: './node_modules/@typhonjs-utils/unicode/dist-trl/index.d.ts',
       output: {
          file: '_dist/data/format/unicode/index.js',
          format: 'es',
