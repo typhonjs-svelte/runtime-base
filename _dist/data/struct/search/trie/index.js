@@ -3,6 +3,7 @@ export { getValueFromKey } from '@typhonjs-svelte/runtime-base/data/struct/hash/
 import { QuickLRU } from '@typhonjs-svelte/runtime-base/data/struct/cache/quick-lru';
 import { klona, isIterable, isObject } from '@typhonjs-svelte/runtime-base/util/object';
 
+var _a;
 /**
  * A Trie is a data structure designed for quick reTRIEval of objects by string search. This was designed for use with
  * a type-ahead search (e.g. like a dropdown) but could be used in a variety of situations.
@@ -76,16 +77,16 @@ class TrieSearch {
         // Note: idFieldOrFunction not set / undefined default.
         this.#options = Object.assign({}, {
             cache: true,
-            expandRegexes: TrieSearch.#DEFAULT_INTERNATIONALIZE_EXPAND_REGEXES,
+            expandRegexes: _a.#DEFAULT_INTERNATIONALIZE_EXPAND_REGEXES,
             ignoreCase: true,
             insertFullUnsplitKey: false,
-            maxCacheSize: TrieSearch.#MAX_CACHE_SIZE,
+            maxCacheSize: _a.#MAX_CACHE_SIZE,
             min: 1,
             splitOnRegEx: /\s/g,
         }, options);
         // Fallback to `splitOnRegEx` if `splitOnGetRegEx` not defined.
         this.#options.splitOnGetRegEx = options?.splitOnGetRegEx ?? this.#options.splitOnRegEx;
-        TrieSearch.#validateOptions(this.#options);
+        _a.#validateOptions(this.#options);
         this.#optionsClone = klona(this.#options);
         this.#root = {};
         this.#size = 0;
@@ -208,14 +209,14 @@ class TrieSearch {
         }
         if (this.#options.splitOnRegEx && this.#options.splitOnRegEx.test(key)) {
             const words = key.split(this.#options.splitOnRegEx);
-            const emptySplitMatch = words.filter((p) => { return TrieSearch.#REGEX_IS_WHITESPACE.test(p); });
+            const emptySplitMatch = words.filter((p) => { return _a.#REGEX_IS_WHITESPACE.test(p); });
             const selfMatch = words.filter((p) => { return p === key; });
             const selfIsOnlyMatch = selfMatch.length + emptySplitMatch.length === words.length;
             // There is an edge case that a RegEx with a positive lookahead like `/?=[A-Z]/` split on capital letters for
             // a camelcase sentence will then match again when we call map, creating an infinite stack loop.
             if (!selfIsOnlyMatch) {
                 for (let i = 0, l = words.length; i < l; i++) {
-                    if (!TrieSearch.#REGEX_IS_WHITESPACE.test(words[i])) {
+                    if (!_a.#REGEX_IS_WHITESPACE.test(words[i])) {
                         this.map(words[i], value);
                     }
                 }
@@ -277,7 +278,7 @@ class TrieSearch {
             const ignoreCasePhrase = this.#options.ignoreCase ? phrases.toLowerCase() : phrases;
             let matchesAndWords;
             let cachedMatches;
-            if (this.#cachePhrase && (cachedMatches = this.#cachePhrase.get(TrieSearch.#getCacheKey(ignoreCasePhrase, limit)))) {
+            if (this.#cachePhrase && (cachedMatches = this.#cachePhrase.get(_a.#getCacheKey(ignoreCasePhrase, limit)))) {
                 matchesAndWords = cachedMatches;
             }
             else {
@@ -297,7 +298,7 @@ class TrieSearch {
                 const ignoreCasePhrase = this.#options.ignoreCase ? phrase.toLowerCase() : phrase;
                 let matchesAndWords;
                 let cachedMatches;
-                if (this.#cachePhrase && (cachedMatches = this.#cachePhrase.get(TrieSearch.#getCacheKey(ignoreCasePhrase, limit)))) {
+                if (this.#cachePhrase && (cachedMatches = this.#cachePhrase.get(_a.#getCacheKey(ignoreCasePhrase, limit)))) {
                     matchesAndWords = cachedMatches;
                 }
                 else {
@@ -360,7 +361,7 @@ class TrieSearch {
                 continue;
             }
             val = val.toString();
-            for (const expandedValue of TrieSearch.#expandString(val, this.#options)) {
+            for (const expandedValue of _a.#expandString(val, this.#options)) {
                 this.map(expandedValue, item);
             }
         }
@@ -390,7 +391,7 @@ class TrieSearch {
                 const er = options.expandRegexes[i];
                 let match;
                 while ((match = er.regex.exec(value)) !== null) {
-                    const alternateValue = TrieSearch.#replaceStringAt(value, match.index, er.alternate);
+                    const alternateValue = _a.#replaceStringAt(value, match.index, er.alternate);
                     yield alternateValue;
                 }
             }
@@ -453,7 +454,7 @@ class TrieSearch {
             ret = ret ? ret.intersection(temp, ret.clone({ options: { list: matchesList = [] } })) : temp;
         }
         const matches = ret ? matchesList : [];
-        this.#cachePhrase?.set(TrieSearch.#getCacheKey(phrase, limit), { matches, words });
+        this.#cachePhrase?.set(_a.#getCacheKey(phrase, limit), { matches, words });
         return { matches, words };
         function aggregate(node, ha) {
             if (limit !== void 0 && ha.sizeFlat >= limit) {
@@ -557,6 +558,7 @@ class TrieSearch {
         }
     }
 }
+_a = TrieSearch;
 
 /**
  * Provides an ITrieSearchReducer implementation to accumulate a union / `AND` of matches across all phrases provided in

@@ -6,7 +6,7 @@ import { writable, get } from 'svelte/store';
  *
  * @param {object}   opts - Generator options.
  *
- * @param {Storage}  storage - The web storage source.
+ * @param {Storage}  opts.storage - The web storage source.
  *
  * @param {(value: any, ...rest: any[]) => string}  [opts.serialize] - Replace with custom serialization;
  *        default: `JSON.stringify`.

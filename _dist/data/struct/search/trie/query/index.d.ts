@@ -60,4 +60,4 @@ declare class TrieSearchQuery<T extends object> extends DynArrayReducer<T> {
     destroy(): void;
 }
 
-export { TrieSearchQuery, TrieSearchQueryOptions };
+export { TrieSearchQuery, type TrieSearchQueryOptions };

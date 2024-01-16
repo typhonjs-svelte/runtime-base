@@ -277,4 +277,4 @@ declare class UnionReducer<T extends object> implements ITrieSearchReducer<T> {
     reset({ list }: TrieSearchReducerResetData<T>): void;
 }
 
-export { ITrieSearchReducer, TrieNode, TrieSearch, TrieSearchOptions, TrieSearchReducerData, TrieSearchReducerResetData, TrieSearchSubscribeHandler, UnionReducer };
+export { type ITrieSearchReducer, type TrieNode, TrieSearch, type TrieSearchOptions, type TrieSearchReducerData, type TrieSearchReducerResetData, type TrieSearchSubscribeHandler, UnionReducer };

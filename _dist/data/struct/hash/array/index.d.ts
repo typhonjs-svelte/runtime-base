@@ -325,4 +325,4 @@ declare class HashArrayUtil {
  */
 declare function getValueFromKey(item: object, key: Key): any;
 
-export { HashArray, HashArrayOptions, HashArrayUtil, Key, KeyFields, getValueFromKey };
+export { HashArray, type HashArrayOptions, HashArrayUtil, type Key, type KeyFields, getValueFromKey };
