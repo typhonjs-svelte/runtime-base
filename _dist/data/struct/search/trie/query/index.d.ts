@@ -41,9 +41,9 @@ declare class TrieSearchQuery<T extends object> extends DynArrayReducer<T> {
     /**
      * @returns {ITrieSearchReducer<T>} Any associated TrieSearch reducer function.
      */
-    get trieReducer(): ITrieSearchReducer<T> | undefined;
+    get trieReducer(): ITrieSearchReducer<T>;
     /**
-     * The associated TrieSearch instance; can be undefined.
+     * @returns {TrieSearch<T>} The associated TrieSearch instance; can be undefined.
      */
     get trieSearch(): TrieSearch<T>;
     /**

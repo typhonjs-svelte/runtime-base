@@ -99,20 +99,20 @@ declare class HashArray<T extends object> {
      *
      * @param {Key}   key - The Key to retrieve item(s) to iterate.
      *
-     * @param {Key | ((T) => boolean)}  callbackOrIndex - A Key to lookup for filter inclusion or a callback function
-     *        returning the filter result for the item.
+     * @param {Key | ((item: T) => boolean)}  callbackOrIndex - A Key to lookup for filter inclusion or a callback
+     *        function returning the filter result for the item.
      */
-    filter(key: Key, callbackOrIndex: Key | ((T: any) => boolean)): HashArray<T>;
+    filter(key: Key, callbackOrIndex: Key | ((item: T) => boolean)): HashArray<T>;
     /**
      * Iterates over all items retrieved by the given key invoking the callback function for each item.
      *
      * @param {Key}   key - The Key to retrieve items to iterate.
      *
-     * @param {(T) => void)}   callback - A callback invoked for each item.
+     * @param {(item: T) => void}   callback - A callback invoked for each item.
      *
      * @returns {HashArray<T>} This instance.
      */
-    forEach(key: Key, callback: (T: any) => void): this;
+    forEach(key: Key, callback: (item: T) => void): this;
     /**
      * Iterates over all items retrieved by the given key invoking the callback function for each item with the value
      * found by the `index` Key and the item itself.
@@ -121,7 +121,7 @@ declare class HashArray<T extends object> {
      *
      * @param {Key}   index - A specific Key in each item to lookup.
      *
-     * @param {(value: any, item: T) => void)}   callback - A callback invoked for each item with value of `index`
+     * @param {(value: any, item: T) => void}   callback - A callback invoked for each item with value of `index`
      *        and item.
      *
      * @returns {HashArray<T>} This instance.
@@ -227,7 +227,7 @@ declare class HashArray<T extends object> {
      *
      * @param {number}   index - The index to retrieve.
      */
-    getAt(index: any): T;
+    getAt(index: number): T;
     /**
      * Returns the intersection of this HashArray and a target HashArray.
      *

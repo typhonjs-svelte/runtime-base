@@ -92,7 +92,7 @@ class TrieSearchQuery extends DynArrayReducer {
      */
     get trieReducer() { return this.#trieReducer; }
     /**
-     * The associated TrieSearch instance; can be undefined.
+     * @returns {TrieSearch<T>} The associated TrieSearch instance; can be undefined.
      */
     get trieSearch() { return this.#trieSearch !== void 0 ? this.#trieSearch.deref() : void 0; }
     /**
@@ -145,7 +145,7 @@ class TrieSearchQuery extends DynArrayReducer {
             reducer: this.#trieReducer
         });
         // Update the non-destructive DynArrayReducer index.
-        super.index.update();
+        super.index.update(true);
     }
     /**
      * Receives updates from `#storeLimit`.

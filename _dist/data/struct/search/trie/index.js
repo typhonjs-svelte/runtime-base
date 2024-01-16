@@ -605,9 +605,10 @@ class UnionReducer {
     /**
      * Accumulates and reduces each batch of matches for one or more phrases.
      *
-     * @param {T[]}   matches - Matches of current iteration / batch.
+     * @param {TrieSearchReducerData<T>}   data - Matches of current iteration / batch.
      */
-    reduce({ matches }) {
+    reduce(data) {
+        const matches = data.matches;
         // In the first iteration simply set matches to the accumulator returning immediately.
         if (this.#accumulator === void 0) {
             this.#accumulator = matches;

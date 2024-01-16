@@ -258,7 +258,7 @@ declare class UnionReducer<T extends object> implements ITrieSearchReducer<T> {
     /**
      * @returns {Key | KeyFields | undefined} Returns the index field key.
      */
-    get keyFields(): Key;
+    get keyFields(): Key | KeyFields | undefined;
     /**
      * @returns {T[]} Returns the union of all matches.
      */
@@ -266,9 +266,9 @@ declare class UnionReducer<T extends object> implements ITrieSearchReducer<T> {
     /**
      * Accumulates and reduces each batch of matches for one or more phrases.
      *
-     * @param {T[]}   matches - Matches of current iteration / batch.
+     * @param {TrieSearchReducerData<T>}   data - Matches of current iteration / batch.
      */
-    reduce({ matches }: TrieSearchReducerData<T>): void;
+    reduce(data: TrieSearchReducerData<T>): void;
     /**
      * Reset state.
      *

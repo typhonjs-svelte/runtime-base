@@ -184,8 +184,8 @@ class HashArray {
      *
      * @param {Key}   key - The Key to retrieve item(s) to iterate.
      *
-     * @param {Key | ((T) => boolean)}  callbackOrIndex - A Key to lookup for filter inclusion or a callback function
-     *        returning the filter result for the item.
+     * @param {Key | ((item: T) => boolean)}  callbackOrIndex - A Key to lookup for filter inclusion or a callback
+     *        function returning the filter result for the item.
      */
     filter(key, callbackOrIndex) {
         const callback = typeof callbackOrIndex === 'function' ? callbackOrIndex : (item) => {
@@ -202,7 +202,7 @@ class HashArray {
      *
      * @param {Key}   key - The Key to retrieve items to iterate.
      *
-     * @param {(T) => void)}   callback - A callback invoked for each item.
+     * @param {(item: T) => void}   callback - A callback invoked for each item.
      *
      * @returns {HashArray<T>} This instance.
      */
@@ -219,7 +219,7 @@ class HashArray {
      *
      * @param {Key}   index - A specific Key in each item to lookup.
      *
-     * @param {(value: any, item: T) => void)}   callback - A callback invoked for each item with value of `index`
+     * @param {(value: any, item: T) => void}   callback - A callback invoked for each item with value of `index`
      *        and item.
      *
      * @returns {HashArray<T>} This instance.
