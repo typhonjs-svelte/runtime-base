@@ -1,19 +1,10 @@
-export * from './TJSPosition.js';
+import { TJSPosition } from './TJSPosition.js';
+
 export * from './TJSPositionData.js';
 
 export * from './action/index.js';
 
-// From: position/animation/AnimationAPI.js --------------------------------------------------------------------------
-
-/**
- * @callback quickToCallback
- *
- * @param {...number|object} args - Either individual numbers corresponding to the order in which keys are specified or
- *                                  a single object with keys specified and numerical values.
- *
- * @property {(data: {duration?: number, ease?: Function, interpolate?: Function}) => quickToCallback} options - A
- *                                  function to update options for quickTo function.
- */
+export { TJSPosition }
 
 // From: position/TJSPosition.js ----------------------------------------------------------------------------------------
 
@@ -33,6 +24,11 @@ export * from './action/index.js';
  * @property {Iterable<string>} exclude When provided these keys are excluded.
  *
  * @property {boolean} numeric When true any `null` values are converted into defaults.
+ */
+
+/**
+ * @typedef {TJSPosition | TJSPositionable | Iterable<TJSPosition> | Iterable<TJSPositionable>} TJSPositionGroup Defines
+ * one or more positions or positionable objects.
  */
 
 /**

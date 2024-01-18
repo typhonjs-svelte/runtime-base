@@ -1,7 +1,7 @@
 /**
  * Stores the TJSPositionData properties that can be animated.
  *
- * @type {Set<string>}
+ * @type {Set<import('./types').AnimationKeys>}
  */
 const animateKeys = new Set([
    // Main keys

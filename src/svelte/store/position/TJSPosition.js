@@ -43,13 +43,13 @@ export class TJSPosition
    };
 
    /**
-    * @type {{TransformBounds: TransformBounds, BasicBounds: BasicBounds, basicWindow: BasicBounds, transformWindow: TransformBounds}}
+    * @type {{BasicBounds: typeof BasicBounds, basicWindow: BasicBounds, TransformBounds: typeof TransformBounds, transformWindow: TransformBounds}}
     */
    static #positionValidators = {
-      basicWindow: new BasicBounds({ lock: true }),
       BasicBounds,
-      transformWindow: new TransformBounds({ lock: true }),
-      TransformBounds
+      basicWindow: new BasicBounds({ lock: true }),
+      TransformBounds,
+      transformWindow: new TransformBounds({ lock: true })
    };
 
    /**
@@ -149,19 +149,19 @@ export class TJSPosition
    #state = new PositionStateAPI(this, this.#data, this.#transforms);
 
    /**
-    * @returns {AnimationGroupAPI} Public Animation API.
+    * @returns {typeof AnimationGroupAPI} Public Animation API.
     */
    static get Animate() { return AnimationGroupAPI; }
 
    /**
-    * @returns {{browserCentered: Centered, Centered: Centered}} TJSPosition initial API.
+    * @returns {{browserCentered: Centered, Centered: typeof Centered}} TJSPosition initial API.
     */
    static get Initial() { return this.#positionInitial; }
 
    /**
     * Returns TJSTransformData class / constructor.
     *
-    * @returns {TJSTransformData} TJSTransformData class / constructor.
+    * @returns {typeof TJSTransformData} TJSTransformData class / constructor.
     */
    static get TransformData() { return TJSTransformData; }
 
@@ -170,7 +170,7 @@ export class TJSPosition
     *
     * Note: `basicWindow` and `BasicBounds` will eventually be removed.
     *
-    * @returns {{TransformBounds: TransformBounds, BasicBounds: BasicBounds, basicWindow: BasicBounds, transformWindow: TransformBounds}}
+    * @returns {{BasicBounds: typeof BasicBounds, basicWindow: BasicBounds, TransformBounds: typeof TransformBounds, transformWindow: TransformBounds}}
     * Available validators.
     */
    static get Validators() { return this.#positionValidators; }
@@ -182,7 +182,7 @@ export class TJSPosition
     *
     * @param {TJSPosition}          position - A position instance.
     *
-    * @param {import('./').TJSPositionOptions}   options - TJSPosition options.
+    * @param {import('./').TJSPositionOptionsAll}   options - TJSPosition options.
     *
     * @returns {TJSPosition} A duplicate position instance.
     */

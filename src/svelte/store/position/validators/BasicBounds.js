@@ -11,7 +11,7 @@ export class BasicBounds
    #constrain;
 
    /**
-    * @type {HTMLElement}
+    * @type {import('#runtime/util/browser').FocusableElement | null | undefined}
     */
    #element;
 
@@ -43,7 +43,23 @@ export class BasicBounds
     */
    #width;
 
-   constructor({ constrain = true, element, enabled = true, lock = false, width, height } = {})
+   /**
+    * @param {object}   [opts] - Options.
+    *
+    * @param {boolean}  [opts.constrain=true] - Initial constrained state.
+    *
+    * @param {import('#runtime/util/browser').FocusableElement} [opts.element] -
+    *
+    * @param {boolean}  [opts.enabled=true] - Initial enabled state.
+    *
+    * @param {boolean}  [opts.lock=false] - Locks further modification.
+    *
+    * @param {number}   [opts.width] - A specific finite width.
+    *
+    * @param {number}   [opts.height] - A specific finite height.
+    */
+   constructor({ constrain = true, element = void 0, enabled = true, lock = false, width = void 0,
+    height = void 0 } = {})
    {
       this.element = element;
       this.constrain = constrain;
@@ -54,16 +70,34 @@ export class BasicBounds
       this.#lock = typeof lock === 'boolean' ? lock : false;
    }
 
+   /**
+    * @returns {boolean} The current constrain state.
+    */
    get constrain() { return this.#constrain; }
 
+   /**
+    * @returns {import('#runtime/util/browser').FocusableElement | null | undefined}
+    */
    get element() { return this.#element; }
 
+   /**
+    * @returns {boolean} The current enabled state.
+    */
    get enabled() { return this.#enabled; }
 
+   /**
+    * @returns {number | undefined} The current height.
+    */
    get height() { return this.#height; }
 
+   /**
+    * @returns {number | undefined} The current width.
+    */
    get width() { return this.#width; }
 
+   /**
+    * @param {boolean}  constrain - New constrain state.
+    */
    set constrain(constrain)
    {
       if (this.#lock) { return; }
@@ -73,6 +107,10 @@ export class BasicBounds
       this.#constrain = constrain;
    }
 
+   /**
+    * @param {import('#runtime/util/browser').FocusableElement | null | undefined} element - Target element or
+    *        undefined.
+    */
    set element(element)
    {
       if (this.#lock) { return; }
@@ -87,6 +125,9 @@ export class BasicBounds
       }
    }
 
+   /**
+    * @param {boolean}  enabled - New enabled state.
+    */
    set enabled(enabled)
    {
       if (this.#lock) { return; }
@@ -96,6 +137,9 @@ export class BasicBounds
       this.#enabled = enabled;
    }
 
+   /**
+    * @param {number | undefined}   height - A finite number or undefined.
+    */
    set height(height)
    {
       if (this.#lock) { return; }
@@ -110,6 +154,9 @@ export class BasicBounds
       }
    }
 
+   /**
+    * @param {number | undefined}   width - A finite number or undefined.
+    */
    set width(width)
    {
       if (this.#lock) { return; }
@@ -124,6 +171,11 @@ export class BasicBounds
       }
    }
 
+   /**
+    * @param {number | undefined}   width - A finite number or undefined.
+    *
+    * @param {number | undefined}   height - A finite number or undefined.
+    */
    setDimension(width, height)
    {
       if (this.#lock) { return; }

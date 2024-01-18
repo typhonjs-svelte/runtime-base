@@ -186,15 +186,7 @@ export class AnimationAPI
     *
     * @param {import('../index.js').TJSPositionDataExtended} fromData - The starting position.
     *
-    * @param {object}         [opts] - Optional parameters.
-    *
-    * @param {number}         [opts.delay=0] - Delay in seconds before animation starts.
-    *
-    * @param {number}         [opts.duration=1] - Duration in seconds.
-    *
-    * @param {Function}       [opts.ease=cubicOut] - Easing function.
-    *
-    * @param {Function}       [opts.interpolate=lerp] - Interpolation function.
+    * @param {import('../types').TweenOptions} [opts] - Optional tween parameters.
     *
     * @returns {import('#runtime/util/animate').TJSBasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
@@ -266,15 +258,7 @@ export class AnimationAPI
     *
     * @param {import('../index.js').TJSPositionDataExtended} toData - The ending position.
     *
-    * @param {object}         [opts] - Optional parameters.
-    *
-    * @param {number}         [opts.delay=0] - Delay in seconds before animation starts.
-    *
-    * @param {number}         [opts.duration=1] - Duration in seconds.
-    *
-    * @param {Function}       [opts.ease=cubicOut] - Easing function.
-    *
-    * @param {Function}       [opts.interpolate=lerp] - Interpolation function.
+    * @param {import('../types').TweenOptions} [opts] - Optional tween parameters.
     *
     * @returns {import('#runtime/util/animate').TJSBasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
@@ -356,15 +340,7 @@ export class AnimationAPI
     *
     * @param {import('../index.js').TJSPositionDataExtended} toData - The destination position.
     *
-    * @param {object}         [opts] - Optional parameters.
-    *
-    * @param {number}         [opts.delay=0] - Delay in seconds before animation starts.
-    *
-    * @param {number}         [opts.duration=1] - Duration in seconds.
-    *
-    * @param {Function}       [opts.ease=cubicOut] - Easing function.
-    *
-    * @param {Function}       [opts.interpolate=lerp] - Interpolation function.
+    * @param {import('../types').TweenOptions} [opts] - Optional tween parameters.
     *
     * @returns {import('#runtime/util/animate').TJSBasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
@@ -431,17 +407,11 @@ export class AnimationAPI
    /**
     * Returns a function that provides an optimized way to constantly update a to-tween.
     *
-    * @param {Iterable<string>}  keys - The keys for quickTo.
+    * @param {Iterable<import('../types').AnimationKeys>}  keys - The keys for quickTo.
     *
-    * @param {object}            [opts] - Optional parameters.
+    * @param {import('../types').QuickTweenOptions} [opts] - Optional quick tween parameters.
     *
-    * @param {number}            [opts.duration=1] - Duration in seconds.
-    *
-    * @param {Function}          [opts.ease=cubicOut] - Easing function.
-    *
-    * @param {Function}          [opts.interpolate=lerp] - Interpolation function.
-    *
-    * @returns {import('../index.js').quickToCallback} quick-to tween function.
+    * @returns {import('../types').quickToCallback} quick-to tween function.
     */
    quickTo(keys, { duration = 1, ease = cubicOut, interpolate = lerp } = {})
    {
@@ -524,7 +494,7 @@ export class AnimationAPI
          start: void 0
       };
 
-      const quickToCB = (...args) =>
+      const quickToCB = /** @type {import('../types').quickToCallback} */ (...args) =>
       {
          const argsLength = args.length;
 
@@ -588,19 +558,6 @@ export class AnimationAPI
 
       quickToCB.keys = keysArray;
 
-      /**
-       * Sets options of quickTo tween.
-       *
-       * @param {object}            [opts] - Optional parameters.
-       *
-       * @param {number}            [opts.duration] - Duration in seconds.
-       *
-       * @param {Function}          [opts.ease] - Easing function.
-       *
-       * @param {Function}          [opts.interpolate] - Interpolation function.
-       *
-       * @returns {import('../').quickToCallback} The quickTo callback.
-       */
       quickToCB.options = ({ duration, ease, interpolate } = {}) => // eslint-disable-line no-shadow
       {
          if (duration !== void 0 && (!Number.isFinite(duration) || duration < 0))

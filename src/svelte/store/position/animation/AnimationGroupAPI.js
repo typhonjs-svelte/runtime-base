@@ -31,9 +31,9 @@ export class AnimationGroupAPI
    }
 
    /**
-    * Cancels any animation for given TJSPosition data.
+    * Cancels any animation for given TJSPositionGroup data.
     *
-    * @param {import('../').TJSPosition | {position: import('../').TJSPosition} | Iterable<import('../').TJSPosition> | Iterable<{position: import('../').TJSPosition}>} position -
+    * @param {import('../').TJSPositionGroup} position - The position group to cancel.
     */
    static cancel(position)
    {
@@ -76,9 +76,9 @@ export class AnimationGroupAPI
    static cancelAll() { AnimationManager.cancelAll(); }
 
    /**
-    * Gets all animation controls for the given position data.
+    * Gets all animation controls for the given position group data.
     *
-    * @param {import('../').TJSPosition | {position: import('../').TJSPosition} | Iterable<import('../').TJSPosition> | Iterable<{position: import('../').TJSPosition}>} position -
+    * @param {import('../').TJSPositionGroup} position - A position group.
     *
     * @returns {{ position: import('../').TJSPosition, data: object | void, controls: import('./AnimationControl').AnimationControl[]}[]} Results array.
     */
@@ -130,11 +130,11 @@ export class AnimationGroupAPI
    /**
     * Provides the `from` animation tween for one or more TJSPosition instances as a group.
     *
-    * @param {import('../').TJSPosition | {position: import('../').TJSPosition} | Iterable<import('../').TJSPosition> | Iterable<{position: import('../').TJSPosition}>} position -
+    * @param {import('../').TJSPositionGroup} position - A position group.
     *
     * @param {object|Function}   fromData -
     *
-    * @param {object|Function}   options -
+    * @param {import('../types').TweenOptions | (() => import('../types').TweenOptions)}   options -
     *
     * @returns {import('#runtime/util/animate').TJSBasicAnimation} Basic animation control.
     */
@@ -269,7 +269,7 @@ export class AnimationGroupAPI
    /**
     * Provides the `fromTo` animation tween for one or more TJSPosition instances as a group.
     *
-    * @param {import('../').TJSPosition | {position: import('../').TJSPosition} | Iterable<import('../').TJSPosition> | Iterable<{position: import('../').TJSPosition}>} position -
+    * @param {import('../').TJSPositionGroup} position -
     *
     * @param {object|Function}   fromData -
     *
@@ -442,7 +442,7 @@ export class AnimationGroupAPI
    /**
     * Provides the `to` animation tween for one or more TJSPosition instances as a group.
     *
-    * @param {import('../').TJSPosition | {position: import('../').TJSPosition} | Iterable<import('../').TJSPosition> | Iterable<{position: import('../').TJSPosition}>} position -
+    * @param {import('../').TJSPositionGroup} position -
     *
     * @param {object|Function}   toData -
     *
@@ -581,13 +581,13 @@ export class AnimationGroupAPI
    /**
     * Provides the `to` animation tween for one or more TJSPosition instances as a group.
     *
-    * @param {import('../').TJSPosition | {position: import('../').TJSPosition} | Iterable<import('../').TJSPosition> | Iterable<{position: import('../').TJSPosition}>} position -
+    * @param {import('../').TJSPositionGroup} position -
     *
-    * @param {Iterable<string>}  keys -
+    * @param {Iterable<import('../types').AnimationKeys>}  keys -
     *
-    * @param {object|Function}   options -
+    * @param {import('../types').QuickTweenOptions | (() => import('../types').QuickTweenOptions)}   options -
     *
-    * @returns {import('../').quickToCallback} Basic animation control.
+    * @returns {import('../types').quickToCallback} quick-to tween function.
     */
    static quickTo(position, keys, options)
    {
@@ -602,7 +602,7 @@ export class AnimationGroupAPI
       }
 
       /**
-       * @type {import('../').quickToCallback[]}
+       * @type {import('../types').quickToCallback[]}
        */
       const quickToCallbacks = [];
 
@@ -612,7 +612,7 @@ export class AnimationGroupAPI
 
       const callbackOptions = { index, position: void 0, data: void 0 };
 
-      let actualOptions = options;
+      let actualOptions = isObject(options) ? options : void 0;
 
       if (isIterable(position))
       {
