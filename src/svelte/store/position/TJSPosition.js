@@ -139,7 +139,7 @@ export class TJSPosition
    #validators;
 
    /**
-    * @type {import('./').ValidatorData[]}
+    * @type {import('./validators/types').ValidatorData[]}
     */
    #validatorData;
 
@@ -394,7 +394,7 @@ export class TJSPosition
 
       this.#stores.transformOrigin.values = constants.transformOrigins;
 
-      [this.#validators, this.#validatorData] = new AdapterValidators();
+      [this.#validators, this.#validatorData] = AdapterValidators.create();
 
       if (options?.initial || options?.positionInitial)
       {
@@ -500,7 +500,7 @@ export class TJSPosition
    /**
     * Returns the validators.
     *
-    * @returns {AdapterValidators} validators.
+    * @returns {import('./validators/types').IValidatorAPI} validators.
     */
    get validators() { return this.#validators; }
 

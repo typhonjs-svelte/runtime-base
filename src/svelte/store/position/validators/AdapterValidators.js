@@ -23,6 +23,8 @@ import { isObject }  from '#runtime/util/object';
  * position.validators.removeBy(...);
  * position.validators.removeById(...);
  * ```
+ *
+ * @implements {import('./types').IValidatorAPI}
  */
 export class AdapterValidators
 {
@@ -30,27 +32,34 @@ export class AdapterValidators
    #enabled = true;
 
    /**
-    * @type {import('../').ValidatorData[]}
+    * @type {import('./types').ValidatorData[]}
     */
    #validatorData;
 
    #mapUnsubscribe = new Map();
 
    /**
-    * @returns {[AdapterValidators, import('../').ValidatorData[]]} Returns this and internal storage for validator
+    * @returns {[AdapterValidators, import('./types').ValidatorData[]]} Returns this and internal storage for validator
     *          adapter.
+    */
+   static create()
+   {
+      const validatorAPI = new AdapterValidators();
+
+      return [validatorAPI, validatorAPI.#validatorData];
+   }
+
+   /**
     */
    constructor()
    {
       this.#validatorData = [];
 
       Object.seal(this);
-
-      return [this, this.#validatorData];
    }
 
    /**
-    * @returns {boolean} Returns the enabled state.s
+    * @returns {boolean} Returns the enabled state.
     */
    get enabled() { return this.#enabled; }
 
@@ -72,7 +81,7 @@ export class AdapterValidators
    /**
     * Provides an iterator for validators.
     *
-    * @yields {import('../').ValidatorData}
+    * @yields {import('./types').ValidatorData}
     */
    *[Symbol.iterator]()
    {
@@ -85,7 +94,9 @@ export class AdapterValidators
    }
 
    /**
-    * @param {...(import('../').ValidatorFn | import('../').ValidatorData)}   validators -
+    * Adds the given validators.
+    *
+    * @param {...(import('./types').ValidatorFn | import('./types').ValidatorData)}   validators - Validators to add.
     */
    add(...validators)
    {
@@ -191,6 +202,9 @@ export class AdapterValidators
       // if (subscribeCount < validators.length) { this.#indexUpdate(); }
    }
 
+   /**
+    * Clears / removes all validators.
+    */
    clear()
    {
       this.#validatorData.length = 0;
@@ -208,7 +222,9 @@ export class AdapterValidators
    }
 
    /**
-    * @param {...(import('../').ValidatorFn | import('../').ValidatorData)}   validators -
+    * Removes one or more given validators.
+    *
+    * @param {...(import('./types').ValidatorFn | import('./types').ValidatorData)}   validators - Validators to remove.
     */
    remove(...validators)
    {
@@ -249,8 +265,8 @@ export class AdapterValidators
     * Remove validators by the provided callback. The callback takes 3 parameters: `id`, `validator`, and `weight`.
     * Any truthy value returned will remove that validator.
     *
-    * @param {function(*, import('../').ValidatorFn, number): boolean} callback - Callback function to evaluate each
-    *        validator entry.
+    * @param {import('./types').ValidatorRemoveByCallback} callback - Callback function to evaluate each validator
+    *        entry.
     */
    removeBy(callback)
    {
@@ -285,6 +301,11 @@ export class AdapterValidators
       // if (length !== this.#validatorData.length) { this.#indexUpdate(); }
    }
 
+   /**
+    * Removes any validators with matching IDs.
+    *
+    * @param {...any}   ids - IDs to remove.
+    */
    removeById(...ids)
    {
       const length = this.#validatorData.length;

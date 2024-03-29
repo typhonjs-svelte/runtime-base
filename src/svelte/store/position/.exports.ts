@@ -5,5 +5,4 @@ export * from './animation/AnimationAPI.js';
 export * from './animation/AnimationGroupAPI.js';
 export * from './initial/index.js';
 export * from './transform/index.js';
-export * from './validators/index.js'
 export * from './PositionStateAPI.js';
