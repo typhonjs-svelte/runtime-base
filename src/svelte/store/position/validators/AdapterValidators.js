@@ -32,15 +32,15 @@ export class AdapterValidators
    #enabled = true;
 
    /**
-    * @type {import('./types').ValidatorData[]}
+    * @type {import('./types').IValidatorAPI.ValidatorData[]}
     */
    #validatorData;
 
    #mapUnsubscribe = new Map();
 
    /**
-    * @returns {[AdapterValidators, import('./types').ValidatorData[]]} Returns this and internal storage for validator
-    *          adapter.
+    * @returns {[AdapterValidators, import('./types').IValidatorAPI.ValidatorData[]]} Returns this and internal storage
+    * for validator adapter.
     */
    static create()
    {
@@ -81,7 +81,8 @@ export class AdapterValidators
    /**
     * Provides an iterator for validators.
     *
-    * @yields {import('./types').ValidatorData}
+    * @yields {import('./types').IValidatorAPI.ValidatorData}
+    * @returns {IterableIterator<import('./types').IValidatorAPI.ValidatorData>} iterator.
     */
    *[Symbol.iterator]()
    {
@@ -96,7 +97,10 @@ export class AdapterValidators
    /**
     * Adds the given validators.
     *
-    * @param {...(import('./types').ValidatorFn | import('./types').ValidatorData)}   validators - Validators to add.
+    * @param {...(
+    *    import('./types').IValidatorAPI.ValidatorFn |
+    *    import('./types').IValidatorAPI.ValidatorData
+    * )}   validators - Validators to add.
     */
    add(...validators)
    {
@@ -224,7 +228,10 @@ export class AdapterValidators
    /**
     * Removes one or more given validators.
     *
-    * @param {...(import('./types').ValidatorFn | import('./types').ValidatorData)}   validators - Validators to remove.
+    * @param {...(
+    *    import('./types').IValidatorAPI.ValidatorFn |
+    *    import('./types').IValidatorAPI.ValidatorData
+    * )}   validators - Validators to remove.
     */
    remove(...validators)
    {
@@ -265,7 +272,7 @@ export class AdapterValidators
     * Remove validators by the provided callback. The callback takes 3 parameters: `id`, `validator`, and `weight`.
     * Any truthy value returned will remove that validator.
     *
-    * @param {import('./types').ValidatorRemoveByCallback} callback - Callback function to evaluate each validator
+    * @param {import('./types').IValidatorAPI.RemoveByCallback} callback - Callback function to evaluate each validator
     *        entry.
     */
    removeBy(callback)

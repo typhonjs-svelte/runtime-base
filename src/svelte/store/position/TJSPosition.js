@@ -139,7 +139,7 @@ export class TJSPosition
    #validators;
 
    /**
-    * @type {import('./validators/types').ValidatorData[]}
+    * @type {import('./validators/types').IValidatorAPI.ValidatorData[]}
     */
    #validatorData;
 
@@ -1356,7 +1356,7 @@ export class TJSPosition
 const s_DATA_UPDATE = new TJSPositionData();
 
 /**
- * @type {import('./').ValidationData}
+ * @type {import('./validators/types').IValidatorAPI.ValidationData}
  */
 const s_VALIDATION_DATA = {
    position: void 0,
