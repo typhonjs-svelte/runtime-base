@@ -4162,7 +4162,8 @@ class BasicBounds
     * Provides a validator that respects transforms in positional data constraining the position to within the target
     * elements bounds.
     *
-    * @param {import('../').ValidationData}   valData - The associated validation data for position updates.
+    * @param {import('./types').IValidatorAPI.ValidationData}   valData - The associated validation data for position
+    *        updates.
     *
     * @returns {import('../').TJSPositionData} Potentially adjusted position data.
     */
@@ -4413,7 +4414,8 @@ class TransformBounds
     * Provides a validator that respects transforms in positional data constraining the position to within the target
     * elements bounds.
     *
-    * @param {import('../').ValidationData}   valData - The associated validation data for position updates.
+    * @param {import('./types').IValidatorAPI.ValidationData}   valData - The associated validation data for position
+    *        updates.
     *
     * @returns {import('../').TJSPositionData} Potentially adjusted position data.
     */
@@ -4980,7 +4982,7 @@ class TJSPosition
    #validators;
 
    /**
-    * @type {import('./validators/types').ValidatorData[]}
+    * @type {import('./validators/types').IValidatorAPI.ValidatorData[]}
     */
    #validatorData;
 
@@ -6191,7 +6193,7 @@ class TJSPosition
 const s_DATA_UPDATE = new TJSPositionData();
 
 /**
- * @type {import('./').ValidationData}
+ * @type {import('./validators/types').IValidatorAPI.ValidationData}
  */
 const s_VALIDATION_DATA = {
    position: void 0,

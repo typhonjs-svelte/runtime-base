@@ -1020,11 +1020,12 @@ declare class BasicBounds {
    * Provides a validator that respects transforms in positional data constraining the position to within the target
    * elements bounds.
    *
-   * @param {import('../').ValidationData}   valData - The associated validation data for position updates.
+   * @param {import('./types').IValidatorAPI.ValidationData}   valData - The associated validation data for position
+   *        updates.
    *
    * @returns {import('../').TJSPositionData} Potentially adjusted position data.
    */
-  validator(valData: any): TJSPositionData;
+  validator(valData: IValidatorAPI.ValidationData): TJSPositionData;
   #private;
 }
 
@@ -1110,11 +1111,12 @@ declare class TransformBounds {
    * Provides a validator that respects transforms in positional data constraining the position to within the target
    * elements bounds.
    *
-   * @param {import('../').ValidationData}   valData - The associated validation data for position updates.
+   * @param {import('./types').IValidatorAPI.ValidationData}   valData - The associated validation data for position
+   *        updates.
    *
    * @returns {import('../').TJSPositionData} Potentially adjusted position data.
    */
-  validator(valData: any): TJSPositionData;
+  validator(valData: IValidatorAPI.ValidationData): TJSPositionData;
   #private;
 }
 
