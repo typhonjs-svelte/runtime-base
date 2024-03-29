@@ -20,6 +20,9 @@ const s_MAT4_TEMP = Mat4.create();
 /** @type {import('#runtime/math/gl-matrix').Vec3} */
 const s_VEC3_TEMP = Vec3.create();
 
+/**
+ * @implements {import('./types').ITransformAPI}
+ */
 export class TJSTransforms
 {
    /**
@@ -283,11 +286,11 @@ export class TJSTransforms
     *
     * @param {import('../').TJSPositionData} position - The position data to process.
     *
-    * @param {TJSTransformData} [output] - Optional TJSTransformData output instance.
+    * @param {import('./types').ITransformAPI.ITransformData} [output] - Optional TJSTransformData output instance.
     *
     * @param {object} [validationData] - Optional validation data for adjustment parameters.
     *
-    * @returns {TJSTransformData} The output TJSTransformData instance.
+    * @returns {import('./types').ITransformAPI.ITransformData} The output TJSTransformData instance.
     */
    getData(position, output = new TJSTransformData(), validationData = {})
    {

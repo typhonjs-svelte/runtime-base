@@ -161,7 +161,8 @@ export class TJSPosition
    /**
     * Returns TJSTransformData class / constructor.
     *
-    * @returns {typeof TJSTransformData} TJSTransformData class / constructor.
+    * @returns {import('./transform/types').ITransformAPI.ITransformDataConstructor} ITransformData class /
+    *          constructor.
     */
    static get TransformData() { return TJSTransformData; }
 
@@ -490,7 +491,7 @@ export class TJSPosition
    /**
     * Returns the transform data for the readable store.
     *
-    * @returns {TJSTransformData} Transform Data.
+    * @returns {import('./transform/types').ITransformAPI.ITransformData} Transform Data.
     */
    get transform()
    {
@@ -604,7 +605,7 @@ export class TJSPosition
    get top() { return this.#data.top; }
 
    /**
-    * @returns {import('./').TJSTransformOrigin} transformOrigin
+    * @returns {import('./transform/types').ITransformAPI.TransformOrigin | null} transformOrigin
     */
    get transformOrigin() { return this.#data.transformOrigin; }
 
@@ -730,7 +731,7 @@ export class TJSPosition
    }
 
    /**
-    * @param {import('./').TJSTransformOrigin} transformOrigin -
+    * @param {import('./transform/types').ITransformAPI.TransformOrigin} transformOrigin -
     */
    set transformOrigin(transformOrigin)
    {

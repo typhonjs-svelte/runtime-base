@@ -63,7 +63,7 @@ export class TJSPositionData
       this.top = top;
 
       /**
-       * @type {string|null}
+       * @type {import('./transform/types').ITransformAPI.TransformOrigin | null}
        */
       this.transformOrigin = transformOrigin;
 

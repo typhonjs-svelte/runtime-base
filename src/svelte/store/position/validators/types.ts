@@ -1,9 +1,9 @@
 import type { Subscriber }          from 'svelte/store';
 
+import type { TJSPositionParent }   from '../';
 import type { TJSPosition }         from '../TJSPosition.js';
 import type { TJSPositionData }     from '../TJSPositionData.js';
-import type { TJSPositionParent }   from '../';
-import type { TJSTransforms }       from '../transform';
+import type { ITransformAPI }       from '../transform/types';
 
 /**
  * Provides the validator API implementation for {@link TJSPosition.validators}. You may add one or more validator
@@ -101,9 +101,8 @@ namespace IValidatorAPI {
 
       /**
        * Current applies transforms / transform tracking & conversion utility.
-       * TODO: UPDATE INTERFACE - TJSTransforms needs an interface.
        */
-      transforms: TJSTransforms;
+      transforms: ITransformAPI;
 
       /**
        * Current height
@@ -146,7 +145,7 @@ namespace IValidatorAPI {
       minWidth: number | undefined;
 
       /**
-       * The rest of any data submitted to {@link TJSPosition.set}
+       * The rest of any data submitted to {@link TJSPosition.set}.
        */
       rest: Record<string, any> | undefined;
    }

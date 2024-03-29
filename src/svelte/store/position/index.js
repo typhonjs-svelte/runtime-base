@@ -117,8 +117,9 @@ export { TJSPosition }
  *
  * @property {import('svelte/store').Writable<number|null>} scale Derived store for `scale` updates.
  *
- * @property {import('svelte/store').Readable<import('./transform').TJSTransformData>} transform Readable store for
- *           transform data.
+ * @property {import('svelte/store').Readable<
+ *    import('./transform/types').ITransformAPI.ITransformData
+ * >} transform Readable store for transform data.
  *
  * @property {import('svelte/store').Writable<string>} transformOrigin Derived store for `transformOrigin`.
  *
@@ -173,20 +174,4 @@ export { TJSPosition }
  * @property {boolean} [immediateElementUpdate] When true any associated element is updated immediately.
  *
  * @property {number|null} [rotation] Alias for `rotateZ`.
- */
-
-// From: position/transform/TJSTransformData.js -------------------------------------------------------------------------
-
-/**
- * @typedef {(
- *    'top left' |
- *    'top center' |
- *    'top right' |
- *    'center left' |
- *    'center' |
- *    'center right' |
- *    'bottom left' |
- *    'bottom center' |
- *    'bottom right'
- * )} TJSTransformOrigin The supported transform origin strings.
  */
