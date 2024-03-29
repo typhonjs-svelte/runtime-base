@@ -315,7 +315,7 @@ AnimationManager.animate();
 /**
  * Stores the TJSPositionData properties that can be animated.
  *
- * @type {Set<string>}
+ * @type {Set<import('./types').AnimationKeys>}
  */
 const animateKeys = new Set([
    // Main keys
@@ -646,15 +646,7 @@ class AnimationAPI
     *
     * @param {import('../index.js').TJSPositionDataExtended} fromData - The starting position.
     *
-    * @param {object}         [opts] - Optional parameters.
-    *
-    * @param {number}         [opts.delay=0] - Delay in seconds before animation starts.
-    *
-    * @param {number}         [opts.duration=1] - Duration in seconds.
-    *
-    * @param {Function}       [opts.ease=cubicOut] - Easing function.
-    *
-    * @param {Function}       [opts.interpolate=lerp] - Interpolation function.
+    * @param {import('../types').TweenOptions} [opts] - Optional tween parameters.
     *
     * @returns {import('#runtime/util/animate').TJSBasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
@@ -726,15 +718,7 @@ class AnimationAPI
     *
     * @param {import('../index.js').TJSPositionDataExtended} toData - The ending position.
     *
-    * @param {object}         [opts] - Optional parameters.
-    *
-    * @param {number}         [opts.delay=0] - Delay in seconds before animation starts.
-    *
-    * @param {number}         [opts.duration=1] - Duration in seconds.
-    *
-    * @param {Function}       [opts.ease=cubicOut] - Easing function.
-    *
-    * @param {Function}       [opts.interpolate=lerp] - Interpolation function.
+    * @param {import('../types').TweenOptions} [opts] - Optional tween parameters.
     *
     * @returns {import('#runtime/util/animate').TJSBasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
@@ -816,15 +800,7 @@ class AnimationAPI
     *
     * @param {import('../index.js').TJSPositionDataExtended} toData - The destination position.
     *
-    * @param {object}         [opts] - Optional parameters.
-    *
-    * @param {number}         [opts.delay=0] - Delay in seconds before animation starts.
-    *
-    * @param {number}         [opts.duration=1] - Duration in seconds.
-    *
-    * @param {Function}       [opts.ease=cubicOut] - Easing function.
-    *
-    * @param {Function}       [opts.interpolate=lerp] - Interpolation function.
+    * @param {import('../types').TweenOptions} [opts] - Optional tween parameters.
     *
     * @returns {import('#runtime/util/animate').TJSBasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
@@ -891,17 +867,11 @@ class AnimationAPI
    /**
     * Returns a function that provides an optimized way to constantly update a to-tween.
     *
-    * @param {Iterable<string>}  keys - The keys for quickTo.
+    * @param {Iterable<import('../types').AnimationKeys>}  keys - The keys for quickTo.
     *
-    * @param {object}            [opts] - Optional parameters.
+    * @param {import('../types').QuickTweenOptions} [opts] - Optional quick tween parameters.
     *
-    * @param {number}            [opts.duration=1] - Duration in seconds.
-    *
-    * @param {Function}          [opts.ease=cubicOut] - Easing function.
-    *
-    * @param {Function}          [opts.interpolate=lerp] - Interpolation function.
-    *
-    * @returns {import('../index.js').quickToCallback} quick-to tween function.
+    * @returns {import('../types').quickToCallback} quick-to tween function.
     */
    quickTo(keys, { duration = 1, ease = cubicOut, interpolate = lerp } = {})
    {
@@ -984,7 +954,7 @@ class AnimationAPI
          start: void 0
       };
 
-      const quickToCB = (...args) =>
+      const quickToCB = /** @type {import('../types').quickToCallback} */ (...args) =>
       {
          const argsLength = args.length;
 
@@ -1048,19 +1018,6 @@ class AnimationAPI
 
       quickToCB.keys = keysArray;
 
-      /**
-       * Sets options of quickTo tween.
-       *
-       * @param {object}            [opts] - Optional parameters.
-       *
-       * @param {number}            [opts.duration] - Duration in seconds.
-       *
-       * @param {Function}          [opts.ease] - Easing function.
-       *
-       * @param {Function}          [opts.interpolate] - Interpolation function.
-       *
-       * @returns {import('../').quickToCallback} The quickTo callback.
-       */
       quickToCB.options = ({ duration, ease, interpolate } = {}) => // eslint-disable-line no-shadow
       {
          if (duration !== void 0 && (!Number.isFinite(duration) || duration < 0))
@@ -1230,9 +1187,9 @@ class AnimationGroupAPI
    }
 
    /**
-    * Cancels any animation for given TJSPosition data.
+    * Cancels any animation for given TJSPositionGroup data.
     *
-    * @param {import('../').TJSPosition | {position: import('../').TJSPosition} | Iterable<import('../').TJSPosition> | Iterable<{position: import('../').TJSPosition}>} position -
+    * @param {import('../').TJSPositionGroup} position - The position group to cancel.
     */
    static cancel(position)
    {
@@ -1275,9 +1232,9 @@ class AnimationGroupAPI
    static cancelAll() { AnimationManager.cancelAll(); }
 
    /**
-    * Gets all animation controls for the given position data.
+    * Gets all animation controls for the given position group data.
     *
-    * @param {import('../').TJSPosition | {position: import('../').TJSPosition} | Iterable<import('../').TJSPosition> | Iterable<{position: import('../').TJSPosition}>} position -
+    * @param {import('../').TJSPositionGroup} position - A position group.
     *
     * @returns {{ position: import('../').TJSPosition, data: object | void, controls: import('./AnimationControl').AnimationControl[]}[]} Results array.
     */
@@ -1329,11 +1286,11 @@ class AnimationGroupAPI
    /**
     * Provides the `from` animation tween for one or more TJSPosition instances as a group.
     *
-    * @param {import('../').TJSPosition | {position: import('../').TJSPosition} | Iterable<import('../').TJSPosition> | Iterable<{position: import('../').TJSPosition}>} position -
+    * @param {import('../').TJSPositionGroup} position - A position group.
     *
     * @param {object|Function}   fromData -
     *
-    * @param {object|Function}   options -
+    * @param {import('../types').TweenOptions | (() => import('../types').TweenOptions)}   options -
     *
     * @returns {import('#runtime/util/animate').TJSBasicAnimation} Basic animation control.
     */
@@ -1468,7 +1425,7 @@ class AnimationGroupAPI
    /**
     * Provides the `fromTo` animation tween for one or more TJSPosition instances as a group.
     *
-    * @param {import('../').TJSPosition | {position: import('../').TJSPosition} | Iterable<import('../').TJSPosition> | Iterable<{position: import('../').TJSPosition}>} position -
+    * @param {import('../').TJSPositionGroup} position -
     *
     * @param {object|Function}   fromData -
     *
@@ -1641,7 +1598,7 @@ class AnimationGroupAPI
    /**
     * Provides the `to` animation tween for one or more TJSPosition instances as a group.
     *
-    * @param {import('../').TJSPosition | {position: import('../').TJSPosition} | Iterable<import('../').TJSPosition> | Iterable<{position: import('../').TJSPosition}>} position -
+    * @param {import('../').TJSPositionGroup} position -
     *
     * @param {object|Function}   toData -
     *
@@ -1780,13 +1737,13 @@ class AnimationGroupAPI
    /**
     * Provides the `to` animation tween for one or more TJSPosition instances as a group.
     *
-    * @param {import('../').TJSPosition | {position: import('../').TJSPosition} | Iterable<import('../').TJSPosition> | Iterable<{position: import('../').TJSPosition}>} position -
+    * @param {import('../').TJSPositionGroup} position -
     *
-    * @param {Iterable<string>}  keys -
+    * @param {Iterable<import('../types').AnimationKeys>}  keys -
     *
-    * @param {object|Function}   options -
+    * @param {import('../types').QuickTweenOptions | (() => import('../types').QuickTweenOptions)}   options -
     *
-    * @returns {import('../').quickToCallback} Basic animation control.
+    * @returns {import('../types').quickToCallback} quick-to tween function.
     */
    static quickTo(position, keys, options)
    {
@@ -1801,7 +1758,7 @@ class AnimationGroupAPI
       }
 
       /**
-       * @type {import('../').quickToCallback[]}
+       * @type {import('../types').quickToCallback[]}
        */
       const quickToCallbacks = [];
 
@@ -1811,7 +1768,7 @@ class AnimationGroupAPI
 
       const callbackOptions = { index, position: void 0, data: void 0 };
 
-      let actualOptions = options;
+      let actualOptions = isObject(options) ? options : void 0;
 
       if (isIterable(position))
       {
@@ -3682,6 +3639,8 @@ function s_GET_ORIGIN_TRANSLATION(transformOrigin, width, height, output)
  * position.validators.removeBy(...);
  * position.validators.removeById(...);
  * ```
+ *
+ * @implements {import('./types').IValidatorAPI}
  */
 class AdapterValidators
 {
@@ -3689,27 +3648,34 @@ class AdapterValidators
    #enabled = true;
 
    /**
-    * @type {import('../').ValidatorData[]}
+    * @type {import('./types').ValidatorData[]}
     */
    #validatorData;
 
    #mapUnsubscribe = new Map();
 
    /**
-    * @returns {[AdapterValidators, import('../').ValidatorData[]]} Returns this and internal storage for validator
+    * @returns {[AdapterValidators, import('./types').ValidatorData[]]} Returns this and internal storage for validator
     *          adapter.
+    */
+   static create()
+   {
+      const validatorAPI = new AdapterValidators();
+
+      return [validatorAPI, validatorAPI.#validatorData];
+   }
+
+   /**
     */
    constructor()
    {
       this.#validatorData = [];
 
       Object.seal(this);
-
-      return [this, this.#validatorData];
    }
 
    /**
-    * @returns {boolean} Returns the enabled state.s
+    * @returns {boolean} Returns the enabled state.
     */
    get enabled() { return this.#enabled; }
 
@@ -3731,7 +3697,7 @@ class AdapterValidators
    /**
     * Provides an iterator for validators.
     *
-    * @yields {import('../').ValidatorData}
+    * @yields {import('./types').ValidatorData}
     */
    *[Symbol.iterator]()
    {
@@ -3744,7 +3710,9 @@ class AdapterValidators
    }
 
    /**
-    * @param {...(import('../').ValidatorFn | import('../').ValidatorData)}   validators -
+    * Adds the given validators.
+    *
+    * @param {...(import('./types').ValidatorFn | import('./types').ValidatorData)}   validators - Validators to add.
     */
    add(...validators)
    {
@@ -3850,6 +3818,9 @@ class AdapterValidators
       // if (subscribeCount < validators.length) { this.#indexUpdate(); }
    }
 
+   /**
+    * Clears / removes all validators.
+    */
    clear()
    {
       this.#validatorData.length = 0;
@@ -3867,7 +3838,9 @@ class AdapterValidators
    }
 
    /**
-    * @param {...(import('../').ValidatorFn | import('../').ValidatorData)}   validators -
+    * Removes one or more given validators.
+    *
+    * @param {...(import('./types').ValidatorFn | import('./types').ValidatorData)}   validators - Validators to remove.
     */
    remove(...validators)
    {
@@ -3908,8 +3881,8 @@ class AdapterValidators
     * Remove validators by the provided callback. The callback takes 3 parameters: `id`, `validator`, and `weight`.
     * Any truthy value returned will remove that validator.
     *
-    * @param {function(*, import('../').ValidatorFn, number): boolean} callback - Callback function to evaluate each
-    *        validator entry.
+    * @param {import('./types').ValidatorRemoveByCallback} callback - Callback function to evaluate each validator
+    *        entry.
     */
    removeBy(callback)
    {
@@ -3944,6 +3917,11 @@ class AdapterValidators
       // if (length !== this.#validatorData.length) { this.#indexUpdate(); }
    }
 
+   /**
+    * Removes any validators with matching IDs.
+    *
+    * @param {...any}   ids - IDs to remove.
+    */
    removeById(...ids)
    {
       const length = this.#validatorData.length;
@@ -3985,7 +3963,7 @@ class BasicBounds
    #constrain;
 
    /**
-    * @type {HTMLElement}
+    * @type {import('#runtime/util/browser').FocusableElement | null | undefined}
     */
    #element;
 
@@ -4017,7 +3995,23 @@ class BasicBounds
     */
    #width;
 
-   constructor({ constrain = true, element, enabled = true, lock = false, width, height } = {})
+   /**
+    * @param {object}   [opts] - Options.
+    *
+    * @param {boolean}  [opts.constrain=true] - Initial constrained state.
+    *
+    * @param {import('#runtime/util/browser').FocusableElement} [opts.element] -
+    *
+    * @param {boolean}  [opts.enabled=true] - Initial enabled state.
+    *
+    * @param {boolean}  [opts.lock=false] - Locks further modification.
+    *
+    * @param {number}   [opts.width] - A specific finite width.
+    *
+    * @param {number}   [opts.height] - A specific finite height.
+    */
+   constructor({ constrain = true, element = void 0, enabled = true, lock = false, width = void 0,
+    height = void 0 } = {})
    {
       this.element = element;
       this.constrain = constrain;
@@ -4028,16 +4022,34 @@ class BasicBounds
       this.#lock = typeof lock === 'boolean' ? lock : false;
    }
 
+   /**
+    * @returns {boolean} The current constrain state.
+    */
    get constrain() { return this.#constrain; }
 
+   /**
+    * @returns {import('#runtime/util/browser').FocusableElement | null | undefined}
+    */
    get element() { return this.#element; }
 
+   /**
+    * @returns {boolean} The current enabled state.
+    */
    get enabled() { return this.#enabled; }
 
+   /**
+    * @returns {number | undefined} The current height.
+    */
    get height() { return this.#height; }
 
+   /**
+    * @returns {number | undefined} The current width.
+    */
    get width() { return this.#width; }
 
+   /**
+    * @param {boolean}  constrain - New constrain state.
+    */
    set constrain(constrain)
    {
       if (this.#lock) { return; }
@@ -4047,6 +4059,10 @@ class BasicBounds
       this.#constrain = constrain;
    }
 
+   /**
+    * @param {import('#runtime/util/browser').FocusableElement | null | undefined} element - Target element or
+    *        undefined.
+    */
    set element(element)
    {
       if (this.#lock) { return; }
@@ -4061,6 +4077,9 @@ class BasicBounds
       }
    }
 
+   /**
+    * @param {boolean}  enabled - New enabled state.
+    */
    set enabled(enabled)
    {
       if (this.#lock) { return; }
@@ -4070,6 +4089,9 @@ class BasicBounds
       this.#enabled = enabled;
    }
 
+   /**
+    * @param {number | undefined}   height - A finite number or undefined.
+    */
    set height(height)
    {
       if (this.#lock) { return; }
@@ -4084,6 +4106,9 @@ class BasicBounds
       }
    }
 
+   /**
+    * @param {number | undefined}   width - A finite number or undefined.
+    */
    set width(width)
    {
       if (this.#lock) { return; }
@@ -4098,6 +4123,11 @@ class BasicBounds
       }
    }
 
+   /**
+    * @param {number | undefined}   width - A finite number or undefined.
+    *
+    * @param {number | undefined}   height - A finite number or undefined.
+    */
    setDimension(width, height)
    {
       if (this.#lock) { return; }
@@ -4182,7 +4212,7 @@ class TransformBounds
    #constrain;
 
    /**
-    * @type {HTMLElement}
+    * @type {import('#runtime/util/browser').FocusableElement | null | undefined}
     */
    #element;
 
@@ -4203,6 +4233,8 @@ class TransformBounds
 
    /**
     * Set from an optional value in the constructor to lock accessors preventing modification.
+    *
+    * @type {boolean}
     */
    #lock;
 
@@ -4214,7 +4246,23 @@ class TransformBounds
     */
    #width;
 
-   constructor({ constrain = true, element, enabled = true, lock = false, width, height } = {})
+   /**
+    * @param {object}   [opts] - Options.
+    *
+    * @param {boolean}  [opts.constrain=true] - Initial constrained state.
+    *
+    * @param {import('#runtime/util/browser').FocusableElement} [opts.element] -
+    *
+    * @param {boolean}  [opts.enabled=true] - Initial enabled state.
+    *
+    * @param {boolean}  [opts.lock=false] - Locks further modification.
+    *
+    * @param {number}   [opts.width] - A specific finite width.
+    *
+    * @param {number}   [opts.height] - A specific finite height.
+    */
+   constructor({ constrain = true, element = void 0, enabled = true, lock = false, width = void 0,
+    height = void 0 } = {})
    {
       this.element = element;
       this.constrain = constrain;
@@ -4225,16 +4273,34 @@ class TransformBounds
       this.#lock = typeof lock === 'boolean' ? lock : false;
    }
 
+   /**
+    * @returns {boolean} The current constrain state.
+    */
    get constrain() { return this.#constrain; }
 
+   /**
+    * @returns {import('#runtime/util/browser').FocusableElement | null | undefined}
+    */
    get element() { return this.#element; }
 
+   /**
+    * @returns {boolean} The current enabled state.
+    */
    get enabled() { return this.#enabled; }
 
+   /**
+    * @returns {number | undefined} The current height.
+    */
    get height() { return this.#height; }
 
+   /**
+    * @returns {number | undefined} The current width.
+    */
    get width() { return this.#width; }
 
+   /**
+    * @param {boolean}  constrain - New constrain state.
+    */
    set constrain(constrain)
    {
       if (this.#lock) { return; }
@@ -4244,6 +4310,10 @@ class TransformBounds
       this.#constrain = constrain;
    }
 
+   /**
+    * @param {import('#runtime/util/browser').FocusableElement | null | undefined} element - Target element or
+    *        undefined.
+    */
    set element(element)
    {
       if (this.#lock) { return; }
@@ -4258,6 +4328,9 @@ class TransformBounds
       }
    }
 
+   /**
+    * @param {boolean}  enabled - New enabled state.
+    */
    set enabled(enabled)
    {
       if (this.#lock) { return; }
@@ -4267,6 +4340,9 @@ class TransformBounds
       this.#enabled = enabled;
    }
 
+   /**
+    * @param {number | undefined}   height - A finite number or undefined.
+    */
    set height(height)
    {
       if (this.#lock) { return; }
@@ -4281,6 +4357,9 @@ class TransformBounds
       }
    }
 
+   /**
+    * @param {number | undefined}   width - A finite number or undefined.
+    */
    set width(width)
    {
       if (this.#lock) { return; }
@@ -4295,6 +4374,11 @@ class TransformBounds
       }
    }
 
+   /**
+    * @param {number | undefined}   width - A finite number or undefined.
+    *
+    * @param {number | undefined}   height - A finite number or undefined.
+    */
    setDimension(width, height)
    {
       if (this.#lock) { return; }
@@ -4793,13 +4877,13 @@ class TJSPosition
    };
 
    /**
-    * @type {{TransformBounds: TransformBounds, BasicBounds: BasicBounds, basicWindow: BasicBounds, transformWindow: TransformBounds}}
+    * @type {{BasicBounds: typeof BasicBounds, basicWindow: BasicBounds, TransformBounds: typeof TransformBounds, transformWindow: TransformBounds}}
     */
    static #positionValidators = {
-      basicWindow: new BasicBounds({ lock: true }),
       BasicBounds,
-      transformWindow: new TransformBounds({ lock: true }),
-      TransformBounds
+      basicWindow: new BasicBounds({ lock: true }),
+      TransformBounds,
+      transformWindow: new TransformBounds({ lock: true })
    };
 
    /**
@@ -4889,7 +4973,7 @@ class TJSPosition
    #validators;
 
    /**
-    * @type {import('./').ValidatorData[]}
+    * @type {import('./validators/types').ValidatorData[]}
     */
    #validatorData;
 
@@ -4899,19 +4983,19 @@ class TJSPosition
    #state = new PositionStateAPI(this, this.#data, this.#transforms);
 
    /**
-    * @returns {AnimationGroupAPI} Public Animation API.
+    * @returns {typeof AnimationGroupAPI} Public Animation API.
     */
    static get Animate() { return AnimationGroupAPI; }
 
    /**
-    * @returns {{browserCentered: Centered, Centered: Centered}} TJSPosition initial API.
+    * @returns {{browserCentered: Centered, Centered: typeof Centered}} TJSPosition initial API.
     */
    static get Initial() { return this.#positionInitial; }
 
    /**
     * Returns TJSTransformData class / constructor.
     *
-    * @returns {TJSTransformData} TJSTransformData class / constructor.
+    * @returns {typeof TJSTransformData} TJSTransformData class / constructor.
     */
    static get TransformData() { return TJSTransformData; }
 
@@ -4920,7 +5004,7 @@ class TJSPosition
     *
     * Note: `basicWindow` and `BasicBounds` will eventually be removed.
     *
-    * @returns {{TransformBounds: TransformBounds, BasicBounds: BasicBounds, basicWindow: BasicBounds, transformWindow: TransformBounds}}
+    * @returns {{BasicBounds: typeof BasicBounds, basicWindow: BasicBounds, TransformBounds: typeof TransformBounds, transformWindow: TransformBounds}}
     * Available validators.
     */
    static get Validators() { return this.#positionValidators; }
@@ -4932,7 +5016,7 @@ class TJSPosition
     *
     * @param {TJSPosition}          position - A position instance.
     *
-    * @param {import('./').TJSPositionOptions}   options - TJSPosition options.
+    * @param {import('./').TJSPositionOptionsAll}   options - TJSPosition options.
     *
     * @returns {TJSPosition} A duplicate position instance.
     */
@@ -5144,7 +5228,7 @@ class TJSPosition
 
       this.#stores.transformOrigin.values = transformOrigins;
 
-      [this.#validators, this.#validatorData] = new AdapterValidators();
+      [this.#validators, this.#validatorData] = AdapterValidators.create();
 
       if (options?.initial || options?.positionInitial)
       {
@@ -5250,7 +5334,7 @@ class TJSPosition
    /**
     * Returns the validators.
     *
-    * @returns {AdapterValidators} validators.
+    * @returns {import('./validators/types').IValidatorAPI} validators.
     */
    get validators() { return this.#validators; }
 

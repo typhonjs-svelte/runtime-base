@@ -11,9 +11,14 @@ import * as _runtime_data_compress from '@typhonjs-svelte/runtime-base/data/comp
  *
  * @returns {any} Inflated and unpacked data.
  */
-declare function inflateAndUnpack(data: Uint8Array, { inflateOptions }?: {
+declare function inflateAndUnpack(
+  data: Uint8Array,
+  {
+    inflateOptions,
+  }?: {
     inflateOptions?: _runtime_data_compress.InflateOptions;
-}): any;
+  },
+): any;
 
 /**
  * Converts Base64 string to Uint8Array / inflates then unpacks with MessagePack. This function is the inverse of
@@ -27,9 +32,14 @@ declare function inflateAndUnpack(data: Uint8Array, { inflateOptions }?: {
  *
  * @returns {any} Inflated and unpacked data.
  */
-declare function inflateAndUnpackB64(data: string, { inflateOptions }?: {
+declare function inflateAndUnpackB64(
+  data: string,
+  {
+    inflateOptions,
+  }?: {
     inflateOptions?: _runtime_data_compress.InflateOptions;
-}): any;
+  },
+): any;
 
 /**
  * Packs given data with MessagePack then deflates / compresses with Zlib. The inverse function to inflate is
@@ -43,9 +53,14 @@ declare function inflateAndUnpackB64(data: string, { inflateOptions }?: {
  *
  * @returns {Uint8Array} Packed and compressed data.
  */
-declare function packAndDeflate(data: any, { deflateOptions }?: {
+declare function packAndDeflate(
+  data: any,
+  {
+    deflateOptions,
+  }?: {
     deflateOptions?: _runtime_data_compress.DeflateOptions;
-}): Uint8Array;
+  },
+): Uint8Array;
 
 /**
  * Packs given data with MessagePack then deflates / compresses with Zlib then converts the Uint8Array to a Base64
@@ -61,9 +76,15 @@ declare function packAndDeflate(data: any, { deflateOptions }?: {
  *
  * @returns {string} Packed / compressed / Base64 string.
  */
-declare function packAndDeflateB64(data: any, { deflateOptions, urlsafe }?: {
+declare function packAndDeflateB64(
+  data: any,
+  {
+    deflateOptions,
+    urlsafe,
+  }?: {
     deflateOptions?: _runtime_data_compress.DeflateOptions;
     urlsafe?: boolean;
-}): string;
+  },
+): string;
 
 export { inflateAndUnpack, inflateAndUnpackB64, packAndDeflate, packAndDeflateB64 };

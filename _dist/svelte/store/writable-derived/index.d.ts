@@ -3,18 +3,18 @@ import { Writable, Updater, Readable } from 'svelte/store';
 /** The minimal requirements of the
  * [writable store contract](https://svelte.dev/docs#component-format-script-4-prefix-stores-with-$-to-access-their-values-store-contract).
  */
-export type MinimalWritable<T> = Pick<Writable<T>, "set" | "subscribe">;
+export type MinimalWritable<T> = Pick<Writable<T>, 'set' | 'subscribe'>;
 
 /** Stores that may be used as origins. */
 export type Stores = MinimalWritable<any> | [Readable<any>, ...Array<Readable<any>>] | Array<Readable<any>>;
 
 /** Values retrieved from origin stores. */
-export type StoresValues<T> = T extends Readable<infer U> ? U :
-    { [K in keyof T]: T[K] extends Readable<infer U> ? U : never };
+export type StoresValues<T> =
+  T extends Readable<infer U> ? U : { [K in keyof T]: T[K] extends Readable<infer U> ? U : never };
 
 /** Values sent to origin stores. */
-export type SetValues<T> = T extends MinimalWritable<infer U> ? U :
-    { [K in keyof T]?: T[K] extends MinimalWritable<infer U> ? U : never };
+export type SetValues<T> =
+  T extends MinimalWritable<infer U> ? U : { [K in keyof T]?: T[K] extends MinimalWritable<infer U> ? U : never };
 
 /**
  * Create a store similar to [Svelte's `derived`](https://svelte.dev/docs#run-time-svelte-store-writable), but which
@@ -34,19 +34,18 @@ export type SetValues<T> = T extends MinimalWritable<infer U> ? U :
  * @returns A writable store.
  */
 declare function writableDerived<S extends Stores, T>(
-    origins: S,
-    derive: (values: StoresValues<S>) => T,
-    reflect: (reflecting: T, old: StoresValues<S>) => SetValues<S>,
-    initial?: T
+  origins: S,
+  derive: (values: StoresValues<S>) => T,
+  reflect: (reflecting: T, old: StoresValues<S>) => SetValues<S>,
+  initial?: T,
 ): Writable<T>;
 
 declare function writableDerived<S extends Stores, T>(
-    origins: S,
-    derive: (values: StoresValues<S>, set: (value: T) => void, update: Updater<T>) => void,
-    reflect: (reflecting: T, old: StoresValues<S>) => SetValues<S>,
-    initial?: T
+  origins: S,
+  derive: (values: StoresValues<S>, set: (value: T) => void, update: Updater<T>) => void,
+  reflect: (reflecting: T, old: StoresValues<S>) => SetValues<S>,
+  initial?: T,
 ): Writable<T>;
-
 
 /**
  * Create a store for a property value in an object contained in another store.
@@ -59,39 +58,33 @@ declare function writableDerived<S extends Stores, T>(
  * @returns A writable store.
  */
 declare function propertyStore<O extends object, K extends keyof O>(
-    origin: MinimalWritable<O>,
-    propName: K | [K]
+  origin: MinimalWritable<O>,
+  propName: K | [K],
 ): Writable<O[K]>;
 
 declare function propertyStore<O extends object, K1 extends keyof O, K2 extends keyof O[K1]>(
-    origin: MinimalWritable<O>,
-    propName: [K1, K2]
+  origin: MinimalWritable<O>,
+  propName: [K1, K2],
 ): Writable<O[K1][K2]>;
 
 declare function propertyStore<
-    O extends object,
-    K1 extends keyof O,
-    K2 extends keyof O[K1],
-    K3 extends keyof O[K1][K2]
->(
-    origin: MinimalWritable<O>,
-    propName: [K1, K2, K3]
-): Writable<O[K1][K2][K3]>;
+  O extends object,
+  K1 extends keyof O,
+  K2 extends keyof O[K1],
+  K3 extends keyof O[K1][K2],
+>(origin: MinimalWritable<O>, propName: [K1, K2, K3]): Writable<O[K1][K2][K3]>;
 
 declare function propertyStore<
-    O extends object,
-    K1 extends keyof O,
-    K2 extends keyof O[K1],
-    K3 extends keyof O[K1][K2],
-    K4 extends keyof O[K1][K2][K3]
->(
-    origin: MinimalWritable<O>,
-    propName: [K1, K2, K3, K4]
-): Writable<O[K1][K2][K3][K4]>;
+  O extends object,
+  K1 extends keyof O,
+  K2 extends keyof O[K1],
+  K3 extends keyof O[K1][K2],
+  K4 extends keyof O[K1][K2][K3],
+>(origin: MinimalWritable<O>, propName: [K1, K2, K3, K4]): Writable<O[K1][K2][K3][K4]>;
 
 declare function propertyStore(
-    origin: MinimalWritable<object>,
-    propName: string | number | symbol | Array<string | number | symbol>
+  origin: MinimalWritable<object>,
+  propName: string | number | symbol | Array<string | number | symbol>,
 ): Writable<any>;
 
 export { propertyStore, writableDerived };

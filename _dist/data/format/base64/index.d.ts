@@ -9,11 +9,11 @@
  *
  * @author Dan Kogai (https://github.com/dankogai)
  */
-declare const version = "3.7.5";
+declare const version = '3.7.7';
 /**
  * @deprecated use lowercase `version`.
  */
-declare const VERSION = "3.7.5";
+declare const VERSION = '3.7.7';
 /**
  * polyfill version of `btoa`
  */
@@ -76,7 +76,7 @@ declare const decode: (src: string) => string;
 /**
  * check if a value is a valid Base64 string
  * @param {String} src a value to check
-  */
+ */
 declare const isValid: (src: any) => boolean;
 /**
  * extend String.prototype with relevant methods
@@ -91,26 +91,48 @@ declare const extendUint8Array: () => void;
  */
 declare const extendBuiltins: () => void;
 declare const gBase64: {
-    version: string;
-    VERSION: string;
-    atob: (asc: string) => string;
-    atobPolyfill: (asc: string) => string;
-    btoa: (bin: string) => string;
-    btoaPolyfill: (bin: string) => string;
-    fromBase64: (src: string) => string;
-    toBase64: (src: string, urlsafe?: boolean) => string;
-    encode: (src: string, urlsafe?: boolean) => string;
-    encodeURI: (src: string) => string;
-    encodeURL: (src: string) => string;
-    utob: (u: string) => string;
-    btou: (b: string) => string;
-    decode: (src: string) => string;
-    isValid: (src: any) => boolean;
-    fromUint8Array: (u8a: Uint8Array, urlsafe?: boolean) => string;
-    toUint8Array: (a: string) => Uint8Array;
-    extendString: () => void;
-    extendUint8Array: () => void;
-    extendBuiltins: () => void;
+  version: string;
+  VERSION: string;
+  atob: (asc: string) => string;
+  atobPolyfill: (asc: string) => string;
+  btoa: (bin: string) => string;
+  btoaPolyfill: (bin: string) => string;
+  fromBase64: (src: string) => string;
+  toBase64: (src: string, urlsafe?: boolean) => string;
+  encode: (src: string, urlsafe?: boolean) => string;
+  encodeURI: (src: string) => string;
+  encodeURL: (src: string) => string;
+  utob: (u: string) => string;
+  btou: (b: string) => string;
+  decode: (src: string) => string;
+  isValid: (src: any) => boolean;
+  fromUint8Array: (u8a: Uint8Array, urlsafe?: boolean) => string;
+  toUint8Array: (a: string) => Uint8Array;
+  extendString: () => void;
+  extendUint8Array: () => void;
+  extendBuiltins: () => void;
 };
 
-export { gBase64 as Base64, VERSION, _atob as atob, atobPolyfill, _btoa as btoa, btoaPolyfill, btou, decode, encode, encodeURI, encodeURI as encodeURL, extendBuiltins, extendString, extendUint8Array, decode as fromBase64, fromUint8Array, isValid, encode as toBase64, toUint8Array, utob, version };
+export {
+  gBase64 as Base64,
+  VERSION,
+  _atob as atob,
+  atobPolyfill,
+  _btoa as btoa,
+  btoaPolyfill,
+  btou,
+  decode,
+  encode,
+  encodeURI,
+  encodeURI as encodeURL,
+  extendBuiltins,
+  extendString,
+  extendUint8Array,
+  decode as fromBase64,
+  fromUint8Array,
+  isValid,
+  encode as toBase64,
+  toUint8Array,
+  utob,
+  version,
+};

@@ -173,7 +173,14 @@ declare function safeAccess(data: object, accessor: string, defaultValue?: any):
  *
  * @param {boolean}  [createMissing=true] - If true missing accessor entries will be created as objects automatically.
  */
-declare function safeBatchSet(data: object, accessors: string[], value: any, operation?: SafeSetOperation, defaultAccessValue?: any, createMissing?: boolean): void;
+declare function safeBatchSet(
+  data: object,
+  accessors: string[],
+  value: any,
+  operation?: SafeSetOperation,
+  defaultAccessValue?: any,
+  createMissing?: boolean,
+): void;
 /**
  * Compares a source object and values of entries against a target object. If the entries in the source object match
  * the target object then `true` is returned otherwise `false`. If either object is undefined or null then false
@@ -205,7 +212,13 @@ declare function safeEqual(source: object, target: object): boolean;
  *
  * @returns {boolean} True if successful.
  */
-declare function safeSet(data: object, accessor: string, value: any, operation?: SafeSetOperation, createMissing?: boolean): boolean;
+declare function safeSet(
+  data: object,
+  accessor: string,
+  value: any,
+  operation?: SafeSetOperation,
+  createMissing?: boolean,
+): boolean;
 /**
  * Performs bulk setting of values to the given data object.
  *
@@ -219,7 +232,12 @@ declare function safeSet(data: object, accessor: string, value: any, operation?:
  * @param {boolean}           [createMissing=true] - If true missing accessor entries will be created as objects
  *        automatically.
  */
-declare function safeSetAll(data: object, accessorValues: Record<string, any>, operation?: SafeSetOperation, createMissing?: boolean): void;
+declare function safeSetAll(
+  data: object,
+  accessorValues: Record<string, any>,
+  operation?: SafeSetOperation,
+  createMissing?: boolean,
+): void;
 /**
  * Performs bulk validation of data given an object, `validationData`, which describes all entries to test.
  *
@@ -282,37 +300,67 @@ type SafeSetOperation = 'add' | 'div' | 'mult' | 'set' | 'set-undefined' | 'sub'
  * Provides data for a validation check.
  */
 type ValidationEntry = {
-    /**
-     * Optionally tests with a typeof check.
-     */
-    type?: string;
-    /**
-     * The type of entry / variable to test.
-     */
-    test: 'array' | 'entry' | 'entry|array';
-    /**
-     * Optional array, function, or set of expected values to test against.
-     */
-    expected?: any[] | Function | Set<any>;
-    /**
-     * Optional message to include.
-     */
-    message?: string;
-    /**
-     * When false if the accessor is missing validation is skipped; default: true
-     */
-    required?: boolean;
-    /**
-     * When true and an error is thrown otherwise a boolean is returned; default: true
-     */
-    error?: boolean;
+  /**
+   * Optionally tests with a typeof check.
+   */
+  type?: string;
+  /**
+   * The type of entry / variable to test.
+   */
+  test: 'array' | 'entry' | 'entry|array';
+  /**
+   * Optional array, function, or set of expected values to test against.
+   */
+  expected?: any[] | Function | Set<any>;
+  /**
+   * Optional message to include.
+   */
+  message?: string;
+  /**
+   * When false if the accessor is missing validation is skipped; default: true
+   */
+  required?: boolean;
+  /**
+   * When true and an error is thrown otherwise a boolean is returned; default: true
+   */
+  error?: boolean;
 };
 type Primitive = bigint | boolean | null | number | string | symbol | undefined;
 type JSONValue = Primitive | JSONObject | JSONArray;
 interface JSONObject {
-    [key: string]: JSONValue;
+  [key: string]: JSONValue;
 }
-interface JSONArray extends Array<JSONValue> {
-}
+interface JSONArray extends Array<JSONValue> {}
 
-export { type JSONArray, type JSONObject, type JSONValue, type Primitive, type SafeSetOperation, type ValidationEntry, deepFreeze, deepMerge, depthTraverse, getAccessorList, hasAccessor, hasGetter, hasPrototype, hasSetter, isAsyncIterable, isIterable, isObject, isPlainObject, klona, objectKeys, objectSize, safeAccess, safeBatchSet, safeEqual, safeSet, safeSetAll, validate, validateArray, validateEntry, validateEntryOrArray };
+export {
+  type JSONArray,
+  type JSONObject,
+  type JSONValue,
+  type Primitive,
+  type SafeSetOperation,
+  type ValidationEntry,
+  deepFreeze,
+  deepMerge,
+  depthTraverse,
+  getAccessorList,
+  hasAccessor,
+  hasGetter,
+  hasPrototype,
+  hasSetter,
+  isAsyncIterable,
+  isIterable,
+  isObject,
+  isPlainObject,
+  klona,
+  objectKeys,
+  objectSize,
+  safeAccess,
+  safeBatchSet,
+  safeEqual,
+  safeSet,
+  safeSetAll,
+  validate,
+  validateArray,
+  validateEntry,
+  validateEntryOrArray,
+};

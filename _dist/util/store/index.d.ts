@@ -1,4 +1,3 @@
-
 import * as svelte_store from 'svelte/store';
 
 /**
@@ -52,7 +51,10 @@ declare function isWritableStore(store: any): boolean;
  *
  * @returns {import('svelte/store').Writable<T>} Wrapped store.
  */
-declare function storeCallback<T>(store: svelte_store.Writable<T>, setCallback: (store?: svelte_store.Writable<T>, value?: T) => void): svelte_store.Writable<T>;
+declare function storeCallback<T>(
+  store: svelte_store.Writable<T>,
+  setCallback: (store?: svelte_store.Writable<T>, value?: T) => void,
+): svelte_store.Writable<T>;
 /**
  * Subscribes to the given store with the update function provided and ignores the first automatic
  * update. All future updates are dispatched to the update function.
@@ -64,7 +66,10 @@ declare function storeCallback<T>(store: svelte_store.Writable<T>, setCallback: 
  *
  * @returns {import('svelte/store').Unsubscriber} Store unsubscribe function.
  */
-declare function subscribeIgnoreFirst(store: svelte_store.Readable<any> | svelte_store.Writable<any>, update: any): svelte_store.Unsubscriber;
+declare function subscribeIgnoreFirst(
+  store: svelte_store.Readable<any> | svelte_store.Writable<any>,
+  update: any,
+): svelte_store.Unsubscriber;
 /**
  * Subscribes to the given store with two update functions provided. The first function is invoked on the initial
  * subscription. All future updates are dispatched to the update function.
@@ -78,6 +83,10 @@ declare function subscribeIgnoreFirst(store: svelte_store.Readable<any> | svelte
  *
  * @returns {import('svelte/store').Unsubscriber} Store unsubscribe function.
  */
-declare function subscribeFirstRest(store: svelte_store.Readable<any> | svelte_store.Writable<any>, first: any, update: any): svelte_store.Unsubscriber;
+declare function subscribeFirstRest(
+  store: svelte_store.Readable<any> | svelte_store.Writable<any>,
+  first: any,
+  update: any,
+): svelte_store.Unsubscriber;
 
 export { isReadableStore, isUpdatableStore, isWritableStore, storeCallback, subscribeFirstRest, subscribeIgnoreFirst };

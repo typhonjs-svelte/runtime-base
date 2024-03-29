@@ -293,30 +293,6 @@ declare class PluginManager {
      */
     addAll(pluginConfigs: Iterable<PluginConfig>, moduleData?: object): Promise<PluginData[]>;
     /**
-     * Provides the eventbus callback which may prevent addition if optional `noEventAdd` is enabled. This disables
-     * the ability for plugins to be added via events preventing any external code adding plugins in this manner.
-     *
-     * @param {import('.').PluginConfig}   pluginConfig - Defines the plugin to load.
-     *
-     * @param {object}         [moduleData] - Optional object hash to associate with all plugins.
-     *
-     * @returns {Promise<import('.').PluginData>} The PluginData that represents the plugin added.
-     * @private
-     */
-    private _addEventbus;
-    /**
-     * Provides the eventbus callback which may prevent addition if optional `noEventAdd` is enabled. This disables
-     * the ability for plugins to be added via events preventing any external code adding plugins in this manner.
-     *
-     * @param {Iterable<import('.').PluginConfig>}  pluginConfigs - An iterable list of plugin config object hash entries.
-     *
-     * @param {object}                  [moduleData] - Optional object hash to associate with all plugins.
-     *
-     * @returns {Promise<import('.').PluginData[]>} An array of PluginData objects of all added plugins.
-     * @private
-     */
-    private _addAllEventbus;
-    /**
      * If an eventbus is assigned to this plugin manager then a new EventbusProxy wrapping this eventbus is returned.
      * It is added to `this.#eventbusProxies` so †hat the instances are destroyed when the plugin manager is destroyed.
      *
@@ -339,15 +315,6 @@ declare class PluginManager {
      */
     destroy(): Promise<DataOutPluginRemoved[]>;
     /**
-     * Provides the eventbus callback which may prevent plugin manager destruction if optional `noEventDestroy` is
-     * enabled. This disables the ability for the plugin manager to be destroyed via events preventing any external
-     * code removing plugins in this manner.
-     *
-     * @private
-     * @returns {Promise<import('.').DataOutPluginRemoved[]>} A list of plugin names and removal success state.
-     */
-    private _destroyEventbus;
-    /**
      * Returns whether this plugin manager has been destroyed.
      *
      * @returns {boolean} Returns whether this plugin manager has been destroyed.
@@ -369,9 +336,9 @@ declare class PluginManager {
     /**
      * Returns any associated eventbus.
      *
-     * @returns {import('@typhonjs-svelte/runtime-base/plugin/manager/eventbus').EventBus} The associated eventbus.
+     * @returns {import('@typhonjs-svelte/runtime-base/plugin/manager/eventbus').Eventbus} The associated eventbus.
      */
-    getEventbus(): any;
+    getEventbus(): _runtime_plugin_manager_eventbus.Eventbus;
     /**
      * Returns a copy of the plugin manager options.
      *
@@ -508,26 +475,6 @@ declare class PluginManager {
      */
     removeAll(): Promise<DataOutPluginRemoved[]>;
     /**
-     * Provides the eventbus callback which may prevent removal if optional `noEventRemoval` is enabled. This disables
-     * the ability for plugins to be removed via events preventing any external code removing plugins in this manner.
-     *
-     * @param {object}                  opts - Options object
-     *
-     * @param {string|Iterable<string>} opts.plugins - Plugin name or iterable list of names to remove.
-     *
-     * @returns {Promise<import('.').DataOutPluginRemoved[]>} A list of plugin names and removal success state.
-     * @private
-     */
-    private _removeEventbus;
-    /**
-     * Provides the eventbus callback which may prevent removal if optional `noEventRemoval` is enabled. This disables
-     * the ability for plugins to be removed via events preventing any external code removing plugins in this manner.
-     *
-     * @returns {Promise.<import('.').DataOutPluginRemoved[]>} A list of plugin names and removal success state.
-     * @private
-     */
-    private _removeAllEventbus;
-    /**
      * Sets the enabled state of a plugin, a list of plugins, or all plugins.
      *
      * @param {object}            opts - Options object.
@@ -540,15 +487,6 @@ declare class PluginManager {
         enabled: boolean;
         plugins?: string | Iterable<string>;
     }): void;
-    /**
-     * Provides the eventbus callback which may prevent setEnabled if optional `noEventSetEnabled` is true. This
-     * disables the ability for setting plugin enabled state via events preventing any external code from setting state.
-     *
-     * @param {object}   opts - Options object.
-     *
-     * @private
-     */
-    private _setEnabledEventbus;
     /**
      * Sets the eventbus associated with this plugin manager. If any previous eventbus was associated all plugin manager
      * events will be removed then added to the new eventbus. If there are any existing plugins being managed their
@@ -566,28 +504,11 @@ declare class PluginManager {
         eventPrepend?: string;
     }): Promise<void>;
     /**
-     * Stores the prepend string for eventbus registration.
-     *
-     * @type {string}
-     * @private
-     */
-    private _eventPrepend;
-    /**
      * Set optional parameters.
      *
      * @param {import('.').PluginManagerOptions} options - Defines optional parameters to set.
      */
     setOptions(options: PluginManagerOptions): void;
-    /**
-     * Provides the eventbus callback which may prevent plugin manager options being set if optional `noEventSetOptions`
-     * is enabled. This disables the ability for the plugin manager options to be set via events preventing any external
-     * code modifying options.
-     *
-     * @param {import('.').PluginManagerOptions} options - Defines optional parameters to set.
-     *
-     * @private
-     */
-    private _setOptionsEventbus;
     #private;
 }
 
@@ -637,9 +558,6 @@ declare class PluginInvokeEvent {
 }
 
 /**
- * @typedef {import('../../interfaces').PluginSupportImpl} MyInterface
- */
-/**
  * PluginInvokeSupport adds direct method invocation support to PluginManager via the eventbus and alternately through
  * a wrapped instance of PluginManager depending on the use case.
  *
@@ -681,9 +599,9 @@ declare class PluginInvokeEvent {
  * // _pass through_ to the invoked method.
  * ```
  *
- * @implements {MyInterface}
+ * @implements {import('../../interfaces').PluginSupportImpl}
  */
-declare class PluginInvokeSupport implements MyInterface {
+declare class PluginInvokeSupport implements PluginSupportImpl {
     /**
      * Create PluginInvokeSupport
      *
@@ -879,7 +797,6 @@ declare class PluginInvokeSupport implements MyInterface {
     setOptions(options: PluginManagerOptions): void;
     #private;
 }
-type MyInterface = PluginSupportImpl;
 
 /**
  * Creates an escaped path which is suitable for use in RegExp construction.

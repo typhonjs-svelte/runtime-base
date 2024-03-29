@@ -23,12 +23,18 @@ import * as svelte_store from 'svelte/store';
  *
  * @returns {import('svelte/action').Action} Actual action.
  */
-declare function animate({ duration, keyframes, options, event, debounce }?: {
-    duration?: number;
-    keyframes: any[] | object;
-    options?: object;
-    event?: string;
-    debounce?: number;
+declare function animate({
+  duration,
+  keyframes,
+  options,
+  event,
+  debounce,
+}?: {
+  duration?: number;
+  keyframes: any[] | object;
+  options?: object;
+  event?: string;
+  debounce?: number;
 }): svelte_action.Action;
 
 /**
@@ -74,13 +80,20 @@ declare function composable(...actions: svelte_action.Action[]): svelte_action.A
  *
  * @returns {import('svelte/action').Action} Actual action.
  */
-declare function ripple({ duration, background, events, keyCode, contextmenu, debounce }?: {
-    duration?: number;
-    background?: string;
-    events?: Iterable<string>;
-    keyCode?: string;
-    contextmenu?: boolean;
-    debounce?: number;
+declare function ripple({
+  duration,
+  background,
+  events,
+  keyCode,
+  contextmenu,
+  debounce,
+}?: {
+  duration?: number;
+  background?: string;
+  events?: Iterable<string>;
+  keyCode?: string;
+  contextmenu?: boolean;
+  debounce?: number;
 }): svelte_action.Action;
 
 /**
@@ -109,10 +122,14 @@ declare function ripple({ duration, background, events, keyCode, contextmenu, de
  *
  * @returns {import('svelte/action').Action} Actual action.
  */
-declare function rippleFocus({ duration, background, selector }?: {
-    duration?: number;
-    background?: string;
-    selector?: string;
+declare function rippleFocus({
+  duration,
+  background,
+  selector,
+}?: {
+  duration?: number;
+  background?: string;
+  selector?: string;
 }): svelte_action.Action;
 
 /**
@@ -135,10 +152,17 @@ declare function rippleFocus({ duration, background, selector }?: {
  *
  * @returns {import('svelte/action').ActionReturn} Lifecycle functions.
  */
-declare function toggleDetails(details: HTMLDetailsElement, { store, animate, clickActive }?: {
+declare function toggleDetails(
+  details: HTMLDetailsElement,
+  {
+    store,
+    animate,
+    clickActive,
+  }?: {
     store: svelte_store.Writable<boolean>;
     animate?: boolean;
     clickActive?: boolean;
-}): svelte_action.ActionReturn;
+  },
+): svelte_action.ActionReturn;
 
 export { animate, composable, ripple, rippleFocus, toggleDetails };

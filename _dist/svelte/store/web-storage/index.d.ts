@@ -1,6 +1,14 @@
-
 import * as svelte_store from 'svelte/store';
-import { Stores, Readable, StartStopNotifier, Writable, StoresValues, Subscriber, Updater, Unsubscriber } from 'svelte/store';
+import {
+  Stores,
+  Readable,
+  StartStopNotifier,
+  Writable,
+  StoresValues,
+  Subscriber,
+  Updater,
+  Unsubscriber,
+} from 'svelte/store';
 
 /**
  * Generates derived, readable, writable helper functions wrapping the given Storage API provided with any additional
@@ -19,12 +27,20 @@ import { Stores, Readable, StartStopNotifier, Writable, StoresValues, Subscriber
  * @returns {StorageStores} A complete set of store helper functions and associated storage API instance and
  *          serialization strategy.
  */
-declare function storeGenerator({ storage, serialize, deserialize }: {
-    storage: Storage;
-    serialize?: (value: any, ...rest: any[]) => string;
-    deserialize?: (value: string, ...rest: any[]) => any;
+declare function storeGenerator({
+  storage,
+  serialize,
+  deserialize,
+}: {
+  storage: Storage;
+  serialize?: (value: any, ...rest: any[]) => string;
+  deserialize?: (value: string, ...rest: any[]) => any;
 }): StorageStores;
-type AdvancedDeriver<S extends Stores, T> = (values: StoresValues<S>, set: Subscriber<T>, update: (fn: Updater<T>) => void) => Unsubscriber | void;
+type AdvancedDeriver<S extends Stores, T> = (
+  values: StoresValues<S>,
+  set: Subscriber<T>,
+  update: (fn: Updater<T>) => void,
+) => Unsubscriber | void;
 type Deriver<S extends Stores, T> = SimpleDeriver<S, T> | AdvancedDeriver<S, T>;
 type SimpleDeriver<S extends Stores, T> = (values: StoresValues<S>) => T;
 /**
@@ -43,7 +59,12 @@ type SimpleDeriver<S extends Stores, T> = (values: StoresValues<S>) => T;
  *
  * @returns {Readable<T>} A derived storage store.
  */
-type StorageDerived = <S extends Stores, T>(key: string, stores: S, fn: Deriver<S, T>, initial_value?: T) => Readable<T>;
+type StorageDerived = <S extends Stores, T>(
+  key: string,
+  stores: S,
+  fn: Deriver<S, T>,
+  initial_value?: T,
+) => Readable<T>;
 /**
  * @template T
  * Creates a `Readable` store that allows reading by subscription.
@@ -75,12 +96,12 @@ type StorageWritable = <T>(key: string, value: T, start?: StartStopNotifier<T>) 
  * strategy.
  */
 type StorageStores = {
-    derived: StorageDerived;
-    readable: StorageReadable;
-    writable: StorageWritable;
-    storage: Storage;
-    serialize: (value: any, ...rest: any[]) => string;
-    deserialize: (value: string, ...rest: any[]) => any;
+  derived: StorageDerived;
+  readable: StorageReadable;
+  writable: StorageWritable;
+  storage: Storage;
+  serialize: (value: any, ...rest: any[]) => string;
+  deserialize: (value: string, ...rest: any[]) => any;
 };
 
 /**
@@ -90,100 +111,100 @@ type StorageStores = {
  * serialization configuration.
  */
 declare class TJSWebStorage {
-    /**
-     * @param {import('./').StorageStores} storageStores - Provides a complete set of
-     *        storage API store helper functions and the associated storage API instance and serializations strategy.
-     */
-    constructor(storageStores: StorageStores);
-    /**
-     * Get value from the storage API.
-     *
-     * @param {string}   key - Key to lookup in storage API.
-     *
-     * @param {*}        [defaultValue] - A default value to return if key not present in session storage.
-     *
-     * @returns {*} Value from session storage or if not defined any default value provided.
-     */
-    getItem(key: string, defaultValue?: any): any;
-    /**
-     * Returns the backing Svelte store for the given key; potentially sets a default value if the key
-     * is not already set.
-     *
-     * @template T
-     *
-     * @param {string}   key - Key to lookup in storage API.
-     *
-     * @param {T}        [defaultValue] - A default value to return if key not present in session storage.
-     *
-     * @param {import('./').StorageStores} [storageStores] - Additional store creation options.
-     *
-     * @returns {import('svelte/store').Writable<T>} The Svelte store for this key.
-     */
-    getStore<T>(key: string, defaultValue?: T, storageStores?: StorageStores): svelte_store.Writable<T>;
-    /**
-     * Sets the value for the given key in storage API.
-     *
-     * @param {string}   key - Key to lookup in storage API.
-     *
-     * @param {*}        value - A value to set for this key.
-     */
-    setItem(key: string, value: any): void;
-    /**
-     * Convenience method to swap a boolean value stored in storage API.
-     *
-     * @param {string}   key - Key to lookup in storage API.
-     *
-     * @param {boolean}  [defaultValue] - A default value to return if key not present in session storage.
-     *
-     * @returns {boolean} The boolean swap for the given key.
-     */
-    swapItemBoolean(key: string, defaultValue?: boolean): boolean;
-    /**
-     * @template T
-     *
-     * Returns an iterable for the session storage keys and stores.
-     *
-     * @param {RegExp} [regex] - Optional regular expression to filter by storage keys.
-     *
-     * @returns {IterableIterator<[string, import('svelte/store').Writable<T>]>} Iterable iterator of keys and stores.
-     * @yields {import('svelte/store').Writable<T>}
-     */
-    entries<T_1>(regex?: RegExp): IterableIterator<[string, svelte_store.Writable<T_1>]>;
-    /**
-     * Returns an iterable for the session storage keys from existing stores.
-     *
-     * @param {RegExp} [regex] - Optional regular expression to filter by storage keys.
-     *
-     * @returns {IterableIterator<string>} Iterable iterator of session storage keys.
-     * @yields {string}
-     */
-    keys(regex?: RegExp): IterableIterator<string>;
-    /**
-     * @template T
-     *
-     * Returns an iterable for the session storage stores.
-     *
-     * @param {RegExp} [regex] - Optional regular expression to filter by storage keys.
-     *
-     * @returns {IterableIterator<import('svelte/store').Writable<T>>} Iterable iterator of stores.
-     * @yields {import('svelte/store').Writable<T>}
-     */
-    stores<T_2>(regex?: RegExp): IterableIterator<svelte_store.Writable<T_2>>;
-    #private;
+  /**
+   * @param {import('./').StorageStores} storageStores - Provides a complete set of
+   *        storage API store helper functions and the associated storage API instance and serializations strategy.
+   */
+  constructor(storageStores: StorageStores);
+  /**
+   * Get value from the storage API.
+   *
+   * @param {string}   key - Key to lookup in storage API.
+   *
+   * @param {*}        [defaultValue] - A default value to return if key not present in session storage.
+   *
+   * @returns {*} Value from session storage or if not defined any default value provided.
+   */
+  getItem(key: string, defaultValue?: any): any;
+  /**
+   * Returns the backing Svelte store for the given key; potentially sets a default value if the key
+   * is not already set.
+   *
+   * @template T
+   *
+   * @param {string}   key - Key to lookup in storage API.
+   *
+   * @param {T}        [defaultValue] - A default value to return if key not present in session storage.
+   *
+   * @param {import('./').StorageStores} [storageStores] - Additional store creation options.
+   *
+   * @returns {import('svelte/store').Writable<T>} The Svelte store for this key.
+   */
+  getStore<T>(key: string, defaultValue?: T, storageStores?: StorageStores): svelte_store.Writable<T>;
+  /**
+   * Sets the value for the given key in storage API.
+   *
+   * @param {string}   key - Key to lookup in storage API.
+   *
+   * @param {*}        value - A value to set for this key.
+   */
+  setItem(key: string, value: any): void;
+  /**
+   * Convenience method to swap a boolean value stored in storage API.
+   *
+   * @param {string}   key - Key to lookup in storage API.
+   *
+   * @param {boolean}  [defaultValue] - A default value to return if key not present in session storage.
+   *
+   * @returns {boolean} The boolean swap for the given key.
+   */
+  swapItemBoolean(key: string, defaultValue?: boolean): boolean;
+  /**
+   * @template T
+   *
+   * Returns an iterable for the session storage keys and stores.
+   *
+   * @param {RegExp} [regex] - Optional regular expression to filter by storage keys.
+   *
+   * @returns {IterableIterator<[string, import('svelte/store').Writable<T>]>} Iterable iterator of keys and stores.
+   * @yields {import('svelte/store').Writable<T>}
+   */
+  entries<T_1>(regex?: RegExp): IterableIterator<[string, svelte_store.Writable<T_1>]>;
+  /**
+   * Returns an iterable for the session storage keys from existing stores.
+   *
+   * @param {RegExp} [regex] - Optional regular expression to filter by storage keys.
+   *
+   * @returns {IterableIterator<string>} Iterable iterator of session storage keys.
+   * @yields {string}
+   */
+  keys(regex?: RegExp): IterableIterator<string>;
+  /**
+   * @template T
+   *
+   * Returns an iterable for the session storage stores.
+   *
+   * @param {RegExp} [regex] - Optional regular expression to filter by storage keys.
+   *
+   * @returns {IterableIterator<import('svelte/store').Writable<T>>} Iterable iterator of stores.
+   * @yields {import('svelte/store').Writable<T>}
+   */
+  stores<T_2>(regex?: RegExp): IterableIterator<svelte_store.Writable<T_2>>;
+  #private;
 }
 
 /**
  * Provides a {@link TJSWebStorage} instance for standard browser local storage use cases.
  */
 declare class TJSLocalStorage extends TJSWebStorage {
-    constructor();
+  constructor();
 }
 
 /**
  * Provides a {@link TJSWebStorage} instance for standard browser session storage use cases.
  */
 declare class TJSSessionStorage extends TJSWebStorage {
-    constructor();
+  constructor();
 }
 
 /**
@@ -196,4 +217,15 @@ declare const localStores: StorageStores;
  */
 declare const sessionStores: StorageStores;
 
-export { type StorageDerived, type StorageReadable, type StorageStores, type StorageWritable, TJSLocalStorage, TJSSessionStorage, TJSWebStorage, localStores, sessionStores, storeGenerator };
+export {
+  type StorageDerived,
+  type StorageReadable,
+  type StorageStores,
+  type StorageWritable,
+  TJSLocalStorage,
+  TJSSessionStorage,
+  TJSWebStorage,
+  localStores,
+  sessionStores,
+  storeGenerator,
+};

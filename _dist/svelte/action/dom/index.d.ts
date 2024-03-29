@@ -22,7 +22,10 @@ declare function alwaysBlur(node: HTMLElement): svelte_action.ActionReturn;
  *
  * @returns {import('svelte/action').ActionReturn<import('svelte/store').Writable<number>>} Lifecycle functions.
  */
-declare function applyScrolltop(element: HTMLElement, store: svelte_store.Writable<number>): svelte_action.ActionReturn<svelte_store.Writable<number>>;
+declare function applyScrolltop(
+  element: HTMLElement,
+  store: svelte_store.Writable<number>,
+): svelte_action.ActionReturn<svelte_store.Writable<number>>;
 
 /**
  * Provides an action to apply style properties provided as an object.
@@ -33,7 +36,10 @@ declare function applyScrolltop(element: HTMLElement, store: svelte_store.Writab
  *
  * @returns {import('svelte/action').ActionReturn<Record<string, string>>} Lifecycle functions.
  */
-declare function applyStyles(node: HTMLElement, properties: Record<string, string>): svelte_action.ActionReturn<Record<string, string>>;
+declare function applyStyles(
+  node: HTMLElement,
+  properties: Record<string, string>,
+): svelte_action.ActionReturn<Record<string, string>>;
 
 /**
  * Provides an action to blur the element when any pointer down event occurs outside the element. This can be useful
@@ -56,12 +62,20 @@ declare function autoBlur(node: HTMLElement): svelte_action.ActionReturn;
  *
  * @returns {import('svelte/action').ActionReturn<import('svelte/store').Writable<boolean>>} Lifecycle functions.
  */
-declare function isFocused(node: HTMLElement, storeFocused: svelte_store.Writable<boolean>): svelte_action.ActionReturn<svelte_store.Writable<boolean>>;
+declare function isFocused(
+  node: HTMLElement,
+  storeFocused: svelte_store.Writable<boolean>,
+): svelte_action.ActionReturn<svelte_store.Writable<boolean>>;
 
 /**
  * A function that receives offset / content height & width.
  */
-type ResizeObserverFunction = (offsetWidth: number, offsetHeight: number, contentWidth: number, contentHeight: number) => void;
+type ResizeObserverFunction = (
+  offsetWidth: number,
+  offsetHeight: number,
+  contentWidth: number,
+  contentHeight: number,
+) => void;
 /**
  * The
  *          receiving target for observed resize data.
@@ -71,49 +85,49 @@ type ResizeObserverTarget = ResizeObserverObject | ResizeObserverObjectExtended 
  * A direct object to update observed resize updates.
  */
 type ResizeObserverObject = {
-    /**
-     * Direct attribute to store contentHeight.
-     */
-    contentHeight?: number;
-    /**
-     * Direct attribute to store contentWidth.
-     */
-    contentWidth?: number;
-    /**
-     * Direct attribute to store offsetHeight.
-     */
-    offsetHeight?: number;
-    /**
-     * Direct attribute to store offsetWidth.
-     */
-    offsetWidth?: number;
+  /**
+   * Direct attribute to store contentHeight.
+   */
+  contentHeight?: number;
+  /**
+   * Direct attribute to store contentWidth.
+   */
+  contentWidth?: number;
+  /**
+   * Direct attribute to store offsetHeight.
+   */
+  offsetHeight?: number;
+  /**
+   * Direct attribute to store offsetWidth.
+   */
+  offsetWidth?: number;
 };
 /**
  * Provides extended attributes supported for observed resize updates.
  */
 type ResizeObserverObjectExtended = {
-    /**
-     * Either
-     * a function or a writable store.
-     */
-    resizedObserver?: svelte_store.Writable<ResizeObserverObject> | ResizeObserverFunction;
-    /**
-     * - A function that is invoked
-     * with content width & height changes.
-     */
-    setContentBounds?: (contentWidth: number, contentHeight: number) => void;
-    /**
-     * - A function that is invoked with
-     * offset width & height changes.
-     */
-    setDimension?: (offsetWidth: number, offsetHeight: number) => void;
-    /**
-     * - An object with a
-     * `stores` attribute and subsequent `resizedObserver` writable store.
-     */
-    stores?: {
-        resizedObserver: svelte_store.Writable<ResizeObserverObject>;
-    };
+  /**
+   * Either
+   * a function or a writable store.
+   */
+  resizedObserver?: svelte_store.Writable<ResizeObserverObject> | ResizeObserverFunction;
+  /**
+   * - A function that is invoked
+   * with content width & height changes.
+   */
+  setContentBounds?: (contentWidth: number, contentHeight: number) => void;
+  /**
+   * - A function that is invoked with
+   * offset width & height changes.
+   */
+  setDimension?: (offsetWidth: number, offsetHeight: number) => void;
+  /**
+   * - An object with a
+   * `stores` attribute and subsequent `resizedObserver` writable store.
+   */
+  stores?: {
+    resizedObserver: svelte_store.Writable<ResizeObserverObject>;
+  };
 };
 /**
  * Provides an action to monitor the given HTMLElement node with `ResizeObserver` posting width / height changes
@@ -142,17 +156,31 @@ type ResizeObserverObjectExtended = {
  * @returns {import('svelte/action').ActionReturn<ResizeObserverTarget>} The action lifecycle methods.
  * @see {@link https://github.com/sveltejs/svelte/issues/4233}
  */
-declare function resizeObserver(node: HTMLElement, target: ResizeObserverTarget): svelte_action.ActionReturn<ResizeObserverTarget>;
+declare function resizeObserver(
+  node: HTMLElement,
+  target: ResizeObserverTarget,
+): svelte_action.ActionReturn<ResizeObserverTarget>;
 declare namespace resizeObserver {
-    /**
-     * Provides a function that when invoked with an element updates the cached styles for each subscriber of the element.
-     *
-     * The style attributes cached to calculate offset height / width include border & padding dimensions. You only need
-     * to update the cache if you change border or padding attributes of the element.
-     *
-     * @param {HTMLElement} el - An HTML element.
-     */
-    function updateCache(el: HTMLElement): void;
+  /**
+   * Provides a function that when invoked with an element updates the cached styles for each subscriber of the element.
+   *
+   * The style attributes cached to calculate offset height / width include border & padding dimensions. You only need
+   * to update the cache if you change border or padding attributes of the element.
+   *
+   * @param {HTMLElement} el - An HTML element.
+   */
+  function updateCache(el: HTMLElement): void;
 }
 
-export { type ResizeObserverFunction, type ResizeObserverObject, type ResizeObserverObjectExtended, type ResizeObserverTarget, alwaysBlur, applyScrolltop, applyStyles, autoBlur, isFocused, resizeObserver };
+export {
+  type ResizeObserverFunction,
+  type ResizeObserverObject,
+  type ResizeObserverObjectExtended,
+  type ResizeObserverTarget,
+  alwaysBlur,
+  applyScrolltop,
+  applyStyles,
+  autoBlur,
+  isFocused,
+  resizeObserver,
+};

@@ -24,13 +24,16 @@ import * as svelte_transition from 'svelte/transition';
  *
  * @returns {import('svelte/transition').TransitionConfig} Transition config.
  */
-declare function rotate(node: HTMLElement, options?: {
+declare function rotate(
+  node: HTMLElement,
+  options?: {
     delay?: number;
     duration?: number;
     easing?: svelte_transition.EasingFunction;
     end?: number;
     initial?: number;
-}): svelte_transition.TransitionConfig;
+  },
+): svelte_transition.TransitionConfig;
 
 /**
  * Combines rotate & fade transitions into a single transition. For options `easing` this is applied to both transitions,
@@ -62,7 +65,9 @@ declare function rotate(node: HTMLElement, options?: {
  *
  * @returns {import('svelte/transition').TransitionConfig} Transition config.
  */
-declare function rotateFade(node: HTMLElement, options?: {
+declare function rotateFade(
+  node: HTMLElement,
+  options?: {
     delay?: number;
     duration?: number;
     easing?: svelte_transition.EasingFunction;
@@ -70,7 +75,8 @@ declare function rotateFade(node: HTMLElement, options?: {
     easingRotate?: svelte_transition.EasingFunction;
     end?: number;
     initial?: number;
-}): svelte_transition.TransitionConfig;
+  },
+): svelte_transition.TransitionConfig;
 
 /**
  * Combines slide & fade transitions into a single transition. For options `easing` this is applied to both transitions,
@@ -97,14 +103,17 @@ declare function rotateFade(node: HTMLElement, options?: {
  *
  * @returns {import('svelte/transition').TransitionConfig} Transition config.
  */
-declare function slideFade(node: HTMLElement, options?: {
+declare function slideFade(
+  node: HTMLElement,
+  options?: {
     axis?: 'x' | 'y';
     delay?: number;
     duration?: number;
     easing?: svelte_transition.EasingFunction;
     easingFade?: svelte_transition.EasingFunction;
     easingSlide?: svelte_transition.EasingFunction;
-}): svelte_transition.TransitionConfig;
+  },
+): svelte_transition.TransitionConfig;
 
 /**
  * Converts a Svelte transition to an animation. Both transitions & animations use the same CSS / styles solution and
@@ -119,10 +128,14 @@ declare function slideFade(node: HTMLElement, options?: {
  *    ...rest: any
  * ) => import('svelte/animation').AnimationConfig} - Transition function converted to an animation.
  */
-declare function toAnimation(fn: (node: Element, ...rest: any[]) => svelte_transition.TransitionConfig): (node: Element, data: {
+declare function toAnimation(fn: (node: Element, ...rest: any[]) => svelte_transition.TransitionConfig): (
+  node: Element,
+  data: {
     from: DOMRect;
     to: DOMRect;
-}, ...rest: any) => any;
+  },
+  ...rest: any
+) => any;
 
 /**
  * Provides static data useful for handling custom props / options to components that allow dynamic configuration of
@@ -131,14 +144,14 @@ declare function toAnimation(fn: (node: Element, ...rest: any[]) => svelte_trans
  * @ignore
  */
 declare class TJSDefaultTransition {
-    /**
-     * @returns {() => undefined} Default empty transition.
-     */
-    static get default(): () => undefined;
-    /**
-     * @returns {{}} Default empty options.
-     */
-    static get options(): {};
+  /**
+   * @returns {() => undefined} Default empty transition.
+   */
+  static get default(): () => undefined;
+  /**
+   * @returns {{}} Default empty options.
+   */
+  static get options(): {};
 }
 
 /**

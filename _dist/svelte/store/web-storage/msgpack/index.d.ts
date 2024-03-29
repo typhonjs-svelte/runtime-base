@@ -5,14 +5,14 @@ import { TJSWebStorage } from '@typhonjs-svelte/runtime-base/svelte/store/web-st
  * Provides a {@link TJSWebStorage} instance for browser local storage using compressed MessagePack to base64.
  */
 declare class TJSLocalStorageBCMP extends TJSWebStorage {
-    constructor();
+  constructor();
 }
 
 /**
  * Provides a {@link TJSWebStorage} instance for browser session storage using compressed MessagePack to base64.
  */
 declare class TJSSessionStorageBCMP extends TJSWebStorage {
-    constructor();
+  constructor();
 }
 
 /**

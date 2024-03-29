@@ -50,12 +50,23 @@ import * as svelte_animate from 'svelte/animate';
  *    ...rest: any
  * ) => import('svelte/animate').AnimationConfig} Wrapped animation function.
  */
-declare function animateEvents(fn: (node: Element, data: {
+declare function animateEvents(
+  fn: (
+    node: Element,
+    data: {
+      from: DOMRect;
+      to: DOMRect;
+    },
+    ...rest: any
+  ) => svelte_animate.AnimationConfig,
+  store?: svelte_store.Writable<boolean>,
+): (
+  node: Element,
+  data: {
     from: DOMRect;
     to: DOMRect;
-}, ...rest: any) => svelte_animate.AnimationConfig, store?: svelte_store.Writable<boolean>): (node: Element, data: {
-    from: DOMRect;
-    to: DOMRect;
-}, ...rest: any) => svelte_animate.AnimationConfig;
+  },
+  ...rest: any
+) => svelte_animate.AnimationConfig;
 
 export { animateEvents };
