@@ -2318,7 +2318,7 @@ class TJSPositionData
       this.top = top;
 
       /**
-       * @type {string|null}
+       * @type {import('./transform/types').ITransformAPI.TransformOrigin | null}
        */
       this.transformOrigin = transformOrigin;
 
@@ -2778,7 +2778,9 @@ class StyleCache
 }
 
 /**
- * Provides the output data for {@link TJSTransforms.getData}.
+ * Provides the output data for {@link ITransformAPI.getData}.
+ *
+ * @implements {import('./types').ITransformAPI.ITransformData}
  */
 class TJSTransformData
 {
@@ -2857,6 +2859,9 @@ const s_MAT4_TEMP = Mat4.create();
 /** @type {import('#runtime/math/gl-matrix').Vec3} */
 const s_VEC3_TEMP = Vec3.create();
 
+/**
+ * @implements {import('./types').ITransformAPI}
+ */
 class TJSTransforms
 {
    /**
@@ -3120,11 +3125,11 @@ class TJSTransforms
     *
     * @param {import('../').TJSPositionData} position - The position data to process.
     *
-    * @param {TJSTransformData} [output] - Optional TJSTransformData output instance.
+    * @param {import('./types').ITransformAPI.ITransformData} [output] - Optional TJSTransformData output instance.
     *
     * @param {object} [validationData] - Optional validation data for adjustment parameters.
     *
-    * @returns {TJSTransformData} The output TJSTransformData instance.
+    * @returns {import('./types').ITransformAPI.ITransformData} The output TJSTransformData instance.
     */
    getData(position, output = new TJSTransformData(), validationData = {})
    {
@@ -4548,14 +4553,14 @@ class UpdateElementData
       this.subscriptions = void 0;
 
       /**
-       * @type {import('svelte/store').Writable<{width: (number|"auto"), height: (number|"auto")}>}
+       * @type {import('svelte/store').Writable<{width: (number|'auto'), height: (number|'auto')}>}
        */
       this.storeDimension = writable(this.dimensionData);
 
       // When there are subscribers set option to calculate transform updates; set to false when no subscribers.
 
       /**
-       * @type {import('svelte/store').Writable<TJSTransformData>}
+       * @type {import('svelte/store').Writable<import('./types').ITransformAPI.ITransformData>}
        */
       this.storeTransform = writable(this.transformData, () =>
       {
@@ -5004,7 +5009,8 @@ class TJSPosition
    /**
     * Returns TJSTransformData class / constructor.
     *
-    * @returns {typeof TJSTransformData} TJSTransformData class / constructor.
+    * @returns {import('./transform/types').ITransformAPI.ITransformDataConstructor} ITransformData class /
+    *          constructor.
     */
    static get TransformData() { return TJSTransformData; }
 
@@ -5333,7 +5339,7 @@ class TJSPosition
    /**
     * Returns the transform data for the readable store.
     *
-    * @returns {TJSTransformData} Transform Data.
+    * @returns {import('./transform/types').ITransformAPI.ITransformData} Transform Data.
     */
    get transform()
    {
@@ -5447,7 +5453,7 @@ class TJSPosition
    get top() { return this.#data.top; }
 
    /**
-    * @returns {import('./').TJSTransformOrigin} transformOrigin
+    * @returns {import('./transform/types').ITransformAPI.TransformOrigin | null} transformOrigin
     */
    get transformOrigin() { return this.#data.transformOrigin; }
 
@@ -5573,7 +5579,7 @@ class TJSPosition
    }
 
    /**
-    * @param {import('./').TJSTransformOrigin} transformOrigin -
+    * @param {import('./transform/types').ITransformAPI.TransformOrigin} transformOrigin -
     */
    set transformOrigin(transformOrigin)
    {

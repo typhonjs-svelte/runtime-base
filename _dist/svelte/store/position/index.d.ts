@@ -1,5 +1,4 @@
-import * as _runtime_math_gl_matrix from '@typhonjs-svelte/runtime-base/math/gl-matrix';
-import { Vec3, Mat4 } from '@typhonjs-svelte/runtime-base/math/gl-matrix';
+import { Mat4, Vec3 } from '@typhonjs-svelte/runtime-base/math/gl-matrix';
 import * as svelte_store from 'svelte/store';
 import { Subscriber } from 'svelte/store';
 import * as svelte_action from 'svelte/action';
@@ -7,186 +6,6 @@ import { EasingFunction } from 'svelte/transition';
 import { InterpolateFunction } from '@typhonjs-svelte/runtime-base/math/interpolate';
 import * as _runtime_util_animate from '@typhonjs-svelte/runtime-base/util/animate';
 import * as _runtime_util_browser from '@typhonjs-svelte/runtime-base/util/browser';
-
-/**
- * Provides the output data for {@link TJSTransforms.getData}.
- */
-declare class TJSTransformData {
-  /**
-   * @returns {DOMRect} The bounding rectangle.
-   */
-  get boundingRect(): DOMRect;
-  /**
-   * @returns {import('#runtime/math/gl-matrix').Vec3[]} The transformed corner points as Vec3 in screen space.
-   */
-  get corners(): Vec3[];
-  /**
-   * @returns {string} Returns the CSS style string for the transform matrix.
-   */
-  get css(): string;
-  /**
-   * @returns {import('#runtime/math/gl-matrix').Mat4} The transform matrix.
-   */
-  get mat4(): Mat4;
-  /**
-   * @returns {import('#runtime/math/gl-matrix').Mat4[]} The pre / post translation matrices for origin translation.
-   */
-  get originTranslations(): Mat4[];
-  #private;
-}
-
-declare class TJSTransforms {
-  _data: {};
-  /**
-   * @returns {boolean} Whether there are active transforms in local data.
-   */
-  get isActive(): boolean;
-  /**
-   * Sets the local rotateX data if the value is a finite number otherwise removes the local data.
-   *
-   * @param {number|null|undefined}   value - A value to set.
-   */
-  set rotateX(value: number);
-  /**
-   * @returns {number|undefined} Any local rotateX data.
-   */
-  get rotateX(): number;
-  /**
-   * Sets the local rotateY data if the value is a finite number otherwise removes the local data.
-   *
-   * @param {number|null|undefined}   value - A value to set.
-   */
-  set rotateY(value: number);
-  /**
-   * @returns {number|undefined} Any local rotateY data.
-   */
-  get rotateY(): number;
-  /**
-   * Sets the local rotateZ data if the value is a finite number otherwise removes the local data.
-   *
-   * @param {number|null|undefined}   value - A value to set.
-   */
-  set rotateZ(value: number);
-  /**
-   * @returns {number|undefined} Any local rotateZ data.
-   */
-  get rotateZ(): number;
-  /**
-   * Sets the local scale data if the value is a finite number otherwise removes the local data.
-   *
-   * @param {number|null|undefined}   value - A value to set.
-   */
-  set scale(value: number);
-  /**
-   * @returns {number|undefined} Any local rotateZ scale.
-   */
-  get scale(): number;
-  /**
-   * Sets the local translateX data if the value is a finite number otherwise removes the local data.
-   *
-   * @param {number|null|undefined}   value - A value to set.
-   */
-  set translateX(value: number);
-  /**
-   * @returns {number|undefined} Any local translateZ data.
-   */
-  get translateX(): number;
-  /**
-   * Sets the local translateY data if the value is a finite number otherwise removes the local data.
-   *
-   * @param {number|null|undefined}   value - A value to set.
-   */
-  set translateY(value: number);
-  /**
-   * @returns {number|undefined} Any local translateZ data.
-   */
-  get translateY(): number;
-  /**
-   * Sets the local translateZ data if the value is a finite number otherwise removes the local data.
-   *
-   * @param {number|null|undefined}   value - A value to set.
-   */
-  set translateZ(value: number);
-  /**
-   * @returns {number|undefined} Any local translateZ data.
-   */
-  get translateZ(): number;
-  /**
-   * Returns the matrix3d CSS transform for the given position / transform data.
-   *
-   * @param {object} [data] - Optional position data otherwise use local stored transform data.
-   *
-   * @returns {string} The CSS matrix3d string.
-   */
-  getCSS(data?: object): string;
-  /**
-   * Returns the matrix3d CSS transform for the given position / transform data.
-   *
-   * @param {object} [data] - Optional position data otherwise use local stored transform data.
-   *
-   * @returns {string} The CSS matrix3d string.
-   */
-  getCSSOrtho(data?: object): string;
-  /**
-   * Collects all data including a bounding rect, transform matrix, and points array of the given
-   * {@link TJSPositionData} instance with the applied local transform data.
-   *
-   * @param {import('../').TJSPositionData} position - The position data to process.
-   *
-   * @param {TJSTransformData} [output] - Optional TJSTransformData output instance.
-   *
-   * @param {object} [validationData] - Optional validation data for adjustment parameters.
-   *
-   * @returns {TJSTransformData} The output TJSTransformData instance.
-   */
-  getData(position: TJSPositionData, output?: TJSTransformData, validationData?: object): TJSTransformData;
-  /**
-   * Creates a transform matrix based on local data applied in order it was added.
-   *
-   * If no data object is provided then the source is the local transform data. If another data object is supplied
-   * then the stored local transform order is applied then all remaining transform keys are applied. This allows the
-   * construction of a transform matrix in advance of setting local data and is useful in collision detection.
-   *
-   * @param {object}   [data] - TJSPositionData instance or local transform data.
-   *
-   * @param {import('#runtime/math/gl-matrix').Mat4}  [output] - The output mat4 instance.
-   *
-   * @returns {import('#runtime/math/gl-matrix').Mat4} Transform matrix.
-   */
-  getMat4(data?: object, output?: _runtime_math_gl_matrix.Mat4): _runtime_math_gl_matrix.Mat4;
-  /**
-   * Provides an orthographic enhancement to convert left / top positional data to a translate operation.
-   *
-   * This transform matrix takes into account that the remaining operations are , but adds any left / top attributes from passed in data to
-   * translate X / Y.
-   *
-   * If no data object is provided then the source is the local transform data. If another data object is supplied
-   * then the stored local transform order is applied then all remaining transform keys are applied. This allows the
-   * construction of a transform matrix in advance of setting local data and is useful in collision detection.
-   *
-   * @param {object}   [data] - TJSPositionData instance or local transform data.
-   *
-   * @param {import('#runtime/math/gl-matrix').Mat4}  [output] - The output mat4 instance.
-   *
-   * @returns {import('#runtime/math/gl-matrix').Mat4} Transform matrix.
-   */
-  getMat4Ortho(data?: object, output?: _runtime_math_gl_matrix.Mat4): _runtime_math_gl_matrix.Mat4;
-  /**
-   * Tests an object if it contains transform keys and the values are finite numbers.
-   *
-   * @param {object} data - An object to test for transform data.
-   *
-   * @returns {boolean} Whether the given TJSPositionData has transforms.
-   */
-  hasTransform(data: object): boolean;
-  /**
-   * Resets internal data from the given object containing valid transform keys.
-   *
-   * @param {object}   data - An object with transform data.
-   */
-  reset(data: object): void;
-  #private;
-}
 
 /**
  * Defines stored positional data.
@@ -274,9 +93,9 @@ declare class TJSPositionData {
    */
   top: number | null;
   /**
-   * @type {string|null}
+   * @type {import('./transform/types').ITransformAPI.TransformOrigin | null}
    */
-  transformOrigin: string | null;
+  transformOrigin: ITransformAPI.TransformOrigin | null;
   /**
    * @type {number|null}
    */
@@ -305,6 +124,210 @@ declare class TJSPositionData {
    * @returns {TJSPositionData} This instance.
    */
   copy(data: TJSPositionData): TJSPositionData;
+}
+
+interface ITransformAPI {
+  /**
+   * @returns {boolean} Whether there are active transforms in local data.
+   */
+  get isActive(): boolean;
+  /**
+   * @returns {number | undefined} Any local `rotateX` data.
+   */
+  get rotateX(): number | undefined;
+  /**
+   * @returns {number | undefined} Any local `rotateY` data.
+   */
+  get rotateY(): number | undefined;
+  /**
+   * @returns {number | undefined} Any local `rotateZ` data.
+   */
+  get rotateZ(): number | undefined;
+  /**
+   * @returns {number | undefined} Any local `scale` data.
+   */
+  get scale(): number | undefined;
+  /**
+   * @returns {number | undefined} Any local `translateX` data.
+   */
+  get translateX(): number | undefined;
+  /**
+   * @returns {number | undefined} Any local `translateY` data.
+   */
+  get translateY(): number | undefined;
+  /**
+   * @returns {number | undefined} Any local `translateZ` data.
+   */
+  get translateZ(): number | undefined;
+  /**
+   * Sets the local `rotateX` data if the value is a finite number otherwise removes the local data.
+   *
+   * @param {number | null | undefined}   value - A value to set.
+   */
+  set rotateX(value: number | null | undefined);
+  /**
+   * Sets the local `rotateY` data if the value is a finite number otherwise removes the local data.
+   *
+   * @param {number | null | undefined}   value - A value to set.
+   */
+  set rotateY(value: number | null | undefined);
+  /**
+   * Sets the local `rotateZ` data if the value is a finite number otherwise removes the local data.
+   *
+   * @param {number | null | undefined}   value - A value to set.
+   */
+  set rotateZ(value: number | null | undefined);
+  /**
+   * Sets the local `scale` data if the value is a finite number otherwise removes the local data.
+   *
+   * @param {number | null | undefined}   value - A value to set.
+   */
+  set scale(value: number | null | undefined);
+  /**
+   * Sets the local `translateX` data if the value is a finite number otherwise removes the local data.
+   *
+   * @param {number | null | undefined}   value - A value to set.
+   */
+  set translateX(value: number | null | undefined);
+  /**
+   * Sets the local `translateY` data if the value is a finite number otherwise removes the local data.
+   *
+   * @param {number | null | undefined}   value - A value to set.
+   */
+  set translateY(value: number | null | undefined);
+  /**
+   * Sets the local `translateZ` data if the value is a finite number otherwise removes the local data.
+   *
+   * @param {number | null | undefined}   value - A value to set.
+   */
+  set translateZ(value: number | null | undefined);
+  /**
+   * Returns the `matrix3d` CSS transform for the given position / transform data.
+   *
+   * @param {object} [data] - Optional position data otherwise use local stored transform data.
+   *
+   * @returns {string} The CSS `matrix3d` string.
+   */
+  getCSS(data?: object): string;
+  /**
+   * Returns the `matrix3d` CSS transform for the given position / transform data.
+   *
+   * @param {object} [data] - Optional position data otherwise use local stored transform data.
+   *
+   * @returns {string} The CSS `matrix3d` string.
+   */
+  getCSSOrtho(data?: object): string;
+  /**
+   * Collects all data including a bounding rect, transform matrix, and points array of the given
+   * {@link TJSPositionData} instance with the applied local transform data.
+   *
+   * @param {TJSPositionData} position - The position data to process.
+   *
+   * @param {ITransformAPI.ITransformData} [output] - Optional ITransformAPI.Data output instance.
+   *
+   * @param {object} [validationData] - Optional validation data for adjustment parameters.
+   *
+   * @returns {ITransformAPI.ITransformData} The output ITransformAPI.Data instance.
+   */
+  getData(
+    position: TJSPositionData,
+    output?: ITransformAPI.ITransformData,
+    validationData?: object,
+  ): ITransformAPI.ITransformData;
+  /**
+   * Creates a transform matrix based on local data applied in order it was added.
+   *
+   * If no data object is provided then the source is the local transform data. If another data object is supplied
+   * then the stored local transform order is applied then all remaining transform keys are applied. This allows the
+   * construction of a transform matrix in advance of setting local data and is useful in collision detection.
+   *
+   * @param {object}   [data] - TJSPositionData instance or local transform data.
+   *
+   * @param {Mat4}  [output] - The output mat4 instance.
+   *
+   * @returns {Mat4} Transform matrix.
+   */
+  getMat4(data?: object, output?: Mat4): Mat4;
+  /**
+   * Provides an orthographic enhancement to convert left / top positional data to a translate operation.
+   *
+   * This transform matrix takes into account that the remaining operations are , but adds any left / top attributes
+   * from passed in data to translate X / Y.
+   *
+   * If no data object is provided then the source is the local transform data. If another data object is supplied
+   * then the stored local transform order is applied then all remaining transform keys are applied. This allows the
+   * construction of a transform matrix in advance of setting local data and is useful in collision detection.
+   *
+   * @param {object}   [data] - TJSPositionData instance or local transform data.
+   *
+   * @param {Mat4}  [output] - The output mat4 instance.
+   *
+   * @returns {Mat4} Transform matrix.
+   */
+  getMat4Ortho(data?: object, output?: Mat4): Mat4;
+  /**
+   * Tests an object if it contains transform keys and the values are finite numbers.
+   *
+   * @param {object} data - An object to test for transform data.
+   *
+   * @returns {boolean} Whether the given TJSPositionData has transforms.
+   */
+  hasTransform(data: object): boolean;
+  /**
+   * Resets internal data from the given object containing valid transform keys.
+   *
+   * @param {object}   data - An object with transform data.
+   */
+  reset(data: object): void;
+}
+/**
+ * Provides additional interfaces and type aliases for the transform API.
+ */
+declare namespace ITransformAPI {
+  /**
+   * Describes the constructor function for {@link ITransformData}.
+   */
+  interface ITransformDataConstructor {
+    new (): ITransformData;
+  }
+  /**
+   * Provides the output data for {@link ITransformAPI.getData}.
+   */
+  interface ITransformData {
+    /**
+     * @returns {DOMRect} The bounding rectangle.
+     */
+    get boundingRect(): DOMRect;
+    /**
+     * @returns {Vec3[]} The transformed corner points as Vec3 in screen space.
+     */
+    get corners(): Vec3[];
+    /**
+     * @returns {string} Returns the CSS style string for the transform matrix.
+     */
+    get css(): string;
+    /**
+     * @returns {Mat4} The transform matrix.
+     */
+    get mat4(): Mat4;
+    /**
+     * @returns {Mat4[]} The pre / post translation matrices for origin translation.
+     */
+    get originTranslations(): Mat4[];
+  }
+  /**
+   * The supported transform origin strings.
+   */
+  type TransformOrigin =
+    | 'top left'
+    | 'top center'
+    | 'top right'
+    | 'center left'
+    | 'center'
+    | 'center right'
+    | 'bottom left'
+    | 'bottom center'
+    | 'bottom right';
 }
 
 /**
@@ -509,9 +532,8 @@ declare namespace IValidatorAPI {
     computed: CSSStyleDeclaration;
     /**
      * Current applies transforms / transform tracking & conversion utility.
-     * TODO: UPDATE INTERFACE - TJSTransforms needs an interface.
      */
-    transforms: TJSTransforms;
+    transforms: ITransformAPI;
     /**
      * Current height
      */
@@ -545,7 +567,7 @@ declare namespace IValidatorAPI {
      */
     minWidth: number | undefined;
     /**
-     * The rest of any data submitted to {@link TJSPosition.set}
+     * The rest of any data submitted to {@link TJSPosition.set}.
      */
     rest: Record<string, any> | undefined;
   };
@@ -1285,9 +1307,10 @@ declare class TJSPosition {
   /**
    * Returns TJSTransformData class / constructor.
    *
-   * @returns {typeof TJSTransformData} TJSTransformData class / constructor.
+   * @returns {import('./transform/types').ITransformAPI.ITransformDataConstructor} ITransformData class /
+   *          constructor.
    */
-  static get TransformData(): typeof TJSTransformData;
+  static get TransformData(): ITransformAPI.ITransformDataConstructor;
   /**
    * Returns default validators.
    *
@@ -1388,9 +1411,9 @@ declare class TJSPosition {
   /**
    * Returns the transform data for the readable store.
    *
-   * @returns {TJSTransformData} Transform Data.
+   * @returns {import('./transform/types').ITransformAPI.ITransformData} Transform Data.
    */
-  get transform(): TJSTransformData;
+  get transform(): ITransformAPI.ITransformData;
   /**
    * Returns the validators.
    *
@@ -1494,13 +1517,13 @@ declare class TJSPosition {
    */
   get top(): number;
   /**
-   * @param {import('./').TJSTransformOrigin} transformOrigin -
+   * @param {import('./transform/types').ITransformAPI.TransformOrigin} transformOrigin -
    */
-  set transformOrigin(transformOrigin: TJSTransformOrigin);
+  set transformOrigin(transformOrigin: ITransformAPI.TransformOrigin);
   /**
-   * @returns {import('./').TJSTransformOrigin} transformOrigin
+   * @returns {import('./transform/types').ITransformAPI.TransformOrigin | null} transformOrigin
    */
-  get transformOrigin(): TJSTransformOrigin;
+  get transformOrigin(): ITransformAPI.TransformOrigin;
   /**
    * @param {number|string|null} translateX -
    */
@@ -1766,10 +1789,9 @@ type TJSPositionStores = {
    */
   scale: svelte_store.Writable<number | null>;
   /**
-   * Readable store for
-   * transform data.
+   * Readable store for transform data.
    */
-  transform: svelte_store.Readable<TJSTransformData>;
+  transform: svelte_store.Readable<ITransformAPI.ITransformData>;
   /**
    * Derived store for `transformOrigin`.
    */
@@ -1871,25 +1893,13 @@ type TJSPositionDataExtended = {
    */
   rotation?: number | null;
 };
-/**
- * The supported transform origin strings.
- */
-type TJSTransformOrigin =
-  | 'top left'
-  | 'top center'
-  | 'top right'
-  | 'center left'
-  | 'center'
-  | 'center right'
-  | 'bottom left'
-  | 'bottom center'
-  | 'bottom right';
 
 export {
   AnimationAPI,
   AnimationGroupAPI,
   type AnimationKeys,
   Centered,
+  ITransformAPI,
   IValidatorAPI,
   PositionStateAPI,
   type QuickTweenOptions,
@@ -1905,9 +1915,6 @@ export {
   type TJSPositionParent,
   type TJSPositionStores,
   type TJSPositionable,
-  TJSTransformData,
-  type TJSTransformOrigin,
-  TJSTransforms,
   type TweenOptions,
   applyPosition,
   draggable,
