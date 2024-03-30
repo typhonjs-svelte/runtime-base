@@ -26,10 +26,13 @@ import { isUpdatableStore }   from '#runtime/util/store';
  *
  * @param {HTMLElement}          node - The node associated with the action.
  *
- * @param {ResizeObserverTarget} target - An object or function to update with observed width & height changes.
+ * @param {import('./types').ResizeObserverData.Target} target - An object or function to update with observed width &
+ *        height changes.
  *
- * @returns {import('svelte/action').ActionReturn<ResizeObserverTarget>} The action lifecycle methods.
- * @see {@link https://github.com/sveltejs/svelte/issues/4233}
+ * @returns {import('svelte/action').ActionReturn<import('./types').ResizeObserverData.Target>} The action lifecycle
+ *          methods.
+ *
+ * @see https://github.com/sveltejs/svelte/issues/4233
  */
 function resizeObserver(node, target)
 {
@@ -37,7 +40,8 @@ function resizeObserver(node, target)
 
    return {
       /**
-       * @param {ResizeObserverTarget} newTarget - An object or function to update with observed width & height changes.
+       * @param {import('./types').ResizeObserverData.Target} newTarget - An object or function to update with observed
+       *        width & height changes.
        */
       update: (newTarget) =>
       {
@@ -117,7 +121,8 @@ class ResizeObserverManager
     *
     * @param {HTMLElement}    el - The element to observe.
     *
-    * @param {ResizeObserverTarget} target - A target that contains one of several mechanisms for updating resize data.
+    * @param {import('./types').ResizeObserverData.Target} target - A target that contains one of several mechanisms
+    *        for updating resize data.
     */
    static add(el, target)
    {
@@ -175,7 +180,7 @@ class ResizeObserverManager
     *
     * @param {HTMLElement}          el - Element to remove from monitoring.
     *
-    * @param {ResizeObserverTarget} [target] - A specific target to remove from monitoring.
+    * @param {import('./types').ResizeObserverData.Target} [target] - A specific target to remove from monitoring.
     */
    static remove(el, target = void 0)
    {
@@ -349,45 +354,3 @@ function s_UPDATE_SUBSCRIBER(subscriber, contentWidth, contentHeight)
          break;
    }
 }
-
-/**
- * @typedef {(
- *    offsetWidth: number,
- *    offsetHeight: number,
- *    contentWidth: number,
- *    contentHeight: number
- * ) => void } ResizeObserverFunction A function that receives offset / content height & width.
- */
-
-/**
- * @typedef {ResizeObserverObject | ResizeObserverObjectExtended | ResizeObserverFunction} ResizeObserverTarget The
- *          receiving target for observed resize data.
- */
-
-/**
- * @typedef {object} ResizeObserverObject A direct object to update observed resize updates.
- *
- * @property {number} [contentHeight] Direct attribute to store contentHeight.
- *
- * @property {number} [contentWidth] Direct attribute to store contentWidth.
- *
- * @property {number} [offsetHeight] Direct attribute to store offsetHeight.
- *
- * @property {number} [offsetWidth] Direct attribute to store offsetWidth.
- */
-
-/**
- * @typedef {object} ResizeObserverObjectExtended Provides extended attributes supported for observed resize updates.
- *
- * @property {import('svelte/store').Writable<ResizeObserverObject> | ResizeObserverFunction} [resizedObserver] Either
- *           a function or a writable store.
- *
- * @property {(contentWidth: number, contentHeight: number) => void} [setContentBounds] - A function that is invoked
- *           with content width & height changes.
- *
- * @property {(offsetWidth: number, offsetHeight: number) => void} [setDimension] - A function that is invoked with
- *           offset width & height changes.
- *
- * @property {{resizedObserver: import('svelte/store').Writable<ResizeObserverObject>}} [stores] - An object with a
- *           `stores` attribute and subsequent `resizedObserver` writable store.
- */

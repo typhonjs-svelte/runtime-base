@@ -61,18 +61,6 @@ export { TJSPosition }
  */
 
 /**
- * @typedef {object} ResizeObserverData
- *
- * @property {number|undefined} contentHeight -
- *
- * @property {number|undefined} contentWidth -
- *
- * @property {number|undefined} offsetHeight -
- *
- * @property {number|undefined} offsetWidth -
- */
-
-/**
  * @typedef {object} TJSPositionStores Provides individual writable stores for {@link TJSPosition}.
  *
  * @property {import('svelte/store').Readable<{width: number, height: number}>} dimension Readable store for dimension
@@ -100,8 +88,9 @@ export { TJSPosition }
  *
  * @property {import('svelte/store').Readable<number|undefined>} resizeContentWidth Readable store for `contentWidth`.
  *
- * @property {import('svelte/store').Writable<ResizeObserverData>} resizeObserved Protected store for resize observer
- *           updates.
+ * @property {import('svelte/store').Writable<
+ *    import('#runtime/svelte/action/dom').ResizeObserverData.Object
+ * >} resizeObserved Protected store for resize observer updates.
  *
  * @property {import('svelte/store').Readable<number|undefined>} resizeOffsetHeight Readable store for `offsetHeight`.
  *
