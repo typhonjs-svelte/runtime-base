@@ -11,7 +11,7 @@ import {
 import { AnimationControl }   from './AnimationControl.js';
 import { AnimationManager }   from './AnimationManager.js';
 
-import { convertRelative }    from '../convertRelative.js';
+import { convertRelative }    from '../util/convertRelative.js';
 
 import {
    animateKeys,

@@ -12,22 +12,24 @@ import { subscribeIgnoreFirst }  from '#runtime/util/store';
 import {
    AnimationAPI,
    AnimationGroupAPI }           from './animation';
-import * as constants            from './constants.js';
-import { convertRelative }       from './convertRelative.js';
 import { Centered }              from './initial';
-import { PositionChangeSet }     from './PositionChangeSet.js';
 import { PositionStateAPI }      from './state';
-import { StyleCache }            from './StyleCache.js';
 import {
    TJSTransformData,
    TJSTransforms }               from './transform';
+import {
+   convertRelative,
+   StyleCache }                  from './util';
 import {
    AdapterValidators,
    BasicBounds,
    TransformBounds }             from './validators';
 import {
+   PositionChangeSet,
    UpdateElementData,
    UpdateElementManager }        from './update';
+
+import * as constants            from './constants.js';
 import { TJSPositionData }       from './TJSPositionData.js';
 
 /**

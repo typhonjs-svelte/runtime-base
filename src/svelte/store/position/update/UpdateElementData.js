@@ -29,7 +29,7 @@ export class UpdateElementData
       this.dimensionData = { width: 0, height: 0 };
 
       /**
-       * @type {import('../PositionChangeSet').PositionChangeSet}
+       * @type {import('./').PositionChangeSet}
        */
       this.changeSet = void 0;
 
@@ -46,7 +46,7 @@ export class UpdateElementData
       this.queued = false;
 
       /**
-       * @type {import('../StyleCache').StyleCache}
+       * @type {import('../util').StyleCache}
        */
       this.styleCache = void 0;
 
@@ -76,7 +76,7 @@ export class UpdateElementData
       // When there are subscribers set option to calculate transform updates; set to false when no subscribers.
 
       /**
-       * @type {import('svelte/store').Writable<import('./types').ITransformAPI.ITransformData>}
+       * @type {import('svelte/store').Writable<import('../transform/types').ITransformAPI.ITransformData>}
        */
       this.storeTransform = writable(this.transformData, () =>
       {
