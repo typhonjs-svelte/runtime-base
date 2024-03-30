@@ -6299,7 +6299,7 @@ function applyPosition(node, position)
  * @returns {import('svelte/action').ActionReturn<Record<string, any>>} Lifecycle functions.
  */
 function draggable(node, { position, active = true, button = 0, storeDragging = void 0, ease = false,
- easeOptions = { duration: 0.1, ease: cubicOut }, hasTargetClassList, ignoreTargetClassList })
+ easeOptions = { duration: 0.06, ease: cubicOut }, hasTargetClassList, ignoreTargetClassList })
 {
    if (hasTargetClassList !== void 0 && !isIterable(hasTargetClassList))
    {
@@ -6569,7 +6569,7 @@ class DraggableOptions
    /**
     * @type {{ duration: number, ease: (t: number) => number | string }}
     */
-   #easeOptions = { duration: 0.1, ease: cubicOut };
+   #easeOptions = { duration: 0.06, ease: cubicOut };
 
    /**
     * Stores the subscribers.
@@ -6691,7 +6691,7 @@ class DraggableOptions
    reset()
    {
       this.#ease = false;
-      this.#easeOptions = { duration: 0.1, ease: cubicOut };
+      this.#easeOptions = { duration: 0.06, ease: cubicOut };
       this.#updateSubscribers();
    }
 
@@ -6700,7 +6700,7 @@ class DraggableOptions
     */
    resetEase()
    {
-      this.#easeOptions = { duration: 0.1, ease: cubicOut };
+      this.#easeOptions = { duration: 0.06, ease: cubicOut };
       this.#updateSubscribers();
    }
 
