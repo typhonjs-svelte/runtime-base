@@ -11,6 +11,8 @@ import { degToRad, clamp } from '@typhonjs-svelte/runtime-base/math/util';
 
 /**
  * Provides a TJSBasicAnimation implementation for TJSPosition animation.
+ *
+ * @implements {import('#runtime/util/animate').TJSBasicAnimation}
  */
 class AnimationControl
 {
@@ -37,9 +39,9 @@ class AnimationControl
    static get voidControl() { return this.#voidControl; }
 
    /**
-    * @param {object|null} [animationData] - Animation data from {@link AnimationAPI}.
+    * @param {object | null}  [animationData] - Animation data from {@link IAnimationAPI}.
     *
-    * @param {boolean}     [willFinish] - Promise that tracks animation finished state.
+    * @param {boolean}        [willFinish] - Promise that tracks animation finished state.
     */
    constructor(animationData, willFinish = false)
    {
@@ -477,6 +479,9 @@ function convertRelative(positionData, position)
    }
 }
 
+/**
+ * @implements {import('./types').IAnimationAPI}
+ */
 class AnimationAPI
 {
    /** @type {import('../').TJSPositionData} */
@@ -500,9 +505,9 @@ class AnimationAPI
    #cleanup;
 
    /**
-    * @param {import('../index.js').TJSPosition}       position -
+    * @param {import('../').TJSPosition}       position -
     *
-    * @param {import('../index.js').TJSPositionData}   data -
+    * @param {import('../').TJSPositionData}   data -
     */
    constructor(position, data)
    {
@@ -644,9 +649,9 @@ class AnimationAPI
    /**
     * Provides a tween from given position data to the current position.
     *
-    * @param {import('../index.js').TJSPositionDataExtended} fromData - The starting position.
+    * @param {import('../').TJSPositionDataExtended} fromData - The starting position.
     *
-    * @param {import('../types').TweenOptions} [opts] - Optional tween parameters.
+    * @param {import('./types').IAnimationAPI.TweenOptions} [options] - Optional tween parameters.
     *
     * @returns {import('#runtime/util/animate').TJSBasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
@@ -714,11 +719,11 @@ class AnimationAPI
    /**
     * Provides a tween from given position data to the current position.
     *
-    * @param {import('../index.js').TJSPositionDataExtended} fromData - The starting position.
+    * @param {import('../').TJSPositionDataExtended} fromData - The starting position.
     *
-    * @param {import('../index.js').TJSPositionDataExtended} toData - The ending position.
+    * @param {import('../').TJSPositionDataExtended} toData - The ending position.
     *
-    * @param {import('../types').TweenOptions} [opts] - Optional tween parameters.
+    * @param {import('./types').IAnimationAPI.TweenOptions} [options] - Optional tween parameters.
     *
     * @returns {import('#runtime/util/animate').TJSBasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
@@ -798,9 +803,9 @@ class AnimationAPI
    /**
     * Provides a tween to given position data from the current position.
     *
-    * @param {import('../index.js').TJSPositionDataExtended} toData - The destination position.
+    * @param {import('../').TJSPositionDataExtended} toData - The destination position.
     *
-    * @param {import('../types').TweenOptions} [opts] - Optional tween parameters.
+    * @param {import('./types').IAnimationAPI.TweenOptions} [options] - Optional tween parameters.
     *
     * @returns {import('#runtime/util/animate').TJSBasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
@@ -867,11 +872,11 @@ class AnimationAPI
    /**
     * Returns a function that provides an optimized way to constantly update a to-tween.
     *
-    * @param {Iterable<import('../types').AnimationKeys>}  keys - The keys for quickTo.
+    * @param {Iterable<import('./types').IAnimationAPI.AnimationKeys>}  keys - The keys for quickTo.
     *
-    * @param {import('../types').QuickTweenOptions} [opts] - Optional quick tween parameters.
+    * @param {import('./types').IAnimationAPI.QuickTweenOptions} [options] - Optional quick tween parameters.
     *
-    * @returns {import('../types').quickToCallback} quick-to tween function.
+    * @returns {import('./types').IAnimationAPI.quickToCallback} quick-to tween function.
     */
    quickTo(keys, { duration = 1, ease = cubicOut, interpolate = lerp } = {})
    {
@@ -913,7 +918,7 @@ class AnimationAPI
       {
          if (typeof key !== 'string')
          {
-            throw new TypeError(`AnimationAPI.quickTo error: key is not a string.`);
+            throw new TypeError(`AnimationAPI.quickTo error: key ('${key}') is not a string.`);
          }
 
          if (!animateKeys.has(key))
@@ -954,7 +959,7 @@ class AnimationAPI
          start: void 0
       };
 
-      const quickToCB = /** @type {import('../types').quickToCallback} */ (...args) =>
+      const quickToCB = /** @type {import('./types').IAnimationAPI.quickToCallback} */ (...args) =>
       {
          const argsLength = args.length;
 
@@ -1171,6 +1176,8 @@ class AnimationGroupControl
  * {@link AnimationAPI} is performed in {@link AnimationGroupAPI.#isPosition}.
  *
  * @see AnimationAPI
+ *
+ * @implements {import('./types').IAnimationGroupAPI}
  */
 class AnimationGroupAPI
 {
@@ -1236,7 +1243,11 @@ class AnimationGroupAPI
     *
     * @param {import('../').TJSPositionGroup} position - A position group.
     *
-    * @returns {{ position: import('../').TJSPosition, data: object | void, controls: import('./AnimationControl').AnimationControl[]}[]} Results array.
+    * @returns {{
+    *    position: import('../').TJSPosition,
+    *    data: object | void,
+    *    controls: import('./AnimationControl').AnimationControl[]
+    * }[]} Results array.
     */
    static getScheduled(position)
    {
@@ -1288,9 +1299,12 @@ class AnimationGroupAPI
     *
     * @param {import('../').TJSPositionGroup} position - A position group.
     *
-    * @param {object|Function}   fromData -
+    * @param {object | Function}   fromData -
     *
-    * @param {import('../types').TweenOptions | (() => import('../types').TweenOptions)}   options -
+    * @param {(
+    *    import('./types').IAnimationAPI.TweenOptions |
+    *    (() => import('./types').IAnimationAPI.TweenOptions)
+    * )}   [options] -
     *
     * @returns {import('#runtime/util/animate').TJSBasicAnimation} Basic animation control.
     */
@@ -1354,7 +1368,7 @@ class AnimationGroupAPI
 
                if (!isObject(actualFromData))
                {
-                  throw new TypeError(`AnimationGroupAPI.from error: fromData callback function iteration(${
+                  throw new TypeError(`AnimationGroupAPI.from error: 'fromData' callback function iteration(${
                    index}) failed to return an object.`);
                }
             }
@@ -1368,7 +1382,7 @@ class AnimationGroupAPI
 
                if (!isObject(actualOptions))
                {
-                  throw new TypeError(`AnimationGroupAPI.from error: options callback function iteration(${
+                  throw new TypeError(`AnimationGroupAPI.from error: 'options' callback function iteration(${
                    index}) failed to return an object.`);
                }
             }
@@ -1401,7 +1415,7 @@ class AnimationGroupAPI
             if (!isObject(actualFromData))
             {
                throw new TypeError(
-                `AnimationGroupAPI.from error: fromData callback function failed to return an object.`);
+                `AnimationGroupAPI.from error: 'fromData' callback function failed to return an object.`);
             }
          }
 
@@ -1412,7 +1426,7 @@ class AnimationGroupAPI
             if (!isObject(actualOptions))
             {
                throw new TypeError(
-                `AnimationGroupAPI.from error: options callback function failed to return an object.`);
+                `AnimationGroupAPI.from error: 'options' callback function failed to return an object.`);
             }
          }
 
@@ -1427,11 +1441,11 @@ class AnimationGroupAPI
     *
     * @param {import('../').TJSPositionGroup} position -
     *
-    * @param {object|Function}   fromData -
+    * @param {object | Function}   fromData -
     *
-    * @param {object|Function}   toData -
+    * @param {object | Function}   toData -
     *
-    * @param {object|Function}   options -
+    * @param {object | Function}   [options] -
     *
     * @returns {import('#runtime/util/animate').TJSBasicAnimation} Basic animation control.
     */
@@ -1502,7 +1516,7 @@ class AnimationGroupAPI
 
                if (!isObject(actualFromData))
                {
-                  throw new TypeError(`AnimationGroupAPI.fromTo error: fromData callback function iteration(${
+                  throw new TypeError(`AnimationGroupAPI.fromTo error: 'fromData' callback function iteration(${
                    index}) failed to return an object.`);
                }
             }
@@ -1516,7 +1530,7 @@ class AnimationGroupAPI
 
                if (!isObject(actualToData))
                {
-                  throw new TypeError(`AnimationGroupAPI.fromTo error: toData callback function iteration(${
+                  throw new TypeError(`AnimationGroupAPI.fromTo error: 'toData' callback function iteration(${
                    index}) failed to return an object.`);
                }
             }
@@ -1530,7 +1544,7 @@ class AnimationGroupAPI
 
                if (!isObject(actualOptions))
                {
-                  throw new TypeError(`AnimationGroupAPI.fromTo error: options callback function iteration(${
+                  throw new TypeError(`AnimationGroupAPI.fromTo error: 'options' callback function iteration(${
                    index}) failed to return an object.`);
                }
             }
@@ -1563,7 +1577,7 @@ class AnimationGroupAPI
             if (!isObject(actualFromData))
             {
                throw new TypeError(
-                `AnimationGroupAPI.fromTo error: fromData callback function failed to return an object.`);
+                `AnimationGroupAPI.fromTo error: 'fromData' callback function failed to return an object.`);
             }
          }
 
@@ -1574,7 +1588,7 @@ class AnimationGroupAPI
             if (!isObject(actualToData))
             {
                throw new TypeError(
-                `AnimationGroupAPI.fromTo error: toData callback function failed to return an object.`);
+                `AnimationGroupAPI.fromTo error: 'toData' callback function failed to return an object.`);
             }
          }
 
@@ -1585,7 +1599,7 @@ class AnimationGroupAPI
             if (!isObject(actualOptions))
             {
                throw new TypeError(
-                `AnimationGroupAPI.fromTo error: options callback function failed to return an object.`);
+                `AnimationGroupAPI.fromTo error: 'options' callback function failed to return an object.`);
             }
          }
 
@@ -1600,9 +1614,9 @@ class AnimationGroupAPI
     *
     * @param {import('../').TJSPositionGroup} position -
     *
-    * @param {object|Function}   toData -
+    * @param {object | Function}   toData -
     *
-    * @param {object|Function}   options -
+    * @param {object | Function}   [options] -
     *
     * @returns {import('#runtime/util/animate').TJSBasicAnimation} Basic animation control.
     */
@@ -1666,7 +1680,7 @@ class AnimationGroupAPI
 
                if (!isObject(actualToData))
                {
-                  throw new TypeError(`AnimationGroupAPI.to error: toData callback function iteration(${
+                  throw new TypeError(`AnimationGroupAPI.to error: 'toData' callback function iteration(${
                    index}) failed to return an object.`);
                }
             }
@@ -1680,7 +1694,7 @@ class AnimationGroupAPI
 
                if (!isObject(actualOptions))
                {
-                  throw new TypeError(`AnimationGroupAPI.to error: options callback function iteration(${
+                  throw new TypeError(`AnimationGroupAPI.to error: 'options' callback function iteration(${
                    index}) failed to return an object.`);
                }
             }
@@ -1713,7 +1727,7 @@ class AnimationGroupAPI
             if (!isObject(actualToData))
             {
                throw new TypeError(
-                `AnimationGroupAPI.to error: toData callback function failed to return an object.`);
+                `AnimationGroupAPI.to error: 'toData' callback function failed to return an object.`);
             }
          }
 
@@ -1724,7 +1738,7 @@ class AnimationGroupAPI
             if (!isObject(actualOptions))
             {
                throw new TypeError(
-                `AnimationGroupAPI.to error: options callback function failed to return an object.`);
+                `AnimationGroupAPI.to error: 'options' callback function failed to return an object.`);
             }
          }
 
@@ -1739,11 +1753,11 @@ class AnimationGroupAPI
     *
     * @param {import('../').TJSPositionGroup} position -
     *
-    * @param {Iterable<import('../types').AnimationKeys>}  keys -
+    * @param {Iterable<import('./types').IAnimationAPI.AnimationKeys>}  keys -
     *
-    * @param {import('../types').QuickTweenOptions | (() => import('../types').QuickTweenOptions)}   options -
+    * @param {import('./types').IAnimationAPI.QuickTweenOptions | (() => import('./types').IAnimationAPI.QuickTweenOptions)}   options -
     *
-    * @returns {import('../types').quickToCallback} quick-to tween function.
+    * @returns {import('./types').IAnimationAPI.quickToCallback} quick-to tween function.
     */
    static quickTo(position, keys, options)
    {
@@ -1758,7 +1772,7 @@ class AnimationGroupAPI
       }
 
       /**
-       * @type {import('../types').quickToCallback[]}
+       * @type {import('./types').IAnimationAPI.quickToCallback[]}
        */
       const quickToCallbacks = [];
 
@@ -1798,7 +1812,7 @@ class AnimationGroupAPI
 
                if (!isObject(actualOptions))
                {
-                  throw new TypeError(`AnimationGroupAPI.quickTo error: options callback function iteration(${
+                  throw new TypeError(`AnimationGroupAPI.quickTo error: 'options' callback function iteration(${
                    index}) failed to return an object.`);
                }
             }
@@ -1828,7 +1842,7 @@ class AnimationGroupAPI
             if (!isObject(actualOptions))
             {
                throw new TypeError(
-                `AnimationGroupAPI.quickTo error: options callback function failed to return an object.`);
+                `AnimationGroupAPI.quickTo error: 'options' callback function failed to return an object.`);
             }
          }
 
@@ -1879,7 +1893,7 @@ class AnimationGroupAPI
 
                   if (!Number.isFinite(toData) && !toDataIterable && !isObject(toData))
                   {
-                     throw new TypeError(`AnimationGroupAPI.quickTo error: toData callback function iteration(${
+                     throw new TypeError(`AnimationGroupAPI.quickTo error: 'toData' callback function iteration(${
                       index}) failed to return a finite number, iterable list, or object.`);
                   }
 
@@ -1913,7 +1927,7 @@ class AnimationGroupAPI
 
                if (!Number.isFinite(toData) && !toDataIterable && !isObject(toData))
                {
-                  throw new TypeError(`AnimationGroupAPI.quickTo error: toData callback function iteration(${
+                  throw new TypeError(`AnimationGroupAPI.quickTo error: 'toData' callback function iteration(${
                    index}) failed to return a finite number, iterable list, or object.`);
                }
 
@@ -1941,7 +1955,7 @@ class AnimationGroupAPI
       /**
        * Sets options of quickTo tween.
        *
-       * @param {object|Function}   [options] - Optional parameters.
+       * @param {object | Function}   [opts] - Optional parameters.
        *
        * @param {number}            [options.duration] - Duration in seconds.
        *
@@ -1996,7 +2010,7 @@ class AnimationGroupAPI
                   if (!isObject(actualOptions))
                   {
                      throw new TypeError(
-                      `AnimationGroupAPI.quickTo.options error: options callback function iteration(${
+                      `AnimationGroupAPI.quickTo.options error: 'options' callback function iteration(${
                        index}) failed to return an object.`);
                   }
 
@@ -2023,7 +2037,7 @@ class AnimationGroupAPI
                if (!isObject(actualOptions))
                {
                   throw new TypeError(
-                   `AnimationGroupAPI.quickTo error: options callback function failed to return an object.`);
+                   `AnimationGroupAPI.quickTo error: 'options' callback function failed to return an object.`);
                }
 
                quickToCallbacks[0].options(actualOptions);
@@ -2497,7 +2511,7 @@ class PositionStateAPI
    /**
     * Restores a saved positional state returning the data. Several optional parameters are available
     * to control whether the restore action occurs silently (no store / inline styles updates), animates
--   * to the stored data, or simply sets the stored data. Restoring via {@link AnimationAPI.to}
+-   * to the stored data, or simply sets the stored data. Restoring via {@link IAnimationAPI.to}
     * allows specification of the duration, easing, and interpolate functions along with configuring a Promise to be
     * returned if awaiting the end of the animation.
     *
@@ -4908,7 +4922,7 @@ class TJSPosition
    /**
     * Provides the animation API.
     *
-    * @type {AnimationAPI}
+    * @type {import('./animation/types').IAnimationAPI}
     */
    #animate = new AnimationAPI(this, this.#data);
 
@@ -4997,7 +5011,7 @@ class TJSPosition
    #state = new PositionStateAPI(this, this.#data, this.#transforms);
 
    /**
-    * @returns {typeof AnimationGroupAPI} Public Animation API.
+    * @returns {import('./animation/types').IAnimationGroupAPI} Public Animation API.
     */
    static get Animate() { return AnimationGroupAPI; }
 
@@ -5268,7 +5282,7 @@ class TJSPosition
    /**
     * Returns the animation API.
     *
-    * @returns {AnimationAPI} Animation API.
+    * @returns {import('./animation/types').IAnimationAPI} Animation API.
     */
    get animate()
    {

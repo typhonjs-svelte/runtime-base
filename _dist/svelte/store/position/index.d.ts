@@ -4,7 +4,7 @@ import { Subscriber } from 'svelte/store';
 import * as svelte_action from 'svelte/action';
 import { EasingFunction } from 'svelte/transition';
 import { InterpolateFunction } from '@typhonjs-svelte/runtime-base/math/interpolate';
-import * as _runtime_util_animate from '@typhonjs-svelte/runtime-base/util/animate';
+import { TJSBasicAnimation } from '@typhonjs-svelte/runtime-base/util/animate';
 import * as _runtime_util_browser from '@typhonjs-svelte/runtime-base/util/browser';
 
 /**
@@ -616,82 +616,103 @@ declare namespace IValidatorAPI {
 }
 
 /**
- * The position keys that can be animated.
+ * Provides a public API for grouping multiple {@link TJSPosition} animations together with the
+ * AnimationManager.
+ *
+ * Note: To remove cyclic dependencies as this class provides the TJSPosition static / group Animation API `instanceof`
+ * checks are not done against TJSPosition. Instead, a check for the animate property being an instanceof
+ * {@link IAnimationAPI} is performed in {@link AnimationGroupAPI.#isPosition}.
+ *
+ * @see IAnimationAPI
  */
-type AnimationKeys =
-  | 'left'
-  | 'top'
-  | 'maxWidth'
-  | 'maxHeight'
-  | 'minWidth'
-  | 'minHeight'
-  | 'width'
-  | 'height'
-  | 'rotateX'
-  | 'rotateY'
-  | 'rotateZ'
-  | 'scale'
-  | 'translateX'
-  | 'translateY'
-  | 'translateZ'
-  | 'zIndex'
-  | 'rotation';
-/**
- * Defines the quick tweening options.
- */
-type QuickTweenOptions = {
+interface IAnimationGroupAPI {
   /**
-   * Duration in seconds; default: 1
-   */
-  duration?: number;
-  /**
-   * Easing function; default: cubicOut
-   */
-  ease?: EasingFunction;
-  /**
-   * Interpolation function; default: lerp
-   */
-  interpolate?: InterpolateFunction;
-};
-/**
- * Defines the tweening options.
- */
-type TweenOptions = QuickTweenOptions & {
-  /**
-   * Delay in seconds before animation starts; default: 0
-   */
-  delay?: number;
-};
-interface quickToCallback extends Function {
-  /**
-   * @param args - Individual numbers corresponding to the order in which animation keys are specified.
-   */
-  (...args: number[]): void;
-  /**
-   * @param arg - A single object with animation keys specified and numerical values.
-   */
-  (arg: Record<AnimationKeys, number>): void;
-  /**
-   * The keys assigned for this quickTo callback.
-   */
-  readonly keys: AnimationKeys[];
-  /**
-   * Sets options of quickTo tween.
+   * Cancels any animation for given TJSPositionGroup data.
    *
-   * @param data - Quick tween options.
-   *
-   * @returns This quickTo callback function.
+   * @param {TJSPositionGroup} position - The position group to cancel.
    */
-  options: (data: QuickTweenOptions) => quickToCallback;
+  cancel(position: TJSPositionGroup): void;
+  /**
+   * Cancels all TJSPosition animation.
+   */
+  cancelAll(): void;
+  /**
+   * Gets all animation controls for the given position group data.
+   *
+   * @param {TJSPositionGroup} position - A position group.
+   *
+   * @returns {{ position: TJSPosition, data: object | undefined, controls: TJSBasicAnimation[]}[]} Results array.
+   */
+  getScheduled(position: TJSPositionGroup): {
+    position: TJSPosition;
+    data: object | undefined;
+    controls: TJSBasicAnimation[];
+  }[];
+  /**
+   * Provides the `from` animation tween for one or more TJSPosition instances as a group.
+   *
+   * @param {TJSPositionGroup}  position - A position group.
+   *
+   * @param {object | Function} fromData -
+   *
+   * @param {IAnimationAPI.TweenOptions | (() => IAnimationAPI.TweenOptions)}   [options] -
+   *
+   * @returns {TJSBasicAnimation} Basic animation control.
+   */
+  from(
+    position: TJSPositionGroup,
+    fromData: object | Function,
+    options?: IAnimationAPI.TweenOptions | (() => IAnimationAPI.TweenOptions),
+  ): TJSBasicAnimation;
+  /**
+   * Provides the `fromTo` animation tween for one or more TJSPosition instances as a group.
+   *
+   * @param {TJSPositionGroup} position -
+   *
+   * @param {object | Function}   fromData -
+   *
+   * @param {object | Function}   toData -
+   *
+   * @param {object | Function}   [options] -
+   *
+   * @returns {TJSBasicAnimation} Basic animation control.
+   */
+  fromTo(
+    position: TJSPositionGroup,
+    fromData: object | Function,
+    toData: object | Function,
+    options?: object | Function,
+  ): TJSBasicAnimation;
+  /**
+   * Provides the `to` animation tween for one or more TJSPosition instances as a group.
+   *
+   * @param {TJSPositionGroup} position -
+   *
+   * @param {object | Function}   toData -
+   *
+   * @param {object | Function}   [options] -
+   *
+   * @returns {TJSBasicAnimation} Basic animation control.
+   */
+  to(position: TJSPositionGroup, toData: object | Function, options?: object | Function): TJSBasicAnimation;
+  /**
+   * Provides the `to` animation tween for one or more TJSPosition instances as a group.
+   *
+   * @param {TJSPositionGroup} position -
+   *
+   * @param {Iterable<IAnimationAPI.AnimationKeys>}  keys -
+   *
+   * @param {IAnimationAPI.QuickTweenOptions | (() => IAnimationAPI.QuickTweenOptions)}  [options] -
+   *
+   * @returns {IAnimationAPI.quickToCallback} quick-to tween function.
+   */
+  quickTo(
+    position: TJSPositionGroup,
+    keys: Iterable<IAnimationAPI.AnimationKeys>,
+    options?: IAnimationAPI.QuickTweenOptions | (() => IAnimationAPI.QuickTweenOptions),
+  ): IAnimationAPI.quickToCallback;
 }
-
-declare class AnimationAPI {
-  /**
-   * @param {import('../index.js').TJSPosition}       position -
-   *
-   * @param {import('../index.js').TJSPositionData}   data -
-   */
-  constructor(position: TJSPosition, data: TJSPositionData);
+interface IAnimationAPI {
   /**
    * Returns whether there are scheduled animations whether active or delayed for this TJSPosition.
    *
@@ -705,66 +726,129 @@ declare class AnimationAPI {
   /**
    * Returns all currently scheduled AnimationControl instances for this TJSPosition instance.
    *
-   * @returns {import('#runtime/util/animate').TJSBasicAnimation[]} All currently scheduled animation controls for
-   *          this TJSPosition instance.
+   * @returns {TJSBasicAnimation[]} All currently scheduled animation controls for this TJSPosition instance.
    */
-  getScheduled(): _runtime_util_animate.TJSBasicAnimation[];
+  getScheduled(): TJSBasicAnimation[];
   /**
    * Provides a tween from given position data to the current position.
    *
-   * @param {import('../index.js').TJSPositionDataExtended} fromData - The starting position.
+   * @param {TJSPositionDataExtended} fromData - The starting position.
    *
-   * @param {import('../types').TweenOptions} [opts] - Optional tween parameters.
+   * @param {IAnimationAPI.TweenOptions} [options] - Optional tween parameters.
    *
-   * @returns {import('#runtime/util/animate').TJSBasicAnimation}  A control object that can cancel animation and
-   *          provides a `finished` Promise.
+   * @returns {TJSBasicAnimation}  A control object that can cancel animation and provides a `finished` Promise.
    */
-  from(
-    fromData: TJSPositionDataExtended,
-    { delay, duration, ease, interpolate }?: TweenOptions,
-  ): _runtime_util_animate.TJSBasicAnimation;
+  from(fromData: TJSPositionDataExtended, options?: IAnimationAPI.TweenOptions): TJSBasicAnimation;
   /**
    * Provides a tween from given position data to the current position.
    *
-   * @param {import('../index.js').TJSPositionDataExtended} fromData - The starting position.
+   * @param {TJSPositionDataExtended} fromData - The starting position.
    *
-   * @param {import('../index.js').TJSPositionDataExtended} toData - The ending position.
+   * @param {TJSPositionDataExtended} toData - The ending position.
    *
-   * @param {import('../types').TweenOptions} [opts] - Optional tween parameters.
+   * @param {IAnimationAPI.TweenOptions} [options] - Optional tween parameters.
    *
-   * @returns {import('#runtime/util/animate').TJSBasicAnimation}  A control object that can cancel animation and
-   *          provides a `finished` Promise.
+   * @returns {TJSBasicAnimation}  A control object that can cancel animation and provides a `finished` Promise.
    */
   fromTo(
     fromData: TJSPositionDataExtended,
     toData: TJSPositionDataExtended,
-    { delay, duration, ease, interpolate }?: TweenOptions,
-  ): _runtime_util_animate.TJSBasicAnimation;
+    options?: IAnimationAPI.TweenOptions,
+  ): TJSBasicAnimation;
   /**
    * Provides a tween to given position data from the current position.
    *
-   * @param {import('../index.js').TJSPositionDataExtended} toData - The destination position.
+   * @param {TJSPositionDataExtended} toData - The destination position.
    *
-   * @param {import('../types').TweenOptions} [opts] - Optional tween parameters.
+   * @param {IAnimationAPI.TweenOptions} [options] - Optional tween parameters.
    *
-   * @returns {import('#runtime/util/animate').TJSBasicAnimation}  A control object that can cancel animation and
-   *          provides a `finished` Promise.
+   * @returns {TJSBasicAnimation}  A control object that can cancel animation and provides a `finished` Promise.
    */
-  to(
-    toData: TJSPositionDataExtended,
-    { delay, duration, ease, interpolate }?: TweenOptions,
-  ): _runtime_util_animate.TJSBasicAnimation;
+  to(toData: TJSPositionDataExtended, options?: IAnimationAPI.TweenOptions): TJSBasicAnimation;
   /**
    * Returns a function that provides an optimized way to constantly update a to-tween.
    *
-   * @param {Iterable<import('../types').AnimationKeys>}  keys - The keys for quickTo.
+   * @param {Iterable<IAnimationAPI.AnimationKeys>}  keys - The keys for quickTo.
    *
-   * @param {import('../types').QuickTweenOptions} [opts] - Optional quick tween parameters.
+   * @param {IAnimationAPI.QuickTweenOptions} [options] - Optional quick tween parameters.
    *
-   * @returns {import('../types').quickToCallback} quick-to tween function.
+   * @returns {IAnimationAPI.quickToCallback} quick-to tween function.
    */
-  quickTo(keys: Iterable<AnimationKeys>, { duration, ease, interpolate }?: QuickTweenOptions): quickToCallback;
-  #private;
+  quickTo(
+    keys: Iterable<IAnimationAPI.AnimationKeys>,
+    options?: IAnimationAPI.QuickTweenOptions,
+  ): IAnimationAPI.quickToCallback;
+}
+declare namespace IAnimationAPI {
+  /**
+   * The position keys that can be animated.
+   */
+  type AnimationKeys =
+    | 'left'
+    | 'top'
+    | 'maxWidth'
+    | 'maxHeight'
+    | 'minWidth'
+    | 'minHeight'
+    | 'width'
+    | 'height'
+    | 'rotateX'
+    | 'rotateY'
+    | 'rotateZ'
+    | 'scale'
+    | 'translateX'
+    | 'translateY'
+    | 'translateZ'
+    | 'zIndex'
+    | 'rotation';
+  /**
+   * Defines the quick tweening options.
+   */
+  type QuickTweenOptions = {
+    /**
+     * Duration in seconds; default: 1
+     */
+    duration?: number;
+    /**
+     * Easing function; default: cubicOut
+     */
+    ease?: EasingFunction;
+    /**
+     * Interpolation function; default: lerp
+     */
+    interpolate?: InterpolateFunction;
+  };
+  /**
+   * Defines the tweening options.
+   */
+  type TweenOptions = QuickTweenOptions & {
+    /**
+     * Delay in seconds before animation starts; default: 0
+     */
+    delay?: number;
+  };
+  interface quickToCallback extends Function {
+    /**
+     * @param args - Individual numbers corresponding to the order in which animation keys are specified.
+     */
+    (...args: number[]): void;
+    /**
+     * @param arg - A single object with animation keys specified and numerical values.
+     */
+    (arg: Record<AnimationKeys, number>): void;
+    /**
+     * The keys assigned for this quickTo callback.
+     */
+    readonly keys: AnimationKeys[];
+    /**
+     * Sets options of quickTo tween.
+     *
+     * @param data - Quick tween options.
+     *
+     * @returns This quickTo callback function.
+     */
+    options: (data: QuickTweenOptions) => quickToCallback;
+  }
 }
 
 declare class PositionStateAPI {
@@ -810,7 +894,7 @@ declare class PositionStateAPI {
   /**
      * Restores a saved positional state returning the data. Several optional parameters are available
      * to control whether the restore action occurs silently (no store / inline styles updates), animates
- -   * to the stored data, or simply sets the stored data. Restoring via {@link AnimationAPI.to}
+ -   * to the stored data, or simply sets the stored data. Restoring via {@link IAnimationAPI.to}
      * allows specification of the duration, easing, and interpolate functions along with configuring a Promise to be
      * returned if awaiting the end of the animation.
      *
@@ -1143,160 +1227,14 @@ declare class TransformBounds {
 }
 
 /**
- * Provides a TJSBasicAnimation implementation for TJSPosition animation.
- */
-declare class AnimationControl {
-  /**
-   * Provides a static void / undefined AnimationControl that is automatically resolved.
-   *
-   * @returns {AnimationControl} Void AnimationControl
-   */
-  static get voidControl(): AnimationControl;
-  /**
-   * @param {object|null} [animationData] - Animation data from {@link AnimationAPI}.
-   *
-   * @param {boolean}     [willFinish] - Promise that tracks animation finished state.
-   */
-  constructor(animationData?: object | null, willFinish?: boolean);
-  /**
-   * Get a promise that resolves when animation is finished.
-   *
-   * @returns {Promise<void>}
-   */
-  get finished(): Promise<void>;
-  /**
-   * Returns whether this animation is currently active / animating.
-   *
-   * Note: a delayed animation may not be started / active yet. Use {@link AnimationControl.isFinished} to determine
-   * if an animation is actually finished.
-   *
-   * @returns {boolean} Animation active state.
-   */
-  get isActive(): boolean;
-  /**
-   * Returns whether this animation is completely finished.
-   *
-   * @returns {boolean} Animation finished state.
-   */
-  get isFinished(): boolean;
-  /**
-   * Cancels the animation.
-   */
-  cancel(): void;
-  #private;
-}
-
-/**
- * Provides a public API for grouping multiple {@link TJSPosition} animations together with the
- * AnimationManager.
- *
- * Note: To remove cyclic dependencies as this class provides the TJSPosition static / group Animation API `instanceof`
- * checks are not done against TJSPosition. Instead, a check for the animate property being an instanceof
- * {@link AnimationAPI} is performed in {@link AnimationGroupAPI.#isPosition}.
- *
- * @see AnimationAPI
- */
-declare class AnimationGroupAPI {
-  /**
-   * Cancels any animation for given TJSPositionGroup data.
-   *
-   * @param {import('../').TJSPositionGroup} position - The position group to cancel.
-   */
-  static cancel(position: TJSPositionGroup): void;
-  /**
-   * Cancels all TJSPosition animation.
-   */
-  static cancelAll(): void;
-  /**
-   * Gets all animation controls for the given position group data.
-   *
-   * @param {import('../').TJSPositionGroup} position - A position group.
-   *
-   * @returns {{ position: import('../').TJSPosition, data: object | void, controls: import('./AnimationControl').AnimationControl[]}[]} Results array.
-   */
-  static getScheduled(position: TJSPositionGroup): {
-    position: TJSPosition;
-    data: object | void;
-    controls: AnimationControl[];
-  }[];
-  /**
-   * Provides the `from` animation tween for one or more TJSPosition instances as a group.
-   *
-   * @param {import('../').TJSPositionGroup} position - A position group.
-   *
-   * @param {object|Function}   fromData -
-   *
-   * @param {import('../types').TweenOptions | (() => import('../types').TweenOptions)}   options -
-   *
-   * @returns {import('#runtime/util/animate').TJSBasicAnimation} Basic animation control.
-   */
-  static from(
-    position: TJSPositionGroup,
-    fromData: object | Function,
-    options: TweenOptions | (() => TweenOptions),
-  ): _runtime_util_animate.TJSBasicAnimation;
-  /**
-   * Provides the `fromTo` animation tween for one or more TJSPosition instances as a group.
-   *
-   * @param {import('../').TJSPositionGroup} position -
-   *
-   * @param {object|Function}   fromData -
-   *
-   * @param {object|Function}   toData -
-   *
-   * @param {object|Function}   options -
-   *
-   * @returns {import('#runtime/util/animate').TJSBasicAnimation} Basic animation control.
-   */
-  static fromTo(
-    position: TJSPositionGroup,
-    fromData: object | Function,
-    toData: object | Function,
-    options: object | Function,
-  ): _runtime_util_animate.TJSBasicAnimation;
-  /**
-   * Provides the `to` animation tween for one or more TJSPosition instances as a group.
-   *
-   * @param {import('../').TJSPositionGroup} position -
-   *
-   * @param {object|Function}   toData -
-   *
-   * @param {object|Function}   options -
-   *
-   * @returns {import('#runtime/util/animate').TJSBasicAnimation} Basic animation control.
-   */
-  static to(
-    position: TJSPositionGroup,
-    toData: object | Function,
-    options: object | Function,
-  ): _runtime_util_animate.TJSBasicAnimation;
-  /**
-   * Provides the `to` animation tween for one or more TJSPosition instances as a group.
-   *
-   * @param {import('../').TJSPositionGroup} position -
-   *
-   * @param {Iterable<import('../types').AnimationKeys>}  keys -
-   *
-   * @param {import('../types').QuickTweenOptions | (() => import('../types').QuickTweenOptions)}   options -
-   *
-   * @returns {import('../types').quickToCallback} quick-to tween function.
-   */
-  static quickTo(
-    position: TJSPositionGroup,
-    keys: Iterable<AnimationKeys>,
-    options: QuickTweenOptions | (() => QuickTweenOptions),
-  ): quickToCallback;
-}
-
-/**
  * Provides a store for position following the subscriber protocol in addition to providing individual writable derived
  * stores for each independent variable.
  */
 declare class TJSPosition {
   /**
-   * @returns {typeof AnimationGroupAPI} Public Animation API.
+   * @returns {import('./animation/types').IAnimationGroupAPI} Public Animation API.
    */
-  static get Animate(): typeof AnimationGroupAPI;
+  static get Animate(): IAnimationGroupAPI;
   /**
    * @returns {{browserCentered: Centered, Centered: typeof Centered}} TJSPosition initial API.
    */
@@ -1348,9 +1286,9 @@ declare class TJSPosition {
   /**
    * Returns the animation API.
    *
-   * @returns {AnimationAPI} Animation API.
+   * @returns {import('./animation/types').IAnimationAPI} Animation API.
    */
-  get animate(): AnimationAPI;
+  get animate(): IAnimationAPI;
   /**
    * Returns the dimension data for the readable store.
    *
@@ -1895,14 +1833,12 @@ type TJSPositionDataExtended = {
 };
 
 export {
-  AnimationAPI,
-  AnimationGroupAPI,
-  type AnimationKeys,
   Centered,
+  IAnimationAPI,
+  type IAnimationGroupAPI,
   ITransformAPI,
   IValidatorAPI,
   PositionStateAPI,
-  type QuickTweenOptions,
   type ResizeObserverData,
   TJSPosition,
   TJSPositionData,
@@ -1915,8 +1851,6 @@ export {
   type TJSPositionParent,
   type TJSPositionStores,
   type TJSPositionable,
-  type TweenOptions,
   applyPosition,
   draggable,
-  type quickToCallback,
 };
