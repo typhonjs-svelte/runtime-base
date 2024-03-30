@@ -62,7 +62,7 @@ export class KeyStore
     * Returns true if any of given keys are pressed. If `keys` is undefined then the result is true if any keys being
     * tracked are pressed.
     *
-    * @param {string|Iterable<string>|undefined} keys - Zero or more key strings or list to verify if any pressed.
+    * @param {string | Iterable<string>} [keys] - Zero or more key strings or list to verify if any pressed.
     *
     * @returns {boolean} True if any keys set are pressed.
     */
