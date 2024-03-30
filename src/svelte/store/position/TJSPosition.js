@@ -1,3 +1,5 @@
+import { clamp }                 from '#runtime/math/util';
+
 import { propertyStore }         from '#runtime/svelte/store/writable-derived';
 
 import { A11yHelper }            from '#runtime/util/browser';
@@ -1000,7 +1002,7 @@ export class TJSPosition
 
       if (Number.isFinite(position.scale) || position.scale === null)
       {
-         position.scale = typeof position.scale === 'number' ? Math.max(0, Math.min(position.scale, 1000)) : null;
+         position.scale = typeof position.scale === 'number' ? clamp(position.scale, 0, 1000) : null;
 
          if (data.scale !== position.scale)
          {
@@ -1294,7 +1296,7 @@ export class TJSPosition
 
       if (Number.isFinite(scale) || scale === null)
       {
-         currentPosition.scale = typeof scale === 'number' ? Math.max(0, Math.min(scale, 1000)) : null;
+         currentPosition.scale = typeof scale === 'number' ? clamp(scale, 0, 1000) : null;
       }
 
       if (typeof transformOrigin === 'string' || transformOrigin === null)
