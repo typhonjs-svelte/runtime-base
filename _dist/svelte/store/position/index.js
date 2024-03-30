@@ -2,12 +2,12 @@ import { propertyStore } from '@typhonjs-svelte/runtime-base/svelte/store/writab
 import { A11yHelper, StyleParse } from '@typhonjs-svelte/runtime-base/util/browser';
 import { isObject, isIterable, isPlainObject, hasSetter } from '@typhonjs-svelte/runtime-base/util/object';
 import { subscribeIgnoreFirst } from '@typhonjs-svelte/runtime-base/util/store';
+import { degToRad, clamp } from '@typhonjs-svelte/runtime-base/math/util';
+import { Vec3, Mat4 } from '@typhonjs-svelte/runtime-base/math/gl-matrix';
 import { cubicOut, linear } from 'svelte/easing';
 import { lerp } from '@typhonjs-svelte/runtime-base/math/interpolate';
 import { writable } from 'svelte/store';
-import { Vec3, Mat4 } from '@typhonjs-svelte/runtime-base/math/gl-matrix';
 import { nextAnimationFrame } from '@typhonjs-svelte/runtime-base/util/animate';
-import { degToRad, clamp } from '@typhonjs-svelte/runtime-base/math/util';
 
 /**
  * Provides a TJSBasicAnimation implementation for TJSPosition animation.
@@ -317,7 +317,7 @@ AnimationManager.animate();
 /**
  * Stores the TJSPositionData properties that can be animated.
  *
- * @type {Set<import('./types').AnimationKeys>}
+ * @type {Set<import('./animation/types').IAnimationAPI.AnimationKeys>}
  */
 const animateKeys = new Set([
    // Main keys
@@ -433,9 +433,9 @@ Object.freeze(transformOrigins);
 /**
  * Converts any relative string values for animatable keys to actual updates performed against current data.
  *
- * @param {import('./').TJSPositionDataExtended}    positionData - position data.
+ * @param {import('../').TJSPositionDataExtended}    positionData - position data.
  *
- * @param {import('./').TJSPosition | import('./').TJSPositionData}   position - The source position instance.
+ * @param {import('../').TJSPosition | import('../').TJSPositionData}   position - The source position instance.
  */
 function convertRelative(positionData, position)
 {
@@ -2228,187 +2228,23 @@ class Centered
    }
 }
 
-class PositionChangeSet
-{
-   constructor()
-   {
-      this.left = false;
-      this.top = false;
-      this.width = false;
-      this.height = false;
-      this.maxHeight = false;
-      this.maxWidth = false;
-      this.minHeight = false;
-      this.minWidth = false;
-      this.zIndex = false;
-      this.transform = false;
-      this.transformOrigin = false;
-   }
-
-   hasChange()
-   {
-      return this.left || this.top || this.width || this.height || this.maxHeight || this.maxWidth || this.minHeight ||
-       this.minWidth || this.zIndex || this.transform || this.transformOrigin;
-   }
-
-   set(value)
-   {
-      this.left = value;
-      this.top = value;
-      this.width = value;
-      this.height = value;
-      this.maxHeight = value;
-      this.maxWidth = value;
-      this.minHeight = value;
-      this.minWidth = value;
-      this.zIndex = value;
-      this.transform = value;
-      this.transformOrigin = value;
-   }
-}
-
 /**
- * Defines stored positional data.
+ * @implements {import('./types').IPositionStateAPI}
  */
-class TJSPositionData
-{
-   constructor({ height = null, left = null, maxHeight = null, maxWidth = null, minHeight = null, minWidth = null,
-    rotateX = null, rotateY = null, rotateZ = null, scale = null, translateX = null, translateY = null,
-     translateZ = null, top = null, transformOrigin = null, width = null, zIndex = null } = {})
-   {
-      /**
-       * @type {number|'auto'|'inherit'|null}
-       */
-      this.height = height;
-
-      /**
-       * @type {number|null}
-       */
-      this.left = left;
-
-      /**
-       * @type {number|null}
-       */
-      this.maxHeight = maxHeight;
-
-      /**
-       * @type {number|null}
-       */
-      this.maxWidth = maxWidth;
-
-      /**
-       * @type {number|null}
-       */
-      this.minHeight = minHeight;
-
-      /**
-       * @type {number|null}
-       */
-      this.minWidth = minWidth;
-
-      /**
-       * @type {number|null}
-       */
-      this.rotateX = rotateX;
-
-      /**
-       * @type {number|null}
-       */
-      this.rotateY = rotateY;
-
-      /**
-       * @type {number|null}
-       */
-      this.rotateZ = rotateZ;
-
-      /**
-       * @type {number|null}
-       */
-      this.scale = scale;
-
-      /**
-       * @type {number|null}
-       */
-      this.top = top;
-
-      /**
-       * @type {import('./transform/types').ITransformAPI.TransformOrigin | null}
-       */
-      this.transformOrigin = transformOrigin;
-
-      /**
-       * @type {number|null}
-       */
-      this.translateX = translateX;
-
-      /**
-       * @type {number|null}
-       */
-      this.translateY = translateY;
-
-      /**
-       * @type {number|null}
-       */
-      this.translateZ = translateZ;
-
-      /**
-       * @type {number|'auto'|'inherit'|null}
-       */
-      this.width = width;
-
-      /**
-       * @type {number|null}
-       */
-      this.zIndex = zIndex;
-
-      Object.seal(this);
-   }
-
-   /**
-    * Copies given data to this instance.
-    *
-    * @param {TJSPositionData}   data - Copy from this instance.
-    *
-    * @returns {TJSPositionData} This instance.
-    */
-   copy(data)
-   {
-      this.height = data.height;
-      this.left = data.left;
-      this.maxHeight = data.maxHeight;
-      this.maxWidth = data.maxWidth;
-      this.minHeight = data.minHeight;
-      this.minWidth = data.minWidth;
-      this.rotateX = data.rotateX;
-      this.rotateY = data.rotateY;
-      this.rotateZ = data.rotateZ;
-      this.scale = data.scale;
-      this.top = data.top;
-      this.transformOrigin = data.transformOrigin;
-      this.translateX = data.translateX;
-      this.translateY = data.translateY;
-      this.translateZ = data.translateZ;
-      this.width = data.width;
-      this.zIndex = data.zIndex;
-
-      return this;
-   }
-}
-
 class PositionStateAPI
 {
-   /** @type {import('./TJSPositionData').TJSPositionData} */
+   /** @type {import('./').TJSPositionData} */
    #data;
 
    /**
-    * @type {Map<string, import('./').TJSPositionDataExtended>}
+    * @type {Map<string, import('../').TJSPositionDataExtended>}
     */
    #dataSaved = new Map();
 
-   /** @type {import('./').TJSPosition} */
+   /** @type {import('../').TJSPosition} */
    #position;
 
-   /** @type {import('./transform').TJSTransforms} */
+   /** @type {import('../transform').TJSTransforms} */
    #transforms;
 
    constructor(position, data, transforms)
@@ -2425,7 +2261,7 @@ class PositionStateAPI
     *
     * @param {string}   options.name - Saved data set name.
     *
-    * @returns {import('./').TJSPositionDataExtended} The saved data set.
+    * @returns {import('../').TJSPositionDataExtended} The saved data set.
     */
    get({ name })
    {
@@ -2437,7 +2273,7 @@ class PositionStateAPI
    /**
     * Returns any associated default data.
     *
-    * @returns {import('./').TJSPositionDataExtended} Associated default data.
+    * @returns {import('../').TJSPositionDataExtended} Associated default data.
     */
    getDefault()
    {
@@ -2451,7 +2287,7 @@ class PositionStateAPI
     *
     * @param {string}   options.name - Name to remove and retrieve.
     *
-    * @returns {import('./').TJSPositionDataExtended} Saved position data.
+    * @returns {import('../').TJSPositionDataExtended} Saved position data.
     */
    remove({ name })
    {
@@ -2531,11 +2367,12 @@ class PositionStateAPI
     *
     * @param {number}            [params.duration=0.1] - Duration in seconds.
     *
-    * @param {Function}          [params.ease=linear] - Easing function.
+    * @param {import('svelte/transition').EasingFunction}   [params.ease=linear] - Easing function.
     *
-    * @param {Function}          [params.interpolate=lerp] - Interpolation function.
+    * @param {import('#runtime/math/interpolate').InterpolateFunction}  [params.interpolate=lerp] - Interpolation
+    *        function.
     *
-    * @returns {import('./').TJSPositionDataExtended | Promise<import('./').TJSPositionDataExtended>} Saved position
+    * @returns {import('../').TJSPositionDataExtended | Promise<import('../').TJSPositionDataExtended>} Saved position
     *          data.
     */
    restore({ name, remove = false, properties, silent = false, async = false, animateTo = false, duration = 0.1,
@@ -2627,167 +2464,6 @@ class PositionStateAPI
       if (typeof name !== 'string') { throw new TypeError(`Position - set error: 'name' is not a string.`); }
 
       this.#dataSaved.set(name, data);
-   }
-}
-
-class StyleCache
-{
-   constructor()
-   {
-      /** @type {HTMLElement|undefined} */
-      this.el = void 0;
-
-      /** @type {CSSStyleDeclaration} */
-      this.computed = void 0;
-
-      /** @type {number|undefined} */
-      this.marginLeft = void 0;
-
-      /** @type {number|undefined} */
-      this.marginTop = void 0;
-
-      /** @type {number|undefined} */
-      this.maxHeight = void 0;
-
-      /** @type {number|undefined} */
-      this.maxWidth = void 0;
-
-      /** @type {number|undefined} */
-      this.minHeight = void 0;
-
-      /** @type {number|undefined} */
-      this.minWidth = void 0;
-
-      /** @type {boolean} */
-      this.hasWillChange = false;
-
-      /**
-       * @type {import('#runtime/svelte/action/dom').ResizeObserverData.Object}
-       */
-      this.resizeObserved = {
-         contentHeight: void 0,
-         contentWidth: void 0,
-         offsetHeight: void 0,
-         offsetWidth: void 0
-      };
-
-      /**
-       * Provides a writable store to track offset & content width / height from an associated `resizeObserver` action.
-       *
-       * @type {import('svelte/store').Writable<import('#runtime/svelte/action/dom').ResizeObserverData.Object>}
-       */
-      const storeResizeObserved = writable(this.resizeObserved);
-
-      this.stores = {
-         element: writable(this.el),
-         resizeContentHeight: propertyStore(storeResizeObserved, 'contentHeight'),
-         resizeContentWidth: propertyStore(storeResizeObserved, 'contentWidth'),
-         resizeObserved: storeResizeObserved,
-         resizeOffsetHeight: propertyStore(storeResizeObserved, 'offsetHeight'),
-         resizeOffsetWidth: propertyStore(storeResizeObserved, 'offsetWidth')
-      };
-   }
-
-   /**
-    * Returns the cached offsetHeight from any attached `resizeObserver` action otherwise gets the offsetHeight from
-    * the element directly. The more optimized path is using `resizeObserver` as getting it from the element
-    * directly is more expensive and alters the execution order of an animation frame.
-    *
-    * @returns {number} The element offsetHeight.
-    */
-   get offsetHeight()
-   {
-      if (A11yHelper.isFocusTarget(this.el))
-      {
-         return this.resizeObserved.offsetHeight !== void 0 ? this.resizeObserved.offsetHeight : this.el.offsetHeight;
-      }
-
-      throw new Error(`StyleCache - get offsetHeight error: no element assigned.`);
-   }
-
-   /**
-    * Returns the cached offsetWidth from any attached `resizeObserver` action otherwise gets the offsetWidth from
-    * the element directly. The more optimized path is using `resizeObserver` as getting it from the element
-    * directly is more expensive and alters the execution order of an animation frame.
-    *
-    * @returns {number} The element offsetHeight.
-    */
-   get offsetWidth()
-   {
-      if (A11yHelper.isFocusTarget(this.el))
-      {
-         return this.resizeObserved.offsetWidth !== void 0 ? this.resizeObserved.offsetWidth : this.el.offsetWidth;
-      }
-
-      throw new Error(`StyleCache - get offsetWidth error: no element assigned.`);
-   }
-
-   /**
-    * @param {HTMLElement} el -
-    *
-    * @returns {boolean} Does element match cached element.
-    */
-   hasData(el) { return this.el === el; }
-
-   /**
-    * Resets the style cache.
-    */
-   reset()
-   {
-      // Remove will-change inline style from previous element if it is still connected.
-      if (A11yHelper.isFocusTarget(this.el) && this.el.isConnected && !this.hasWillChange)
-      {
-         this.el.style.willChange = null;
-      }
-
-      this.el = void 0;
-      this.computed = void 0;
-      this.marginLeft = void 0;
-      this.marginTop = void 0;
-      this.maxHeight = void 0;
-      this.maxWidth = void 0;
-      this.minHeight = void 0;
-      this.minWidth = void 0;
-
-      this.hasWillChange = false;
-
-      // Silently reset `resizedObserved`; With proper usage the `resizeObserver` action issues an update on removal.
-      this.resizeObserved.contentHeight = void 0;
-      this.resizeObserved.contentWidth = void 0;
-      this.resizeObserved.offsetHeight = void 0;
-      this.resizeObserved.offsetWidth = void 0;
-
-      // Reset the tracked element this TJSPosition instance is modifying.
-      this.stores.element.set(void 0);
-   }
-
-   /**
-    * Updates the style cache with new data from the given element.
-    *
-    * @param {HTMLElement} el - An HTML element.
-    */
-   update(el)
-   {
-      this.el = el;
-
-      this.computed = globalThis.getComputedStyle(el);
-
-      this.marginLeft = StyleParse.pixels(el.style.marginLeft) ?? StyleParse.pixels(this.computed.marginLeft);
-      this.marginTop = StyleParse.pixels(el.style.marginTop) ?? StyleParse.pixels(this.computed.marginTop);
-      this.maxHeight = StyleParse.pixels(el.style.maxHeight) ?? StyleParse.pixels(this.computed.maxHeight);
-      this.maxWidth = StyleParse.pixels(el.style.maxWidth) ?? StyleParse.pixels(this.computed.maxWidth);
-
-      // Note that the computed styles for below will always be 0px / 0 when no style is active.
-      this.minHeight = StyleParse.pixels(el.style.minHeight) ?? StyleParse.pixels(this.computed.minHeight);
-      this.minWidth = StyleParse.pixels(el.style.minWidth) ?? StyleParse.pixels(this.computed.minWidth);
-
-      // Tracks if there already is a will-change property on the inline or computed styles.
-      const willChange = el.style.willChange !== '' ? el.style.willChange : this.computed.willChange;
-
-      this.hasWillChange = willChange !== '' && willChange !== 'auto';
-
-      // Update the tracked element this TJSPosition instance is modifying.
-      this.stores.element.set(el);
    }
 }
 
@@ -3633,6 +3309,167 @@ function s_GET_ORIGIN_TRANSLATION(transformOrigin, width, height, output)
    }
 
    return output;
+}
+
+class StyleCache
+{
+   constructor()
+   {
+      /** @type {HTMLElement|undefined} */
+      this.el = void 0;
+
+      /** @type {CSSStyleDeclaration} */
+      this.computed = void 0;
+
+      /** @type {number|undefined} */
+      this.marginLeft = void 0;
+
+      /** @type {number|undefined} */
+      this.marginTop = void 0;
+
+      /** @type {number|undefined} */
+      this.maxHeight = void 0;
+
+      /** @type {number|undefined} */
+      this.maxWidth = void 0;
+
+      /** @type {number|undefined} */
+      this.minHeight = void 0;
+
+      /** @type {number|undefined} */
+      this.minWidth = void 0;
+
+      /** @type {boolean} */
+      this.hasWillChange = false;
+
+      /**
+       * @type {import('../../../../../_dist/svelte/action/dom/index.js').ResizeObserverData.Object}
+       */
+      this.resizeObserved = {
+         contentHeight: void 0,
+         contentWidth: void 0,
+         offsetHeight: void 0,
+         offsetWidth: void 0
+      };
+
+      /**
+       * Provides a writable store to track offset & content width / height from an associated `resizeObserver` action.
+       *
+       * @type {import('svelte/store').Writable<import('#runtime/svelte/action/dom').ResizeObserverData.Object>}
+       */
+      const storeResizeObserved = writable(this.resizeObserved);
+
+      this.stores = {
+         element: writable(this.el),
+         resizeContentHeight: propertyStore(storeResizeObserved, 'contentHeight'),
+         resizeContentWidth: propertyStore(storeResizeObserved, 'contentWidth'),
+         resizeObserved: storeResizeObserved,
+         resizeOffsetHeight: propertyStore(storeResizeObserved, 'offsetHeight'),
+         resizeOffsetWidth: propertyStore(storeResizeObserved, 'offsetWidth')
+      };
+   }
+
+   /**
+    * Returns the cached offsetHeight from any attached `resizeObserver` action otherwise gets the offsetHeight from
+    * the element directly. The more optimized path is using `resizeObserver` as getting it from the element
+    * directly is more expensive and alters the execution order of an animation frame.
+    *
+    * @returns {number} The element offsetHeight.
+    */
+   get offsetHeight()
+   {
+      if (A11yHelper.isFocusTarget(this.el))
+      {
+         return this.resizeObserved.offsetHeight !== void 0 ? this.resizeObserved.offsetHeight : this.el.offsetHeight;
+      }
+
+      throw new Error(`StyleCache - get offsetHeight error: no element assigned.`);
+   }
+
+   /**
+    * Returns the cached offsetWidth from any attached `resizeObserver` action otherwise gets the offsetWidth from
+    * the element directly. The more optimized path is using `resizeObserver` as getting it from the element
+    * directly is more expensive and alters the execution order of an animation frame.
+    *
+    * @returns {number} The element offsetHeight.
+    */
+   get offsetWidth()
+   {
+      if (A11yHelper.isFocusTarget(this.el))
+      {
+         return this.resizeObserved.offsetWidth !== void 0 ? this.resizeObserved.offsetWidth : this.el.offsetWidth;
+      }
+
+      throw new Error(`StyleCache - get offsetWidth error: no element assigned.`);
+   }
+
+   /**
+    * @param {HTMLElement} el -
+    *
+    * @returns {boolean} Does element match cached element.
+    */
+   hasData(el) { return this.el === el; }
+
+   /**
+    * Resets the style cache.
+    */
+   reset()
+   {
+      // Remove will-change inline style from previous element if it is still connected.
+      if (A11yHelper.isFocusTarget(this.el) && this.el.isConnected && !this.hasWillChange)
+      {
+         this.el.style.willChange = null;
+      }
+
+      this.el = void 0;
+      this.computed = void 0;
+      this.marginLeft = void 0;
+      this.marginTop = void 0;
+      this.maxHeight = void 0;
+      this.maxWidth = void 0;
+      this.minHeight = void 0;
+      this.minWidth = void 0;
+
+      this.hasWillChange = false;
+
+      // Silently reset `resizedObserved`; With proper usage the `resizeObserver` action issues an update on removal.
+      this.resizeObserved.contentHeight = void 0;
+      this.resizeObserved.contentWidth = void 0;
+      this.resizeObserved.offsetHeight = void 0;
+      this.resizeObserved.offsetWidth = void 0;
+
+      // Reset the tracked element this TJSPosition instance is modifying.
+      this.stores.element.set(void 0);
+   }
+
+   /**
+    * Updates the style cache with new data from the given element.
+    *
+    * @param {HTMLElement} el - An HTML element.
+    */
+   update(el)
+   {
+      this.el = el;
+
+      this.computed = globalThis.getComputedStyle(el);
+
+      this.marginLeft = StyleParse.pixels(el.style.marginLeft) ?? StyleParse.pixels(this.computed.marginLeft);
+      this.marginTop = StyleParse.pixels(el.style.marginTop) ?? StyleParse.pixels(this.computed.marginTop);
+      this.maxHeight = StyleParse.pixels(el.style.maxHeight) ?? StyleParse.pixels(this.computed.maxHeight);
+      this.maxWidth = StyleParse.pixels(el.style.maxWidth) ?? StyleParse.pixels(this.computed.maxWidth);
+
+      // Note that the computed styles for below will always be 0px / 0 when no style is active.
+      this.minHeight = StyleParse.pixels(el.style.minHeight) ?? StyleParse.pixels(this.computed.minHeight);
+      this.minWidth = StyleParse.pixels(el.style.minWidth) ?? StyleParse.pixels(this.computed.minWidth);
+
+      // Tracks if there already is a will-change property on the inline or computed styles.
+      const willChange = el.style.willChange !== '' ? el.style.willChange : this.computed.willChange;
+
+      this.hasWillChange = willChange !== '' && willChange !== 'auto';
+
+      // Update the tracked element this TJSPosition instance is modifying.
+      this.stores.element.set(el);
+   }
 }
 
 /**
@@ -4501,6 +4338,173 @@ class TransformBounds
    }
 }
 
+class PositionChangeSet
+{
+   constructor()
+   {
+      this.left = false;
+      this.top = false;
+      this.width = false;
+      this.height = false;
+      this.maxHeight = false;
+      this.maxWidth = false;
+      this.minHeight = false;
+      this.minWidth = false;
+      this.zIndex = false;
+      this.transform = false;
+      this.transformOrigin = false;
+   }
+
+   hasChange()
+   {
+      return this.left || this.top || this.width || this.height || this.maxHeight || this.maxWidth || this.minHeight ||
+       this.minWidth || this.zIndex || this.transform || this.transformOrigin;
+   }
+
+   set(value)
+   {
+      this.left = value;
+      this.top = value;
+      this.width = value;
+      this.height = value;
+      this.maxHeight = value;
+      this.maxWidth = value;
+      this.minHeight = value;
+      this.minWidth = value;
+      this.zIndex = value;
+      this.transform = value;
+      this.transformOrigin = value;
+   }
+}
+
+/**
+ * Defines stored positional data.
+ */
+class TJSPositionData
+{
+   constructor({ height = null, left = null, maxHeight = null, maxWidth = null, minHeight = null, minWidth = null,
+    rotateX = null, rotateY = null, rotateZ = null, scale = null, translateX = null, translateY = null,
+     translateZ = null, top = null, transformOrigin = null, width = null, zIndex = null } = {})
+   {
+      /**
+       * @type {number|'auto'|'inherit'|null}
+       */
+      this.height = height;
+
+      /**
+       * @type {number|null}
+       */
+      this.left = left;
+
+      /**
+       * @type {number|null}
+       */
+      this.maxHeight = maxHeight;
+
+      /**
+       * @type {number|null}
+       */
+      this.maxWidth = maxWidth;
+
+      /**
+       * @type {number|null}
+       */
+      this.minHeight = minHeight;
+
+      /**
+       * @type {number|null}
+       */
+      this.minWidth = minWidth;
+
+      /**
+       * @type {number|null}
+       */
+      this.rotateX = rotateX;
+
+      /**
+       * @type {number|null}
+       */
+      this.rotateY = rotateY;
+
+      /**
+       * @type {number|null}
+       */
+      this.rotateZ = rotateZ;
+
+      /**
+       * @type {number|null}
+       */
+      this.scale = scale;
+
+      /**
+       * @type {number|null}
+       */
+      this.top = top;
+
+      /**
+       * @type {import('./transform/types').ITransformAPI.TransformOrigin | null}
+       */
+      this.transformOrigin = transformOrigin;
+
+      /**
+       * @type {number|null}
+       */
+      this.translateX = translateX;
+
+      /**
+       * @type {number|null}
+       */
+      this.translateY = translateY;
+
+      /**
+       * @type {number|null}
+       */
+      this.translateZ = translateZ;
+
+      /**
+       * @type {number|'auto'|'inherit'|null}
+       */
+      this.width = width;
+
+      /**
+       * @type {number|null}
+       */
+      this.zIndex = zIndex;
+
+      Object.seal(this);
+   }
+
+   /**
+    * Copies given data to this instance.
+    *
+    * @param {TJSPositionData}   data - Copy from this instance.
+    *
+    * @returns {TJSPositionData} This instance.
+    */
+   copy(data)
+   {
+      this.height = data.height;
+      this.left = data.left;
+      this.maxHeight = data.maxHeight;
+      this.maxWidth = data.maxWidth;
+      this.minHeight = data.minHeight;
+      this.minWidth = data.minWidth;
+      this.rotateX = data.rotateX;
+      this.rotateY = data.rotateY;
+      this.rotateZ = data.rotateZ;
+      this.scale = data.scale;
+      this.top = data.top;
+      this.transformOrigin = data.transformOrigin;
+      this.translateX = data.translateX;
+      this.translateY = data.translateY;
+      this.translateZ = data.translateZ;
+      this.width = data.width;
+      this.zIndex = data.zIndex;
+
+      return this;
+   }
+}
+
 class UpdateElementData
 {
    constructor()
@@ -4527,7 +4531,7 @@ class UpdateElementData
       this.dimensionData = { width: 0, height: 0 };
 
       /**
-       * @type {import('../PositionChangeSet').PositionChangeSet}
+       * @type {import('./').PositionChangeSet}
        */
       this.changeSet = void 0;
 
@@ -4544,7 +4548,7 @@ class UpdateElementData
       this.queued = false;
 
       /**
-       * @type {import('../StyleCache').StyleCache}
+       * @type {import('../util').StyleCache}
        */
       this.styleCache = void 0;
 
@@ -4574,7 +4578,7 @@ class UpdateElementData
       // When there are subscribers set option to calculate transform updates; set to false when no subscribers.
 
       /**
-       * @type {import('svelte/store').Writable<import('./types').ITransformAPI.ITransformData>}
+       * @type {import('svelte/store').Writable<import('../transform/types').ITransformAPI.ITransformData>}
        */
       this.storeTransform = writable(this.transformData, () =>
       {
@@ -4617,7 +4621,7 @@ class UpdateElementManager
     *
     * @param {HTMLElement}       el - An HTMLElement instance.
     *
-    * @param {import('./UpdateElementData').UpdateElementData} updateData - An UpdateElementData instance.
+    * @param {import('./').UpdateElementData} updateData - An UpdateElementData instance.
     *
     * @returns {Promise<number>} The unified next frame update promise. Returns `currentTime`.
     */
@@ -4701,7 +4705,7 @@ class UpdateElementManager
     *
     * @param {HTMLElement}       el - An HTMLElement instance.
     *
-    * @param {import('./UpdateElementData').UpdateElementData} updateData - An UpdateElementData instance.
+    * @param {import('./').UpdateElementData} updateData - An UpdateElementData instance.
     */
    static immediate(el, updateData)
    {
@@ -4729,7 +4733,7 @@ class UpdateElementManager
    }
 
    /**
-    * @param {import('./UpdateElementData').UpdateElementData} updateData - Data change set.
+    * @param {import('./').UpdateElementData} updateData - Data change set.
     */
    static updateSubscribers(updateData)
    {
@@ -4770,7 +4774,7 @@ class UpdateElementManager
  *
  * @param {HTMLElement} el - The target HTMLElement.
  *
- * @param {import('./UpdateElementData').UpdateElementData} updateData - Update data.
+ * @param {import('./').UpdateElementData} updateData - Update data.
  */
 function s_UPDATE_ELEMENT(el, updateData)
 {
@@ -4823,7 +4827,7 @@ function s_UPDATE_ELEMENT(el, updateData)
  *
  * @param {HTMLElement} el - The target HTMLElement.
  *
- * @param {import('./UpdateElementData').UpdateElementData} updateData - Update data.
+ * @param {import('./').UpdateElementData} updateData - Update data.
  */
 function s_UPDATE_ELEMENT_ORTHO(el, updateData)
 {
@@ -4862,7 +4866,7 @@ function s_UPDATE_ELEMENT_ORTHO(el, updateData)
  *
  * @param {HTMLElement} el - The target HTMLElement.
  *
- * @param {import('./UpdateElementData').UpdateElementData} updateData - Update element data.
+ * @param {import('./').UpdateElementData} updateData - Update element data.
  */
 function s_UPDATE_TRANSFORM(el, updateData)
 {
@@ -5339,7 +5343,7 @@ class TJSPosition
    /**
     * Returns the state API.
     *
-    * @returns {import('./PositionStateAPI').PositionStateAPI} TJSPosition state API.
+    * @returns {import('./state/types').IPositionStateAPI} TJSPosition state API.
     */
    get state() { return this.#state; }
 

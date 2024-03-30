@@ -8,125 +8,6 @@ import { InterpolateFunction } from '@typhonjs-svelte/runtime-base/math/interpol
 import { TJSBasicAnimation } from '@typhonjs-svelte/runtime-base/util/animate';
 import * as _runtime_util_browser from '@typhonjs-svelte/runtime-base/util/browser';
 
-/**
- * Defines stored positional data.
- */
-declare class TJSPositionData {
-  constructor({
-    height,
-    left,
-    maxHeight,
-    maxWidth,
-    minHeight,
-    minWidth,
-    rotateX,
-    rotateY,
-    rotateZ,
-    scale,
-    translateX,
-    translateY,
-    translateZ,
-    top,
-    transformOrigin,
-    width,
-    zIndex,
-  }?: {
-    height?: any;
-    left?: any;
-    maxHeight?: any;
-    maxWidth?: any;
-    minHeight?: any;
-    minWidth?: any;
-    rotateX?: any;
-    rotateY?: any;
-    rotateZ?: any;
-    scale?: any;
-    translateX?: any;
-    translateY?: any;
-    translateZ?: any;
-    top?: any;
-    transformOrigin?: any;
-    width?: any;
-    zIndex?: any;
-  });
-  /**
-   * @type {number|'auto'|'inherit'|null}
-   */
-  height: number | 'auto' | 'inherit' | null;
-  /**
-   * @type {number|null}
-   */
-  left: number | null;
-  /**
-   * @type {number|null}
-   */
-  maxHeight: number | null;
-  /**
-   * @type {number|null}
-   */
-  maxWidth: number | null;
-  /**
-   * @type {number|null}
-   */
-  minHeight: number | null;
-  /**
-   * @type {number|null}
-   */
-  minWidth: number | null;
-  /**
-   * @type {number|null}
-   */
-  rotateX: number | null;
-  /**
-   * @type {number|null}
-   */
-  rotateY: number | null;
-  /**
-   * @type {number|null}
-   */
-  rotateZ: number | null;
-  /**
-   * @type {number|null}
-   */
-  scale: number | null;
-  /**
-   * @type {number|null}
-   */
-  top: number | null;
-  /**
-   * @type {import('./transform/types').ITransformAPI.TransformOrigin | null}
-   */
-  transformOrigin: ITransformAPI.TransformOrigin | null;
-  /**
-   * @type {number|null}
-   */
-  translateX: number | null;
-  /**
-   * @type {number|null}
-   */
-  translateY: number | null;
-  /**
-   * @type {number|null}
-   */
-  translateZ: number | null;
-  /**
-   * @type {number|'auto'|'inherit'|null}
-   */
-  width: number | 'auto' | 'inherit' | null;
-  /**
-   * @type {number|null}
-   */
-  zIndex: number | null;
-  /**
-   * Copies given data to this instance.
-   *
-   * @param {TJSPositionData}   data - Copy from this instance.
-   *
-   * @returns {TJSPositionData} This instance.
-   */
-  copy(data: TJSPositionData): TJSPositionData;
-}
-
 interface ITransformAPI {
   /**
    * @returns {boolean} Whether there are active transforms in local data.
@@ -452,6 +333,125 @@ declare class DraggableOptions {
 }
 
 /**
+ * Defines stored positional data.
+ */
+declare class TJSPositionData {
+  constructor({
+    height,
+    left,
+    maxHeight,
+    maxWidth,
+    minHeight,
+    minWidth,
+    rotateX,
+    rotateY,
+    rotateZ,
+    scale,
+    translateX,
+    translateY,
+    translateZ,
+    top,
+    transformOrigin,
+    width,
+    zIndex,
+  }?: {
+    height?: any;
+    left?: any;
+    maxHeight?: any;
+    maxWidth?: any;
+    minHeight?: any;
+    minWidth?: any;
+    rotateX?: any;
+    rotateY?: any;
+    rotateZ?: any;
+    scale?: any;
+    translateX?: any;
+    translateY?: any;
+    translateZ?: any;
+    top?: any;
+    transformOrigin?: any;
+    width?: any;
+    zIndex?: any;
+  });
+  /**
+   * @type {number|'auto'|'inherit'|null}
+   */
+  height: number | 'auto' | 'inherit' | null;
+  /**
+   * @type {number|null}
+   */
+  left: number | null;
+  /**
+   * @type {number|null}
+   */
+  maxHeight: number | null;
+  /**
+   * @type {number|null}
+   */
+  maxWidth: number | null;
+  /**
+   * @type {number|null}
+   */
+  minHeight: number | null;
+  /**
+   * @type {number|null}
+   */
+  minWidth: number | null;
+  /**
+   * @type {number|null}
+   */
+  rotateX: number | null;
+  /**
+   * @type {number|null}
+   */
+  rotateY: number | null;
+  /**
+   * @type {number|null}
+   */
+  rotateZ: number | null;
+  /**
+   * @type {number|null}
+   */
+  scale: number | null;
+  /**
+   * @type {number|null}
+   */
+  top: number | null;
+  /**
+   * @type {import('./transform/types').ITransformAPI.TransformOrigin | null}
+   */
+  transformOrigin: ITransformAPI.TransformOrigin | null;
+  /**
+   * @type {number|null}
+   */
+  translateX: number | null;
+  /**
+   * @type {number|null}
+   */
+  translateY: number | null;
+  /**
+   * @type {number|null}
+   */
+  translateZ: number | null;
+  /**
+   * @type {number|'auto'|'inherit'|null}
+   */
+  width: number | 'auto' | 'inherit' | null;
+  /**
+   * @type {number|null}
+   */
+  zIndex: number | null;
+  /**
+   * Copies given data to this instance.
+   *
+   * @param {TJSPositionData}   data - Copy from this instance.
+   *
+   * @returns {TJSPositionData} This instance.
+   */
+  copy(data: TJSPositionData): TJSPositionData;
+}
+
+/**
  * Provides the validator API implementation for {@link TJSPosition.validators}. You may add one or more validator
  * functions which evaluate changes in the associated {@link TJSPosition} instance. This allows standard validation
  * for browser bounds / transform checking available via {@link TJSPosition.Validators} or custom validators added which
@@ -614,6 +614,129 @@ declare namespace IValidatorAPI {
    * @returns {TJSPositionData | null} The validated position data or null to cancel position update.
    */
   type ValidatorFn = (data: ValidationData) => TJSPositionData | null;
+}
+
+interface IPositionStateAPI {
+  /**
+   * Returns any stored save state by name.
+   *
+   * @param {object}   options - Options
+   *
+   * @param {string}   options.name - Saved data set name.
+   *
+   * @returns {TJSPositionDataExtended} The saved data set.
+   */
+  get({ name }: { name: string }): TJSPositionDataExtended;
+  /**
+   * Returns any associated default data.
+   *
+   * @returns {TJSPositionDataExtended} Associated default data.
+   */
+  getDefault(): TJSPositionDataExtended;
+  /**
+   * Removes and returns any position state by name.
+   *
+   * @param {object}   options - Options.
+   *
+   * @param {string}   options.name - Name to remove and retrieve.
+   *
+   * @returns {TJSPositionDataExtended} Saved position data.
+   */
+  remove({ name }: { name: string }): TJSPositionDataExtended;
+  /**
+   * Resets data to default values and invokes set.
+   *
+   * @param {object}   [opts] - Optional parameters.
+   *
+   * @param {boolean}  [opts.keepZIndex=false] - When true keeps current z-index.
+   *
+   * @param {boolean}  [opts.invokeSet=true] - When true invokes set method.
+   *
+   * @returns {boolean} Operation successful.
+   */
+  reset({ keepZIndex, invokeSet }: { keepZIndex: boolean; invokeSet: boolean }): boolean;
+  /**
+     * Restores a saved positional state returning the data. Several optional parameters are available
+     * to control whether the restore action occurs silently (no store / inline styles updates), animates
+     -   * to the stored data, or simply sets the stored data. Restoring via {@link IAnimationAPI.to}
+     * allows specification of the duration, easing, and interpolate functions along with configuring a Promise to be
+     * returned if awaiting the end of the animation.
+     *
+     * @param {object}            params - Parameters
+     *
+     * @param {string}            params.name - Saved data set name.
+     *
+     * @param {boolean}           [params.remove=false] - Remove data set.
+     *
+     * @param {Iterable<string>}  [params.properties] - Specific properties to set / animate.
+     *
+     * @param {boolean}           [params.silent] - Set position data directly; no store or style updates.
+     *
+     * @param {boolean}           [params.async=false] - If animating return a Promise that resolves with any saved data.
+     *
+     * @param {boolean}           [params.animateTo=false] - Animate to restore data.
+     *
+     * @param {number}            [params.duration=0.1] - Duration in seconds.
+     *
+     * @param {EasingFunction}    [params.ease=linear] - Easing function.
+     *
+     * @param {InterpolateFunction}  [params.interpolate=lerp] - Interpolation function.
+     *
+     * @returns {TJSPositionDataExtended | Promise<TJSPositionDataExtended>} Saved position data.
+     */
+  restore({
+    name,
+    remove,
+    properties,
+    silent,
+    async,
+    animateTo,
+    duration,
+    ease,
+    interpolate,
+  }: {
+    name: string;
+    remove?: boolean;
+    properties?: Iterable<string>;
+    silent?: boolean;
+    async?: boolean;
+    animateTo?: boolean;
+    duration?: number;
+    ease?: EasingFunction;
+    interpolate?: InterpolateFunction;
+  }): TJSPositionDataExtended | Promise<TJSPositionDataExtended>;
+  /**
+   * Saves current position state with the opportunity to add extra data to the saved state.
+   *
+   * @param {object}   opts - Options.
+   *
+   * @param {string}   opts.name - name to index this saved data.
+   *
+   * @param {...*}     [opts.extra] - Extra data to add to saved data.
+   *
+   * @returns {TJSPositionData} Current position data
+   */
+  save({
+    name,
+    ...extra
+  }: {
+    name: string;
+  } & Record<string, any>): TJSPositionData;
+  /**
+   * Directly sets a position state.
+   *
+   * @param {object}   opts - Options.
+   *
+   * @param {string}   opts.name - name to index this saved data.
+   *
+   * @param {...*}     [opts.data] - TJSPosition data to set.
+   */
+  set({
+    name,
+    ...data
+  }: {
+    name: string;
+  } & Record<string, any>): void;
 }
 
 /**
@@ -847,122 +970,6 @@ declare namespace IAnimationAPI {
      */
     options: (data: QuickTweenOptions) => quickToCallback;
   }
-}
-
-declare class PositionStateAPI {
-  constructor(position: any, data: any, transforms: any);
-  /**
-   * Returns any stored save state by name.
-   *
-   * @param {object}   options - Options
-   *
-   * @param {string}   options.name - Saved data set name.
-   *
-   * @returns {import('./').TJSPositionDataExtended} The saved data set.
-   */
-  get({ name }: { name: string }): TJSPositionDataExtended;
-  /**
-   * Returns any associated default data.
-   *
-   * @returns {import('./').TJSPositionDataExtended} Associated default data.
-   */
-  getDefault(): TJSPositionDataExtended;
-  /**
-   * Removes and returns any position state by name.
-   *
-   * @param {object}   options - Options.
-   *
-   * @param {string}   options.name - Name to remove and retrieve.
-   *
-   * @returns {import('./').TJSPositionDataExtended} Saved position data.
-   */
-  remove({ name }: { name: string }): TJSPositionDataExtended;
-  /**
-   * Resets data to default values and invokes set.
-   *
-   * @param {object}   [opts] - Optional parameters.
-   *
-   * @param {boolean}  [opts.keepZIndex=false] - When true keeps current z-index.
-   *
-   * @param {boolean}  [opts.invokeSet=true] - When true invokes set method.
-   *
-   * @returns {boolean} Operation successful.
-   */
-  reset({ keepZIndex, invokeSet }?: { keepZIndex?: boolean; invokeSet?: boolean }): boolean;
-  /**
-     * Restores a saved positional state returning the data. Several optional parameters are available
-     * to control whether the restore action occurs silently (no store / inline styles updates), animates
- -   * to the stored data, or simply sets the stored data. Restoring via {@link IAnimationAPI.to}
-     * allows specification of the duration, easing, and interpolate functions along with configuring a Promise to be
-     * returned if awaiting the end of the animation.
-     *
-     * @param {object}            params - Parameters
-     *
-     * @param {string}            params.name - Saved data set name.
-     *
-     * @param {boolean}           [params.remove=false] - Remove data set.
-     *
-     * @param {Iterable<string>}  [params.properties] - Specific properties to set / animate.
-     *
-     * @param {boolean}           [params.silent] - Set position data directly; no store or style updates.
-     *
-     * @param {boolean}           [params.async=false] - If animating return a Promise that resolves with any saved data.
-     *
-     * @param {boolean}           [params.animateTo=false] - Animate to restore data.
-     *
-     * @param {number}            [params.duration=0.1] - Duration in seconds.
-     *
-     * @param {Function}          [params.ease=linear] - Easing function.
-     *
-     * @param {Function}          [params.interpolate=lerp] - Interpolation function.
-     *
-     * @returns {import('./').TJSPositionDataExtended | Promise<import('./').TJSPositionDataExtended>} Saved position
-     *          data.
-     */
-  restore({
-    name,
-    remove,
-    properties,
-    silent,
-    async,
-    animateTo,
-    duration,
-    ease,
-    interpolate,
-  }: {
-    name: string;
-    remove?: boolean;
-    properties?: Iterable<string>;
-    silent?: boolean;
-    async?: boolean;
-    animateTo?: boolean;
-    duration?: number;
-    ease?: Function;
-    interpolate?: Function;
-  }): TJSPositionDataExtended | Promise<TJSPositionDataExtended>;
-  /**
-   * Saves current position state with the opportunity to add extra data to the saved state.
-   *
-   * @param {object}   opts - Options.
-   *
-   * @param {string}   opts.name - name to index this saved data.
-   *
-   * @param {...*}     [opts.extra] - Extra data to add to saved data.
-   *
-   * @returns {import('./').TJSPositionData} Current position data
-   */
-  save({ name, ...extra }: { name: string; extra?: any[] }): TJSPositionData;
-  /**
-   * Directly sets a position state.
-   *
-   * @param {object}   opts - Options.
-   *
-   * @param {string}   opts.name - name to index this saved data.
-   *
-   * @param {...*}     [opts.data] - TJSPosition data to set.
-   */
-  set({ name, ...data }: { name: string; data?: any[] }): void;
-  #private;
 }
 
 /**
@@ -1335,9 +1342,9 @@ declare class TJSPosition {
   /**
    * Returns the state API.
    *
-   * @returns {import('./PositionStateAPI').PositionStateAPI} TJSPosition state API.
+   * @returns {import('./state/types').IPositionStateAPI} TJSPosition state API.
    */
-  get state(): PositionStateAPI;
+  get state(): IPositionStateAPI;
   /**
    * Returns the derived writable stores for individual data variables.
    *
@@ -1815,9 +1822,9 @@ export {
   Centered,
   IAnimationAPI,
   type IAnimationGroupAPI,
+  type IPositionStateAPI,
   ITransformAPI,
   IValidatorAPI,
-  PositionStateAPI,
   TJSPosition,
   TJSPositionData,
   type TJSPositionDataExtended,
