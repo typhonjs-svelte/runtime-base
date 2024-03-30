@@ -1,4 +1,5 @@
 import { Mat4, Vec3 } from '@typhonjs-svelte/runtime-base/math/gl-matrix';
+import * as _runtime_svelte_action_dom from '@typhonjs-svelte/runtime-base/svelte/action/dom';
 import * as svelte_store from 'svelte/store';
 import { Subscriber } from 'svelte/store';
 import * as svelte_action from 'svelte/action';
@@ -616,12 +617,9 @@ declare namespace IValidatorAPI {
 }
 
 /**
- * Provides a public API for grouping multiple {@link TJSPosition} animations together with the
- * AnimationManager.
+ * Provides a public API for grouping multiple {@link TJSPosition} animations together and is accessible from
+ * {@link TJSPosition.Animate}.
  *
- * Note: To remove cyclic dependencies as this class provides the TJSPosition static / group Animation API `instanceof`
- * checks are not done against TJSPosition. Instead, a check for the animate property being an instanceof
- * {@link IAnimationAPI} is performed in {@link AnimationGroupAPI.#isPosition}.
  *
  * @see IAnimationAPI
  */
@@ -1619,24 +1617,6 @@ type TJSPositionable = {
    */
   position: TJSPosition;
 };
-type ResizeObserverData = {
-  /**
-   * -
-   */
-  contentHeight: number | undefined;
-  /**
-   * -
-   */
-  contentWidth: number | undefined;
-  /**
-   * -
-   */
-  offsetHeight: number | undefined;
-  /**
-   * -
-   */
-  offsetWidth: number | undefined;
-};
 /**
  * Provides individual writable stores for {@link TJSPosition }.
  */
@@ -1694,10 +1674,9 @@ type TJSPositionStores = {
    */
   resizeContentWidth: svelte_store.Readable<number | undefined>;
   /**
-   * Protected store for resize observer
-   * updates.
+   * Protected store for resize observer updates.
    */
-  resizeObserved: svelte_store.Writable<ResizeObserverData>;
+  resizeObserved: svelte_store.Writable<_runtime_svelte_action_dom.ResizeObserverData.Object>;
   /**
    * Readable store for `offsetHeight`.
    */
@@ -1839,7 +1818,6 @@ export {
   ITransformAPI,
   IValidatorAPI,
   PositionStateAPI,
-  type ResizeObserverData,
   TJSPosition,
   TJSPositionData,
   type TJSPositionDataExtended,

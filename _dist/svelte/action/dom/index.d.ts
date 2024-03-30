@@ -1,5 +1,6 @@
 import * as svelte_action from 'svelte/action';
 import * as svelte_store from 'svelte/store';
+import { Writable } from 'svelte/store';
 
 /**
  * Provides an action to always blur the element when any pointer up event occurs on the element.
@@ -68,67 +69,42 @@ declare function isFocused(
 ): svelte_action.ActionReturn<svelte_store.Writable<boolean>>;
 
 /**
- * A function that receives offset / content height & width.
+ * Provides various type aliases used by the {@link resizeObserver} action.
  */
-type ResizeObserverFunction = (
-  offsetWidth: number,
-  offsetHeight: number,
-  contentWidth: number,
-  contentHeight: number,
-) => void;
-/**
- * The
- *          receiving target for observed resize data.
- */
-type ResizeObserverTarget = ResizeObserverObject | ResizeObserverObjectExtended | ResizeObserverFunction;
-/**
- * A direct object to update observed resize updates.
- */
-type ResizeObserverObject = {
+declare namespace ResizeObserverData {
   /**
-   * Direct attribute to store contentHeight.
+   * A function that receives offset / content height & width changes.
    */
-  contentHeight?: number;
+  type Function = (offsetWidth: number, offsetHeight: number, contentWidth: number, contentHeight: number) => void;
   /**
-   * Direct attribute to store contentWidth.
+   * A object to update / store observed resize updates.
    */
-  contentWidth?: number;
-  /**
-   * Direct attribute to store offsetHeight.
-   */
-  offsetHeight?: number;
-  /**
-   * Direct attribute to store offsetWidth.
-   */
-  offsetWidth?: number;
-};
-/**
- * Provides extended attributes supported for observed resize updates.
- */
-type ResizeObserverObjectExtended = {
-  /**
-   * Either
-   * a function or a writable store.
-   */
-  resizedObserver?: svelte_store.Writable<ResizeObserverObject> | ResizeObserverFunction;
-  /**
-   * - A function that is invoked
-   * with content width & height changes.
-   */
-  setContentBounds?: (contentWidth: number, contentHeight: number) => void;
-  /**
-   * - A function that is invoked with
-   * offset width & height changes.
-   */
-  setDimension?: (offsetWidth: number, offsetHeight: number) => void;
-  /**
-   * - An object with a
-   * `stores` attribute and subsequent `resizedObserver` writable store.
-   */
-  stores?: {
-    resizedObserver: svelte_store.Writable<ResizeObserverObject>;
+  type Object = {
+    /** Stores `contentHeight` attribute. */
+    contentHeight?: number;
+    /** Stores `contentWidth` attribute. */
+    contentWidth?: number;
+    /** Stores `offsetHeight` attribute. */
+    offsetHeight?: number;
+    /** Stores `offsetWidth` attribute. */
+    offsetWidth?: number;
   };
-};
+  type ObjectExtended = {
+    /** Either a function or a writable store to receive resize updates. */
+    resizedObserver?: Writable<Object> | Function;
+    /** A function that is invoked with content width & height changes. */
+    setContentBounds?: (contentWidth: number, contentHeight: number) => void;
+    /** A function that is invoked with offset width & height changes. */
+    setDimension?: (offsetWidth: number, offsetHeight: number) => void;
+    /** An object with a `stores` attribute and subsequent `resizedObserver` writable store. */
+    stores?: {
+      resizedObserver: Writable<Object>;
+    };
+  };
+  /** The receiving target for observed resize data. */
+  type Target = Object | ObjectExtended | Function;
+}
+
 /**
  * Provides an action to monitor the given HTMLElement node with `ResizeObserver` posting width / height changes
  * to the target in various ways depending on the shape of the target. The target can be one of the following and the
@@ -151,15 +127,18 @@ type ResizeObserverObjectExtended = {
  *
  * @param {HTMLElement}          node - The node associated with the action.
  *
- * @param {ResizeObserverTarget} target - An object or function to update with observed width & height changes.
+ * @param {import('./types').ResizeObserverData.Target} target - An object or function to update with observed width &
+ *        height changes.
  *
- * @returns {import('svelte/action').ActionReturn<ResizeObserverTarget>} The action lifecycle methods.
- * @see {@link https://github.com/sveltejs/svelte/issues/4233}
+ * @returns {import('svelte/action').ActionReturn<import('./types').ResizeObserverData.Target>} The action lifecycle
+ *          methods.
+ *
+ * @see https://github.com/sveltejs/svelte/issues/4233
  */
 declare function resizeObserver(
   node: HTMLElement,
-  target: ResizeObserverTarget,
-): svelte_action.ActionReturn<ResizeObserverTarget>;
+  target: ResizeObserverData.Target,
+): svelte_action.ActionReturn<ResizeObserverData.Target>;
 declare namespace resizeObserver {
   /**
    * Provides a function that when invoked with an element updates the cached styles for each subscriber of the element.
@@ -172,15 +151,4 @@ declare namespace resizeObserver {
   function updateCache(el: HTMLElement): void;
 }
 
-export {
-  type ResizeObserverFunction,
-  type ResizeObserverObject,
-  type ResizeObserverObjectExtended,
-  type ResizeObserverTarget,
-  alwaysBlur,
-  applyScrolltop,
-  applyStyles,
-  autoBlur,
-  isFocused,
-  resizeObserver,
-};
+export { ResizeObserverData, alwaysBlur, applyScrolltop, applyStyles, autoBlur, isFocused, resizeObserver };
