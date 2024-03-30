@@ -8,14 +8,6 @@ export { TJSPosition, TJSPositionData }
 // From: position/TJSPosition.js ----------------------------------------------------------------------------------------
 
 /**
- * @typedef {object} TJSPositionInitialHelper
- *
- * @property {(width: number) => number} getLeft Returns the left position given the width of the browser window.
- *
- * @property {(height: number) => number} getTop Returns the top position given the height of the browser window.
- */
-
-/**
  * @typedef {object} TJSPositionGetOptions
  *
  * @property {Iterable<string>} keys When provided only these keys are copied.
@@ -35,7 +27,8 @@ export { TJSPosition, TJSPositionData }
  *
  * @property {boolean} calculateTransform When true always calculate transform data.
  *
- * @property {TJSPositionInitialHelper} initialHelper Provides a helper for setting initial position data.
+ * @property {import('./types').TJSPositionTypes.IInitialHelper} initialHelper Provides a helper for setting initial
+ *           position data.
  *
  * @property {boolean} ortho Sets TJSPosition to orthographic mode using just transform / matrix3d for positioning.
  *

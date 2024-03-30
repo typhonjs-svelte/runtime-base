@@ -39,7 +39,7 @@ import { TJSPositionData }       from './TJSPositionData.js';
 export class TJSPosition
 {
    /**
-    * @type {{browserCentered: Centered, Centered: Centered}}
+    * @type {import('./types').TJSPositionTypes.PositionInitial}
     */
    static #positionInitial = {
       browserCentered: new Centered({ lock: true }),
@@ -158,7 +158,7 @@ export class TJSPosition
    static get Animate() { return AnimationGroupAPI; }
 
    /**
-    * @returns {{browserCentered: Centered, Centered: typeof Centered}} TJSPosition initial API.
+    * @returns {import('./types').TJSPositionTypes.PositionInitial} TJSPosition initial API.
     */
    static get Initial() { return this.#positionInitial; }
 

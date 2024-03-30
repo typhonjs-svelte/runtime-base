@@ -1,7 +1,9 @@
 import { A11yHelper } from '#runtime/util/browser';
 
 /**
- * Provides a {@link TJSPositionInitialHelper} implementation to center to element being positioned.
+ * Provides a {@link TJSPositionTypes.IInitialHelper} implementation to center an element being positioned.
+ *
+ * @implements {import('../types').TJSPositionTypes.IInitialHelperExt}
  */
 export class Centered
 {
@@ -52,7 +54,7 @@ export class Centered
    }
 
    /**
-    * @returns {HTMLElement|undefined|null} Target element.
+    * @returns {HTMLElement | undefined | null} Target element.
     */
    get element() { return this.#element; }
 
@@ -67,7 +69,7 @@ export class Centered
    get width() { return this.#width; }
 
    /**
-    * @param {HTMLElement|undefined|null} element - Set target element.
+    * @param {HTMLElement | undefined | null} element - Set target element.
     */
    set element(element)
    {
