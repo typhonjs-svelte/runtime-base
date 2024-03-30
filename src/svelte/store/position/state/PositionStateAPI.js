@@ -5,20 +5,23 @@ import {
    isIterable,
    isObject }           from '#runtime/util/object';
 
+/**
+ * @implements {import('./types').IPositionStateAPI}
+ */
 export class PositionStateAPI
 {
-   /** @type {import('./TJSPositionData').TJSPositionData} */
+   /** @type {import('./').TJSPositionData} */
    #data;
 
    /**
-    * @type {Map<string, import('./').TJSPositionDataExtended>}
+    * @type {Map<string, import('../').TJSPositionDataExtended>}
     */
    #dataSaved = new Map();
 
-   /** @type {import('./').TJSPosition} */
+   /** @type {import('../').TJSPosition} */
    #position;
 
-   /** @type {import('./transform').TJSTransforms} */
+   /** @type {import('../transform').TJSTransforms} */
    #transforms;
 
    constructor(position, data, transforms)
@@ -35,7 +38,7 @@ export class PositionStateAPI
     *
     * @param {string}   options.name - Saved data set name.
     *
-    * @returns {import('./').TJSPositionDataExtended} The saved data set.
+    * @returns {import('../').TJSPositionDataExtended} The saved data set.
     */
    get({ name })
    {
@@ -47,7 +50,7 @@ export class PositionStateAPI
    /**
     * Returns any associated default data.
     *
-    * @returns {import('./').TJSPositionDataExtended} Associated default data.
+    * @returns {import('../').TJSPositionDataExtended} Associated default data.
     */
    getDefault()
    {
@@ -61,7 +64,7 @@ export class PositionStateAPI
     *
     * @param {string}   options.name - Name to remove and retrieve.
     *
-    * @returns {import('./').TJSPositionDataExtended} Saved position data.
+    * @returns {import('../').TJSPositionDataExtended} Saved position data.
     */
    remove({ name })
    {
@@ -141,11 +144,12 @@ export class PositionStateAPI
     *
     * @param {number}            [params.duration=0.1] - Duration in seconds.
     *
-    * @param {Function}          [params.ease=linear] - Easing function.
+    * @param {import('svelte/transition').EasingFunction}   [params.ease=linear] - Easing function.
     *
-    * @param {Function}          [params.interpolate=lerp] - Interpolation function.
+    * @param {import('#runtime/math/interpolate').InterpolateFunction}  [params.interpolate=lerp] - Interpolation
+    *        function.
     *
-    * @returns {import('./').TJSPositionDataExtended | Promise<import('./').TJSPositionDataExtended>} Saved position
+    * @returns {import('../').TJSPositionDataExtended | Promise<import('../').TJSPositionDataExtended>} Saved position
     *          data.
     */
    restore({ name, remove = false, properties, silent = false, async = false, animateTo = false, duration = 0.1,

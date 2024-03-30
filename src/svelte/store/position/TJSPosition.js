@@ -9,24 +9,26 @@ import {
 
 import { subscribeIgnoreFirst }  from '#runtime/util/store';
 
-import { AnimationAPI }          from './animation/AnimationAPI.js';
-import { AnimationGroupAPI }     from './animation/AnimationGroupAPI.js';
+import {
+   AnimationAPI,
+   AnimationGroupAPI }           from './animation';
 import * as constants            from './constants.js';
 import { convertRelative }       from './convertRelative.js';
-import { Centered }              from './initial/index.js';
+import { Centered }              from './initial';
 import { PositionChangeSet }     from './PositionChangeSet.js';
-import { TJSPositionData }       from './TJSPositionData.js';
-import { PositionStateAPI }      from './PositionStateAPI.js';
+import { PositionStateAPI }      from './state';
 import { StyleCache }            from './StyleCache.js';
 import {
    TJSTransformData,
-   TJSTransforms }               from './transform/index.js';
+   TJSTransforms }               from './transform';
 import {
    AdapterValidators,
    BasicBounds,
-   TransformBounds }             from './validators/index.js';
-import { UpdateElementData }     from './update/UpdateElementData.js';
-import { UpdateElementManager }  from './update/UpdateElementManager.js';
+   TransformBounds }             from './validators';
+import {
+   UpdateElementData,
+   UpdateElementManager }        from './update';
+import { TJSPositionData }       from './TJSPositionData.js';
 
 /**
  * Provides a store for position following the subscriber protocol in addition to providing individual writable derived
@@ -477,7 +479,7 @@ export class TJSPosition
    /**
     * Returns the state API.
     *
-    * @returns {import('./PositionStateAPI').PositionStateAPI} TJSPosition state API.
+    * @returns {import('./state/types').IPositionStateAPI} TJSPosition state API.
     */
    get state() { return this.#state; }
 

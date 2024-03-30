@@ -1,6 +1,6 @@
 import type { Mat4, Vec3 }       from '#runtime/math/gl-matrix';
 
-import type { TJSPositionData }  from '../TJSPositionData.js';
+import type { TJSPositionData }  from '../';
 
 interface ITransformAPI
 {

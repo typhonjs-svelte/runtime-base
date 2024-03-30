@@ -1,6 +1,6 @@
-import { writable }        from '#svelte/store';
+import { writable }           from '#svelte/store';
 
-import { TJSTransformData }   from '../transform/TJSTransformData.js';
+import { TJSTransformData }   from '../transform';
 import { TJSPositionData }    from '../TJSPositionData.js';
 
 export class UpdateElementData
