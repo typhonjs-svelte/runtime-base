@@ -79,12 +79,9 @@ interface IAnimationAPI
 }
 
 /**
- * Provides a public API for grouping multiple {@link TJSPosition} animations together with the
- * AnimationManager.
+ * Provides a public API for grouping multiple {@link TJSPosition} animations together and is accessible from
+ * {@link TJSPosition.Animate}.
  *
- * Note: To remove cyclic dependencies as this class provides the TJSPosition static / group Animation API `instanceof`
- * checks are not done against TJSPosition. Instead, a check for the animate property being an instanceof
- * {@link IAnimationAPI} is performed in {@link AnimationGroupAPI.#isPosition}.
  *
  * @see IAnimationAPI
  */
