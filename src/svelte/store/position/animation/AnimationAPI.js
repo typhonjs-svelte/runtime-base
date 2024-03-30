@@ -17,6 +17,9 @@ import {
    animateKeys,
    setNumericDefaults }       from '../constants.js';
 
+/**
+ * @implements {import('./types').IAnimationAPI}
+ */
 export class AnimationAPI
 {
    /** @type {import('../').TJSPositionData} */
@@ -40,9 +43,9 @@ export class AnimationAPI
    #cleanup;
 
    /**
-    * @param {import('../index.js').TJSPosition}       position -
+    * @param {import('../').TJSPosition}       position -
     *
-    * @param {import('../index.js').TJSPositionData}   data -
+    * @param {import('../').TJSPositionData}   data -
     */
    constructor(position, data)
    {
@@ -184,9 +187,9 @@ export class AnimationAPI
    /**
     * Provides a tween from given position data to the current position.
     *
-    * @param {import('../index.js').TJSPositionDataExtended} fromData - The starting position.
+    * @param {import('../').TJSPositionDataExtended} fromData - The starting position.
     *
-    * @param {import('../types').TweenOptions} [opts] - Optional tween parameters.
+    * @param {import('./types').IAnimationAPI.TweenOptions} [options] - Optional tween parameters.
     *
     * @returns {import('#runtime/util/animate').TJSBasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
@@ -254,11 +257,11 @@ export class AnimationAPI
    /**
     * Provides a tween from given position data to the current position.
     *
-    * @param {import('../index.js').TJSPositionDataExtended} fromData - The starting position.
+    * @param {import('../').TJSPositionDataExtended} fromData - The starting position.
     *
-    * @param {import('../index.js').TJSPositionDataExtended} toData - The ending position.
+    * @param {import('../').TJSPositionDataExtended} toData - The ending position.
     *
-    * @param {import('../types').TweenOptions} [opts] - Optional tween parameters.
+    * @param {import('./types').IAnimationAPI.TweenOptions} [options] - Optional tween parameters.
     *
     * @returns {import('#runtime/util/animate').TJSBasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
@@ -338,9 +341,9 @@ export class AnimationAPI
    /**
     * Provides a tween to given position data from the current position.
     *
-    * @param {import('../index.js').TJSPositionDataExtended} toData - The destination position.
+    * @param {import('../').TJSPositionDataExtended} toData - The destination position.
     *
-    * @param {import('../types').TweenOptions} [opts] - Optional tween parameters.
+    * @param {import('./types').IAnimationAPI.TweenOptions} [options] - Optional tween parameters.
     *
     * @returns {import('#runtime/util/animate').TJSBasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
@@ -407,11 +410,11 @@ export class AnimationAPI
    /**
     * Returns a function that provides an optimized way to constantly update a to-tween.
     *
-    * @param {Iterable<import('../types').AnimationKeys>}  keys - The keys for quickTo.
+    * @param {Iterable<import('./types').IAnimationAPI.AnimationKeys>}  keys - The keys for quickTo.
     *
-    * @param {import('../types').QuickTweenOptions} [opts] - Optional quick tween parameters.
+    * @param {import('./types').IAnimationAPI.QuickTweenOptions} [options] - Optional quick tween parameters.
     *
-    * @returns {import('../types').quickToCallback} quick-to tween function.
+    * @returns {import('./types').IAnimationAPI.quickToCallback} quick-to tween function.
     */
    quickTo(keys, { duration = 1, ease = cubicOut, interpolate = lerp } = {})
    {
@@ -453,7 +456,7 @@ export class AnimationAPI
       {
          if (typeof key !== 'string')
          {
-            throw new TypeError(`AnimationAPI.quickTo error: key is not a string.`);
+            throw new TypeError(`AnimationAPI.quickTo error: key ('${key}') is not a string.`);
          }
 
          if (!animateKeys.has(key))
@@ -494,7 +497,7 @@ export class AnimationAPI
          start: void 0
       };
 
-      const quickToCB = /** @type {import('../types').quickToCallback} */ (...args) =>
+      const quickToCB = /** @type {import('./types').IAnimationAPI.quickToCallback} */ (...args) =>
       {
          const argsLength = args.length;
 

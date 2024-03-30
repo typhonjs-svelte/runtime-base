@@ -60,7 +60,7 @@ export class TJSPosition
    /**
     * Provides the animation API.
     *
-    * @type {AnimationAPI}
+    * @type {import('./animation/types').IAnimationAPI}
     */
    #animate = new AnimationAPI(this, this.#data);
 
@@ -149,7 +149,7 @@ export class TJSPosition
    #state = new PositionStateAPI(this, this.#data, this.#transforms);
 
    /**
-    * @returns {typeof AnimationGroupAPI} Public Animation API.
+    * @returns {import('./animation/types').IAnimationGroupAPI} Public Animation API.
     */
    static get Animate() { return AnimationGroupAPI; }
 
@@ -420,7 +420,7 @@ export class TJSPosition
    /**
     * Returns the animation API.
     *
-    * @returns {AnimationAPI} Animation API.
+    * @returns {import('./animation/types').IAnimationAPI} Animation API.
     */
    get animate()
    {

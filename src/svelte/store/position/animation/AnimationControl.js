@@ -2,6 +2,8 @@ import { isObject } from '#runtime/util/object';
 
 /**
  * Provides a TJSBasicAnimation implementation for TJSPosition animation.
+ *
+ * @implements {import('#runtime/util/animate').TJSBasicAnimation}
  */
 export class AnimationControl
 {
@@ -28,9 +30,9 @@ export class AnimationControl
    static get voidControl() { return this.#voidControl; }
 
    /**
-    * @param {object|null} [animationData] - Animation data from {@link AnimationAPI}.
+    * @param {object | null}  [animationData] - Animation data from {@link IAnimationAPI}.
     *
-    * @param {boolean}     [willFinish] - Promise that tracks animation finished state.
+    * @param {boolean}        [willFinish] - Promise that tracks animation finished state.
     */
    constructor(animationData, willFinish = false)
    {
