@@ -79,11 +79,11 @@ export class PositionStateAPI
    /**
     * Resets data to default values and invokes set.
     *
-    * @param {object}   [opts] - Optional parameters.
+    * @param {object}   [options] - Optional parameters.
     *
-    * @param {boolean}  [opts.keepZIndex=false] - When true keeps current z-index.
+    * @param {boolean}  [options.keepZIndex=false] - When true keeps current z-index.
     *
-    * @param {boolean}  [opts.invokeSet=true] - When true invokes set method.
+    * @param {boolean}  [options.invokeSet=true] - When true invokes set method.
     *
     * @returns {boolean} Operation successful.
     */
@@ -128,25 +128,26 @@ export class PositionStateAPI
     * allows specification of the duration, easing, and interpolate functions along with configuring a Promise to be
     * returned if awaiting the end of the animation.
     *
-    * @param {object}            params - Parameters
+    * @param {object}            options - Parameters
     *
-    * @param {string}            params.name - Saved data set name.
+    * @param {string}            options.name - Saved data set name.
     *
-    * @param {boolean}           [params.remove=false] - Remove data set.
+    * @param {boolean}           [options.remove=false] - Remove data set.
     *
-    * @param {Iterable<string>}  [params.properties] - Specific properties to set / animate.
+    * @param {Iterable<string>}  [options.properties] - Specific properties to set / animate.
     *
-    * @param {boolean}           [params.silent] - Set position data directly; no store or style updates.
+    * @param {boolean}           [options.silent] - Set position data directly; no store or style updates.
     *
-    * @param {boolean}           [params.async=false] - If animating return a Promise that resolves with any saved data.
+    * @param {boolean}           [options.async=false] - If animating return a Promise that resolves with any saved
+    *        data.
     *
-    * @param {boolean}           [params.animateTo=false] - Animate to restore data.
+    * @param {boolean}           [options.animateTo=false] - Animate to restore data.
     *
-    * @param {number}            [params.duration=0.1] - Duration in seconds.
+    * @param {number}            [options.duration=0.1] - Duration in seconds.
     *
-    * @param {import('svelte/transition').EasingFunction}   [params.ease=linear] - Easing function.
+    * @param {import('svelte/transition').EasingFunction}   [options.ease=linear] - Easing function.
     *
-    * @param {import('#runtime/math/interpolate').InterpolateFunction}  [params.interpolate=lerp] - Interpolation
+    * @param {import('#runtime/math/interpolate').InterpolateFunction}  [options.interpolate=lerp] - Interpolation
     *        function.
     *
     * @returns {import('../').TJSPositionDataExtended | Promise<import('../').TJSPositionDataExtended>} Saved position
@@ -206,15 +207,14 @@ export class PositionStateAPI
    }
 
    /**
-    * Saves current position state with the opportunity to add extra data to the saved state.
+    * Saves current position state with the opportunity to add extra data to the saved state. Simply include
+    * extra properties in `options` to save extra data.
     *
-    * @param {object}   opts - Options.
+    * @param {object}   options - Options.
     *
-    * @param {string}   opts.name - name to index this saved data.
+    * @param {string}   options.name - name to index this saved data.
     *
-    * @param {...*}     [opts.extra] - Extra data to add to saved data.
-    *
-    * @returns {import('./').TJSPositionData} Current position data
+    * @returns {import('./').TJSPositionData} Current position data.
     */
    save({ name, ...extra })
    {
@@ -228,13 +228,11 @@ export class PositionStateAPI
    }
 
    /**
-    * Directly sets a position state.
+    * Directly sets position state data. Simply include extra properties in `options` to set extra data.
     *
     * @param {object}   opts - Options.
     *
     * @param {string}   opts.name - name to index this saved data.
-    *
-    * @param {...*}     [opts.data] - TJSPosition data to set.
     */
    set({ name, ...data })
    {
