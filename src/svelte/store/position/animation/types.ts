@@ -4,9 +4,10 @@ import type { InterpolateFunction } from '#runtime/math/interpolate';
 import type { TJSBasicAnimation }   from '#runtime/util/animate';
 
 import type {
-   TJSPosition,
    TJSPositionDataExtended,
    TJSPositionGroup }               from '../index.js';
+
+import type { TJSPosition }         from '../TJSPosition.js';
 
 interface IAnimationAPI
 {
