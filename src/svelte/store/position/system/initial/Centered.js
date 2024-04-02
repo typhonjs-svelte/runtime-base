@@ -3,7 +3,7 @@ import { InitialBase } from './InitialBase.js';
 /**
  * Provides a {@link TJSPositionTypes.IInitialHelperExt} implementation to center an element being positioned.
  *
- * @implements {import('../types').TJSPositionTypes.IInitialHelperExt}
+ * @implements {import('../../types.js').TJSPositionTypes.IInitialHelperExt}
  */
 export class Centered extends InitialBase
 {

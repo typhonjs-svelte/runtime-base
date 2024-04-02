@@ -1,4 +1,4 @@
-import { A11yHelper } from '#runtime/util/browser';
+import { A11yHelper } from '../../../../../../_dist/util/browser/index.js';
 
 /**
  * Provides a base {@link TJSPositionTypes.IInitialHelperExt} class.

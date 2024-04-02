@@ -1,7 +1,7 @@
-import { clamp }              from '#runtime/math/util';
-import { A11yHelper }         from '#runtime/util/browser';
+import { clamp }              from '../../../../../../_dist/math/util/index.js';
+import { A11yHelper }         from '../../../../../../_dist/util/browser/index.js';
 
-import { TJSTransformData }   from '../transform/TJSTransformData.js';
+import { TJSTransformData }   from '../../transform/TJSTransformData.js';
 
 const s_TRANSFORM_DATA = new TJSTransformData();
 
@@ -15,7 +15,7 @@ export class TransformBounds
    #constrain;
 
    /**
-    * @type {import('#runtime/util/browser').FocusableElement | null | undefined}
+    * @type {import('../../../../../../_dist/util/browser/index.js').FocusableElement | null | undefined}
     */
    #element;
 
@@ -54,7 +54,7 @@ export class TransformBounds
     *
     * @param {boolean}  [opts.constrain=true] - Initial constrained state.
     *
-    * @param {import('#runtime/util/browser').FocusableElement} [opts.element] -
+    * @param {import('../../../../../../_dist/util/browser/index.js').FocusableElement} [opts.element] -
     *
     * @param {boolean}  [opts.enabled=true] - Initial enabled state.
     *
@@ -82,7 +82,7 @@ export class TransformBounds
    get constrain() { return this.#constrain; }
 
    /**
-    * @returns {import('#runtime/util/browser').FocusableElement | null | undefined}
+    * @returns {import('../../../../../../_dist/util/browser/index.js').FocusableElement | null | undefined}
     */
    get element() { return this.#element; }
 
@@ -114,7 +114,7 @@ export class TransformBounds
    }
 
    /**
-    * @param {import('#runtime/util/browser').FocusableElement | null | undefined} element - Target element or
+    * @param {import('../../../../../../_dist/util/browser/index.js').FocusableElement | null | undefined} element - Target element or
     *        undefined.
     */
    set element(element)
@@ -209,10 +209,10 @@ export class TransformBounds
     * Provides a validator that respects transforms in positional data constraining the position to within the target
     * elements bounds.
     *
-    * @param {import('./types').IValidatorAPI.ValidationData}   valData - The associated validation data for position
+    * @param {import('./types.js').IValidatorAPI.ValidationData}   valData - The associated validation data for position
     *        updates.
     *
-    * @returns {import('../').TJSPositionData} Potentially adjusted position data.
+    * @returns {import('../../index.js').TJSPositionData} Potentially adjusted position data.
     */
    validator(valData)
    {

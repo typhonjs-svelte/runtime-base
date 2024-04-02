@@ -1,9 +1,9 @@
 import type { Subscriber }          from 'svelte/store';
 
-import type { TJSPositionParent }   from '../';
-import type { TJSPosition }         from '../TJSPosition.js';
-import type { TJSPositionData }     from '../TJSPositionData.js';
-import type { ITransformAPI }       from '../transform/types';
+import type { TJSPositionParent }   from '../../index';
+import type { TJSPosition }         from '../../TJSPosition.js';
+import type { TJSPositionData }     from '../../TJSPositionData.js';
+import type { ITransformAPI }       from '../../transform/types';
 
 /**
  * Provides the validator API implementation for {@link TJSPosition.validators}. You may add one or more validator

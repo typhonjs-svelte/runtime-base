@@ -14,18 +14,18 @@ import { subscribeIgnoreFirst }  from '#runtime/util/store';
 import {
    AnimationAPI,
    AnimationGroupAPI }           from './animation';
-import { Centered }              from './initial';
 import { PositionStateAPI }      from './state';
+import { Centered }              from './system/initial';
+import {
+   AdapterValidators,
+   BasicBounds,
+   TransformBounds }             from './system/validators';
 import {
    TJSTransformData,
    TJSTransforms }               from './transform';
 import {
    convertRelative,
    StyleCache }                  from './util';
-import {
-   AdapterValidators,
-   BasicBounds,
-   TransformBounds }             from './validators';
 import {
    PositionChangeSet,
    UpdateElementData,
@@ -145,7 +145,7 @@ export class TJSPosition
    #validators;
 
    /**
-    * @type {import('./validators/types').IValidatorAPI.ValidatorData[]}
+    * @type {import('./system/validators/types').IValidatorAPI.ValidatorData[]}
     */
    #validatorData;
 
@@ -507,7 +507,7 @@ export class TJSPosition
    /**
     * Returns the validators.
     *
-    * @returns {import('./validators/types').IValidatorAPI} validators.
+    * @returns {import('./system/validators/types').IValidatorAPI} validators.
     */
    get validators() { return this.#validators; }
 
@@ -1363,7 +1363,7 @@ export class TJSPosition
 const s_DATA_UPDATE = new TJSPositionData();
 
 /**
- * @type {import('./validators/types').IValidatorAPI.ValidationData}
+ * @type {import('./system/validators/types').IValidatorAPI.ValidationData}
  */
 const s_VALIDATION_DATA = {
    position: void 0,
