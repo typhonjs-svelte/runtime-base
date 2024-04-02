@@ -15,6 +15,7 @@ import {
    AnimationAPI,
    AnimationGroupAPI }           from './animation';
 import { PositionStateAPI }      from './state';
+import { SystemBase }            from './system';
 import { Centered }              from './system/initial';
 import {
    AdapterValidators,
@@ -49,7 +50,7 @@ export class TJSPosition
    };
 
    /**
-    * @type {{BasicBounds: typeof BasicBounds, basicWindow: BasicBounds, TransformBounds: typeof TransformBounds, transformWindow: TransformBounds}}
+    * @type {import('./types').TJSPositionTypes.PositionValidators}
     */
    static #positionValidators = {
       BasicBounds,
@@ -165,6 +166,11 @@ export class TJSPosition
    static get Initial() { return this.#positionInitial; }
 
    /**
+    * @returns {import('./system/types').System.ISystemBaseConstructor} `SystemBase` constructor.
+    */
+   static get SystemBase() { return SystemBase; }
+
+   /**
     * Returns TJSTransformData class / constructor.
     *
     * @returns {import('./transform/types').ITransformAPI.ITransformDataConstructor} ITransformData class /
@@ -177,8 +183,7 @@ export class TJSPosition
     *
     * Note: `basicWindow` and `BasicBounds` will eventually be removed.
     *
-    * @returns {{BasicBounds: typeof BasicBounds, basicWindow: BasicBounds, TransformBounds: typeof TransformBounds, transformWindow: TransformBounds}}
-    * Available validators.
+    * @returns {import('./types').TJSPositionTypes.PositionValidators} Available validators.
     */
    static get Validators() { return this.#positionValidators; }
 
@@ -413,7 +418,7 @@ export class TJSPosition
              `'options.initial' position helper does not contain 'getLeft' and / or 'getTop' functions.`);
          }
 
-         this.#options.initialHelper = options.initial;
+         this.#options.initialHelper = initialHelper;
       }
 
       if (options?.validator)

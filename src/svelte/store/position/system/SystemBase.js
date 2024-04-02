@@ -1,14 +1,30 @@
-import { A11yHelper } from '../../../../../../_dist/util/browser/index.js';
+import { A11yHelper } from '#runtime/util/browser';
 
 /**
- * Provides a base {@link TJSPositionTypes.IInitialHelperExt} class.
+ * Provides a base {@link System.ISystemBase} implementation.
+ *
+ * @implements {import('./types').System.ISystemBase}
  */
-export class InitialBase
+export class SystemBase
 {
+   /**
+    * When true constrains the min / max width or height to element.
+    *
+    * @type {boolean}
+    */
+   #constrain;
+
    /**
     * @type {HTMLElement}
     */
    #element;
+
+   /**
+    * When true the validator is active.
+    *
+    * @type {boolean}
+    */
+   #enabled;
 
    /**
     * Provides a manual setting of the element height. As things go `offsetHeight` causes a browser layout and is not
@@ -34,7 +50,11 @@ export class InitialBase
    /**
     * @param {object}      [options] - Initial options.
     *
+    * @param {boolean}     [options.constrain=true] - Initial constrained state.
+    *
     * @param {HTMLElement} [options.element] - Target element.
+    *
+    * @param {boolean}     [options.enabled=true] - Enabled state.
     *
     * @param {boolean}     [options.lock=false] - Lock parameters from being set.
     *
@@ -42,9 +62,11 @@ export class InitialBase
     *
     * @param {number}      [options.height] - Manual height.
     */
-   constructor({ element, lock = false, width, height } = {})
+   constructor({ constrain = true, element, enabled = true, lock = false, width, height } = {})
    {
+      this.constrain = constrain;
       this.element = element;
+      this.enabled = enabled;
       this.width = width;
       this.height = height;
 
@@ -52,9 +74,19 @@ export class InitialBase
    }
 
    /**
+    * @returns {boolean} The current constrain state.
+    */
+   get constrain() { return this.#constrain; }
+
+   /**
     * @returns {HTMLElement | undefined | null} Target element.
     */
    get element() { return this.#element; }
+
+   /**
+    * @returns {boolean} The current enabled state.
+    */
+   get enabled() { return this.#enabled; }
 
    /**
     * @returns {number} Get manual height.
@@ -62,9 +94,26 @@ export class InitialBase
    get height() { return this.#height; }
 
    /**
+    * @return {boolean} Get locked state.
+    */
+   get locked() { return this.#lock; }
+
+   /**
     * @returns {number} Get manual width.
     */
    get width() { return this.#width; }
+
+   /**
+    * @param {boolean}  constrain - New constrain state.
+    */
+   set constrain(constrain)
+   {
+      if (this.#lock) { return; }
+
+      if (typeof constrain !== 'boolean') { throw new TypeError(`'constrain' is not a boolean.`); }
+
+      this.#constrain = constrain;
+   }
 
    /**
     * @param {HTMLElement | undefined | null} element - Set target element.
@@ -81,6 +130,18 @@ export class InitialBase
       {
          throw new TypeError(`'element' is not a HTMLElement, undefined, or null.`);
       }
+   }
+
+   /**
+    * @param {boolean}  enabled - New enabled state.
+    */
+   set enabled(enabled)
+   {
+      if (this.#lock) { return; }
+
+      if (typeof enabled !== 'boolean') { throw new TypeError(`'enabled' is not a boolean.`); }
+
+      this.#enabled = enabled;
    }
 
    /**

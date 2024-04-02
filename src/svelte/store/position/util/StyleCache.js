@@ -38,7 +38,7 @@ export class StyleCache
       this.hasWillChange = false;
 
       /**
-       * @type {import('../../../../../_dist/svelte/action/dom/index.js').ResizeObserverData.Object}
+       * @type {import('#runtime/svelte/action/dom').ResizeObserverData.Object}
        */
       this.resizeObserved = {
          contentHeight: void 0,

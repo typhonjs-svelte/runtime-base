@@ -1,11 +1,11 @@
-import { InitialBase } from './InitialBase.js';
+import { SystemBase } from '../SystemBase.js';
 
 /**
- * Provides a {@link TJSPositionTypes.IInitialHelperExt} implementation to center an element being positioned.
+ * Provides a {@link System.Initial.IInitialSystem} implementation to center an element being positioned.
  *
- * @implements {import('../../types.js').TJSPositionTypes.IInitialHelperExt}
+ * @implements {import('../types').System.Initial.IInitialSystem}
  */
-export class Centered extends InitialBase
+export class Centered extends SystemBase
 {
    /**
     * Get the left constraint based on any manual target values or the browser inner width.

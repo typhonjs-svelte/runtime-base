@@ -1,233 +1,35 @@
-import { clamp }              from '../../../../../../_dist/math/util/index.js';
-import { A11yHelper }         from '../../../../../../_dist/util/browser/index.js';
+import { clamp }              from '#runtime/math/util';
 
+import { SystemBase }         from '../SystemBase.js';
 import { TJSTransformData }   from '../../transform/TJSTransformData.js';
 
-const s_TRANSFORM_DATA = new TJSTransformData();
-
-export class TransformBounds
+export class TransformBounds extends SystemBase
 {
-   /**
-    * When true constrains the min / max width or height to element.
-    *
-    * @type {boolean}
-    */
-   #constrain;
-
-   /**
-    * @type {import('../../../../../../_dist/util/browser/index.js').FocusableElement | null | undefined}
-    */
-   #element;
-
-   /**
-    * When true the validator is active.
-    *
-    * @type {boolean}
-    */
-   #enabled;
-
-   /**
-    * Provides a manual setting of the element height. As things go `offsetHeight` causes a browser layout and is not
-    * performance oriented. If manually set this height is used instead of `offsetHeight`.
-    *
-    * @type {number}
-    */
-   #height;
-
-   /**
-    * Set from an optional value in the constructor to lock accessors preventing modification.
-    *
-    * @type {boolean}
-    */
-   #lock;
-
-   /**
-    * Provides a manual setting of the element width. As things go `offsetWidth` causes a browser layout and is not
-    * performance oriented. If manually set this width is used instead of `offsetWidth`.
-    *
-    * @type {number}
-    */
-   #width;
-
-   /**
-    * @param {object}   [opts] - Options.
-    *
-    * @param {boolean}  [opts.constrain=true] - Initial constrained state.
-    *
-    * @param {import('../../../../../../_dist/util/browser/index.js').FocusableElement} [opts.element] -
-    *
-    * @param {boolean}  [opts.enabled=true] - Initial enabled state.
-    *
-    * @param {boolean}  [opts.lock=false] - Locks further modification.
-    *
-    * @param {number}   [opts.width] - A specific finite width.
-    *
-    * @param {number}   [opts.height] - A specific finite height.
-    */
-   constructor({ constrain = true, element = void 0, enabled = true, lock = false, width = void 0,
-    height = void 0 } = {})
-   {
-      this.element = element;
-      this.constrain = constrain;
-      this.enabled = enabled;
-      this.width = width;
-      this.height = height;
-
-      this.#lock = typeof lock === 'boolean' ? lock : false;
-   }
-
-   /**
-    * @returns {boolean} The current constrain state.
-    */
-   get constrain() { return this.#constrain; }
-
-   /**
-    * @returns {import('../../../../../../_dist/util/browser/index.js').FocusableElement | null | undefined}
-    */
-   get element() { return this.#element; }
-
-   /**
-    * @returns {boolean} The current enabled state.
-    */
-   get enabled() { return this.#enabled; }
-
-   /**
-    * @returns {number | undefined} The current height.
-    */
-   get height() { return this.#height; }
-
-   /**
-    * @returns {number | undefined} The current width.
-    */
-   get width() { return this.#width; }
-
-   /**
-    * @param {boolean}  constrain - New constrain state.
-    */
-   set constrain(constrain)
-   {
-      if (this.#lock) { return; }
-
-      if (typeof constrain !== 'boolean') { throw new TypeError(`'constrain' is not a boolean.`); }
-
-      this.#constrain = constrain;
-   }
-
-   /**
-    * @param {import('../../../../../../_dist/util/browser/index.js').FocusableElement | null | undefined} element - Target element or
-    *        undefined.
-    */
-   set element(element)
-   {
-      if (this.#lock) { return; }
-
-      if (element === void 0 || element === null || A11yHelper.isFocusTarget(element))
-      {
-         this.#element = element;
-      }
-      else
-      {
-         throw new TypeError(`'element' is not a HTMLElement, undefined, or null.`);
-      }
-   }
-
-   /**
-    * @param {boolean}  enabled - New enabled state.
-    */
-   set enabled(enabled)
-   {
-      if (this.#lock) { return; }
-
-      if (typeof enabled !== 'boolean') { throw new TypeError(`'enabled' is not a boolean.`); }
-
-      this.#enabled = enabled;
-   }
-
-   /**
-    * @param {number | undefined}   height - A finite number or undefined.
-    */
-   set height(height)
-   {
-      if (this.#lock) { return; }
-
-      if (height === void 0 || Number.isFinite(height))
-      {
-         this.#height = height;
-      }
-      else
-      {
-         throw new TypeError(`'height' is not a finite number or undefined.`);
-      }
-   }
-
-   /**
-    * @param {number | undefined}   width - A finite number or undefined.
-    */
-   set width(width)
-   {
-      if (this.#lock) { return; }
-
-      if (width === void 0 || Number.isFinite(width))
-      {
-         this.#width = width;
-      }
-      else
-      {
-         throw new TypeError(`'width' is not a finite number or undefined.`);
-      }
-   }
-
-   /**
-    * @param {number | undefined}   width - A finite number or undefined.
-    *
-    * @param {number | undefined}   height - A finite number or undefined.
-    */
-   setDimension(width, height)
-   {
-      if (this.#lock) { return; }
-
-      if (width === void 0 || Number.isFinite(width))
-      {
-         this.#width = width;
-      }
-      else
-      {
-         throw new TypeError(`'width' is not a finite number or undefined.`);
-      }
-
-      if (height === void 0 || Number.isFinite(height))
-      {
-         this.#height = height;
-      }
-      else
-      {
-         throw new TypeError(`'height' is not a finite number or undefined.`);
-      }
-   }
+   static #TRANSFORM_DATA = new TJSTransformData();
 
    /**
     * Provides a validator that respects transforms in positional data constraining the position to within the target
     * elements bounds.
     *
-    * @param {import('./types.js').IValidatorAPI.ValidationData}   valData - The associated validation data for position
+    * @param {import('./types').IValidatorAPI.ValidationData}   valData - The associated validation data for position
     *        updates.
     *
-    * @returns {import('../../index.js').TJSPositionData} Potentially adjusted position data.
+    * @returns {import('../../').TJSPositionData} Potentially adjusted position data.
     */
    validator(valData)
    {
       // Early out if element is undefined or local enabled state is false.
-      if (!this.#enabled) { return valData.position; }
+      if (!this.enabled) { return valData.position; }
 
       // Determine containing bounds from manual values; or any element; lastly the browser width / height.
-      const boundsWidth = this.#width ?? this.#element?.offsetWidth ?? globalThis.innerWidth;
-      const boundsHeight = this.#height ?? this.#element?.offsetHeight ?? globalThis.innerHeight;
+      const boundsWidth = this.width ?? this.element?.offsetWidth ?? globalThis.innerWidth;
+      const boundsHeight = this.height ?? this.element?.offsetHeight ?? globalThis.innerHeight;
 
       // Ensure min / max width constraints when position width is a number; not 'auto' or 'inherit'. If constrain is
       // true cap width bounds.
       if (typeof valData.position.width === 'number')
       {
-         const maxW = valData.maxWidth ?? (this.#constrain ? boundsWidth : Number.MAX_SAFE_INTEGER);
+         const maxW = valData.maxWidth ?? (this.constrain ? boundsWidth : Number.MAX_SAFE_INTEGER);
          valData.position.width = clamp(valData.width, valData.minWidth, maxW);
       }
 
@@ -235,13 +37,13 @@ export class TransformBounds
       // is true cap height bounds.
       if (typeof valData.position.height === 'number')
       {
-         const maxH = valData.maxHeight ?? (this.#constrain ? boundsHeight : Number.MAX_SAFE_INTEGER);
+         const maxH = valData.maxHeight ?? (this.constrain ? boundsHeight : Number.MAX_SAFE_INTEGER);
          valData.position.height = clamp(valData.height, valData.minHeight, maxH);
       }
 
       // Get transform data. First set constraints including any margin top / left as offsets and width / height. Used
       // when position width / height is 'auto'.
-      const data = valData.transforms.getData(valData.position, s_TRANSFORM_DATA, valData);
+      const data = valData.transforms.getData(valData.position, TransformBounds.#TRANSFORM_DATA, valData);
 
       // Check the bounding rectangle against browser height / width. Adjust position based on how far the overlap of
       // the bounding rect is outside the bounds height / width. The order below matters as the constraints are top /

@@ -27,8 +27,8 @@ export { TJSPosition, TJSPositionData }
  *
  * @property {boolean} calculateTransform When true always calculate transform data.
  *
- * @property {import('./types').TJSPositionTypes.IInitialHelper} initialHelper Provides a helper for setting initial
- *           position data.
+ * @property {import('./system/types').System.Initial.IInitialSystem} initialHelper Provides a helper for setting
+ *           initial position data.
  *
  * @property {boolean} ortho Sets TJSPosition to orthographic mode using just transform / matrix3d for positioning.
  *
