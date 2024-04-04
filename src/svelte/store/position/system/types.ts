@@ -73,7 +73,7 @@ namespace System {
           *
           * @returns {TJSPositionData} Potentially adjusted position data.
           */
-         validator(valData: IValidatorAPI.ValidationData): TJSPositionData
+         validate(valData: IValidatorAPI.ValidationData): TJSPositionData
       }
 
       /**

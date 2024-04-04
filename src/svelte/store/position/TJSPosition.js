@@ -1354,7 +1354,7 @@ export class TJSPosition
          {
             s_VALIDATION_DATA.position = currentPosition;
             s_VALIDATION_DATA.rest = rest;
-            currentPosition = validatorData[cntr].validator(s_VALIDATION_DATA);
+            currentPosition = validatorData[cntr].validate(s_VALIDATION_DATA);
 
             if (currentPosition === null) { return null; }
          }

@@ -13,7 +13,7 @@ export class BasicBounds extends SystemBase
     *
     * @returns {import('../../').TJSPositionData} Potentially adjusted position data.
     */
-   validator(valData)
+   validate(valData)
    {
       // Early out if element is undefined or local enabled state is false.
       if (!this.enabled) { return valData.position; }
