@@ -1,7 +1,11 @@
+import type {
+   Invalidator,
+   Subscriber,
+   Unsubscriber}                 from 'svelte/store';
+
 import type { IValidatorAPI }    from './validators/types';
 
 import type { TJSPosition }      from '../TJSPosition';
-import type { TJSPositionData }  from '../TJSPositionData';
 
 /**
  * Defines the extension points that are available to provide custom implementations for initial positioning and
@@ -80,18 +84,34 @@ namespace System {
     */
    export namespace Validator {
       /**
-       * Provides helper functions to initially position an element.
+       * Provides a system to validate positional changes.
        */
       export interface IValidatorSystem extends ISystemBase {
          /**
-          * Provides a validator that respects transforms in positional data constraining the position to within the target
-          * elements bounds.
+          * Provides a validator that respects transforms in positional data constraining the position to within the
+          * target elements bounds.
           *
           * @param {IValidatorAPI.ValidationData}   valData - The associated validation data for position updates.
           *
           * @returns {TJSPositionData} Potentially adjusted position data.
           */
-         validate(valData: IValidatorAPI.ValidationData): TJSPositionData
+         validate: IValidatorAPI.ValidatorFn;
+
+         /**
+          * An ID associated with this validator. Can be used to remove the validator; default: `undefined`.
+          */
+         id?: any;
+
+         /**
+          * Optional subscribe function following the Svelte store / subscribe pattern. On updates validation will
+          * be processed again.
+          */
+         subscribe?(this: void, run: Subscriber<any>, invalidate?: Invalidator<any>): Unsubscriber;
+
+         /**
+          * A number between 0 and 1 inclusive to position this validator against others; default: `1`.
+          */
+         weight?: number;
       }
 
       /**

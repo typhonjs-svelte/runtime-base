@@ -34,6 +34,12 @@ export { TJSPosition, TJSPositionData }
  *
  * @property {boolean} transformSubscribed Set to true when there are subscribers to the readable transform store.
  *
+ * @property {(
+ *    import('./system/validators/types').IValidatorAPI.ValidatorFn |
+ *    import('./system/validators/types').IValidatorAPI.ValidatorData |
+ *    Iterable<import('./system/validators/types').IValidatorAPI.ValidatorFn |
+ *     import('./system/validators/types').IValidatorAPI.ValidatorData>
+ * )} validator - Provides an initial validator or list of validators.
  */
 
 /**

@@ -1,4 +1,7 @@
-import type { Subscriber }          from 'svelte/store';
+import type {
+   Invalidator,
+   Subscriber,
+   Unsubscriber }                   from 'svelte/store';
 
 import type { TJSPositionParent }   from '../../index';
 import type { TJSPosition }         from '../../TJSPosition.js';
@@ -167,9 +170,10 @@ namespace IValidatorAPI {
       id?: any;
 
       /**
-       * Optional subscribe function following the Svelte store / subscribe pattern.
+       * Optional subscribe function following the Svelte store / subscribe pattern. On updates validation will
+       * be processed again.
        */
-      subscribe?: Subscriber<any>;
+      subscribe?(this: void, run: Subscriber<any>, invalidate?: Invalidator<any>): Unsubscriber;
 
       /**
        * A number between 0 and 1 inclusive to position this validator against others; default: `1`.
@@ -189,15 +193,24 @@ namespace IValidatorAPI {
     */
    export type RemoveByCallback = (data: ValidatorData) => boolean;
 
-   /**
-    * TJSPosition validator function that takes a {@link TJSPositionData} instance potentially modifying it or returning
-    * null if invalid.
-    *
-    * @param {ValidationData} data - Validation data to handle.
-    *
-    * @returns {TJSPositionData | null} The validated position data or null to cancel position update.
-    */
-   export type ValidatorFn = (data: ValidationData) => TJSPositionData | null;
+   export interface ValidatorFn extends Function
+   {
+      /**
+       * TJSPosition validator function that takes a {@link TJSPositionData} instance potentially modifying it or
+       * returning null if invalid.
+       *
+       * @param {ValidationData} data - Validation data to handle.
+       *
+       * @returns {TJSPositionData | null} The validated position data or null to cancel position update.
+       */
+      (data: ValidationData): TJSPositionData | null;
+
+      /**
+       * Optional subscribe function following the Svelte store / subscribe pattern. On updates validation will
+       * be processed again.
+       */
+      subscribe?(this: void, run: Subscriber<any>, invalidate?: Invalidator<any>): Unsubscriber;
+   }
 }
 
 export { IValidatorAPI }

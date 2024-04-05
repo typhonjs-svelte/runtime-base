@@ -38,6 +38,8 @@ import { TJSPositionData }       from './TJSPositionData.js';
 /**
  * Provides a store for position following the subscriber protocol in addition to providing individual writable derived
  * stores for each independent variable.
+ *
+ * @implements {import('svelte/store').Readable<TJSPositionData>}
  */
 export class TJSPosition
 {
@@ -454,7 +456,7 @@ export class TJSPosition
    /**
     * Returns the dimension data for the readable store.
     *
-    * @returns {{width: number | 'auto', height: number | 'auto'}} Dimension data.
+    * @returns {{width: number | 'auto' | 'inherit', height: number | 'auto' | 'inherit'}} Dimension data.
     */
    get dimension()
    {
@@ -474,7 +476,7 @@ export class TJSPosition
    /**
     * Returns the current HTMLElement being positioned.
     *
-    * @returns {HTMLElement|undefined} Current HTMLElement being positioned.
+    * @returns {HTMLElement | undefined} Current HTMLElement being positioned.
     */
    get element()
    {
@@ -569,62 +571,62 @@ export class TJSPosition
 // Data accessors ----------------------------------------------------------------------------------------------------
 
    /**
-    * @returns {number|'auto'|'inherit'|null} height
+    * @returns {number | 'auto' | 'inherit' | null} height
     */
    get height() { return this.#data.height; }
 
    /**
-    * @returns {number|null} left
+    * @returns {number | null} left
     */
    get left() { return this.#data.left; }
 
    /**
-    * @returns {number|null} maxHeight
+    * @returns {number | null} maxHeight
     */
    get maxHeight() { return this.#data.maxHeight; }
 
    /**
-    * @returns {number|null} maxWidth
+    * @returns {number | null} maxWidth
     */
    get maxWidth() { return this.#data.maxWidth; }
 
    /**
-    * @returns {number|null} minHeight
+    * @returns {number | null} minHeight
     */
    get minHeight() { return this.#data.minHeight; }
 
    /**
-    * @returns {number|null} minWidth
+    * @returns {number | null} minWidth
     */
    get minWidth() { return this.#data.minWidth; }
 
    /**
-    * @returns {number|null} rotateX
+    * @returns {number | null} rotateX
     */
    get rotateX() { return this.#data.rotateX; }
 
    /**
-    * @returns {number|null} rotateY
+    * @returns {number | null} rotateY
     */
    get rotateY() { return this.#data.rotateY; }
 
    /**
-    * @returns {number|null} rotateZ
+    * @returns {number | null} rotateZ
     */
    get rotateZ() { return this.#data.rotateZ; }
 
    /**
-    * @returns {number|null} alias for rotateZ
+    * @returns {number | null} alias for rotateZ
     */
    get rotation() { return this.#data.rotateZ; }
 
    /**
-    * @returns {number|null} scale
+    * @returns {number | null} scale
     */
    get scale() { return this.#data.scale; }
 
    /**
-    * @returns {number|null} top
+    * @returns {number | null} top
     */
    get top() { return this.#data.top; }
 
@@ -634,32 +636,32 @@ export class TJSPosition
    get transformOrigin() { return this.#data.transformOrigin; }
 
    /**
-    * @returns {number|null} translateX
+    * @returns {number | null} translateX
     */
    get translateX() { return this.#data.translateX; }
 
    /**
-    * @returns {number|null} translateY
+    * @returns {number | null} translateY
     */
    get translateY() { return this.#data.translateY; }
 
    /**
-    * @returns {number|null} translateZ
+    * @returns {number | null} translateZ
     */
    get translateZ() { return this.#data.translateZ; }
 
    /**
-    * @returns {number|'auto'|'inherit'|null} width
+    * @returns {number | 'auto' | 'inherit' | null} width
     */
    get width() { return this.#data.width; }
 
    /**
-    * @returns {number|null} z-index
+    * @returns {number | null} z-index
     */
    get zIndex() { return this.#data.zIndex; }
 
    /**
-    * @param {number|string|null} height -
+    * @param {number | string | null} height -
     */
    set height(height)
    {
@@ -667,7 +669,7 @@ export class TJSPosition
    }
 
    /**
-    * @param {number|string|null} left -
+    * @param {number | string | null} left -
     */
    set left(left)
    {
@@ -675,7 +677,7 @@ export class TJSPosition
    }
 
    /**
-    * @param {number|string|null} maxHeight -
+    * @param {number | string | null} maxHeight -
     */
    set maxHeight(maxHeight)
    {
@@ -683,7 +685,7 @@ export class TJSPosition
    }
 
    /**
-    * @param {number|string|null} maxWidth -
+    * @param {number | string | null} maxWidth -
     */
    set maxWidth(maxWidth)
    {
@@ -691,7 +693,7 @@ export class TJSPosition
    }
 
    /**
-    * @param {number|string|null} minHeight -
+    * @param {number | string | null} minHeight -
     */
    set minHeight(minHeight)
    {
@@ -699,7 +701,7 @@ export class TJSPosition
    }
 
    /**
-    * @param {number|string|null} minWidth -
+    * @param {number | string | null} minWidth -
     */
    set minWidth(minWidth)
    {
@@ -707,7 +709,7 @@ export class TJSPosition
    }
 
    /**
-    * @param {number|string|null} rotateX -
+    * @param {number | string | null} rotateX -
     */
    set rotateX(rotateX)
    {
@@ -715,7 +717,7 @@ export class TJSPosition
    }
 
    /**
-    * @param {number|string|null} rotateY -
+    * @param {number | string | null} rotateY -
     */
    set rotateY(rotateY)
    {
@@ -723,7 +725,7 @@ export class TJSPosition
    }
 
    /**
-    * @param {number|string|null} rotateZ -
+    * @param {number | string | null} rotateZ -
     */
    set rotateZ(rotateZ)
    {
@@ -731,7 +733,7 @@ export class TJSPosition
    }
 
    /**
-    * @param {number|string|null} rotateZ - alias for rotateZ
+    * @param {number | string | null} rotateZ - alias for rotateZ
     */
    set rotation(rotateZ)
    {
@@ -739,7 +741,7 @@ export class TJSPosition
    }
 
    /**
-    * @param {number|string|null} scale -
+    * @param {number | string | null} scale -
     */
    set scale(scale)
    {
@@ -747,7 +749,7 @@ export class TJSPosition
    }
 
    /**
-    * @param {number|string|null} top -
+    * @param {number | string | null} top -
     */
    set top(top)
    {
@@ -763,7 +765,7 @@ export class TJSPosition
    }
 
    /**
-    * @param {number|string|null} translateX -
+    * @param {number | string | null} translateX -
     */
    set translateX(translateX)
    {
@@ -771,7 +773,7 @@ export class TJSPosition
    }
 
    /**
-    * @param {number|string|null} translateY -
+    * @param {number | string | null} translateY -
     */
    set translateY(translateY)
    {
@@ -779,7 +781,7 @@ export class TJSPosition
    }
 
    /**
-    * @param {number|string|null} translateZ -
+    * @param {number | string | null} translateZ -
     */
    set translateZ(translateZ)
    {
@@ -787,7 +789,7 @@ export class TJSPosition
    }
 
    /**
-    * @param {number|string|null} width -
+    * @param {number | string | null} width -
     */
    set width(width)
    {
@@ -795,7 +797,7 @@ export class TJSPosition
    }
 
    /**
-    * @param {number|string|null} zIndex -
+    * @param {number | string | null} zIndex -
     */
    set zIndex(zIndex)
    {
@@ -805,7 +807,7 @@ export class TJSPosition
    /**
     * Assigns current position to object passed into method.
     *
-    * @param {object|TJSPositionData}  [position] - Target to assign current position data.
+    * @param {object | TJSPositionData}  [position] - Target to assign current position data.
     *
     * @param {import('./').TJSPositionGetOptions}   [options] - Defines options for specific keys and substituting null
     *        for numeric default values.

@@ -300,6 +300,9 @@ function draggable(node, { position, active = true, button = 0, storeDragging = 
    };
 }
 
+/**
+ * @implements {import('svelte/store').Readable<DraggableOptions>}
+ */
 class DraggableOptions
 {
    #ease = false;

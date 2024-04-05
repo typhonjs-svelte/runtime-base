@@ -13,7 +13,8 @@ import { isObject }  from '#runtime/util/object';
  * runs before a higher weighted validator. If no weight is specified the default of '1' is assigned and it is appended
  * to the end of the validators list.
  *
- * This class forms the public API which is accessible from the `.validators` getter in the main TJSPosition instance.
+ * This class forms the public API which is accessible from the {@link TJSPosition.validators} getter in the main
+ * TJSPosition instance.
  * ```
  * const position = new TJSPosition(<TJSPositionData>);
  * position.validators.add(...);
@@ -36,6 +37,9 @@ export class AdapterValidators
     */
    #validatorData;
 
+   /**
+    * @type {Map<import('./types').IValidatorAPI.ValidationFn, import('svelte/store').Unsubscriber>}
+    */
    #mapUnsubscribe = new Map();
 
    /**
@@ -123,6 +127,7 @@ export class AdapterValidators
          /** @type {import('./types').IValidatorAPI.ValidatorData} */
          let data = void 0;
 
+         /** @type {(...args: any[]) => import('svelte/store').Unsubscriber} */
          let subscribeFn = void 0;
 
          switch (validatorType)
@@ -153,11 +158,10 @@ export class AdapterValidators
                data = {
                   id: validator.id !== void 0 ? validator.id : void 0,
                   validate: validator.validate.bind(validator),
-                  weight: validator.weight || 1,
-                  instance: validator
+                  weight: validator.weight || 1
                };
 
-               subscribeFn = validator.validate?.subscribe ?? validator.subscribe;
+               subscribeFn = validator.validate.subscribe ?? validator.subscribe;
                break;
          }
 
@@ -201,7 +205,7 @@ export class AdapterValidators
          }
       }
 
-      // Filters with subscriber functionality are assumed to immediately invoke the `subscribe` callback. If the
+      // Validators with subscriber functionality are assumed to immediately invoke the `subscribe` callback. If the
       // subscriber count is less than the amount of validators added then automatically trigger an index update
       // manually.
       // TODO: handle validator updates.
