@@ -414,7 +414,7 @@ export class AnimationAPI
     *
     * @param {import('./types').IAnimationAPI.QuickTweenOptions} [options] - Optional quick tween parameters.
     *
-    * @returns {import('./types').IAnimationAPI.quickToCallback} quick-to tween function.
+    * @returns {import('./types').IAnimationAPI.QuickToCallback} quick-to tween function.
     */
    quickTo(keys, { duration = 1, ease = cubicOut, interpolate = lerp } = {})
    {
@@ -497,7 +497,7 @@ export class AnimationAPI
          start: void 0
       };
 
-      const quickToCB = /** @type {import('./types').IAnimationAPI.quickToCallback} */ (...args) =>
+      const quickToCB = /** @type {import('./types').IAnimationAPI.QuickToCallback} */ (...args) =>
       {
          const argsLength = args.length;
 

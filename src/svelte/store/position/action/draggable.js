@@ -81,7 +81,7 @@ function draggable(node, { position, active = true, button = 0, storeDragging = 
    /**
     * Stores the quickTo callback to use for optimized tweening when easing is enabled.
     *
-    * @type {import('#runtime/svelte/store/position').quickToCallback}
+    * @type {import('../animation/types').IAnimationAPI.QuickToCallback}
     */
    let quickTo = position.animate.quickTo(['top', 'left'], easeOptions);
 
