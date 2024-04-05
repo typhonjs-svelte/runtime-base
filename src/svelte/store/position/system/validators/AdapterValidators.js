@@ -120,7 +120,9 @@ export class AdapterValidators
             throw new TypeError(`AdapterValidator error: 'validator' is not a function or object.`);
          }
 
+         /** @type {import('./types').IValidatorAPI.ValidatorData} */
          let data = void 0;
+
          let subscribeFn = void 0;
 
          switch (validatorType)
@@ -128,7 +130,7 @@ export class AdapterValidators
             case 'function':
                data = {
                   id: void 0,
-                  validator,
+                  validate: validator,
                   weight: 1
                };
 
@@ -136,9 +138,9 @@ export class AdapterValidators
                break;
 
             case 'object':
-               if (typeof validator.validator !== 'function')
+               if (typeof validator.validate !== 'function')
                {
-                  throw new TypeError(`AdapterValidator error: 'validator' attribute is not a function.`);
+                  throw new TypeError(`AdapterValidator error: 'validate' attribute is not a function.`);
                }
 
                if (validator.weight !== void 0 && typeof validator.weight !== 'number' ||
@@ -150,12 +152,12 @@ export class AdapterValidators
 
                data = {
                   id: validator.id !== void 0 ? validator.id : void 0,
-                  validator: validator.validator.bind(validator),
+                  validate: validator.validate.bind(validator),
                   weight: validator.weight || 1,
                   instance: validator
                };
 
-               subscribeFn = validator.validator.subscribe ?? validator.subscribe;
+               subscribeFn = validator.validate?.subscribe ?? validator.subscribe;
                break;
          }
 
@@ -184,17 +186,17 @@ export class AdapterValidators
             if (typeof unsubscribe !== 'function')
             {
                throw new TypeError(
-                'AdapterValidator error: Filter has subscribe function, but no unsubscribe function is returned.');
+                'AdapterValidator error: Validator has subscribe function, but no unsubscribe function is returned.');
             }
 
             // Ensure that the same validator is not subscribed to multiple times.
-            if (this.#mapUnsubscribe.has(data.validator))
+            if (this.#mapUnsubscribe.has(data.validate))
             {
                throw new Error(
-                'AdapterValidator error: Filter added already has an unsubscribe function registered.');
+                'AdapterValidator error: Validator added already has an unsubscribe function registered.');
             }
 
-            this.#mapUnsubscribe.set(data.validator, unsubscribe);
+            this.#mapUnsubscribe.set(data.validate, unsubscribe);
             // subscribeCount++;  // TODO: Currently unused
          }
       }
@@ -242,13 +244,13 @@ export class AdapterValidators
       for (const data of validators)
       {
          // Handle the case that the validator may either be a function or a validator entry / object.
-         const actualValidator = typeof data === 'function' ? data : isObject(data) ? data.validator : void 0;
+         const actualValidator = typeof data === 'function' ? data : isObject(data) ? data.validate : void 0;
 
          if (!actualValidator) { continue; }
 
          for (let cntr = this.#validatorData.length; --cntr >= 0;)
          {
-            if (this.#validatorData[cntr].validator === actualValidator)
+            if (this.#validatorData[cntr].validate === actualValidator)
             {
                this.#validatorData.splice(cntr, 1);
 
@@ -293,10 +295,10 @@ export class AdapterValidators
          if (remove)
          {
             let unsubscribe;
-            if (typeof (unsubscribe = this.#mapUnsubscribe.get(data.validator)) === 'function')
+            if (typeof (unsubscribe = this.#mapUnsubscribe.get(data.validate)) === 'function')
             {
                unsubscribe();
-               this.#mapUnsubscribe.delete(data.validator);
+               this.#mapUnsubscribe.delete(data.validate);
             }
          }
 
@@ -329,10 +331,10 @@ export class AdapterValidators
          if (remove)
          {
             let unsubscribe;
-            if (typeof (unsubscribe = this.#mapUnsubscribe.get(data.validator)) === 'function')
+            if (typeof (unsubscribe = this.#mapUnsubscribe.get(data.validate)) === 'function')
             {
                unsubscribe();
-               this.#mapUnsubscribe.delete(data.validator);
+               this.#mapUnsubscribe.delete(data.validate);
             }
          }
 

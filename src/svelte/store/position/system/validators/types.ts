@@ -159,7 +159,7 @@ namespace IValidatorAPI {
        * TJSPosition validator function that takes a {@link TJSPositionData} instance potentially modifying it or
        * returning null if invalid.
        */
-      validator: ValidatorFn;
+      validate: ValidatorFn;
 
       /**
        * An ID associated with this validator. Can be used to remove the validator; default: `undefined`.

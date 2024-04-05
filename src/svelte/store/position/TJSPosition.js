@@ -81,13 +81,13 @@ export class TJSPosition
    /**
     * Stores ongoing options that are set in the constructor or by transform store subscription.
     *
-    * @type {import('./').TJSPositionOptions}
+    * @type {Partial<import('./').TJSPositionOptions>}
     */
    #options = {
       calculateTransform: false,
-      initialHelper: void 0,
+      initial: void 0,
       ortho: true,
-      transformSubscribed: false
+      transformSubscribed: false,
    };
 
    /**
@@ -408,23 +408,36 @@ export class TJSPosition
 
       [this.#validators, this.#validatorData] = AdapterValidators.create();
 
-      if (options?.initial || options?.positionInitial)
+      if (options?.initial)
       {
-         const initialHelper = options.initial ?? options.positionInitial;
+         const initial = options.initial;
 
-         if (typeof initialHelper?.getLeft !== 'function' || typeof initialHelper?.getTop !== 'function')
+         if (typeof initial?.getLeft !== 'function' || typeof initial?.getTop !== 'function')
          {
             throw new Error(
              `'options.initial' position helper does not contain 'getLeft' and / or 'getTop' functions.`);
          }
 
-         this.#options.initialHelper = initialHelper;
+         this.#options.initial = initial;
       }
 
       if (options?.validator)
       {
-         if (isIterable(options?.validator)) { this.validators.add(...options.validator); }
-         else { this.validators.add(options.validator); }
+         if (isIterable(options?.validator))
+         {
+            this.validators.add(...options.validator);
+         }
+         else
+         {
+            /**
+             * @type {(
+             *    import('./system/validators/types').IValidatorAPI.ValidatorFn |
+             *    import('./system/validators/types').IValidatorAPI.ValidatorData
+             * )}
+             */
+            const validatorFn = options.validator;
+            this.validators.add(validatorFn);
+         }
       }
    }
 
@@ -1244,8 +1257,8 @@ export class TJSPosition
       else if (!Number.isFinite(currentPosition.left))
       {
          // Potentially use any initial position helper if available or set to 0.
-         currentPosition.left = typeof this.#options.initialHelper?.getLeft === 'function' ?
-          this.#options.initialHelper.getLeft(width) : 0;
+         currentPosition.left = typeof this.#options?.initial?.getLeft === 'function' ?
+          this.#options.initial.getLeft(width) : 0;
       }
 
       // Update top
@@ -1256,8 +1269,8 @@ export class TJSPosition
       else if (!Number.isFinite(currentPosition.top))
       {
          // Potentially use any initial position helper if available or set to 0.
-         currentPosition.top = typeof this.#options.initialHelper?.getTop === 'function' ?
-          this.#options.initialHelper.getTop(height) : 0;
+         currentPosition.top = typeof this.#options?.initial?.getTop === 'function' ?
+          this.#options.initial.getTop(height) : 0;
       }
 
       if (Number.isFinite(maxHeight) || maxHeight === null)
