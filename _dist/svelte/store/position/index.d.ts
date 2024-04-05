@@ -1,7 +1,7 @@
 import { Mat4, Vec3 } from '@typhonjs-svelte/runtime-base/math/gl-matrix';
 import * as _runtime_svelte_action_dom from '@typhonjs-svelte/runtime-base/svelte/action/dom';
 import * as svelte_store from 'svelte/store';
-import { Subscriber } from 'svelte/store';
+import { Subscriber, Invalidator, Unsubscriber, Readable } from 'svelte/store';
 import * as svelte_action from 'svelte/action';
 import { EasingFunction } from 'svelte/transition';
 import { InterpolateFunction } from '@typhonjs-svelte/runtime-base/math/interpolate';
@@ -460,15 +460,16 @@ declare namespace IValidatorAPI {
      * TJSPosition validator function that takes a {@link TJSPositionData} instance potentially modifying it or
      * returning null if invalid.
      */
-    validator: ValidatorFn;
+    validate: ValidatorFn;
     /**
      * An ID associated with this validator. Can be used to remove the validator; default: `undefined`.
      */
     id?: any;
     /**
-     * Optional subscribe function following the Svelte store / subscribe pattern.
+     * Optional subscribe function following the Svelte store / subscribe pattern. On updates validation will
+     * be processed again.
      */
-    subscribe?: Subscriber<any>;
+    subscribe?(this: void, run: Subscriber<any>, invalidate?: Invalidator<any>): Unsubscriber;
     /**
      * A number between 0 and 1 inclusive to position this validator against others; default: `1`.
      */
@@ -484,22 +485,38 @@ declare namespace IValidatorAPI {
    * @param {ValidatorData} data - ValidatorData instance to potentially filter / remove.
    */
   type RemoveByCallback = (data: ValidatorData) => boolean;
-  /**
-   * TJSPosition validator function that takes a {@link TJSPositionData} instance potentially modifying it or returning
-   * null if invalid.
-   *
-   * @param {ValidationData} data - Validation data to handle.
-   *
-   * @returns {TJSPositionData | null} The validated position data or null to cancel position update.
-   */
-  type ValidatorFn = (data: ValidationData) => TJSPositionData | null;
+  interface ValidatorFn extends Function {
+    /**
+     * TJSPosition validator function that takes a {@link TJSPositionData} instance potentially modifying it or
+     * returning null if invalid.
+     *
+     * @param {ValidationData} data - Validation data to handle.
+     *
+     * @returns {TJSPositionData | null} The validated position data or null to cancel position update.
+     */
+    (data: ValidationData): TJSPositionData | null;
+    /**
+     * Optional subscribe function following the Svelte store / subscribe pattern. On updates validation will
+     * be processed again.
+     */
+    subscribe?(this: void, run: Subscriber<any>, invalidate?: Invalidator<any>): Unsubscriber;
+  }
 }
 
 /**
  * Defines the extension points that are available to provide custom implementations for initial positioning and
- * validation of positional movement.
+ * validation of positional movement. There are default implementations for initial `Centered` positioning available
+ * via {@link TJSPosition.Initial} and browser window / element bounds validation with and without transform support
+ * available via {@link TJSPosition.Validators}.
  */
 declare namespace System {
+  /**
+   * Defines the initial position extension point for positioning elements. The default implementation for initial
+   * `Centered` positioning is available via {@link TJSPosition.Initial}. To
+   *
+   * To create a unique initial position system extend {@link TJSPosition.SystemBase} and implement the
+   * {@link IInitialSystem} interface.
+   */
   namespace Initial {
     /**
      * Provides helper functions to initially position an element.
@@ -529,7 +546,7 @@ declare namespace System {
       /**
        * @param {object}      [options] - Initial options.
        *
-       * @param {boolean}     [options.constrain] - Constrain state.
+       * @param {boolean}     [options.constrain=true] - Constrain state.
        *
        * @param {HTMLElement} [options.element] - Target element.
        *
@@ -558,20 +575,40 @@ declare namespace System {
       }): IInitialSystem;
     }
   }
+  /**
+   * Defines the position validator extension point for constraining positional changes. The browser window / element
+   * bounds validation with and without transform support is available via {@link TJSPosition.Validators}.
+   *
+   * To create a unique validator extend {@link TJSPosition.SystemBase} and implement the {@link IValidatorSystem}
+   * interface.
+   */
   namespace Validator {
     /**
-     * Provides helper functions to initially position an element.
+     * Provides a system to validate positional changes.
      */
     interface IValidatorSystem extends ISystemBase {
       /**
-       * Provides a validator that respects transforms in positional data constraining the position to within the target
-       * elements bounds.
+       * Provides a validator that respects transforms in positional data constraining the position to within the
+       * target elements bounds.
        *
        * @param {IValidatorAPI.ValidationData}   valData - The associated validation data for position updates.
        *
        * @returns {TJSPositionData} Potentially adjusted position data.
        */
-      validator(valData: IValidatorAPI.ValidationData): TJSPositionData;
+      validate: IValidatorAPI.ValidatorFn;
+      /**
+       * An ID associated with this validator. Can be used to remove the validator; default: `undefined`.
+       */
+      id?: any;
+      /**
+       * Optional subscribe function following the Svelte store / subscribe pattern. On updates validation will
+       * be processed again.
+       */
+      subscribe?(this: void, run: Subscriber<any>, invalidate?: Invalidator<any>): Unsubscriber;
+      /**
+       * A number between 0 and 1 inclusive to position this validator against others; default: `1`.
+       */
+      weight?: number;
     }
     /**
      * Describes the constructor function for an {@link IValidatorSystem} implementation.
@@ -580,7 +617,7 @@ declare namespace System {
       /**
        * @param {object}      [options] - Initial options.
        *
-       * @param {boolean}     [options.constrain] - Constrain state.
+       * @param {boolean}     [options.constrain=true] - Constrain state.
        *
        * @param {HTMLElement} [options.element] - Target element.
        *
@@ -670,7 +707,7 @@ declare namespace System {
     /**
      * @param {object}      [options] - Initial options.
      *
-     * @param {boolean}     [options.constrain] - Constrain state.
+     * @param {boolean}     [options.constrain=true] - Constrain state.
      *
      * @param {HTMLElement} [options.element] - Target element.
      *
@@ -773,7 +810,10 @@ declare namespace draggable {
    */
   function options(options: { ease?: boolean; easeOptions?: any }): DraggableOptions;
 }
-declare class DraggableOptions {
+/**
+ * @implements {import('svelte/store').Readable<DraggableOptions>}
+ */
+declare class DraggableOptions implements Readable<DraggableOptions> {
   /**
    *
    * @param {object} [opts] - Optional parameters.
@@ -1210,8 +1250,10 @@ declare namespace IAnimationAPI {
 /**
  * Provides a store for position following the subscriber protocol in addition to providing individual writable derived
  * stores for each independent variable.
+ *
+ * @implements {import('svelte/store').Readable<TJSPositionData>}
  */
-declare class TJSPosition {
+declare class TJSPosition implements Readable<TJSPositionData> {
   /**
    * @returns {import('./animation/types').IAnimationGroupAPI} Public Animation API.
    */
@@ -1268,11 +1310,11 @@ declare class TJSPosition {
   /**
    * Returns the dimension data for the readable store.
    *
-   * @returns {{width: number | 'auto', height: number | 'auto'}} Dimension data.
+   * @returns {{width: number | 'auto' | 'inherit', height: number | 'auto' | 'inherit'}} Dimension data.
    */
   get dimension(): {
-    width: number | 'auto';
-    height: number | 'auto';
+    width: number | 'auto' | 'inherit';
+    height: number | 'auto' | 'inherit';
   };
   /**
    * Sets the enabled state.
@@ -1289,7 +1331,7 @@ declare class TJSPosition {
   /**
    * Returns the current HTMLElement being positioned.
    *
-   * @returns {HTMLElement|undefined} Current HTMLElement being positioned.
+   * @returns {HTMLElement | undefined} Current HTMLElement being positioned.
    */
   get element(): HTMLElement;
   /**
@@ -1335,99 +1377,99 @@ declare class TJSPosition {
    */
   get validators(): IValidatorAPI;
   /**
-   * @param {number|string|null} height -
+   * @param {number | string | null} height -
    */
   set height(height: number | 'auto' | 'inherit');
   /**
-   * @returns {number|'auto'|'inherit'|null} height
+   * @returns {number | 'auto' | 'inherit' | null} height
    */
   get height(): number | 'auto' | 'inherit';
   /**
-   * @param {number|string|null} left -
+   * @param {number | string | null} left -
    */
   set left(left: number);
   /**
-   * @returns {number|null} left
+   * @returns {number | null} left
    */
   get left(): number;
   /**
-   * @param {number|string|null} maxHeight -
+   * @param {number | string | null} maxHeight -
    */
   set maxHeight(maxHeight: number);
   /**
-   * @returns {number|null} maxHeight
+   * @returns {number | null} maxHeight
    */
   get maxHeight(): number;
   /**
-   * @param {number|string|null} maxWidth -
+   * @param {number | string | null} maxWidth -
    */
   set maxWidth(maxWidth: number);
   /**
-   * @returns {number|null} maxWidth
+   * @returns {number | null} maxWidth
    */
   get maxWidth(): number;
   /**
-   * @param {number|string|null} minHeight -
+   * @param {number | string | null} minHeight -
    */
   set minHeight(minHeight: number);
   /**
-   * @returns {number|null} minHeight
+   * @returns {number | null} minHeight
    */
   get minHeight(): number;
   /**
-   * @param {number|string|null} minWidth -
+   * @param {number | string | null} minWidth -
    */
   set minWidth(minWidth: number);
   /**
-   * @returns {number|null} minWidth
+   * @returns {number | null} minWidth
    */
   get minWidth(): number;
   /**
-   * @param {number|string|null} rotateX -
+   * @param {number | string | null} rotateX -
    */
   set rotateX(rotateX: number);
   /**
-   * @returns {number|null} rotateX
+   * @returns {number | null} rotateX
    */
   get rotateX(): number;
   /**
-   * @param {number|string|null} rotateY -
+   * @param {number | string | null} rotateY -
    */
   set rotateY(rotateY: number);
   /**
-   * @returns {number|null} rotateY
+   * @returns {number | null} rotateY
    */
   get rotateY(): number;
   /**
-   * @param {number|string|null} rotateZ -
+   * @param {number | string | null} rotateZ -
    */
   set rotateZ(rotateZ: number);
   /**
-   * @returns {number|null} rotateZ
+   * @returns {number | null} rotateZ
    */
   get rotateZ(): number;
   /**
-   * @param {number|string|null} rotateZ - alias for rotateZ
+   * @param {number | string | null} rotateZ - alias for rotateZ
    */
   set rotation(rotateZ: number);
   /**
-   * @returns {number|null} alias for rotateZ
+   * @returns {number | null} alias for rotateZ
    */
   get rotation(): number;
   /**
-   * @param {number|string|null} scale -
+   * @param {number | string | null} scale -
    */
   set scale(scale: number);
   /**
-   * @returns {number|null} scale
+   * @returns {number | null} scale
    */
   get scale(): number;
   /**
-   * @param {number|string|null} top -
+   * @param {number | string | null} top -
    */
   set top(top: number);
   /**
-   * @returns {number|null} top
+   * @returns {number | null} top
    */
   get top(): number;
   /**
@@ -1439,49 +1481,49 @@ declare class TJSPosition {
    */
   get transformOrigin(): ITransformAPI.TransformOrigin;
   /**
-   * @param {number|string|null} translateX -
+   * @param {number | string | null} translateX -
    */
   set translateX(translateX: number);
   /**
-   * @returns {number|null} translateX
+   * @returns {number | null} translateX
    */
   get translateX(): number;
   /**
-   * @param {number|string|null} translateY -
+   * @param {number | string | null} translateY -
    */
   set translateY(translateY: number);
   /**
-   * @returns {number|null} translateY
+   * @returns {number | null} translateY
    */
   get translateY(): number;
   /**
-   * @param {number|string|null} translateZ -
+   * @param {number | string | null} translateZ -
    */
   set translateZ(translateZ: number);
   /**
-   * @returns {number|null} translateZ
+   * @returns {number | null} translateZ
    */
   get translateZ(): number;
   /**
-   * @param {number|string|null} width -
+   * @param {number | string | null} width -
    */
   set width(width: number | 'auto' | 'inherit');
   /**
-   * @returns {number|'auto'|'inherit'|null} width
+   * @returns {number | 'auto' | 'inherit' | null} width
    */
   get width(): number | 'auto' | 'inherit';
   /**
-   * @param {number|string|null} zIndex -
+   * @param {number | string | null} zIndex -
    */
   set zIndex(zIndex: number);
   /**
-   * @returns {number|null} z-index
+   * @returns {number | null} z-index
    */
   get zIndex(): number;
   /**
    * Assigns current position to object passed into method.
    *
-   * @param {object|TJSPositionData}  [position] - Target to assign current position data.
+   * @param {object | TJSPositionData}  [position] - Target to assign current position data.
    *
    * @param {import('./').TJSPositionGetOptions}   [options] - Defines options for specific keys and substituting null
    *        for numeric default values.
@@ -1556,9 +1598,9 @@ type TJSPositionOptions = {
   calculateTransform: boolean;
   /**
    * Provides a helper for setting
-   * initial position data.
+   * initial position location.
    */
-  initialHelper: System.Initial.IInitialSystem;
+  initial: System.Initial.IInitialSystem;
   /**
    * Sets TJSPosition to orthographic mode using just transform / matrix3d for positioning.
    */
@@ -1567,6 +1609,13 @@ type TJSPositionOptions = {
    * Set to true when there are subscribers to the readable transform store.
    */
   transformSubscribed: boolean;
+  /**
+   * - Provides an initial validator or list of validators.
+   */
+  validator:
+    | IValidatorAPI.ValidatorFn
+    | IValidatorAPI.ValidatorData
+    | Iterable<IValidatorAPI.ValidatorFn | IValidatorAPI.ValidatorData>;
 };
 type TJSPositionOptionsAll = TJSPositionOptions & TJSPositionData;
 /**

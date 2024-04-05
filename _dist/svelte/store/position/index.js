@@ -2547,7 +2547,8 @@ class Centered extends SystemBase
  * runs before a higher weighted validator. If no weight is specified the default of '1' is assigned and it is appended
  * to the end of the validators list.
  *
- * This class forms the public API which is accessible from the `.validators` getter in the main TJSPosition instance.
+ * This class forms the public API which is accessible from the {@link TJSPosition.validators} getter in the main
+ * TJSPosition instance.
  * ```
  * const position = new TJSPosition(<TJSPositionData>);
  * position.validators.add(...);
@@ -2570,6 +2571,9 @@ class AdapterValidators
     */
    #validatorData;
 
+   /**
+    * @type {Map<import('./types').IValidatorAPI.ValidationFn, import('svelte/store').Unsubscriber>}
+    */
    #mapUnsubscribe = new Map();
 
    /**
@@ -2654,7 +2658,10 @@ class AdapterValidators
             throw new TypeError(`AdapterValidator error: 'validator' is not a function or object.`);
          }
 
+         /** @type {import('./types').IValidatorAPI.ValidatorData} */
          let data = void 0;
+
+         /** @type {(...args: any[]) => import('svelte/store').Unsubscriber} */
          let subscribeFn = void 0;
 
          switch (validatorType)
@@ -2662,7 +2669,7 @@ class AdapterValidators
             case 'function':
                data = {
                   id: void 0,
-                  validator,
+                  validate: validator,
                   weight: 1
                };
 
@@ -2670,9 +2677,9 @@ class AdapterValidators
                break;
 
             case 'object':
-               if (typeof validator.validator !== 'function')
+               if (typeof validator.validate !== 'function')
                {
-                  throw new TypeError(`AdapterValidator error: 'validator' attribute is not a function.`);
+                  throw new TypeError(`AdapterValidator error: 'validate' attribute is not a function.`);
                }
 
                if (validator.weight !== void 0 && typeof validator.weight !== 'number' ||
@@ -2684,12 +2691,11 @@ class AdapterValidators
 
                data = {
                   id: validator.id !== void 0 ? validator.id : void 0,
-                  validator: validator.validator.bind(validator),
-                  weight: validator.weight || 1,
-                  instance: validator
+                  validate: validator.validate.bind(validator),
+                  weight: validator.weight || 1
                };
 
-               subscribeFn = validator.validator.subscribe ?? validator.subscribe;
+               subscribeFn = validator.validate.subscribe ?? validator.subscribe;
                break;
          }
 
@@ -2718,22 +2724,22 @@ class AdapterValidators
             if (typeof unsubscribe !== 'function')
             {
                throw new TypeError(
-                'AdapterValidator error: Filter has subscribe function, but no unsubscribe function is returned.');
+                'AdapterValidator error: Validator has subscribe function, but no unsubscribe function is returned.');
             }
 
             // Ensure that the same validator is not subscribed to multiple times.
-            if (this.#mapUnsubscribe.has(data.validator))
+            if (this.#mapUnsubscribe.has(data.validate))
             {
                throw new Error(
-                'AdapterValidator error: Filter added already has an unsubscribe function registered.');
+                'AdapterValidator error: Validator added already has an unsubscribe function registered.');
             }
 
-            this.#mapUnsubscribe.set(data.validator, unsubscribe);
+            this.#mapUnsubscribe.set(data.validate, unsubscribe);
             // subscribeCount++;  // TODO: Currently unused
          }
       }
 
-      // Filters with subscriber functionality are assumed to immediately invoke the `subscribe` callback. If the
+      // Validators with subscriber functionality are assumed to immediately invoke the `subscribe` callback. If the
       // subscriber count is less than the amount of validators added then automatically trigger an index update
       // manually.
       // TODO: handle validator updates.
@@ -2776,13 +2782,13 @@ class AdapterValidators
       for (const data of validators)
       {
          // Handle the case that the validator may either be a function or a validator entry / object.
-         const actualValidator = typeof data === 'function' ? data : isObject(data) ? data.validator : void 0;
+         const actualValidator = typeof data === 'function' ? data : isObject(data) ? data.validate : void 0;
 
          if (!actualValidator) { continue; }
 
          for (let cntr = this.#validatorData.length; --cntr >= 0;)
          {
-            if (this.#validatorData[cntr].validator === actualValidator)
+            if (this.#validatorData[cntr].validate === actualValidator)
             {
                this.#validatorData.splice(cntr, 1);
 
@@ -2827,10 +2833,10 @@ class AdapterValidators
          if (remove)
          {
             let unsubscribe;
-            if (typeof (unsubscribe = this.#mapUnsubscribe.get(data.validator)) === 'function')
+            if (typeof (unsubscribe = this.#mapUnsubscribe.get(data.validate)) === 'function')
             {
                unsubscribe();
-               this.#mapUnsubscribe.delete(data.validator);
+               this.#mapUnsubscribe.delete(data.validate);
             }
          }
 
@@ -2863,10 +2869,10 @@ class AdapterValidators
          if (remove)
          {
             let unsubscribe;
-            if (typeof (unsubscribe = this.#mapUnsubscribe.get(data.validator)) === 'function')
+            if (typeof (unsubscribe = this.#mapUnsubscribe.get(data.validate)) === 'function')
             {
                unsubscribe();
-               this.#mapUnsubscribe.delete(data.validator);
+               this.#mapUnsubscribe.delete(data.validate);
             }
          }
 
@@ -2889,7 +2895,7 @@ class BasicBounds extends SystemBase
     *
     * @returns {import('../../').TJSPositionData} Potentially adjusted position data.
     */
-   validator(valData)
+   validate(valData)
    {
       // Early out if element is undefined or local enabled state is false.
       if (!this.enabled) { return valData.position; }
@@ -3010,7 +3016,7 @@ class TransformBounds extends SystemBase
     *
     * @returns {import('../../').TJSPositionData} Potentially adjusted position data.
     */
-   validator(valData)
+   validate(valData)
    {
       // Early out if element is undefined or local enabled state is false.
       if (!this.enabled) { return valData.position; }
@@ -4570,6 +4576,8 @@ const s_VALIDATION_DATA$1 = {
 /**
  * Provides a store for position following the subscriber protocol in addition to providing individual writable derived
  * stores for each independent variable.
+ *
+ * @implements {import('svelte/store').Readable<TJSPositionData>}
  */
 class TJSPosition
 {
@@ -4613,13 +4621,13 @@ class TJSPosition
    /**
     * Stores ongoing options that are set in the constructor or by transform store subscription.
     *
-    * @type {import('./').TJSPositionOptions}
+    * @type {Partial<import('./').TJSPositionOptions>}
     */
    #options = {
       calculateTransform: false,
-      initialHelper: void 0,
+      initial: void 0,
       ortho: true,
-      transformSubscribed: false
+      transformSubscribed: false,
    };
 
    /**
@@ -4940,23 +4948,36 @@ class TJSPosition
 
       [this.#validators, this.#validatorData] = AdapterValidators.create();
 
-      if (options?.initial || options?.positionInitial)
+      if (options?.initial)
       {
-         const initialHelper = options.initial ?? options.positionInitial;
+         const initial = options.initial;
 
-         if (typeof initialHelper?.getLeft !== 'function' || typeof initialHelper?.getTop !== 'function')
+         if (typeof initial?.getLeft !== 'function' || typeof initial?.getTop !== 'function')
          {
             throw new Error(
              `'options.initial' position helper does not contain 'getLeft' and / or 'getTop' functions.`);
          }
 
-         this.#options.initialHelper = initialHelper;
+         this.#options.initial = initial;
       }
 
       if (options?.validator)
       {
-         if (isIterable(options?.validator)) { this.validators.add(...options.validator); }
-         else { this.validators.add(options.validator); }
+         if (isIterable(options?.validator))
+         {
+            this.validators.add(...options.validator);
+         }
+         else
+         {
+            /**
+             * @type {(
+             *    import('./system/validators/types').IValidatorAPI.ValidatorFn |
+             *    import('./system/validators/types').IValidatorAPI.ValidatorData
+             * )}
+             */
+            const validatorFn = options.validator;
+            this.validators.add(validatorFn);
+         }
       }
    }
 
@@ -4973,7 +4994,7 @@ class TJSPosition
    /**
     * Returns the dimension data for the readable store.
     *
-    * @returns {{width: number | 'auto', height: number | 'auto'}} Dimension data.
+    * @returns {{width: number | 'auto' | 'inherit', height: number | 'auto' | 'inherit'}} Dimension data.
     */
    get dimension()
    {
@@ -4993,7 +5014,7 @@ class TJSPosition
    /**
     * Returns the current HTMLElement being positioned.
     *
-    * @returns {HTMLElement|undefined} Current HTMLElement being positioned.
+    * @returns {HTMLElement | undefined} Current HTMLElement being positioned.
     */
    get element()
    {
@@ -5088,62 +5109,62 @@ class TJSPosition
 // Data accessors ----------------------------------------------------------------------------------------------------
 
    /**
-    * @returns {number|'auto'|'inherit'|null} height
+    * @returns {number | 'auto' | 'inherit' | null} height
     */
    get height() { return this.#data.height; }
 
    /**
-    * @returns {number|null} left
+    * @returns {number | null} left
     */
    get left() { return this.#data.left; }
 
    /**
-    * @returns {number|null} maxHeight
+    * @returns {number | null} maxHeight
     */
    get maxHeight() { return this.#data.maxHeight; }
 
    /**
-    * @returns {number|null} maxWidth
+    * @returns {number | null} maxWidth
     */
    get maxWidth() { return this.#data.maxWidth; }
 
    /**
-    * @returns {number|null} minHeight
+    * @returns {number | null} minHeight
     */
    get minHeight() { return this.#data.minHeight; }
 
    /**
-    * @returns {number|null} minWidth
+    * @returns {number | null} minWidth
     */
    get minWidth() { return this.#data.minWidth; }
 
    /**
-    * @returns {number|null} rotateX
+    * @returns {number | null} rotateX
     */
    get rotateX() { return this.#data.rotateX; }
 
    /**
-    * @returns {number|null} rotateY
+    * @returns {number | null} rotateY
     */
    get rotateY() { return this.#data.rotateY; }
 
    /**
-    * @returns {number|null} rotateZ
+    * @returns {number | null} rotateZ
     */
    get rotateZ() { return this.#data.rotateZ; }
 
    /**
-    * @returns {number|null} alias for rotateZ
+    * @returns {number | null} alias for rotateZ
     */
    get rotation() { return this.#data.rotateZ; }
 
    /**
-    * @returns {number|null} scale
+    * @returns {number | null} scale
     */
    get scale() { return this.#data.scale; }
 
    /**
-    * @returns {number|null} top
+    * @returns {number | null} top
     */
    get top() { return this.#data.top; }
 
@@ -5153,32 +5174,32 @@ class TJSPosition
    get transformOrigin() { return this.#data.transformOrigin; }
 
    /**
-    * @returns {number|null} translateX
+    * @returns {number | null} translateX
     */
    get translateX() { return this.#data.translateX; }
 
    /**
-    * @returns {number|null} translateY
+    * @returns {number | null} translateY
     */
    get translateY() { return this.#data.translateY; }
 
    /**
-    * @returns {number|null} translateZ
+    * @returns {number | null} translateZ
     */
    get translateZ() { return this.#data.translateZ; }
 
    /**
-    * @returns {number|'auto'|'inherit'|null} width
+    * @returns {number | 'auto' | 'inherit' | null} width
     */
    get width() { return this.#data.width; }
 
    /**
-    * @returns {number|null} z-index
+    * @returns {number | null} z-index
     */
    get zIndex() { return this.#data.zIndex; }
 
    /**
-    * @param {number|string|null} height -
+    * @param {number | string | null} height -
     */
    set height(height)
    {
@@ -5186,7 +5207,7 @@ class TJSPosition
    }
 
    /**
-    * @param {number|string|null} left -
+    * @param {number | string | null} left -
     */
    set left(left)
    {
@@ -5194,7 +5215,7 @@ class TJSPosition
    }
 
    /**
-    * @param {number|string|null} maxHeight -
+    * @param {number | string | null} maxHeight -
     */
    set maxHeight(maxHeight)
    {
@@ -5202,7 +5223,7 @@ class TJSPosition
    }
 
    /**
-    * @param {number|string|null} maxWidth -
+    * @param {number | string | null} maxWidth -
     */
    set maxWidth(maxWidth)
    {
@@ -5210,7 +5231,7 @@ class TJSPosition
    }
 
    /**
-    * @param {number|string|null} minHeight -
+    * @param {number | string | null} minHeight -
     */
    set minHeight(minHeight)
    {
@@ -5218,7 +5239,7 @@ class TJSPosition
    }
 
    /**
-    * @param {number|string|null} minWidth -
+    * @param {number | string | null} minWidth -
     */
    set minWidth(minWidth)
    {
@@ -5226,7 +5247,7 @@ class TJSPosition
    }
 
    /**
-    * @param {number|string|null} rotateX -
+    * @param {number | string | null} rotateX -
     */
    set rotateX(rotateX)
    {
@@ -5234,7 +5255,7 @@ class TJSPosition
    }
 
    /**
-    * @param {number|string|null} rotateY -
+    * @param {number | string | null} rotateY -
     */
    set rotateY(rotateY)
    {
@@ -5242,7 +5263,7 @@ class TJSPosition
    }
 
    /**
-    * @param {number|string|null} rotateZ -
+    * @param {number | string | null} rotateZ -
     */
    set rotateZ(rotateZ)
    {
@@ -5250,7 +5271,7 @@ class TJSPosition
    }
 
    /**
-    * @param {number|string|null} rotateZ - alias for rotateZ
+    * @param {number | string | null} rotateZ - alias for rotateZ
     */
    set rotation(rotateZ)
    {
@@ -5258,7 +5279,7 @@ class TJSPosition
    }
 
    /**
-    * @param {number|string|null} scale -
+    * @param {number | string | null} scale -
     */
    set scale(scale)
    {
@@ -5266,7 +5287,7 @@ class TJSPosition
    }
 
    /**
-    * @param {number|string|null} top -
+    * @param {number | string | null} top -
     */
    set top(top)
    {
@@ -5282,7 +5303,7 @@ class TJSPosition
    }
 
    /**
-    * @param {number|string|null} translateX -
+    * @param {number | string | null} translateX -
     */
    set translateX(translateX)
    {
@@ -5290,7 +5311,7 @@ class TJSPosition
    }
 
    /**
-    * @param {number|string|null} translateY -
+    * @param {number | string | null} translateY -
     */
    set translateY(translateY)
    {
@@ -5298,7 +5319,7 @@ class TJSPosition
    }
 
    /**
-    * @param {number|string|null} translateZ -
+    * @param {number | string | null} translateZ -
     */
    set translateZ(translateZ)
    {
@@ -5306,7 +5327,7 @@ class TJSPosition
    }
 
    /**
-    * @param {number|string|null} width -
+    * @param {number | string | null} width -
     */
    set width(width)
    {
@@ -5314,7 +5335,7 @@ class TJSPosition
    }
 
    /**
-    * @param {number|string|null} zIndex -
+    * @param {number | string | null} zIndex -
     */
    set zIndex(zIndex)
    {
@@ -5324,7 +5345,7 @@ class TJSPosition
    /**
     * Assigns current position to object passed into method.
     *
-    * @param {object|TJSPositionData}  [position] - Target to assign current position data.
+    * @param {object | TJSPositionData}  [position] - Target to assign current position data.
     *
     * @param {import('./').TJSPositionGetOptions}   [options] - Defines options for specific keys and substituting null
     *        for numeric default values.
@@ -5770,8 +5791,8 @@ class TJSPosition
       else if (!Number.isFinite(currentPosition.left))
       {
          // Potentially use any initial position helper if available or set to 0.
-         currentPosition.left = typeof this.#options.initialHelper?.getLeft === 'function' ?
-          this.#options.initialHelper.getLeft(width) : 0;
+         currentPosition.left = typeof this.#options?.initial?.getLeft === 'function' ?
+          this.#options.initial.getLeft(width) : 0;
       }
 
       // Update top
@@ -5782,8 +5803,8 @@ class TJSPosition
       else if (!Number.isFinite(currentPosition.top))
       {
          // Potentially use any initial position helper if available or set to 0.
-         currentPosition.top = typeof this.#options.initialHelper?.getTop === 'function' ?
-          this.#options.initialHelper.getTop(height) : 0;
+         currentPosition.top = typeof this.#options?.initial?.getTop === 'function' ?
+          this.#options.initial.getTop(height) : 0;
       }
 
       if (Number.isFinite(maxHeight) || maxHeight === null)
@@ -5880,7 +5901,7 @@ class TJSPosition
          {
             s_VALIDATION_DATA.position = currentPosition;
             s_VALIDATION_DATA.rest = rest;
-            currentPosition = validatorData[cntr].validator(s_VALIDATION_DATA);
+            currentPosition = validatorData[cntr].validate(s_VALIDATION_DATA);
 
             if (currentPosition === null) { return null; }
          }
@@ -6239,6 +6260,9 @@ function draggable(node, { position, active = true, button = 0, storeDragging = 
    };
 }
 
+/**
+ * @implements {import('svelte/store').Readable<DraggableOptions>}
+ */
 class DraggableOptions
 {
    #ease = false;
