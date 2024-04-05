@@ -1100,13 +1100,13 @@ interface IAnimationGroupAPI {
    *
    * @param {IAnimationAPI.QuickTweenOptions | (() => IAnimationAPI.QuickTweenOptions)}  [options] -
    *
-   * @returns {IAnimationAPI.quickToCallback} quick-to tween function.
+   * @returns {IAnimationAPI.QuickToCallback} quick-to tween function.
    */
   quickTo(
     position: TJSPositionGroup,
     keys: Iterable<IAnimationAPI.AnimationKeys>,
     options?: IAnimationAPI.QuickTweenOptions | (() => IAnimationAPI.QuickTweenOptions),
-  ): IAnimationAPI.quickToCallback;
+  ): IAnimationAPI.QuickToCallback;
 }
 interface IAnimationAPI {
   /**
@@ -1168,12 +1168,12 @@ interface IAnimationAPI {
    *
    * @param {IAnimationAPI.QuickTweenOptions} [options] - Optional quick tween parameters.
    *
-   * @returns {IAnimationAPI.quickToCallback} quick-to tween function.
+   * @returns {IAnimationAPI.QuickToCallback} quick-to tween function.
    */
   quickTo(
     keys: Iterable<IAnimationAPI.AnimationKeys>,
     options?: IAnimationAPI.QuickTweenOptions,
-  ): IAnimationAPI.quickToCallback;
+  ): IAnimationAPI.QuickToCallback;
 }
 declare namespace IAnimationAPI {
   /**
@@ -1223,7 +1223,7 @@ declare namespace IAnimationAPI {
      */
     delay?: number;
   };
-  interface quickToCallback extends Function {
+  interface QuickToCallback extends Function {
     /**
      * @param args - Individual numbers corresponding to the order in which animation keys are specified.
      */
@@ -1243,7 +1243,7 @@ declare namespace IAnimationAPI {
      *
      * @returns This quickTo callback function.
      */
-    options: (data: QuickTweenOptions) => quickToCallback;
+    options: (data: QuickTweenOptions) => QuickToCallback;
   }
 }
 

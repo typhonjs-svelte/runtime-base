@@ -876,7 +876,7 @@ class AnimationAPI
     *
     * @param {import('./types').IAnimationAPI.QuickTweenOptions} [options] - Optional quick tween parameters.
     *
-    * @returns {import('./types').IAnimationAPI.quickToCallback} quick-to tween function.
+    * @returns {import('./types').IAnimationAPI.QuickToCallback} quick-to tween function.
     */
    quickTo(keys, { duration = 1, ease = cubicOut, interpolate = lerp } = {})
    {
@@ -959,7 +959,7 @@ class AnimationAPI
          start: void 0
       };
 
-      const quickToCB = /** @type {import('./types').IAnimationAPI.quickToCallback} */ (...args) =>
+      const quickToCB = /** @type {import('./types').IAnimationAPI.QuickToCallback} */ (...args) =>
       {
          const argsLength = args.length;
 
@@ -1755,9 +1755,12 @@ class AnimationGroupAPI
     *
     * @param {Iterable<import('./types').IAnimationAPI.AnimationKeys>}  keys -
     *
-    * @param {import('./types').IAnimationAPI.QuickTweenOptions | (() => import('./types').IAnimationAPI.QuickTweenOptions)}   options -
+    * @param {(
+    *    import('./types').IAnimationAPI.QuickTweenOptions |
+    *    (() => import('./types').IAnimationAPI.QuickTweenOptions)
+    * )}   options - Quick tween options.
     *
-    * @returns {import('./types').IAnimationAPI.quickToCallback} quick-to tween function.
+    * @returns {import('./types').IAnimationAPI.QuickToCallback} quick-to tween function.
     */
    static quickTo(position, keys, options)
    {
@@ -1772,7 +1775,7 @@ class AnimationGroupAPI
       }
 
       /**
-       * @type {import('./types').IAnimationAPI.quickToCallback[]}
+       * @type {import('./types').IAnimationAPI.QuickToCallback[]}
        */
       const quickToCallbacks = [];
 
@@ -1955,7 +1958,7 @@ class AnimationGroupAPI
       /**
        * Sets options of quickTo tween.
        *
-       * @param {object | Function}   [opts] - Optional parameters.
+       * @param {object | Function}   [options] - Optional parameters.
        *
        * @param {number}            [options.duration] - Duration in seconds.
        *
@@ -1963,7 +1966,7 @@ class AnimationGroupAPI
        *
        * @param {Function}          [options.interpolate] - Interpolation function.
        *
-       * @returns {import('../').quickToCallback} The quickTo callback.
+       * @returns {import('./types').IAnimationAPI.QuickToCallback} The quickTo callback.
        */
       quickToCB.options = (options) => // eslint-disable-line no-shadow
       {
@@ -6041,7 +6044,7 @@ function draggable(node, { position, active = true, button = 0, storeDragging = 
    /**
     * Stores the quickTo callback to use for optimized tweening when easing is enabled.
     *
-    * @type {import('#runtime/svelte/store/position').quickToCallback}
+    * @type {import('../animation/types').IAnimationAPI.QuickToCallback}
     */
    let quickTo = position.animate.quickTo(['top', 'left'], easeOptions);
 
