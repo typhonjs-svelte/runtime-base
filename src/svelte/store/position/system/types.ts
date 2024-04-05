@@ -1,11 +1,22 @@
-import { type IValidatorAPI }    from './validators/types';
-import { type TJSPositionData }  from '../TJSPositionData';
+import type { IValidatorAPI }    from './validators/types';
+
+import type { TJSPosition }      from '../TJSPosition';
+import type { TJSPositionData }  from '../TJSPositionData';
 
 /**
  * Defines the extension points that are available to provide custom implementations for initial positioning and
- * validation of positional movement.
+ * validation of positional movement. There are default implementations for initial `Centered` positioning available
+ * via {@link TJSPosition.Initial} and browser window / element bounds validation with and without transform support
+ * available via {@link TJSPosition.Validators}.
  */
 namespace System {
+   /**
+    * Defines the initial position extension point for positioning elements. The default implementation for initial
+    * `Centered` positioning is available via {@link TJSPosition.Initial}. To
+    *
+    * To create a unique initial position system extend {@link TJSPosition.SystemBase} and implement the
+    * {@link IInitialSystem} interface.
+    */
    export namespace Initial {
       /**
        * Provides helper functions to initially position an element.
@@ -37,7 +48,7 @@ namespace System {
          /**
           * @param {object}      [options] - Initial options.
           *
-          * @param {boolean}     [options.constrain] - Constrain state.
+          * @param {boolean}     [options.constrain=true] - Constrain state.
           *
           * @param {HTMLElement} [options.element] - Target element.
           *
@@ -60,6 +71,13 @@ namespace System {
       }
    }
 
+   /**
+    * Defines the position validator extension point for constraining positional changes. The browser window / element
+    * bounds validation with and without transform support is available via {@link TJSPosition.Validators}.
+    *
+    * To create a unique validator extend {@link TJSPosition.SystemBase} and implement the {@link IValidatorSystem}
+    * interface.
+    */
    export namespace Validator {
       /**
        * Provides helper functions to initially position an element.
@@ -83,7 +101,7 @@ namespace System {
          /**
           * @param {object}      [options] - Initial options.
           *
-          * @param {boolean}     [options.constrain] - Constrain state.
+          * @param {boolean}     [options.constrain=true] - Constrain state.
           *
           * @param {HTMLElement} [options.element] - Target element.
           *
@@ -179,7 +197,7 @@ namespace System {
       /**
        * @param {object}      [options] - Initial options.
        *
-       * @param {boolean}     [options.constrain] - Constrain state.
+       * @param {boolean}     [options.constrain=true] - Constrain state.
        *
        * @param {HTMLElement} [options.element] - Target element.
        *
