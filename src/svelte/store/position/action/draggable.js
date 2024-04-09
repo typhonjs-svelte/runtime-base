@@ -24,9 +24,9 @@ import {
  * @param {import('svelte/store').Writable<boolean>} [params.storeDragging] - A writable store that tracks "dragging"
  *        state.
  *
- * @param {boolean}           [params.ease=true] - When true easing is enabled.
+ * @param {boolean}           [params.tween=false] - When true tweening is enabled.
  *
- * @param {object}            [params.easeOptions] - Gsap `to / `quickTo` vars object.
+ * @param {import('../animation/types').IAnimationAPI.QuickTweenOptions} [params.tweenOptions] - Quick tween options.
  *
  * @param {Iterable<string>}  [params.hasTargetClassList] - When defined any event targets that have a class in this
  *        list are allowed.
@@ -36,8 +36,8 @@ import {
  *
  * @returns {import('svelte/action').ActionReturn<Record<string, any>>} Lifecycle functions.
  */
-function draggable(node, { position, active = true, button = 0, storeDragging = void 0, ease = false,
- easeOptions = { duration: 0.06, ease: cubicOut }, hasTargetClassList, ignoreTargetClassList })
+function draggable(node, { position, active = true, button = 0, storeDragging = void 0, tween = false,
+ tweenOptions = { duration: 1, ease: cubicOut }, hasTargetClassList, ignoreTargetClassList })
 {
    if (hasTargetClassList !== void 0 && !isIterable(hasTargetClassList))
    {
@@ -83,7 +83,7 @@ function draggable(node, { position, active = true, button = 0, storeDragging = 
     *
     * @type {import('../animation/types').IAnimationAPI.QuickToCallback}
     */
-   let quickTo = position.animate.quickTo(['top', 'left'], easeOptions);
+   let quickTo = position.animate.quickTo(['top', 'left'], tweenOptions);
 
    /**
     * Remember event handlers associated with this action, so they may be later unregistered.
@@ -212,7 +212,7 @@ function draggable(node, { position, active = true, button = 0, storeDragging = 
       /** @type {number} */
       const newTop = initialPosition.top + (event.clientY - initialDragPoint.y);
 
-      if (ease)
+      if (tween)
       {
          quickTo(newTop, newLeft);
       }
@@ -260,15 +260,15 @@ function draggable(node, { position, active = true, button = 0, storeDragging = 
          if (options.position !== void 0 && options.position !== position)
          {
             position = options.position;
-            quickTo = position.animate.quickTo(['top', 'left'], easeOptions);
+            quickTo = position.animate.quickTo(['top', 'left'], tweenOptions);
          }
 
-         if (typeof options.ease === 'boolean') { ease = options.ease; }
+         if (typeof options.tween === 'boolean') { tween = options.tween; }
 
-         if (isObject(options.easeOptions))
+         if (isObject(options.tweenOptions))
          {
-            easeOptions = options.easeOptions;
-            quickTo.options(easeOptions);
+            tweenOptions = options.tweenOptions;
+            quickTo.options(tweenOptions);
          }
 
          if (options.hasTargetClassList !== void 0)
@@ -301,77 +301,94 @@ function draggable(node, { position, active = true, button = 0, storeDragging = 
 }
 
 /**
- * @implements {import('svelte/store').Readable<DraggableOptions>}
+ * Provides an instance of the {@link draggable} action options support / Readable store to make updating / setting
+ * draggable options much easier. When subscribing to the options instance returned by {@link draggable.options} the
+ * Subscriber handler receives the entire instance.
+ *
+ * @implements {import('./types').IDraggableOptions}
  */
 class DraggableOptions
 {
-   #ease = false;
+   /** @type {boolean} */
+   #initialTween;
 
    /**
-    * @type {{ duration: number, ease: (t: number) => number | string }}
+    * @type {import('../animation/types').IAnimationAPI.QuickTweenOptions}
     */
-   #easeOptions = { duration: 0.06, ease: cubicOut };
+   #initialTweenOptions;
+
+   /** @type {boolean} */
+   #tween;
+
+   /**
+    * @type {import('../animation/types').IAnimationAPI.QuickTweenOptions}
+    */
+   #tweenOptions = { duration: 1, ease: cubicOut };
 
    /**
     * Stores the subscribers.
     *
-    * @type {import('svelte/store').Subscriber<DraggableOptions>[]}
+    * @type {import('svelte/store').Subscriber<import('./types').IDraggableOptions>[]}
     */
    #subscriptions = [];
 
    /**
-    *
     * @param {object} [opts] - Optional parameters.
     *
-    * @param {boolean}  [opts.ease] -
+    * @param {boolean}  [opts.tween = false] - Tween enabled.
     *
-    * @param {object}   [opts.easeOptions] -
+    * @param {import('../animation/types').IAnimationAPI.QuickTweenOptions}   [opts.tweenOptions] - Quick tween options.
     */
-   constructor({ ease, easeOptions } = {})
+   constructor({ tween = false, tweenOptions } = {})
    {
       // Define the following getters directly on this instance and make them enumerable. This allows them to be
       // picked up w/ `Object.assign`.
-      Object.defineProperty(this, 'ease', {
-         get: () => { return this.#ease; },
-         set: (newEase) =>
+      Object.defineProperty(this, 'tween', {
+         get: () => { return this.#tween; },
+         set: (newTween) =>
          {
-            if (typeof newEase !== 'boolean') { throw new TypeError(`'ease' is not a boolean.`); }
+            if (typeof newTween !== 'boolean') { throw new TypeError(`'tween' is not a boolean.`); }
 
-            this.#ease = newEase;
+            this.#tween = newTween;
             this.#updateSubscribers();
          },
          enumerable: true
       });
 
-      Object.defineProperty(this, 'easeOptions', {
-         get: () => { return this.#easeOptions; },
-         set: (newEaseOptions) =>
+      Object.defineProperty(this, 'tweenOptions', {
+         get: () => { return this.#tweenOptions; },
+         set: (newTweenOptions) =>
          {
-            if (!isObject(newEaseOptions))
+            if (!isObject(newTweenOptions))
             {
-               throw new TypeError(`'easeOptions' is not an object.`);
+               throw new TypeError(`'tweenOptions' is not an object.`);
             }
 
-            if (newEaseOptions.duration !== void 0)
+            if (newTweenOptions.duration !== void 0)
             {
-               if (!Number.isFinite(newEaseOptions.duration))
+               if (!Number.isFinite(newTweenOptions.duration))
                {
-                  throw new TypeError(`'easeOptions.duration' is not a finite number.`);
+                  throw new TypeError(`'tweenOptions.duration' is not a finite number.`);
                }
 
-               if (newEaseOptions.duration < 0) { throw new Error(`'easeOptions.duration' is less than 0.`); }
-
-               this.#easeOptions.duration = newEaseOptions.duration;
+               if (newTweenOptions.duration < 0)
+               {
+                  this.#tweenOptions.duration = 0;
+               }
+               else
+               {
+                  this.#tweenOptions.duration = newTweenOptions.duration;
+               }
             }
 
-            if (newEaseOptions.ease !== void 0)
+            if (newTweenOptions.ease !== void 0)
             {
-               if (typeof newEaseOptions.ease !== 'function' && typeof newEaseOptions.ease !== 'string')
+               if (typeof newTweenOptions.ease !== 'function')
                {
-                  throw new TypeError(`'easeOptions.ease' is not a function or string.`);
+                  throw new TypeError(`'tweenOptions.ease' is not a function.`);
                }
 
-               this.#easeOptions.ease = newEaseOptions.ease;
+               this.#tweenOptions.ease = newTweenOptions.ease;
             }
 
             this.#updateSubscribers();
@@ -380,75 +397,86 @@ class DraggableOptions
       });
 
       // Set default options.
-      if (ease !== void 0) { this.ease = ease; }
-      if (easeOptions !== void 0) { this.easeOptions = easeOptions; }
+      if (tween !== void 0) { this.tween = tween; }
+      if (tweenOptions !== void 0) { this.tweenOptions = tweenOptions; }
+
+      this.#initialTween = this.#tween;
+      this.#initialTweenOptions = Object.assign({}, this.#tweenOptions);
    }
 
+   /**
+    * @returns {number} Get tween duration.
+    */
+   get tweenDuration() { return this.#tweenOptions.duration; }
 
    /**
-    * @returns {number} Get ease duration
+    * @returns {import('svelte/transition').EasingFunction} Get easing function.
     */
-   get easeDuration() { return this.#easeOptions.duration; }
+   get tweenEase() { return this.#tweenOptions.ease; }
 
    /**
-    * @returns {string|Function} Get easing function value.
+    * @param {number}   duration - Set tween duration.
     */
-   get easeValue() { return this.#easeOptions.ease; }
-
-
-   /**
-    * @param {number}   duration - Set ease duration.
-    */
-   set easeDuration(duration)
+   set tweenDuration(duration)
    {
       if (!Number.isFinite(duration))
       {
          throw new TypeError(`'duration' is not a finite number.`);
       }
 
-      if (duration < 0) { throw new Error(`'duration' is less than 0.`); }
+      if (duration < 0) { duration = 0; }
 
-      this.#easeOptions.duration = duration;
+      this.#tweenOptions.duration = duration;
       this.#updateSubscribers();
    }
 
    /**
-    * @param {string|Function} value - Get easing function value.
+    * @param {import('svelte/transition').EasingFunction} ease - Set easing function.
     */
-   set easeValue(value)
+   set tweenEase(ease)
    {
-      if (typeof value !== 'function' && typeof value !== 'string')
+      if (typeof ease !== 'function')
       {
-         throw new TypeError(`'value' is not a function or string.`);
+         throw new TypeError(`'ease' is not a function.`);
       }
 
-      this.#easeOptions.ease = value;
+      this.#tweenOptions.ease = ease;
       this.#updateSubscribers();
    }
 
    /**
-    * Resets all options data to default values.
+    * Resets all options data to initial values.
     */
    reset()
    {
-      this.#ease = false;
-      this.#easeOptions = { duration: 0.06, ease: cubicOut };
+      this.#tween = this.#initialTween;
+      this.#tweenOptions = Object.assign({}, this.#initialTweenOptions);
       this.#updateSubscribers();
    }
 
    /**
-    * Resets easing options to default values.
+    * Resets tween enabled state to initial value.
     */
-   resetEase()
+   resetTween()
    {
-      this.#easeOptions = { duration: 0.06, ease: cubicOut };
+      this.#tween = this.#initialTween;
       this.#updateSubscribers();
    }
 
    /**
+    * Resets tween options to initial values.
+    */
+   resetTweenOptions()
+   {
+      this.#tweenOptions = Object.assign({}, this.#initialTweenOptions);
+      this.#updateSubscribers();
+   }
+
+   /**
+    * Store subscribe method.
     *
-    * @param {import('svelte/store').Subscriber<DraggableOptions>} handler - Callback function that is invoked on
-    *        update / changes. Receives the DraggableOptions object / instance.
+    * @param {import('svelte/store').Subscriber<import('./types').IDraggableOptions>} handler - Callback function that
+    *        is invoked on update / changes. Receives the DraggableOptions object / instance.
     *
     * @returns {import('svelte/store').Unsubscriber} Unsubscribe function.
     */
@@ -479,11 +507,14 @@ class DraggableOptions
 }
 
 /**
- * Define a function to get a DraggableOptions instance.
+ * Define a function to get an IDraggableOptions instance.
  *
- * @param {{ ease?: boolean, easeOptions?: object }} options - Draggable options.
+ * @param {({
+ *    tween?: boolean,
+ *    tweenOptions?: import('../animation/types').IAnimationAPI.QuickTweenOptions
+ * })} options - Initial options for IDraggableOptions.
  *
- * @returns {DraggableOptions} A new options instance.
+ * @returns {import('./types').IDraggableOptions} A new options instance.
  */
 draggable.options = (options) => new DraggableOptions(options);
 
