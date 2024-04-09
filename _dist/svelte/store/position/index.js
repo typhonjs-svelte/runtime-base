@@ -106,6 +106,13 @@ class AnimationControl
 class AnimationManager
 {
    /**
+    * Defines the options used for {@link TJSPosition.set}.
+    *
+    * @type {Readonly<{immediateElementUpdate: boolean}>}
+    */
+   static #tjsPositionSetOptions = Object.freeze({ immediateElementUpdate: true });
+
+   /**
     * @type {object[]}
     */
    static activeList = [];
@@ -201,7 +208,7 @@ class AnimationManager
                data.newData[key] = data.destination[key];
             }
 
-            data.position.set(data.newData);
+            data.position.set(data.newData, AnimationManager.#tjsPositionSetOptions);
 
             AnimationManager.activeList.splice(cntr, 1);
             data.cleanup(data);
@@ -218,7 +225,7 @@ class AnimationManager
             data.newData[key] = data.interpolate(data.initial[key], data.destination[key], easedTime);
          }
 
-         data.position.set(data.newData);
+         data.position.set(data.newData, AnimationManager.#tjsPositionSetOptions);
       }
 
       globalThis.requestAnimationFrame(AnimationManager.animate);
@@ -559,7 +566,7 @@ class AnimationAPI
       }
 
       const keys = Object.keys(initial);
-      const newData = Object.assign({ immediateElementUpdate: true }, initial);
+      const newData = Object.assign({}, initial);
 
       // Nothing to animate, so return now.
       if (keys.length === 0) { return AnimationControl.voidControl; }
@@ -937,7 +944,7 @@ class AnimationAPI
 
       Object.freeze(keysArray);
 
-      const newData = Object.assign({ immediateElementUpdate: true }, initial);
+      const newData = Object.assign({}, initial);
 
       const animationData = {
          active: true,
@@ -5427,9 +5434,15 @@ class TJSPosition
     *
     * @param {import('./').TJSPositionDataExtended} [position] - TJSPosition data to set.
     *
+    * @param {object} [options] - Additional options.
+    *
+    * @param {boolean} [options.immediateElementUpdate] Perform the update to position state immediately. Callers can
+    *        specify to immediately update the associated element. This is useful if set is called from
+    *        requestAnimationFrame / rAF. Library integrations like GSAP invoke set from rAF.
+    *
     * @returns {TJSPosition} This TJSPosition instance.
     */
-   set(position = {})
+   set(position = {}, options)
    {
       if (!isObject(position)) { throw new TypeError(`Position - set error: 'position' is not an object.`); }
 
@@ -5447,9 +5460,7 @@ class TJSPosition
          return this;
       }
 
-      // Callers can specify to immediately update an associated element. This is useful if set is called from
-      // requestAnimationFrame / rAF. Library integrations like GSAP invoke set from rAF.
-      const immediateElementUpdate = position.immediateElementUpdate === true;
+      const immediateElementUpdate = options?.immediateElementUpdate ?? false;
 
       const data = this.#data;
       const transforms = this.#transforms;
@@ -5633,8 +5644,8 @@ class TJSPosition
          // Set default data after first set operation that has a target element.
          if (!isObject(defaultData)) { this.#state.save({ name: '#defaultData', ...Object.assign({}, data) }); }
 
-         // If `immediateElementUpdate` is true in position data passed to `set` then update the element immediately.
-         // This is for rAF based library integrations like GSAP.
+         // If `immediateElementUpdate` is true then update the element immediately. This is for rAF based library
+         // integrations like GSAP and updates coming from AnimationManager.
          if (immediateElementUpdate)
          {
             UpdateElementManager.immediate(el, this.#updateElementData);
@@ -5982,7 +5993,8 @@ function applyPosition(node, position)
  *
  * @param {boolean}           [params.active=true] - A boolean value; attached to a readable store.
  *
- * @param {number}            [params.button=0] - MouseEvent button; {@link https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button}.
+ * @param {number}            [params.button=0] - MouseEvent button;
+ *        {@link https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button}.
  *
  * @param {import('svelte/store').Writable<boolean>} [params.storeDragging] - A writable store that tracks "dragging"
  *        state.

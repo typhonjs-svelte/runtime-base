@@ -1211,9 +1211,20 @@ declare class TJSPosition implements Readable<TJSPositionData> {
    *
    * @param {import('./').TJSPositionDataExtended} [position] - TJSPosition data to set.
    *
+   * @param {object} [options] - Additional options.
+   *
+   * @param {boolean} [options.immediateElementUpdate] Perform the update to position state immediately. Callers can
+   *        specify to immediately update the associated element. This is useful if set is called from
+   *        requestAnimationFrame / rAF. Library integrations like GSAP invoke set from rAF.
+   *
    * @returns {TJSPosition} This TJSPosition instance.
    */
-  set(position?: TJSPositionDataExtended): TJSPosition;
+  set(
+    position?: TJSPositionDataExtended,
+    options?: {
+      immediateElementUpdate?: boolean;
+    },
+  ): TJSPosition;
   /**
    * @param {import('svelte/store').Subscriber<TJSPositionData>} handler - Callback function that is invoked on
    *        update / changes. Receives a copy of the TJSPositionData.
@@ -1514,7 +1525,8 @@ interface IDraggableOptions extends Readable<IDraggableOptions> {
  *
  * @param {boolean}           [params.active=true] - A boolean value; attached to a readable store.
  *
- * @param {number}            [params.button=0] - MouseEvent button; {@link https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button}.
+ * @param {number}            [params.button=0] - MouseEvent button;
+ *        {@link https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button}.
  *
  * @param {import('svelte/store').Writable<boolean>} [params.storeDragging] - A writable store that tracks "dragging"
  *        state.
@@ -1593,29 +1605,29 @@ type TJSPositionOptions = {
   /**
    * When true always calculate transform data.
    */
-  calculateTransform: boolean;
+  calculateTransform?: boolean;
   /**
    * Provides a helper for setting
    * initial position location.
    */
-  initial: System.Initial.IInitialSystem;
+  initial?: System.Initial.IInitialSystem;
   /**
    * Sets TJSPosition to orthographic mode using just transform / matrix3d for positioning.
    */
-  ortho: boolean;
+  ortho?: boolean;
   /**
    * Set to true when there are subscribers to the readable transform store.
    */
-  transformSubscribed: boolean;
+  transformSubscribed?: boolean;
   /**
    * - Provides an initial validator or list of validators.
    */
-  validator:
+  validator?:
     | IValidatorAPI.ValidatorFn
     | IValidatorAPI.ValidatorData
     | Iterable<IValidatorAPI.ValidatorFn | IValidatorAPI.ValidatorData>;
 };
-type TJSPositionOptionsAll = TJSPositionOptions & TJSPositionData;
+type TJSPositionOptionsAll = TJSPositionOptions & Partial<TJSPositionData>;
 /**
  * Defines the TJSPosition parent
  * element. Provide either an HTMLElement directly or an object with an `elementTarget` property / accessor defining
@@ -1817,10 +1829,6 @@ type TJSPositionDataExtended = {
    * Extended properties -----------------------------------------------------------------------------------------------
    */
   zIndex?: number | string | null;
-  /**
-   * When true any associated element is updated immediately.
-   */
-  immediateElementUpdate?: boolean;
   /**
    * Alias for `rotateZ`.
    */
