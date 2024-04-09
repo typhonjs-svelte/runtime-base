@@ -159,7 +159,5 @@ export { TJSPosition, TJSPositionData }
  *
  * Extended properties -----------------------------------------------------------------------------------------------
  *
- * @property {boolean} [immediateElementUpdate] When true any associated element is updated immediately.
- *
  * @property {number|null} [rotation] Alias for `rotateZ`.
  */
