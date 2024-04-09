@@ -25,25 +25,25 @@ export { TJSPosition, TJSPositionData }
 /**
  * @typedef {object} TJSPositionOptions Options set in constructor.
  *
- * @property {boolean} calculateTransform When true always calculate transform data.
+ * @property {boolean} [calculateTransform] When true always calculate transform data.
  *
- * @property {import('./system/types').System.Initial.IInitialSystem} initial Provides a helper for setting
+ * @property {import('./system/types').System.Initial.IInitialSystem} [initial] Provides a helper for setting
  *           initial position location.
  *
- * @property {boolean} ortho Sets TJSPosition to orthographic mode using just transform / matrix3d for positioning.
+ * @property {boolean} [ortho] Sets TJSPosition to orthographic mode using just transform / matrix3d for positioning.
  *
- * @property {boolean} transformSubscribed Set to true when there are subscribers to the readable transform store.
+ * @property {boolean} [transformSubscribed] Set to true when there are subscribers to the readable transform store.
  *
  * @property {(
  *    import('./system/validators/types').IValidatorAPI.ValidatorFn |
  *    import('./system/validators/types').IValidatorAPI.ValidatorData |
  *    Iterable<import('./system/validators/types').IValidatorAPI.ValidatorFn |
  *     import('./system/validators/types').IValidatorAPI.ValidatorData>
- * )} validator - Provides an initial validator or list of validators.
+ * )} [validator] - Provides an initial validator or list of validators.
  */
 
 /**
- * @typedef {TJSPositionOptions & TJSPositionData} TJSPositionOptionsAll
+ * @typedef {TJSPositionOptions & Partial<TJSPositionData>} TJSPositionOptionsAll
  */
 
 /**
