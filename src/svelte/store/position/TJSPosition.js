@@ -914,12 +914,6 @@ export class TJSPosition
 
       const immediateElementUpdate = options?.immediateElementUpdate ?? false;
 
-      if (!immediateElementUpdate)
-      {
-         // console.log(`!! TJSPosition.set - immediateElementUpdate: `, immediateElementUpdate)
-         console.trace();
-      }
-
       const data = this.#data;
       const transforms = this.#transforms;
 
