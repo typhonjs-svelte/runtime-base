@@ -97,7 +97,7 @@ export class AnimationAPI
       }
 
       const keys = Object.keys(initial);
-      const newData = Object.assign({ immediateElementUpdate: true }, initial);
+      const newData = Object.assign({}, initial);
 
       // Nothing to animate, so return now.
       if (keys.length === 0) { return AnimationControl.voidControl; }
@@ -475,7 +475,7 @@ export class AnimationAPI
 
       Object.freeze(keysArray);
 
-      const newData = Object.assign({ immediateElementUpdate: true }, initial);
+      const newData = Object.assign({}, initial);
 
       const animationData = {
          active: true,

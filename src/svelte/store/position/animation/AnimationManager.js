@@ -4,6 +4,13 @@
 export class AnimationManager
 {
    /**
+    * Defines the options used for {@link TJSPosition.set}.
+    *
+    * @type {Readonly<{immediateElementUpdate: boolean}>}
+    */
+   static #tjsPositionSetOptions = Object.freeze({ immediateElementUpdate: true });
+
+   /**
     * @type {object[]}
     */
    static activeList = [];
@@ -99,7 +106,7 @@ export class AnimationManager
                data.newData[key] = data.destination[key];
             }
 
-            data.position.set(data.newData);
+            data.position.set(data.newData, AnimationManager.#tjsPositionSetOptions);
 
             AnimationManager.activeList.splice(cntr, 1);
             data.cleanup(data);
@@ -116,7 +123,7 @@ export class AnimationManager
             data.newData[key] = data.interpolate(data.initial[key], data.destination[key], easedTime);
          }
 
-         data.position.set(data.newData);
+         data.position.set(data.newData, AnimationManager.#tjsPositionSetOptions);
       }
 
       globalThis.requestAnimationFrame(AnimationManager.animate);

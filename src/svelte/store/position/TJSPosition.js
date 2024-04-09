@@ -886,9 +886,15 @@ export class TJSPosition
     *
     * @param {import('./').TJSPositionDataExtended} [position] - TJSPosition data to set.
     *
+    * @param {object} [options] - Additional options.
+    *
+    * @param {boolean} [options.immediateElementUpdate] Perform the update to position state immediately. Callers can
+    *        specify to immediately update the associated element. This is useful if set is called from
+    *        requestAnimationFrame / rAF. Library integrations like GSAP invoke set from rAF.
+    *
     * @returns {TJSPosition} This TJSPosition instance.
     */
-   set(position = {})
+   set(position = {}, options)
    {
       if (!isObject(position)) { throw new TypeError(`Position - set error: 'position' is not an object.`); }
 
@@ -906,9 +912,13 @@ export class TJSPosition
          return this;
       }
 
-      // Callers can specify to immediately update an associated element. This is useful if set is called from
-      // requestAnimationFrame / rAF. Library integrations like GSAP invoke set from rAF.
-      const immediateElementUpdate = position.immediateElementUpdate === true;
+      const immediateElementUpdate = options?.immediateElementUpdate ?? false;
+
+      if (!immediateElementUpdate)
+      {
+         // console.log(`!! TJSPosition.set - immediateElementUpdate: `, immediateElementUpdate)
+         console.trace();
+      }
 
       const data = this.#data;
       const transforms = this.#transforms;
@@ -1098,8 +1108,8 @@ export class TJSPosition
          // Set default data after first set operation that has a target element.
          if (!isObject(defaultData)) { this.#state.save({ name: '#defaultData', ...Object.assign({}, data) }); }
 
-         // If `immediateElementUpdate` is true in position data passed to `set` then update the element immediately.
-         // This is for rAF based library integrations like GSAP.
+         // If `immediateElementUpdate` is true then update the element immediately. This is for rAF based library
+         // integrations like GSAP and updates coming from AnimationManager.
          if (immediateElementUpdate)
          {
             UpdateElementManager.immediate(el, this.#updateElementData);
