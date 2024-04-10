@@ -5,7 +5,7 @@ import { Subscriber, Invalidator, Unsubscriber, Readable } from 'svelte/store';
 import * as svelte_action from 'svelte/action';
 import { EasingFunction } from 'svelte/transition';
 import { InterpolateFunction } from '@typhonjs-svelte/runtime-base/math/interpolate';
-import { TJSBasicAnimation } from '@typhonjs-svelte/runtime-base/util/animate';
+import { IBasicAnimation } from '@typhonjs-svelte/runtime-base/util/animate';
 
 interface ITransformAPI {
   /**
@@ -860,49 +860,6 @@ interface IPositionStateAPI {
 }
 
 /**
- * Provides all interfaces and type aliases used by {@link TJSPosition}.
- */
-declare namespace TJSPositionTypes {
-  /**
-   * Provides the default {@link System.Initial.IInitialSystem} implementations available.
-   */
-  type PositionInitial = {
-    /**
-     * A locked instance of the `Centered` initial helper suitable for displaying elements in the browser window.
-     */
-    browserCentered: System.Initial.IInitialSystem;
-    /**
-     * The `Centered` class constructor to instantiate a new instance.
-     * @constructor
-     */
-    Centered: System.Initial.IInitialSystemConstructor;
-  };
-  /**
-   * Provides the default {@link System.Initial.IValidatorSystem} implementations available.
-   */
-  type PositionValidators = {
-    /**
-     * The `BasicBounds` class constructor to instantiate a new instance.
-     */
-    BasicBounds: System.Validator.IValidatorSystemConstructor;
-    /**
-     * A locked instance of the `BasicBounds` validator suitable for non-transformed bounds checking against the
-     * browser window.
-     */
-    basicWindow: System.Validator.IValidatorSystem;
-    /**
-     * The `TransformBounds` class constructor to instantiate a new instance.
-     */
-    TransformBounds: System.Validator.IValidatorSystemConstructor;
-    /**
-     * A locked instance of the `TransformBounds` validator suitable for transformed bounds checking against the
-     * browser window.
-     */
-    transformWindow: System.Validator.IValidatorSystem;
-  };
-}
-
-/**
  * Provides a store for position following the subscriber protocol in addition to providing individual writable derived
  * stores for each independent variable.
  *
@@ -1180,12 +1137,12 @@ declare class TJSPosition implements Readable<TJSPositionData> {
    *
    * @param {object | TJSPositionData}  [position] - Target to assign current position data.
    *
-   * @param {import('./').TJSPositionGetOptions}   [options] - Defines options for specific keys and substituting null
-   *        for numeric default values.
+   * @param {import('./types').TJSPositionTypes.OptionsGet}   [options] - Defines options for specific keys and
+   *        substituting null for numeric default values.
    *
    * @returns {TJSPositionData} Passed in object with current position data.
    */
-  get(position?: object | TJSPositionData, options?: TJSPositionGetOptions): TJSPositionData;
+  get(position?: object | TJSPositionData, options?: TJSPositionTypes.OptionsGet): TJSPositionData;
   /**
    * @returns {TJSPositionData} Current position data.
    */
@@ -1236,6 +1193,76 @@ declare class TJSPosition implements Readable<TJSPositionData> {
 }
 
 /**
+ * Provides all interfaces and type aliases used by {@link TJSPosition}.
+ */
+declare namespace TJSPositionTypes {
+  /**
+   * Defines the shape of an instance / object that is positionable.
+   */
+  interface IPositionable {
+    position: TJSPosition;
+  }
+  /**
+   * Options for {@link TJSPosition.get}
+   */
+  type OptionsGet = {
+    /**
+     * When provided only these keys are copied.
+     */
+    keys?: Iterable<string>;
+    /**
+     * When provided these keys are excluded.
+     */
+    exclude?: Iterable<string>;
+    /**
+     * When true any `null` values are converted into defaults.
+     */
+    numeric?: boolean;
+  };
+  /**
+   * Defines one or more positions or positionable objects.
+   */
+  type PositionGroup = TJSPosition | IPositionable | Iterable<TJSPosition> | Iterable<IPositionable>;
+  /**
+   * Provides the default {@link System.Initial.IInitialSystem} implementations available.
+   */
+  type PositionInitial = {
+    /**
+     * A locked instance of the `Centered` initial helper suitable for displaying elements in the browser window.
+     */
+    browserCentered: System.Initial.IInitialSystem;
+    /**
+     * The `Centered` class constructor to instantiate a new instance.
+     * @constructor
+     */
+    Centered: System.Initial.IInitialSystemConstructor;
+  };
+  /**
+   * Provides the default {@link System.Initial.IValidatorSystem} implementations available.
+   */
+  type PositionValidators = {
+    /**
+     * The `BasicBounds` class constructor to instantiate a new instance.
+     */
+    BasicBounds: System.Validator.IValidatorSystemConstructor;
+    /**
+     * A locked instance of the `BasicBounds` validator suitable for non-transformed bounds checking against the
+     * browser window.
+     */
+    basicWindow: System.Validator.IValidatorSystem;
+    /**
+     * The `TransformBounds` class constructor to instantiate a new instance.
+     */
+    TransformBounds: System.Validator.IValidatorSystemConstructor;
+    /**
+     * A locked instance of the `TransformBounds` validator suitable for transformed bounds checking against the
+     * browser window.
+     */
+    transformWindow: System.Validator.IValidatorSystem;
+  };
+}
+
+/**
  * Provides a public API for grouping multiple {@link TJSPosition} animations together and is accessible from
  * {@link TJSPosition.Animate}.
  *
@@ -1244,11 +1271,11 @@ declare class TJSPosition implements Readable<TJSPositionData> {
  */
 interface IAnimationGroupAPI {
   /**
-   * Cancels any animation for given TJSPositionGroup data.
+   * Cancels any animation for given PositionGroup data.
    *
-   * @param {TJSPositionGroup} position - The position group to cancel.
+   * @param {TJSPositionTypes.PositionGroup} position - The position group to cancel.
    */
-  cancel(position: TJSPositionGroup): void;
+  cancel(position: TJSPositionTypes.PositionGroup): void;
   /**
    * Cancels all TJSPosition animation.
    */
@@ -1256,35 +1283,35 @@ interface IAnimationGroupAPI {
   /**
    * Gets all animation controls for the given position group data.
    *
-   * @param {TJSPositionGroup} position - A position group.
+   * @param {TJSPositionTypes.PositionGroup} position - A position group.
    *
-   * @returns {{ position: TJSPosition, data: object | undefined, controls: TJSBasicAnimation[]}[]} Results array.
+   * @returns {{ position: TJSPosition, data: object | undefined, controls: IBasicAnimation[]}[]} Results array.
    */
-  getScheduled(position: TJSPositionGroup): {
+  getScheduled(position: TJSPositionTypes.PositionGroup): {
     position: TJSPosition;
     data: object | undefined;
-    controls: TJSBasicAnimation[];
+    controls: IBasicAnimation[];
   }[];
   /**
    * Provides the `from` animation tween for one or more TJSPosition instances as a group.
    *
-   * @param {TJSPositionGroup}  position - A position group.
+   * @param {TJSPositionTypes.PositionGroup}  position - A position group.
    *
    * @param {object | Function} fromData -
    *
    * @param {IAnimationAPI.TweenOptions | (() => IAnimationAPI.TweenOptions)}   [options] -
    *
-   * @returns {TJSBasicAnimation} Basic animation control.
+   * @returns {IBasicAnimation} Basic animation control.
    */
   from(
-    position: TJSPositionGroup,
+    position: TJSPositionTypes.PositionGroup,
     fromData: object | Function,
     options?: IAnimationAPI.TweenOptions | (() => IAnimationAPI.TweenOptions),
-  ): TJSBasicAnimation;
+  ): IBasicAnimation;
   /**
    * Provides the `fromTo` animation tween for one or more TJSPosition instances as a group.
    *
-   * @param {TJSPositionGroup} position -
+   * @param {TJSPositionTypes.PositionGroup} position - A position group.
    *
    * @param {object | Function}   fromData -
    *
@@ -1292,30 +1319,30 @@ interface IAnimationGroupAPI {
    *
    * @param {object | Function}   [options] -
    *
-   * @returns {TJSBasicAnimation} Basic animation control.
+   * @returns {IBasicAnimation} Basic animation control.
    */
   fromTo(
-    position: TJSPositionGroup,
+    position: TJSPositionTypes.PositionGroup,
     fromData: object | Function,
     toData: object | Function,
     options?: object | Function,
-  ): TJSBasicAnimation;
+  ): IBasicAnimation;
   /**
    * Provides the `to` animation tween for one or more TJSPosition instances as a group.
    *
-   * @param {TJSPositionGroup} position -
+   * @param {TJSPositionTypes.PositionGroup} position - A position group.
    *
    * @param {object | Function}   toData -
    *
    * @param {object | Function}   [options] -
    *
-   * @returns {TJSBasicAnimation} Basic animation control.
+   * @returns {IBasicAnimation} Basic animation control.
    */
-  to(position: TJSPositionGroup, toData: object | Function, options?: object | Function): TJSBasicAnimation;
+  to(position: TJSPositionTypes.PositionGroup, toData: object | Function, options?: object | Function): IBasicAnimation;
   /**
    * Provides the `to` animation tween for one or more TJSPosition instances as a group.
    *
-   * @param {TJSPositionGroup} position -
+   * @param {TJSPositionTypes.PositionGroup} position - A position group.
    *
    * @param {Iterable<IAnimationAPI.AnimationKeys>}  keys -
    *
@@ -1324,7 +1351,7 @@ interface IAnimationGroupAPI {
    * @returns {IAnimationAPI.QuickToCallback} quick-to tween function.
    */
   quickTo(
-    position: TJSPositionGroup,
+    position: TJSPositionTypes.PositionGroup,
     keys: Iterable<IAnimationAPI.AnimationKeys>,
     options?: IAnimationAPI.QuickTweenOptions | (() => IAnimationAPI.QuickTweenOptions),
   ): IAnimationAPI.QuickToCallback;
@@ -1343,9 +1370,9 @@ interface IAnimationAPI {
   /**
    * Returns all currently scheduled AnimationControl instances for this TJSPosition instance.
    *
-   * @returns {TJSBasicAnimation[]} All currently scheduled animation controls for this TJSPosition instance.
+   * @returns {IBasicAnimation[]} All currently scheduled animation controls for this TJSPosition instance.
    */
-  getScheduled(): TJSBasicAnimation[];
+  getScheduled(): IBasicAnimation[];
   /**
    * Provides a tween from given position data to the current position.
    *
@@ -1353,9 +1380,9 @@ interface IAnimationAPI {
    *
    * @param {IAnimationAPI.TweenOptions} [options] - Optional tween parameters.
    *
-   * @returns {TJSBasicAnimation}  A control object that can cancel animation and provides a `finished` Promise.
+   * @returns {IBasicAnimation}  A control object that can cancel animation and provides a `finished` Promise.
    */
-  from(fromData: TJSPositionDataExtended, options?: IAnimationAPI.TweenOptions): TJSBasicAnimation;
+  from(fromData: TJSPositionDataExtended, options?: IAnimationAPI.TweenOptions): IBasicAnimation;
   /**
    * Provides a tween from given position data to the current position.
    *
@@ -1365,13 +1392,13 @@ interface IAnimationAPI {
    *
    * @param {IAnimationAPI.TweenOptions} [options] - Optional tween parameters.
    *
-   * @returns {TJSBasicAnimation}  A control object that can cancel animation and provides a `finished` Promise.
+   * @returns {IBasicAnimation}  A control object that can cancel animation and provides a `finished` Promise.
    */
   fromTo(
     fromData: TJSPositionDataExtended,
     toData: TJSPositionDataExtended,
     options?: IAnimationAPI.TweenOptions,
-  ): TJSBasicAnimation;
+  ): IBasicAnimation;
   /**
    * Provides a tween to given position data from the current position.
    *
@@ -1379,9 +1406,9 @@ interface IAnimationAPI {
    *
    * @param {IAnimationAPI.TweenOptions} [options] - Optional tween parameters.
    *
-   * @returns {TJSBasicAnimation}  A control object that can cancel animation and provides a `finished` Promise.
+   * @returns {IBasicAnimation}  A control object that can cancel animation and provides a `finished` Promise.
    */
-  to(toData: TJSPositionDataExtended, options?: IAnimationAPI.TweenOptions): TJSBasicAnimation;
+  to(toData: TJSPositionDataExtended, options?: IAnimationAPI.TweenOptions): IBasicAnimation;
   /**
    * Returns a function that provides an optimized way to constantly update a to-tween.
    *
@@ -1579,25 +1606,6 @@ declare namespace draggable {
   function options(options: { tween?: boolean; tweenOptions?: IAnimationAPI.QuickTweenOptions }): IDraggableOptions;
 }
 
-type TJSPositionGetOptions = {
-  /**
-   * When provided only these keys are copied.
-   */
-  keys: Iterable<string>;
-  /**
-   * When provided these keys are excluded.
-   */
-  exclude: Iterable<string>;
-  /**
-   * When true any `null` values are converted into defaults.
-   */
-  numeric: boolean;
-};
-/**
- * Defines
- * one or more positions or positionable objects.
- */
-type TJSPositionGroup = TJSPosition | TJSPositionable | Iterable<TJSPosition> | Iterable<TJSPositionable>;
 /**
  * Options set in constructor.
  */
@@ -1638,13 +1646,6 @@ type TJSPositionParent =
   | {
       elementTarget?: HTMLElement;
     };
-type TJSPositionable = {
-  /**
-   * An instance of TJSPosition that manages application positional
-   * state.
-   */
-  position: TJSPosition;
-};
 /**
  * Provides individual writable stores for {@link TJSPosition }.
  */
@@ -1846,14 +1847,11 @@ export {
   TJSPosition,
   TJSPositionData,
   type TJSPositionDataExtended,
-  type TJSPositionGetOptions,
-  type TJSPositionGroup,
   type TJSPositionOptions,
   type TJSPositionOptionsAll,
   type TJSPositionParent,
   type TJSPositionStores,
   TJSPositionTypes,
-  type TJSPositionable,
   applyPosition,
   draggable,
 };

@@ -10,16 +10,29 @@ import { writable } from 'svelte/store';
 import { nextAnimationFrame } from '@typhonjs-svelte/runtime-base/util/animate';
 
 /**
- * Provides a TJSBasicAnimation implementation for TJSPosition animation.
+ * Defines reusable / frozen implementation of {@link BasicAnimationState}.
  *
- * @implements {import('#runtime/util/animate').TJSBasicAnimation}
+ * @type {({
+ *    cancelled: import('#runtime/util/animate').BasicAnimationState,
+ *    notCancelled: import('#runtime/util/animate').BasicAnimationState
+ * })}
+ */
+const basicAnimationState = {
+   cancelled: Object.freeze({ cancelled: true }),
+   notCancelled: Object.freeze({ cancelled: false })
+};
+
+/**
+ * Provides a basic animation implementation for TJSPosition animation.
+ *
+ * @implements {import('#runtime/util/animate').IBasicAnimation}
  */
 class AnimationControl
 {
    /** @type {object} */
    #animationData;
 
-   /** @type {Promise<void>} */
+   /** @type {Promise<import('#runtime/util/animate').BasicAnimationState>} */
    #finishedPromise;
 
    #willFinish;
@@ -55,14 +68,14 @@ class AnimationControl
    /**
     * Get a promise that resolves when animation is finished.
     *
-    * @returns {Promise<void>}
+    * @returns {Promise<import('#runtime/util/animate').BasicAnimationState>}
     */
    get finished()
    {
       if (!(this.#finishedPromise instanceof Promise))
       {
          this.#finishedPromise = this.#willFinish ? new Promise((resolve) => this.#animationData.resolve = resolve) :
-          Promise.resolve();
+          Promise.resolve(basicAnimationState.notCancelled);
       }
 
       return this.#finishedPromise;
@@ -289,7 +302,7 @@ class AnimationManager
     *
     * @param {import('../index.js').TJSPosition} position - TJSPosition instance.
     *
-    * @returns {import('#runtime/util/animate').TJSBasicAnimation[]} All scheduled AnimationControl instances for the
+    * @returns {import('#runtime/util/animate').IBasicAnimation[]} All scheduled AnimationControl instances for the
     *          given TJSPosition instance.
     */
    static getScheduled(position)
@@ -486,6 +499,167 @@ function convertRelative(positionData, position)
    }
 }
 
+class StyleCache
+{
+   constructor()
+   {
+      /** @type {HTMLElement|undefined} */
+      this.el = void 0;
+
+      /** @type {CSSStyleDeclaration} */
+      this.computed = void 0;
+
+      /** @type {number|undefined} */
+      this.marginLeft = void 0;
+
+      /** @type {number|undefined} */
+      this.marginTop = void 0;
+
+      /** @type {number|undefined} */
+      this.maxHeight = void 0;
+
+      /** @type {number|undefined} */
+      this.maxWidth = void 0;
+
+      /** @type {number|undefined} */
+      this.minHeight = void 0;
+
+      /** @type {number|undefined} */
+      this.minWidth = void 0;
+
+      /** @type {boolean} */
+      this.hasWillChange = false;
+
+      /**
+       * @type {import('#runtime/svelte/action/dom').ResizeObserverData.Object}
+       */
+      this.resizeObserved = {
+         contentHeight: void 0,
+         contentWidth: void 0,
+         offsetHeight: void 0,
+         offsetWidth: void 0
+      };
+
+      /**
+       * Provides a writable store to track offset & content width / height from an associated `resizeObserver` action.
+       *
+       * @type {import('svelte/store').Writable<import('#runtime/svelte/action/dom').ResizeObserverData.Object>}
+       */
+      const storeResizeObserved = writable(this.resizeObserved);
+
+      this.stores = {
+         element: writable(this.el),
+         resizeContentHeight: propertyStore(storeResizeObserved, 'contentHeight'),
+         resizeContentWidth: propertyStore(storeResizeObserved, 'contentWidth'),
+         resizeObserved: storeResizeObserved,
+         resizeOffsetHeight: propertyStore(storeResizeObserved, 'offsetHeight'),
+         resizeOffsetWidth: propertyStore(storeResizeObserved, 'offsetWidth')
+      };
+   }
+
+   /**
+    * Returns the cached offsetHeight from any attached `resizeObserver` action otherwise gets the offsetHeight from
+    * the element directly. The more optimized path is using `resizeObserver` as getting it from the element
+    * directly is more expensive and alters the execution order of an animation frame.
+    *
+    * @returns {number} The element offsetHeight.
+    */
+   get offsetHeight()
+   {
+      if (A11yHelper.isFocusTarget(this.el))
+      {
+         return this.resizeObserved.offsetHeight !== void 0 ? this.resizeObserved.offsetHeight : this.el.offsetHeight;
+      }
+
+      throw new Error(`StyleCache - get offsetHeight error: no element assigned.`);
+   }
+
+   /**
+    * Returns the cached offsetWidth from any attached `resizeObserver` action otherwise gets the offsetWidth from
+    * the element directly. The more optimized path is using `resizeObserver` as getting it from the element
+    * directly is more expensive and alters the execution order of an animation frame.
+    *
+    * @returns {number} The element offsetHeight.
+    */
+   get offsetWidth()
+   {
+      if (A11yHelper.isFocusTarget(this.el))
+      {
+         return this.resizeObserved.offsetWidth !== void 0 ? this.resizeObserved.offsetWidth : this.el.offsetWidth;
+      }
+
+      throw new Error(`StyleCache - get offsetWidth error: no element assigned.`);
+   }
+
+   /**
+    * @param {HTMLElement} el -
+    *
+    * @returns {boolean} Does element match cached element.
+    */
+   hasData(el) { return this.el === el; }
+
+   /**
+    * Resets the style cache.
+    */
+   reset()
+   {
+      // Remove will-change inline style from previous element if it is still connected.
+      if (A11yHelper.isFocusTarget(this.el) && this.el.isConnected && !this.hasWillChange)
+      {
+         this.el.style.willChange = null;
+      }
+
+      this.el = void 0;
+      this.computed = void 0;
+      this.marginLeft = void 0;
+      this.marginTop = void 0;
+      this.maxHeight = void 0;
+      this.maxWidth = void 0;
+      this.minHeight = void 0;
+      this.minWidth = void 0;
+
+      this.hasWillChange = false;
+
+      // Silently reset `resizedObserved`; With proper usage the `resizeObserver` action issues an update on removal.
+      this.resizeObserved.contentHeight = void 0;
+      this.resizeObserved.contentWidth = void 0;
+      this.resizeObserved.offsetHeight = void 0;
+      this.resizeObserved.offsetWidth = void 0;
+
+      // Reset the tracked element this TJSPosition instance is modifying.
+      this.stores.element.set(void 0);
+   }
+
+   /**
+    * Updates the style cache with new data from the given element.
+    *
+    * @param {HTMLElement} el - An HTML element.
+    */
+   update(el)
+   {
+      this.el = el;
+
+      this.computed = globalThis.getComputedStyle(el);
+
+      this.marginLeft = StyleParse.pixels(el.style.marginLeft) ?? StyleParse.pixels(this.computed.marginLeft);
+      this.marginTop = StyleParse.pixels(el.style.marginTop) ?? StyleParse.pixels(this.computed.marginTop);
+      this.maxHeight = StyleParse.pixels(el.style.maxHeight) ?? StyleParse.pixels(this.computed.maxHeight);
+      this.maxWidth = StyleParse.pixels(el.style.maxWidth) ?? StyleParse.pixels(this.computed.maxWidth);
+
+      // Note that the computed styles for below will always be 0px / 0 when no style is active.
+      this.minHeight = StyleParse.pixels(el.style.minHeight) ?? StyleParse.pixels(this.computed.minHeight);
+      this.minWidth = StyleParse.pixels(el.style.minWidth) ?? StyleParse.pixels(this.computed.minWidth);
+
+      // Tracks if there already is a will-change property on the inline or computed styles.
+      const willChange = el.style.willChange !== '' ? el.style.willChange : this.computed.willChange;
+
+      this.hasWillChange = willChange !== '' && willChange !== 'auto';
+
+      // Update the tracked element this TJSPosition instance is modifying.
+      this.stores.element.set(el);
+   }
+}
+
 /**
  * @implements {import('./types').IAnimationAPI}
  */
@@ -547,11 +721,11 @@ class AnimationAPI
     *
     * @param {number}      delay -
     *
-    * @param {Function}    ease -
+    * @param {import('svelte/transition').EasingFunction}    ease -
     *
-    * @param {Function}    interpolate -
+    * @param {import('#runtime/svelte/transition').InterpolateFunction}    interpolate -
     *
-    * @returns {import('#runtime/util/animate').TJSBasicAnimation} The associated animation control.
+    * @returns {import('#runtime/util/animate').IBasicAnimation} The associated animation control.
     */
    #addAnimation(initial, destination, duration, el, delay, ease, interpolate)
    {
@@ -639,13 +813,16 @@ class AnimationAPI
       data.active = false;
       data.finished = true;
 
-      if (typeof data.resolve === 'function') { data.resolve(data.cancelled); }
+      if (typeof data.resolve === 'function')
+      {
+         data.resolve(data.cancelled ? basicAnimationState.cancelled : basicAnimationState.notCancelled);
+      }
    }
 
    /**
     * Returns all currently scheduled AnimationControl instances for this TJSPosition instance.
     *
-    * @returns {import('#runtime/util/animate').TJSBasicAnimation[]} All currently scheduled animation controls for
+    * @returns {import('#runtime/util/animate').IBasicAnimation[]} All currently scheduled animation controls for
     *          this TJSPosition instance.
     */
    getScheduled()
@@ -660,7 +837,7 @@ class AnimationAPI
     *
     * @param {import('./types').IAnimationAPI.TweenOptions} [options] - Optional tween parameters.
     *
-    * @returns {import('#runtime/util/animate').TJSBasicAnimation}  A control object that can cancel animation and
+    * @returns {import('#runtime/util/animate').IBasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
     */
    from(fromData, { delay = 0, duration = 1, ease = cubicOut, interpolate = lerp } = {})
@@ -732,7 +909,7 @@ class AnimationAPI
     *
     * @param {import('./types').IAnimationAPI.TweenOptions} [options] - Optional tween parameters.
     *
-    * @returns {import('#runtime/util/animate').TJSBasicAnimation}  A control object that can cancel animation and
+    * @returns {import('#runtime/util/animate').IBasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
     */
    fromTo(fromData, toData, { delay = 0, duration = 1, ease = cubicOut, interpolate = lerp } = {})
@@ -814,7 +991,7 @@ class AnimationAPI
     *
     * @param {import('./types').IAnimationAPI.TweenOptions} [options] - Optional tween parameters.
     *
-    * @returns {import('#runtime/util/animate').TJSBasicAnimation}  A control object that can cancel animation and
+    * @returns {import('#runtime/util/animate').IBasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
     */
    to(toData, { delay = 0, duration = 1, ease = cubicOut, interpolate = lerp } = {})
@@ -1059,14 +1236,16 @@ class AnimationAPI
 }
 
 /**
- * Provides a TJSBasicAnimation implementation for a TJSPosition animation for a group of TJSPosition instances.
+ * Provides a implementation for a TJSPosition animation for a group of TJSPosition instances.
+ *
+ * @implements {import('#runtime/util/animate').IBasicAnimation}
  */
 class AnimationGroupControl
 {
    /** @type {import('./AnimationControl').AnimationControl[]} */
    #animationControls;
 
-   /** @type {Promise<Awaited<unknown>[]>} */
+   /** @type {Promise<import('#runtime/util/animate').BasicAnimationState>} */
    #finishedPromise;
 
    /**
@@ -1095,23 +1274,35 @@ class AnimationGroupControl
    /**
     * Get a promise that resolves when all animations are finished.
     *
-    * @returns {Promise<Awaited<unknown>[]>|Promise<void>} Finished Promise for all animations.
+    * @returns {Promise<import('#runtime/util/animate').BasicAnimationState>} Finished Promise for all animations.
     */
    get finished()
    {
       const animationControls = this.#animationControls;
 
-      if (animationControls === null || animationControls === void 0) { return Promise.resolve(); }
-
       if (!(this.#finishedPromise instanceof Promise))
       {
-         const promises = [];
-         for (let cntr = animationControls.length; --cntr >= 0;)
+         if (animationControls === null || animationControls === void 0)
          {
-            promises.push(animationControls[cntr].finished);
+            this.#finishedPromise = /** @type {Promise<import('#runtime/util/animate').BasicAnimationState>} */
+             Promise.resolve(basicAnimationState.notCancelled);
          }
+         else
+         {
+            /** @type {Promise<import('#runtime/util/animate').BasicAnimationState>[]} */
+            const promises = [];
 
-         this.#finishedPromise = Promise.all(promises);
+            for (let cntr = animationControls.length; --cntr >= 0;) { promises.push(animationControls[cntr].finished); }
+
+            this.#finishedPromise = Promise.allSettled(promises).then((results) => {
+               // Check if any promises were rejected or resolved with `cancelled: true`.
+               const anyCancelled = results.some((result) => result.status === 'rejected' ||
+                (result.status === 'fulfilled' && result.value.cancelled));
+
+               // Return a single BasicAnimationState based on the aggregation of individual results.
+               return anyCancelled ? basicAnimationState.cancelled : basicAnimationState.notCancelled;
+            });
+         }
       }
 
       return this.#finishedPromise;
@@ -1155,7 +1346,7 @@ class AnimationGroupControl
          if (!animationControls[cntr].isFinished) { return false; }
       }
 
-      return false;
+      return true;
    }
 
    /**
@@ -1201,9 +1392,9 @@ class AnimationGroupAPI
    }
 
    /**
-    * Cancels any animation for given TJSPositionGroup data.
+    * Cancels any animation for given PositionGroup data.
     *
-    * @param {import('../').TJSPositionGroup} position - The position group to cancel.
+    * @param {import('../types').TJSPositionTypes.PositionGroup} position - The position group to cancel.
     */
    static cancel(position)
    {
@@ -1219,7 +1410,7 @@ class AnimationGroupAPI
 
             if (!this.#isPosition(actualPosition))
             {
-               console.warn(`AnimationGroupAPI.cancel warning: No Position instance found at index: ${index}.`);
+               console.warn(`AnimationGroupAPI.cancel warning: No TJSPosition instance found at index: ${index}.`);
                continue;
             }
 
@@ -1232,7 +1423,7 @@ class AnimationGroupAPI
 
          if (!this.#isPosition(actualPosition))
          {
-            console.warn(`AnimationGroupAPI.cancel warning: No Position instance found.`);
+            console.warn(`AnimationGroupAPI.cancel warning: No TJSPosition instance found.`);
             return;
          }
 
@@ -1248,12 +1439,12 @@ class AnimationGroupAPI
    /**
     * Gets all animation controls for the given position group data.
     *
-    * @param {import('../').TJSPositionGroup} position - A position group.
+    * @param {import('../types').TJSPositionTypes.PositionGroup} position - A position group.
     *
     * @returns {{
     *    position: import('../').TJSPosition,
     *    data: object | void,
-    *    controls: import('./AnimationControl').AnimationControl[]
+    *    controls: import('#runtime/util/animate').IBasicAnimation[]
     * }[]} Results array.
     */
    static getScheduled(position)
@@ -1273,7 +1464,7 @@ class AnimationGroupAPI
 
             if (!this.#isPosition(actualPosition))
             {
-               console.warn(`AnimationGroupAPI.getScheduled warning: No Position instance found at index: ${index}.`);
+               console.warn(`AnimationGroupAPI.getScheduled warning: No TJSPosition instance found at index: ${index}.`);
                continue;
             }
 
@@ -1289,7 +1480,7 @@ class AnimationGroupAPI
 
          if (!this.#isPosition(actualPosition))
          {
-            console.warn(`AnimationGroupAPI.getScheduled warning: No Position instance found.`);
+            console.warn(`AnimationGroupAPI.getScheduled warning: No TJSPosition instance found.`);
             return results;
          }
 
@@ -1304,7 +1495,7 @@ class AnimationGroupAPI
    /**
     * Provides the `from` animation tween for one or more TJSPosition instances as a group.
     *
-    * @param {import('../').TJSPositionGroup} position - A position group.
+    * @param {import('../types').TJSPositionTypes.PositionGroup} position - A position group.
     *
     * @param {object | Function}   fromData -
     *
@@ -1313,7 +1504,7 @@ class AnimationGroupAPI
     *    (() => import('./types').IAnimationAPI.TweenOptions)
     * )}   [options] -
     *
-    * @returns {import('#runtime/util/animate').TJSBasicAnimation} Basic animation control.
+    * @returns {import('#runtime/util/animate').IBasicAnimation} Basic animation control.
     */
    static from(position, fromData, options)
    {
@@ -1351,11 +1542,12 @@ class AnimationGroupAPI
             index++;
 
             const isPosition = this.#isPosition(entry);
+            /** @type {import('..').TJSPosition} */
             const actualPosition = isPosition ? entry : entry.position;
 
             if (!this.#isPosition(actualPosition))
             {
-               console.warn(`AnimationGroupAPI.from warning: No Position instance found at index: ${index}.`);
+               console.warn(`AnimationGroupAPI.from warning: No TJSPosition instance found at index: ${index}.`);
                continue;
             }
 
@@ -1400,11 +1592,12 @@ class AnimationGroupAPI
       else
       {
          const isPosition = this.#isPosition(position);
+
          const actualPosition = isPosition ? position : position.position;
 
          if (!this.#isPosition(actualPosition))
          {
-            console.warn(`AnimationGroupAPI.from warning: No Position instance found.`);
+            console.warn(`AnimationGroupAPI.from warning: No TJSPosition instance found.`);
             return AnimationGroupControl.voidControl;
          }
 
@@ -1446,7 +1639,7 @@ class AnimationGroupAPI
    /**
     * Provides the `fromTo` animation tween for one or more TJSPosition instances as a group.
     *
-    * @param {import('../').TJSPositionGroup} position -
+    * @param {import('../types').TJSPositionTypes.PositionGroup} position - A position group.
     *
     * @param {object | Function}   fromData -
     *
@@ -1454,7 +1647,7 @@ class AnimationGroupAPI
     *
     * @param {object | Function}   [options] -
     *
-    * @returns {import('#runtime/util/animate').TJSBasicAnimation} Basic animation control.
+    * @returns {import('#runtime/util/animate').IBasicAnimation} Basic animation control.
     */
    static fromTo(position, fromData, toData, options)
    {
@@ -1503,7 +1696,7 @@ class AnimationGroupAPI
 
             if (!this.#isPosition(actualPosition))
             {
-               console.warn(`AnimationGroupAPI.fromTo warning: No Position instance found at index: ${index}.`);
+               console.warn(`AnimationGroupAPI.fromTo warning: No TJSPosition instance found at index: ${index}.`);
                continue;
             }
 
@@ -1566,7 +1759,7 @@ class AnimationGroupAPI
 
          if (!this.#isPosition(actualPosition))
          {
-            console.warn(`AnimationGroupAPI.fromTo warning: No Position instance found.`);
+            console.warn(`AnimationGroupAPI.fromTo warning: No TJSPosition instance found.`);
             return AnimationGroupControl.voidControl;
          }
 
@@ -1619,13 +1812,13 @@ class AnimationGroupAPI
    /**
     * Provides the `to` animation tween for one or more TJSPosition instances as a group.
     *
-    * @param {import('../').TJSPositionGroup} position -
+    * @param {import('../types').TJSPositionTypes.PositionGroup} position - A position group.
     *
     * @param {object | Function}   toData -
     *
     * @param {object | Function}   [options] -
     *
-    * @returns {import('#runtime/util/animate').TJSBasicAnimation} Basic animation control.
+    * @returns {import('#runtime/util/animate').IBasicAnimation} Basic animation control.
     */
    static to(position, toData, options)
    {
@@ -1667,7 +1860,7 @@ class AnimationGroupAPI
 
             if (!this.#isPosition(actualPosition))
             {
-               console.warn(`AnimationGroupAPI.to warning: No Position instance found at index: ${index}.`);
+               console.warn(`AnimationGroupAPI.to warning: No TJSPosition instance found at index: ${index}.`);
                continue;
             }
 
@@ -1716,7 +1909,7 @@ class AnimationGroupAPI
 
          if (!this.#isPosition(actualPosition))
          {
-            console.warn(`AnimationGroupAPI.to warning: No Position instance found.`);
+            console.warn(`AnimationGroupAPI.to warning: No TJSPosition instance found.`);
             return AnimationGroupControl.voidControl;
          }
 
@@ -1758,7 +1951,7 @@ class AnimationGroupAPI
    /**
     * Provides the `to` animation tween for one or more TJSPosition instances as a group.
     *
-    * @param {import('../').TJSPositionGroup} position -
+    * @param {import('../types').TJSPositionTypes.PositionGroup} position - A position group.
     *
     * @param {Iterable<import('./types').IAnimationAPI.AnimationKeys>}  keys -
     *
@@ -1805,7 +1998,7 @@ class AnimationGroupAPI
 
             if (!this.#isPosition(actualPosition))
             {
-               console.warn(`AnimationGroupAPI.quickTo warning: No Position instance found at index: ${index}.`);
+               console.warn(`AnimationGroupAPI.quickTo warning: No TJSPosition instance found at index: ${index}.`);
                continue;
             }
 
@@ -1837,7 +2030,7 @@ class AnimationGroupAPI
 
          if (!this.#isPosition(actualPosition))
          {
-            console.warn(`AnimationGroupAPI.quickTo warning: No Position instance found.`);
+            console.warn(`AnimationGroupAPI.quickTo warning: No TJSPosition instance found.`);
             return () => null;
          }
 
@@ -2004,7 +2197,7 @@ class AnimationGroupAPI
                   if (!this.#isPosition(actualPosition))
                   {
                      console.warn(
-                      `AnimationGroupAPI.quickTo.options warning: No Position instance found at index: ${index}.`);
+                      `AnimationGroupAPI.quickTo.options warning: No TJSPosition instance found at index: ${index}.`);
                      continue;
                   }
 
@@ -2034,7 +2227,7 @@ class AnimationGroupAPI
 
                if (!this.#isPosition(actualPosition))
                {
-                  console.warn(`AnimationGroupAPI.quickTo.options warning: No Position instance found.`);
+                  console.warn(`AnimationGroupAPI.quickTo.options warning: No TJSPosition instance found.`);
                   return quickToCB;
                }
 
@@ -3866,167 +4059,6 @@ function s_GET_ORIGIN_TRANSLATION(transformOrigin, width, height, output)
    return output;
 }
 
-class StyleCache
-{
-   constructor()
-   {
-      /** @type {HTMLElement|undefined} */
-      this.el = void 0;
-
-      /** @type {CSSStyleDeclaration} */
-      this.computed = void 0;
-
-      /** @type {number|undefined} */
-      this.marginLeft = void 0;
-
-      /** @type {number|undefined} */
-      this.marginTop = void 0;
-
-      /** @type {number|undefined} */
-      this.maxHeight = void 0;
-
-      /** @type {number|undefined} */
-      this.maxWidth = void 0;
-
-      /** @type {number|undefined} */
-      this.minHeight = void 0;
-
-      /** @type {number|undefined} */
-      this.minWidth = void 0;
-
-      /** @type {boolean} */
-      this.hasWillChange = false;
-
-      /**
-       * @type {import('#runtime/svelte/action/dom').ResizeObserverData.Object}
-       */
-      this.resizeObserved = {
-         contentHeight: void 0,
-         contentWidth: void 0,
-         offsetHeight: void 0,
-         offsetWidth: void 0
-      };
-
-      /**
-       * Provides a writable store to track offset & content width / height from an associated `resizeObserver` action.
-       *
-       * @type {import('svelte/store').Writable<import('#runtime/svelte/action/dom').ResizeObserverData.Object>}
-       */
-      const storeResizeObserved = writable(this.resizeObserved);
-
-      this.stores = {
-         element: writable(this.el),
-         resizeContentHeight: propertyStore(storeResizeObserved, 'contentHeight'),
-         resizeContentWidth: propertyStore(storeResizeObserved, 'contentWidth'),
-         resizeObserved: storeResizeObserved,
-         resizeOffsetHeight: propertyStore(storeResizeObserved, 'offsetHeight'),
-         resizeOffsetWidth: propertyStore(storeResizeObserved, 'offsetWidth')
-      };
-   }
-
-   /**
-    * Returns the cached offsetHeight from any attached `resizeObserver` action otherwise gets the offsetHeight from
-    * the element directly. The more optimized path is using `resizeObserver` as getting it from the element
-    * directly is more expensive and alters the execution order of an animation frame.
-    *
-    * @returns {number} The element offsetHeight.
-    */
-   get offsetHeight()
-   {
-      if (A11yHelper.isFocusTarget(this.el))
-      {
-         return this.resizeObserved.offsetHeight !== void 0 ? this.resizeObserved.offsetHeight : this.el.offsetHeight;
-      }
-
-      throw new Error(`StyleCache - get offsetHeight error: no element assigned.`);
-   }
-
-   /**
-    * Returns the cached offsetWidth from any attached `resizeObserver` action otherwise gets the offsetWidth from
-    * the element directly. The more optimized path is using `resizeObserver` as getting it from the element
-    * directly is more expensive and alters the execution order of an animation frame.
-    *
-    * @returns {number} The element offsetHeight.
-    */
-   get offsetWidth()
-   {
-      if (A11yHelper.isFocusTarget(this.el))
-      {
-         return this.resizeObserved.offsetWidth !== void 0 ? this.resizeObserved.offsetWidth : this.el.offsetWidth;
-      }
-
-      throw new Error(`StyleCache - get offsetWidth error: no element assigned.`);
-   }
-
-   /**
-    * @param {HTMLElement} el -
-    *
-    * @returns {boolean} Does element match cached element.
-    */
-   hasData(el) { return this.el === el; }
-
-   /**
-    * Resets the style cache.
-    */
-   reset()
-   {
-      // Remove will-change inline style from previous element if it is still connected.
-      if (A11yHelper.isFocusTarget(this.el) && this.el.isConnected && !this.hasWillChange)
-      {
-         this.el.style.willChange = null;
-      }
-
-      this.el = void 0;
-      this.computed = void 0;
-      this.marginLeft = void 0;
-      this.marginTop = void 0;
-      this.maxHeight = void 0;
-      this.maxWidth = void 0;
-      this.minHeight = void 0;
-      this.minWidth = void 0;
-
-      this.hasWillChange = false;
-
-      // Silently reset `resizedObserved`; With proper usage the `resizeObserver` action issues an update on removal.
-      this.resizeObserved.contentHeight = void 0;
-      this.resizeObserved.contentWidth = void 0;
-      this.resizeObserved.offsetHeight = void 0;
-      this.resizeObserved.offsetWidth = void 0;
-
-      // Reset the tracked element this TJSPosition instance is modifying.
-      this.stores.element.set(void 0);
-   }
-
-   /**
-    * Updates the style cache with new data from the given element.
-    *
-    * @param {HTMLElement} el - An HTML element.
-    */
-   update(el)
-   {
-      this.el = el;
-
-      this.computed = globalThis.getComputedStyle(el);
-
-      this.marginLeft = StyleParse.pixels(el.style.marginLeft) ?? StyleParse.pixels(this.computed.marginLeft);
-      this.marginTop = StyleParse.pixels(el.style.marginTop) ?? StyleParse.pixels(this.computed.marginTop);
-      this.maxHeight = StyleParse.pixels(el.style.maxHeight) ?? StyleParse.pixels(this.computed.maxHeight);
-      this.maxWidth = StyleParse.pixels(el.style.maxWidth) ?? StyleParse.pixels(this.computed.maxWidth);
-
-      // Note that the computed styles for below will always be 0px / 0 when no style is active.
-      this.minHeight = StyleParse.pixels(el.style.minHeight) ?? StyleParse.pixels(this.computed.minHeight);
-      this.minWidth = StyleParse.pixels(el.style.minWidth) ?? StyleParse.pixels(this.computed.minWidth);
-
-      // Tracks if there already is a will-change property on the inline or computed styles.
-      const willChange = el.style.willChange !== '' ? el.style.willChange : this.computed.willChange;
-
-      this.hasWillChange = willChange !== '' && willChange !== 'auto';
-
-      // Update the tracked element this TJSPosition instance is modifying.
-      this.stores.element.set(el);
-   }
-}
-
 class PositionChangeSet
 {
    constructor()
@@ -5357,8 +5389,8 @@ class TJSPosition
     *
     * @param {object | TJSPositionData}  [position] - Target to assign current position data.
     *
-    * @param {import('./').TJSPositionGetOptions}   [options] - Defines options for specific keys and substituting null
-    *        for numeric default values.
+    * @param {import('./types').TJSPositionTypes.OptionsGet}   [options] - Defines options for specific keys and
+    *        substituting null for numeric default values.
     *
     * @returns {TJSPositionData} Passed in object with current position data.
     */

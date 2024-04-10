@@ -9,25 +9,34 @@
 declare function nextAnimationFrame(cntr?: number): Promise<number>;
 
 /**
- * Defines a type for basic animation control.
+ * State that is available in the resolution of the {@link Promise} for {@link IBasicAnimation.finished}.
  */
-type TJSBasicAnimation = {
+type BasicAnimationState = {
+  /**
+   * True if the animation was cancelled.
+   */
+  cancelled: boolean;
+};
+/**
+ * Defines the implementation for basic animation control.
+ */
+interface IBasicAnimation<State = BasicAnimationState> {
   /**
    * True if animation is active; note: delayed animations are not active until start.
    */
-  isActive: boolean;
+  readonly isActive: boolean;
   /**
    * True if animation is completely finished.
    */
-  isFinished: boolean;
+  readonly isFinished: boolean;
   /**
    * A Promise that is resolved when animation is finished.
    */
-  finished: Promise<void>;
+  readonly finished: Promise<State>;
   /**
-   * A function that cancels animation.
+   * Cancels animation when invoked.
    */
-  cancel: Function;
-};
+  cancel(): void;
+}
 
-export { type TJSBasicAnimation, nextAnimationFrame };
+export { type BasicAnimationState, type IBasicAnimation, nextAnimationFrame };
