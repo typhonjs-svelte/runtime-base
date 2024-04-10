@@ -809,8 +809,8 @@ export class TJSPosition
     *
     * @param {object | TJSPositionData}  [position] - Target to assign current position data.
     *
-    * @param {import('./').TJSPositionGetOptions}   [options] - Defines options for specific keys and substituting null
-    *        for numeric default values.
+    * @param {import('./types').TJSPositionTypes.OptionsGet}   [options] - Defines options for specific keys and
+    *        substituting null for numeric default values.
     *
     * @returns {TJSPositionData} Passed in object with current position data.
     */

@@ -3,9 +3,9 @@ import type { EasingFunction }      from 'svelte/transition';
 import type { InterpolateFunction } from '#runtime/math/interpolate';
 import type { TJSBasicAnimation }   from '#runtime/util/animate';
 
-import type {
-   TJSPositionDataExtended,
-   TJSPositionGroup }               from '../index.js';
+import type { TJSPositionDataExtended }   from '../index.js';
+
+import type { TJSPositionTypes }    from '../types';
 
 import type { TJSPosition }         from '../TJSPosition.js';
 
@@ -89,11 +89,11 @@ interface IAnimationAPI
 interface IAnimationGroupAPI
 {
    /**
-    * Cancels any animation for given TJSPositionGroup data.
+    * Cancels any animation for given PositionGroup data.
     *
-    * @param {TJSPositionGroup} position - The position group to cancel.
+    * @param {TJSPositionTypes.PositionGroup} position - The position group to cancel.
     */
-   cancel(position: TJSPositionGroup): void;
+   cancel(position: TJSPositionTypes.PositionGroup): void;
 
    /**
     * Cancels all TJSPosition animation.
@@ -103,11 +103,11 @@ interface IAnimationGroupAPI
    /**
     * Gets all animation controls for the given position group data.
     *
-    * @param {TJSPositionGroup} position - A position group.
+    * @param {TJSPositionTypes.PositionGroup} position - A position group.
     *
     * @returns {{ position: TJSPosition, data: object | undefined, controls: TJSBasicAnimation[]}[]} Results array.
     */
-   getScheduled(position: TJSPositionGroup): {
+   getScheduled(position: TJSPositionTypes.PositionGroup): {
       position: TJSPosition,
       data: object | undefined,
       controls: TJSBasicAnimation[]
@@ -116,7 +116,7 @@ interface IAnimationGroupAPI
    /**
     * Provides the `from` animation tween for one or more TJSPosition instances as a group.
     *
-    * @param {TJSPositionGroup}  position - A position group.
+    * @param {TJSPositionTypes.PositionGroup}  position - A position group.
     *
     * @param {object | Function} fromData -
     *
@@ -124,13 +124,13 @@ interface IAnimationGroupAPI
     *
     * @returns {TJSBasicAnimation} Basic animation control.
     */
-   from(position: TJSPositionGroup, fromData: object | Function, options?: IAnimationAPI.TweenOptions |
+   from(position: TJSPositionTypes.PositionGroup, fromData: object | Function, options?: IAnimationAPI.TweenOptions |
     (() => IAnimationAPI.TweenOptions)): TJSBasicAnimation;
 
    /**
     * Provides the `fromTo` animation tween for one or more TJSPosition instances as a group.
     *
-    * @param {TJSPositionGroup} position -
+    * @param {TJSPositionTypes.PositionGroup} position - A position group.
     *
     * @param {object | Function}   fromData -
     *
@@ -140,13 +140,13 @@ interface IAnimationGroupAPI
     *
     * @returns {TJSBasicAnimation} Basic animation control.
     */
-   fromTo(position: TJSPositionGroup, fromData: object | Function, toData: object | Function,
+   fromTo(position: TJSPositionTypes.PositionGroup, fromData: object | Function, toData: object | Function,
     options?: object | Function): TJSBasicAnimation;
 
    /**
     * Provides the `to` animation tween for one or more TJSPosition instances as a group.
     *
-    * @param {TJSPositionGroup} position -
+    * @param {TJSPositionTypes.PositionGroup} position - A position group.
     *
     * @param {object | Function}   toData -
     *
@@ -154,12 +154,12 @@ interface IAnimationGroupAPI
     *
     * @returns {TJSBasicAnimation} Basic animation control.
     */
-   to(position: TJSPositionGroup, toData: object | Function, options?: object | Function): TJSBasicAnimation;
+   to(position: TJSPositionTypes.PositionGroup, toData: object | Function, options?: object | Function): TJSBasicAnimation;
 
    /**
     * Provides the `to` animation tween for one or more TJSPosition instances as a group.
     *
-    * @param {TJSPositionGroup} position -
+    * @param {TJSPositionTypes.PositionGroup} position - A position group.
     *
     * @param {Iterable<IAnimationAPI.AnimationKeys>}  keys -
     *
@@ -167,7 +167,7 @@ interface IAnimationGroupAPI
     *
     * @returns {IAnimationAPI.QuickToCallback} quick-to tween function.
     */
-   quickTo(position: TJSPositionGroup, keys: Iterable<IAnimationAPI.AnimationKeys>,
+   quickTo(position: TJSPositionTypes.PositionGroup, keys: Iterable<IAnimationAPI.AnimationKeys>,
     options?: IAnimationAPI.QuickTweenOptions | (() => IAnimationAPI.QuickTweenOptions)): IAnimationAPI.QuickToCallback;
 }
 

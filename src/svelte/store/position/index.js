@@ -8,21 +8,6 @@ export { TJSPosition, TJSPositionData }
 // From: position/TJSPosition.js ----------------------------------------------------------------------------------------
 
 /**
- * @typedef {object} TJSPositionGetOptions
- *
- * @property {Iterable<string>} keys When provided only these keys are copied.
- *
- * @property {Iterable<string>} exclude When provided these keys are excluded.
- *
- * @property {boolean} numeric When true any `null` values are converted into defaults.
- */
-
-/**
- * @typedef {TJSPosition | TJSPositionable | Iterable<TJSPosition> | Iterable<TJSPositionable>} TJSPositionGroup Defines
- * one or more positions or positionable objects.
- */
-
-/**
  * @typedef {object} TJSPositionOptions Options set in constructor.
  *
  * @property {boolean} [calculateTransform] When true always calculate transform data.
@@ -50,13 +35,6 @@ export { TJSPosition, TJSPositionData }
  * @typedef {HTMLElement | { elementTarget?: HTMLElement }} TJSPositionParent Defines the TJSPosition parent
  * element. Provide either an HTMLElement directly or an object with an `elementTarget` property / accessor defining
  * the parent HTMLElement.
- */
-
-/**
- * @typedef {object} TJSPositionable
- *
- * @property {import('./').TJSPosition}   position An instance of TJSPosition that manages application positional
- *           state.
  */
 
 /**

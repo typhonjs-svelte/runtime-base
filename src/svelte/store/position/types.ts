@@ -1,9 +1,42 @@
-import { type System } from './system/types';
+import type { TJSPosition }   from './TJSPosition';
+import type { System }        from './system/types';
 
 /**
  * Provides all interfaces and type aliases used by {@link TJSPosition}.
  */
 namespace TJSPositionTypes {
+   /**
+    * Defines the shape of an instance / object that is positionable.
+    */
+   export interface IPositionable {
+      position: TJSPosition;
+   }
+
+   /**
+    * Options for {@link TJSPosition.get}
+    */
+   export type OptionsGet = {
+      /**
+       * When provided only these keys are copied.
+       */
+      keys?: Iterable<string>;
+
+      /**
+       * When provided these keys are excluded.
+       */
+      exclude?: Iterable<string>;
+
+      /**
+       * When true any `null` values are converted into defaults.
+       */
+      numeric?: boolean;
+   }
+
+   /**
+    * Defines one or more positions or positionable objects.
+    */
+   export type PositionGroup = TJSPosition | IPositionable | Iterable<TJSPosition> | Iterable<IPositionable>;
+
    /**
     * Provides the default {@link System.Initial.IInitialSystem} implementations available.
     */

@@ -33,9 +33,9 @@ export class AnimationGroupAPI
    }
 
    /**
-    * Cancels any animation for given TJSPositionGroup data.
+    * Cancels any animation for given PositionGroup data.
     *
-    * @param {import('../').TJSPositionGroup} position - The position group to cancel.
+    * @param {import('../types').TJSPositionTypes.PositionGroup} position - The position group to cancel.
     */
    static cancel(position)
    {
@@ -80,7 +80,7 @@ export class AnimationGroupAPI
    /**
     * Gets all animation controls for the given position group data.
     *
-    * @param {import('../').TJSPositionGroup} position - A position group.
+    * @param {import('../types').TJSPositionTypes.PositionGroup} position - A position group.
     *
     * @returns {{
     *    position: import('../').TJSPosition,
@@ -136,7 +136,7 @@ export class AnimationGroupAPI
    /**
     * Provides the `from` animation tween for one or more TJSPosition instances as a group.
     *
-    * @param {import('../').TJSPositionGroup} position - A position group.
+    * @param {import('../types').TJSPositionTypes.PositionGroup} position - A position group.
     *
     * @param {object | Function}   fromData -
     *
@@ -278,7 +278,7 @@ export class AnimationGroupAPI
    /**
     * Provides the `fromTo` animation tween for one or more TJSPosition instances as a group.
     *
-    * @param {import('../').TJSPositionGroup} position -
+    * @param {import('../types').TJSPositionTypes.PositionGroup} position - A position group.
     *
     * @param {object | Function}   fromData -
     *
@@ -451,7 +451,7 @@ export class AnimationGroupAPI
    /**
     * Provides the `to` animation tween for one or more TJSPosition instances as a group.
     *
-    * @param {import('../').TJSPositionGroup} position -
+    * @param {import('../types').TJSPositionTypes.PositionGroup} position - A position group.
     *
     * @param {object | Function}   toData -
     *
@@ -590,7 +590,7 @@ export class AnimationGroupAPI
    /**
     * Provides the `to` animation tween for one or more TJSPosition instances as a group.
     *
-    * @param {import('../').TJSPositionGroup} position -
+    * @param {import('../types').TJSPositionTypes.PositionGroup} position - A position group.
     *
     * @param {Iterable<import('./types').IAnimationAPI.AnimationKeys>}  keys -
     *
