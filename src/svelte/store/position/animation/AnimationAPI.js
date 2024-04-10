@@ -1,21 +1,23 @@
-import { cubicOut }           from '#svelte/easing';
+import { cubicOut }              from '#svelte/easing';
 
-import { lerp }               from '#runtime/math/interpolate';
+import { lerp }                  from '#runtime/math/interpolate';
 
-import { A11yHelper }         from '#runtime/util/browser';
+import { A11yHelper }            from '#runtime/util/browser';
 
 import {
    isIterable,
-   isObject }                 from '#runtime/util/object';
+   isObject }                    from '#runtime/util/object';
 
-import { AnimationControl }   from './AnimationControl.js';
-import { AnimationManager }   from './AnimationManager.js';
+import { AnimationControl }      from './AnimationControl.js';
+import { AnimationManager }      from './AnimationManager.js';
 
-import { convertRelative }    from '../util/convertRelative.js';
+import { basicAnimationState }   from "./basicAnimationState.js";
+
+import { convertRelative }       from '../util';
 
 import {
    animateKeys,
-   setNumericDefaults }       from '../constants.js';
+   setNumericDefaults }          from '../constants.js';
 
 /**
  * @implements {import('./types').IAnimationAPI}
@@ -78,11 +80,11 @@ export class AnimationAPI
     *
     * @param {number}      delay -
     *
-    * @param {Function}    ease -
+    * @param {import('svelte/transition').EasingFunction}    ease -
     *
-    * @param {Function}    interpolate -
+    * @param {import('#runtime/svelte/transition').InterpolateFunction}    interpolate -
     *
-    * @returns {import('#runtime/util/animate').TJSBasicAnimation} The associated animation control.
+    * @returns {import('#runtime/util/animate').IBasicAnimation} The associated animation control.
     */
    #addAnimation(initial, destination, duration, el, delay, ease, interpolate)
    {
@@ -170,13 +172,16 @@ export class AnimationAPI
       data.active = false;
       data.finished = true;
 
-      if (typeof data.resolve === 'function') { data.resolve(data.cancelled); }
+      if (typeof data.resolve === 'function')
+      {
+         data.resolve(data.cancelled ? basicAnimationState.cancelled : basicAnimationState.notCancelled);
+      }
    }
 
    /**
     * Returns all currently scheduled AnimationControl instances for this TJSPosition instance.
     *
-    * @returns {import('#runtime/util/animate').TJSBasicAnimation[]} All currently scheduled animation controls for
+    * @returns {import('#runtime/util/animate').IBasicAnimation[]} All currently scheduled animation controls for
     *          this TJSPosition instance.
     */
    getScheduled()
@@ -191,7 +196,7 @@ export class AnimationAPI
     *
     * @param {import('./types').IAnimationAPI.TweenOptions} [options] - Optional tween parameters.
     *
-    * @returns {import('#runtime/util/animate').TJSBasicAnimation}  A control object that can cancel animation and
+    * @returns {import('#runtime/util/animate').IBasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
     */
    from(fromData, { delay = 0, duration = 1, ease = cubicOut, interpolate = lerp } = {})
@@ -263,7 +268,7 @@ export class AnimationAPI
     *
     * @param {import('./types').IAnimationAPI.TweenOptions} [options] - Optional tween parameters.
     *
-    * @returns {import('#runtime/util/animate').TJSBasicAnimation}  A control object that can cancel animation and
+    * @returns {import('#runtime/util/animate').IBasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
     */
    fromTo(fromData, toData, { delay = 0, duration = 1, ease = cubicOut, interpolate = lerp } = {})
@@ -345,7 +350,7 @@ export class AnimationAPI
     *
     * @param {import('./types').IAnimationAPI.TweenOptions} [options] - Optional tween parameters.
     *
-    * @returns {import('#runtime/util/animate').TJSBasicAnimation}  A control object that can cancel animation and
+    * @returns {import('#runtime/util/animate').IBasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
     */
    to(toData, { delay = 0, duration = 1, ease = cubicOut, interpolate = lerp } = {})

@@ -51,7 +51,7 @@ export class AnimationGroupAPI
 
             if (!this.#isPosition(actualPosition))
             {
-               console.warn(`AnimationGroupAPI.cancel warning: No Position instance found at index: ${index}.`);
+               console.warn(`AnimationGroupAPI.cancel warning: No TJSPosition instance found at index: ${index}.`);
                continue;
             }
 
@@ -64,7 +64,7 @@ export class AnimationGroupAPI
 
          if (!this.#isPosition(actualPosition))
          {
-            console.warn(`AnimationGroupAPI.cancel warning: No Position instance found.`);
+            console.warn(`AnimationGroupAPI.cancel warning: No TJSPosition instance found.`);
             return;
          }
 
@@ -85,7 +85,7 @@ export class AnimationGroupAPI
     * @returns {{
     *    position: import('../').TJSPosition,
     *    data: object | void,
-    *    controls: import('./AnimationControl').AnimationControl[]
+    *    controls: import('#runtime/util/animate').IBasicAnimation[]
     * }[]} Results array.
     */
    static getScheduled(position)
@@ -105,7 +105,7 @@ export class AnimationGroupAPI
 
             if (!this.#isPosition(actualPosition))
             {
-               console.warn(`AnimationGroupAPI.getScheduled warning: No Position instance found at index: ${index}.`);
+               console.warn(`AnimationGroupAPI.getScheduled warning: No TJSPosition instance found at index: ${index}.`);
                continue;
             }
 
@@ -121,7 +121,7 @@ export class AnimationGroupAPI
 
          if (!this.#isPosition(actualPosition))
          {
-            console.warn(`AnimationGroupAPI.getScheduled warning: No Position instance found.`);
+            console.warn(`AnimationGroupAPI.getScheduled warning: No TJSPosition instance found.`);
             return results;
          }
 
@@ -145,7 +145,7 @@ export class AnimationGroupAPI
     *    (() => import('./types').IAnimationAPI.TweenOptions)
     * )}   [options] -
     *
-    * @returns {import('#runtime/util/animate').TJSBasicAnimation} Basic animation control.
+    * @returns {import('#runtime/util/animate').IBasicAnimation} Basic animation control.
     */
    static from(position, fromData, options)
    {
@@ -183,11 +183,12 @@ export class AnimationGroupAPI
             index++;
 
             const isPosition = this.#isPosition(entry);
+            /** @type {import('..').TJSPosition} */
             const actualPosition = isPosition ? entry : entry.position;
 
             if (!this.#isPosition(actualPosition))
             {
-               console.warn(`AnimationGroupAPI.from warning: No Position instance found at index: ${index}.`);
+               console.warn(`AnimationGroupAPI.from warning: No TJSPosition instance found at index: ${index}.`);
                continue;
             }
 
@@ -232,11 +233,12 @@ export class AnimationGroupAPI
       else
       {
          const isPosition = this.#isPosition(position);
+
          const actualPosition = isPosition ? position : position.position;
 
          if (!this.#isPosition(actualPosition))
          {
-            console.warn(`AnimationGroupAPI.from warning: No Position instance found.`);
+            console.warn(`AnimationGroupAPI.from warning: No TJSPosition instance found.`);
             return AnimationGroupControl.voidControl;
          }
 
@@ -286,7 +288,7 @@ export class AnimationGroupAPI
     *
     * @param {object | Function}   [options] -
     *
-    * @returns {import('#runtime/util/animate').TJSBasicAnimation} Basic animation control.
+    * @returns {import('#runtime/util/animate').IBasicAnimation} Basic animation control.
     */
    static fromTo(position, fromData, toData, options)
    {
@@ -335,7 +337,7 @@ export class AnimationGroupAPI
 
             if (!this.#isPosition(actualPosition))
             {
-               console.warn(`AnimationGroupAPI.fromTo warning: No Position instance found at index: ${index}.`);
+               console.warn(`AnimationGroupAPI.fromTo warning: No TJSPosition instance found at index: ${index}.`);
                continue;
             }
 
@@ -398,7 +400,7 @@ export class AnimationGroupAPI
 
          if (!this.#isPosition(actualPosition))
          {
-            console.warn(`AnimationGroupAPI.fromTo warning: No Position instance found.`);
+            console.warn(`AnimationGroupAPI.fromTo warning: No TJSPosition instance found.`);
             return AnimationGroupControl.voidControl;
          }
 
@@ -457,7 +459,7 @@ export class AnimationGroupAPI
     *
     * @param {object | Function}   [options] -
     *
-    * @returns {import('#runtime/util/animate').TJSBasicAnimation} Basic animation control.
+    * @returns {import('#runtime/util/animate').IBasicAnimation} Basic animation control.
     */
    static to(position, toData, options)
    {
@@ -499,7 +501,7 @@ export class AnimationGroupAPI
 
             if (!this.#isPosition(actualPosition))
             {
-               console.warn(`AnimationGroupAPI.to warning: No Position instance found at index: ${index}.`);
+               console.warn(`AnimationGroupAPI.to warning: No TJSPosition instance found at index: ${index}.`);
                continue;
             }
 
@@ -548,7 +550,7 @@ export class AnimationGroupAPI
 
          if (!this.#isPosition(actualPosition))
          {
-            console.warn(`AnimationGroupAPI.to warning: No Position instance found.`);
+            console.warn(`AnimationGroupAPI.to warning: No TJSPosition instance found.`);
             return AnimationGroupControl.voidControl;
          }
 
@@ -637,7 +639,7 @@ export class AnimationGroupAPI
 
             if (!this.#isPosition(actualPosition))
             {
-               console.warn(`AnimationGroupAPI.quickTo warning: No Position instance found at index: ${index}.`);
+               console.warn(`AnimationGroupAPI.quickTo warning: No TJSPosition instance found at index: ${index}.`);
                continue;
             }
 
@@ -669,7 +671,7 @@ export class AnimationGroupAPI
 
          if (!this.#isPosition(actualPosition))
          {
-            console.warn(`AnimationGroupAPI.quickTo warning: No Position instance found.`);
+            console.warn(`AnimationGroupAPI.quickTo warning: No TJSPosition instance found.`);
             return () => null;
          }
 
@@ -836,7 +838,7 @@ export class AnimationGroupAPI
                   if (!this.#isPosition(actualPosition))
                   {
                      console.warn(
-                      `AnimationGroupAPI.quickTo.options warning: No Position instance found at index: ${index}.`);
+                      `AnimationGroupAPI.quickTo.options warning: No TJSPosition instance found at index: ${index}.`);
                      continue;
                   }
 
@@ -866,7 +868,7 @@ export class AnimationGroupAPI
 
                if (!this.#isPosition(actualPosition))
                {
-                  console.warn(`AnimationGroupAPI.quickTo.options warning: No Position instance found.`);
+                  console.warn(`AnimationGroupAPI.quickTo.options warning: No TJSPosition instance found.`);
                   return quickToCB;
                }
 

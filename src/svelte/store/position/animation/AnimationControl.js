@@ -1,16 +1,18 @@
-import { isObject } from '#runtime/util/object';
+import { isObject }              from '#runtime/util/object';
+
+import { basicAnimationState }   from './basicAnimationState.js';
 
 /**
- * Provides a TJSBasicAnimation implementation for TJSPosition animation.
+ * Provides a basic animation implementation for TJSPosition animation.
  *
- * @implements {import('#runtime/util/animate').TJSBasicAnimation}
+ * @implements {import('#runtime/util/animate').IBasicAnimation}
  */
 export class AnimationControl
 {
    /** @type {object} */
    #animationData;
 
-   /** @type {Promise<void>} */
+   /** @type {Promise<import('#runtime/util/animate').BasicAnimationState>} */
    #finishedPromise;
 
    #willFinish;
@@ -46,14 +48,14 @@ export class AnimationControl
    /**
     * Get a promise that resolves when animation is finished.
     *
-    * @returns {Promise<void>}
+    * @returns {Promise<import('#runtime/util/animate').BasicAnimationState>}
     */
    get finished()
    {
       if (!(this.#finishedPromise instanceof Promise))
       {
          this.#finishedPromise = this.#willFinish ? new Promise((resolve) => this.#animationData.resolve = resolve) :
-          Promise.resolve();
+          Promise.resolve(basicAnimationState.notCancelled);
       }
 
       return this.#finishedPromise;

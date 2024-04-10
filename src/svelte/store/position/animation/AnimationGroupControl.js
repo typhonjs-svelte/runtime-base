@@ -1,12 +1,16 @@
+import { basicAnimationState } from './basicAnimationState.js';
+
 /**
- * Provides a TJSBasicAnimation implementation for a TJSPosition animation for a group of TJSPosition instances.
+ * Provides a implementation for a TJSPosition animation for a group of TJSPosition instances.
+ *
+ * @implements {import('#runtime/util/animate').IBasicAnimation}
  */
 export class AnimationGroupControl
 {
    /** @type {import('./AnimationControl').AnimationControl[]} */
    #animationControls;
 
-   /** @type {Promise<Awaited<unknown>[]>} */
+   /** @type {Promise<import('#runtime/util/animate').BasicAnimationState>} */
    #finishedPromise;
 
    /**
@@ -35,23 +39,35 @@ export class AnimationGroupControl
    /**
     * Get a promise that resolves when all animations are finished.
     *
-    * @returns {Promise<Awaited<unknown>[]>|Promise<void>} Finished Promise for all animations.
+    * @returns {Promise<import('#runtime/util/animate').BasicAnimationState>} Finished Promise for all animations.
     */
    get finished()
    {
       const animationControls = this.#animationControls;
 
-      if (animationControls === null || animationControls === void 0) { return Promise.resolve(); }
-
       if (!(this.#finishedPromise instanceof Promise))
       {
-         const promises = [];
-         for (let cntr = animationControls.length; --cntr >= 0;)
+         if (animationControls === null || animationControls === void 0)
          {
-            promises.push(animationControls[cntr].finished);
+            this.#finishedPromise = /** @type {Promise<import('#runtime/util/animate').BasicAnimationState>} */
+             Promise.resolve(basicAnimationState.notCancelled);
          }
+         else
+         {
+            /** @type {Promise<import('#runtime/util/animate').BasicAnimationState>[]} */
+            const promises = [];
 
-         this.#finishedPromise = Promise.all(promises);
+            for (let cntr = animationControls.length; --cntr >= 0;) { promises.push(animationControls[cntr].finished); }
+
+            this.#finishedPromise = Promise.allSettled(promises).then((results) => {
+               // Check if any promises were rejected or resolved with `cancelled: true`.
+               const anyCancelled = results.some((result) => result.status === 'rejected' ||
+                (result.status === 'fulfilled' && result.value.cancelled));
+
+               // Return a single BasicAnimationState based on the aggregation of individual results.
+               return anyCancelled ? basicAnimationState.cancelled : basicAnimationState.notCancelled;
+            });
+         }
       }
 
       return this.#finishedPromise;
@@ -95,7 +111,7 @@ export class AnimationGroupControl
          if (!animationControls[cntr].isFinished) { return false; }
       }
 
-      return false;
+      return true;
    }
 
    /**
