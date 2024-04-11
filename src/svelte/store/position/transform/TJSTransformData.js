@@ -1,9 +1,9 @@
 import { Mat4, Vec3 }   from '#runtime/math/gl-matrix';
 
 /**
- * Provides the output data for {@link ITransformAPI.getData}.
+ * Provides the output data for {@link TransformAPI.getData}.
  *
- * @implements {import('./types').ITransformAPI.ITransformData}
+ * @implements {import('./types').TransformAPI.ITransformData}
  */
 export class TJSTransformData
 {

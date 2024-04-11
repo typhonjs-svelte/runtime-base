@@ -25,7 +25,7 @@ import { isObject }  from '#runtime/util/object';
  * position.validators.removeById(...);
  * ```
  *
- * @implements {import('./types').IValidatorAPI}
+ * @implements {import('./types').ValidatorAPI}
  */
 export class AdapterValidators
 {
@@ -33,17 +33,17 @@ export class AdapterValidators
    #enabled = true;
 
    /**
-    * @type {import('./types').IValidatorAPI.ValidatorData[]}
+    * @type {import('./types').ValidatorAPI.ValidatorData[]}
     */
    #validatorData;
 
    /**
-    * @type {Map<import('./types').IValidatorAPI.ValidationFn, import('svelte/store').Unsubscriber>}
+    * @type {Map<import('./types').ValidatorAPI.ValidationFn, import('svelte/store').Unsubscriber>}
     */
    #mapUnsubscribe = new Map();
 
    /**
-    * @returns {[AdapterValidators, import('./types').IValidatorAPI.ValidatorData[]]} Returns this and internal storage
+    * @returns {[AdapterValidators, import('./types').ValidatorAPI.ValidatorData[]]} Returns this and internal storage
     * for validator adapter.
     */
    static create()
@@ -85,8 +85,8 @@ export class AdapterValidators
    /**
     * Provides an iterator for validators.
     *
-    * @yields {import('./types').IValidatorAPI.ValidatorData}
-    * @returns {IterableIterator<import('./types').IValidatorAPI.ValidatorData>} iterator.
+    * @yields {import('./types').ValidatorAPI.ValidatorData}
+    * @returns {IterableIterator<import('./types').ValidatorAPI.ValidatorData>} iterator.
     */
    *[Symbol.iterator]()
    {
@@ -102,8 +102,8 @@ export class AdapterValidators
     * Adds the given validators.
     *
     * @param {...(
-    *    import('./types').IValidatorAPI.ValidatorFn |
-    *    import('./types').IValidatorAPI.ValidatorData
+    *    import('./types').ValidatorAPI.ValidatorFn |
+    *    import('./types').ValidatorAPI.ValidatorData
     * )}   validators - Validators to add.
     */
    add(...validators)
@@ -124,7 +124,7 @@ export class AdapterValidators
             throw new TypeError(`AdapterValidator error: 'validator' is not a function or object.`);
          }
 
-         /** @type {import('./types').IValidatorAPI.ValidatorData} */
+         /** @type {import('./types').ValidatorAPI.ValidatorData} */
          let data = void 0;
 
          /** @type {(...args: any[]) => import('svelte/store').Unsubscriber} */
@@ -235,8 +235,8 @@ export class AdapterValidators
     * Removes one or more given validators.
     *
     * @param {...(
-    *    import('./types').IValidatorAPI.ValidatorFn |
-    *    import('./types').IValidatorAPI.ValidatorData
+    *    import('./types').ValidatorAPI.ValidatorFn |
+    *    import('./types').ValidatorAPI.ValidatorData
     * )}   validators - Validators to remove.
     */
    remove(...validators)
@@ -278,7 +278,7 @@ export class AdapterValidators
     * Remove validators by the provided callback. The callback takes 3 parameters: `id`, `validator`, and `weight`.
     * Any truthy value returned will remove that validator.
     *
-    * @param {import('./types').IValidatorAPI.RemoveByCallback} callback - Callback function to evaluate each validator
+    * @param {import('./types').ValidatorAPI.RemoveByCallback} callback - Callback function to evaluate each validator
     *        entry.
     */
    removeBy(callback)

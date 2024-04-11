@@ -1,14 +1,14 @@
 import type { Readable }         from 'svelte/store';
 import type { EasingFunction }   from 'svelte/transition';
 
-import type { IAnimationAPI }    from '../animation/types';
+import type { AnimationAPI }    from '../animation/types';
 
 /**
  * Provides an interface of the {@link draggable} action options support / Readable store to make updating / setting
  * draggable options much easier. When subscribing to the options instance returned by {@link draggable.options} the
  * Subscriber handler receives the entire instance.
  */
-interface IDraggableOptions extends Readable<IDraggableOptions>
+interface DraggableOptions extends Readable<DraggableOptions>
 {
    /**
     * Tweening enabled state.
@@ -18,7 +18,7 @@ interface IDraggableOptions extends Readable<IDraggableOptions>
    /**
     * Quick tween options for easing function and duration.
     */
-   tweenOptions: IAnimationAPI.QuickTweenOptions;
+   tweenOptions: AnimationAPI.QuickTweenOptions;
 
    /**
     * @returns {number} Get tween duration.
@@ -56,4 +56,4 @@ interface IDraggableOptions extends Readable<IDraggableOptions>
    resetTweenOptions(): void;
 }
 
-export { IDraggableOptions };
+export { DraggableOptions };

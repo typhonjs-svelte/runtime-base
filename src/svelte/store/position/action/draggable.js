@@ -27,7 +27,7 @@ import {
  *
  * @param {boolean}           [params.tween=false] - When true tweening is enabled.
  *
- * @param {import('../animation/types').IAnimationAPI.QuickTweenOptions} [params.tweenOptions] - Quick tween options.
+ * @param {import('../animation/types').AnimationAPI.QuickTweenOptions} [params.tweenOptions] - Quick tween options.
  *
  * @param {Iterable<string>}  [params.hasTargetClassList] - When defined any event targets that have a class in this
  *        list are allowed.
@@ -82,7 +82,7 @@ function draggable(node, { position, active = true, button = 0, storeDragging = 
    /**
     * Stores the quickTo callback to use for optimized tweening when easing is enabled.
     *
-    * @type {import('../animation/types').IAnimationAPI.QuickToCallback}
+    * @type {import('../animation/types').AnimationAPI.QuickToCallback}
     */
    let quickTo = position.animate.quickTo(['top', 'left'], tweenOptions);
 
@@ -306,7 +306,7 @@ function draggable(node, { position, active = true, button = 0, storeDragging = 
  * draggable options much easier. When subscribing to the options instance returned by {@link draggable.options} the
  * Subscriber handler receives the entire instance.
  *
- * @implements {import('./types').IDraggableOptions}
+ * @implements {import('./types').DraggableOptions}
  */
 class DraggableOptions
 {
@@ -314,7 +314,7 @@ class DraggableOptions
    #initialTween;
 
    /**
-    * @type {import('../animation/types').IAnimationAPI.QuickTweenOptions}
+    * @type {import('../animation/types').AnimationAPI.QuickTweenOptions}
     */
    #initialTweenOptions;
 
@@ -322,14 +322,14 @@ class DraggableOptions
    #tween;
 
    /**
-    * @type {import('../animation/types').IAnimationAPI.QuickTweenOptions}
+    * @type {import('../animation/types').AnimationAPI.QuickTweenOptions}
     */
    #tweenOptions = { duration: 1, ease: cubicOut };
 
    /**
     * Stores the subscribers.
     *
-    * @type {import('svelte/store').Subscriber<import('./types').IDraggableOptions>[]}
+    * @type {import('svelte/store').Subscriber<import('./types').DraggableOptions>[]}
     */
    #subscriptions = [];
 
@@ -338,7 +338,7 @@ class DraggableOptions
     *
     * @param {boolean}  [opts.tween = false] - Tween enabled.
     *
-    * @param {import('../animation/types').IAnimationAPI.QuickTweenOptions}   [opts.tweenOptions] - Quick tween options.
+    * @param {import('../animation/types').AnimationAPI.QuickTweenOptions}   [opts.tweenOptions] - Quick tween options.
     */
    constructor({ tween = false, tweenOptions } = {})
    {
@@ -476,7 +476,7 @@ class DraggableOptions
    /**
     * Store subscribe method.
     *
-    * @param {import('svelte/store').Subscriber<import('./types').IDraggableOptions>} handler - Callback function that
+    * @param {import('svelte/store').Subscriber<import('./types').DraggableOptions>} handler - Callback function that
     *        is invoked on update / changes. Receives the DraggableOptions object / instance.
     *
     * @returns {import('svelte/store').Unsubscriber} Unsubscribe function.
@@ -508,14 +508,14 @@ class DraggableOptions
 }
 
 /**
- * Define a function to get an IDraggableOptions instance.
+ * Define a function to get an DraggableOptions instance.
  *
  * @param {({
  *    tween?: boolean,
- *    tweenOptions?: import('../animation/types').IAnimationAPI.QuickTweenOptions
- * })} options - Initial options for IDraggableOptions.
+ *    tweenOptions?: import('../animation/types').AnimationAPI.QuickTweenOptions
+ * })} options - Initial options for DraggableOptions.
  *
- * @returns {import('./types').IDraggableOptions} A new options instance.
+ * @returns {import('./types').DraggableOptions} A new options instance.
  */
 draggable.options = (options) => new DraggableOptions(options);
 

@@ -70,7 +70,7 @@ export class TJSPosition
    /**
     * Provides the animation API.
     *
-    * @type {import('./animation/types').IAnimationAPI}
+    * @type {import('./animation/types').AnimationAPI}
     */
    #animate = new AnimationAPI(this, this.#data);
 
@@ -149,7 +149,7 @@ export class TJSPosition
    #validators;
 
    /**
-    * @type {import('./system/validators/types').IValidatorAPI.ValidatorData[]}
+    * @type {import('./system/validators/types').ValidatorAPI.ValidatorData[]}
     */
    #validatorData;
 
@@ -159,7 +159,7 @@ export class TJSPosition
    #state = new PositionStateAPI(this, this.#data, this.#transforms);
 
    /**
-    * @returns {import('./animation/types').IAnimationGroupAPI} Public Animation API.
+    * @returns {import('./animation/types').AnimationGroupAPI} Public Animation API.
     */
    static get Animate() { return AnimationGroupAPI; }
 
@@ -181,7 +181,7 @@ export class TJSPosition
    /**
     * Returns TJSTransformData class / constructor.
     *
-    * @returns {import('./transform/types').ITransformAPI.ITransformDataConstructor} ITransformData class /
+    * @returns {import('./transform/types').TransformAPI.ITransformDataConstructor} ITransformData class /
     *          constructor.
     */
    static get TransformData() { return TJSTransformData; }
@@ -455,8 +455,8 @@ export class TJSPosition
          {
             /**
              * @type {(
-             *    import('./system/validators/types').IValidatorAPI.ValidatorFn |
-             *    import('./system/validators/types').IValidatorAPI.ValidatorData
+             *    import('./system/validators/types').ValidatorAPI.ValidatorFn |
+             *    import('./system/validators/types').ValidatorAPI.ValidatorData
              * )}
              */
             const validatorFn = options.validator;
@@ -468,7 +468,7 @@ export class TJSPosition
    /**
     * Returns the animation API.
     *
-    * @returns {import('./animation/types').IAnimationAPI} Animation API.
+    * @returns {import('./animation/types').AnimationAPI} Animation API.
     */
    get animate()
    {
@@ -525,7 +525,7 @@ export class TJSPosition
    /**
     * Returns the state API.
     *
-    * @returns {import('./state/types').IPositionStateAPI} TJSPosition state API.
+    * @returns {import('./state/types').PositionStateAPI} TJSPosition state API.
     */
    get state() { return this.#state; }
 
@@ -539,7 +539,7 @@ export class TJSPosition
    /**
     * Returns the transform data for the readable store.
     *
-    * @returns {import('./transform/types').ITransformAPI.ITransformData} Transform Data.
+    * @returns {import('./transform/types').TransformAPI.ITransformData} Transform Data.
     */
    get transform()
    {
@@ -549,7 +549,7 @@ export class TJSPosition
    /**
     * Returns the validators.
     *
-    * @returns {import('./system/validators/types').IValidatorAPI} validators.
+    * @returns {import('./system/validators/types').ValidatorAPI} validators.
     */
    get validators() { return this.#validators; }
 
@@ -653,7 +653,7 @@ export class TJSPosition
    get top() { return this.#data.top; }
 
    /**
-    * @returns {import('./transform/types').ITransformAPI.TransformOrigin | null} transformOrigin
+    * @returns {import('./transform/types').TransformAPI.TransformOrigin | null} transformOrigin
     */
    get transformOrigin() { return this.#data.transformOrigin; }
 
@@ -779,7 +779,7 @@ export class TJSPosition
    }
 
    /**
-    * @param {import('./transform/types').ITransformAPI.TransformOrigin} transformOrigin -
+    * @param {import('./transform/types').TransformAPI.TransformOrigin} transformOrigin -
     */
    set transformOrigin(transformOrigin)
    {
@@ -1409,7 +1409,7 @@ export class TJSPosition
 const s_DATA_UPDATE = new TJSPositionData();
 
 /**
- * @type {import('./system/validators/types').IValidatorAPI.ValidationData}
+ * @type {import('./system/validators/types').ValidatorAPI.ValidationData}
  */
 const s_VALIDATION_DATA = {
    position: void 0,

@@ -3,7 +3,7 @@ import type {
    Subscriber,
    Unsubscriber}                 from 'svelte/store';
 
-import type { IValidatorAPI }    from './validators/types';
+import type { ValidatorAPI }    from './validators/types';
 
 import type { Data }             from '../data/types';
 
@@ -93,11 +93,11 @@ namespace System {
           * Provides a validator that respects transforms in positional data constraining the position to within the
           * target elements bounds.
           *
-          * @param {IValidatorAPI.ValidationData}   valData - The associated validation data for position updates.
+          * @param {ValidatorAPI.ValidationData}   valData - The associated validation data for position updates.
           *
           * @returns {Data.TJSPositionData} Potentially adjusted position data.
           */
-         validate: IValidatorAPI.ValidatorFn;
+         validate: ValidatorAPI.ValidatorFn;
 
          /**
           * An ID associated with this validator. Can be used to remove the validator; default: `undefined`.

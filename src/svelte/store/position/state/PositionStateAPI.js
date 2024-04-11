@@ -6,7 +6,7 @@ import {
    isObject }           from '#runtime/util/object';
 
 /**
- * @implements {import('./types').IPositionStateAPI}
+ * @implements {import('./types').PositionStateAPI}
  */
 export class PositionStateAPI
 {
@@ -124,7 +124,7 @@ export class PositionStateAPI
    /**
     * Restores a saved positional state returning the data. Several optional parameters are available
     * to control whether the restore action occurs silently (no store / inline styles updates), animates
--   * to the stored data, or simply sets the stored data. Restoring via {@link IAnimationAPI.to}
+-   * to the stored data, or simply sets the stored data. Restoring via {@link AnimationAPI.to}
     * allows specification of the duration, easing, and interpolate functions along with configuring a Promise to be
     * returned if awaiting the end of the animation.
     *

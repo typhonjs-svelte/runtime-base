@@ -36,7 +36,7 @@ export class TJSPositionData
     *
     * @param {number | null} [opts.top] -
     *
-    * @param {import('../transform/types').ITransformAPI.TransformOrigin | null} [opts.transformOrigin] -
+    * @param {import('../transform/types').TransformAPI.TransformOrigin | null} [opts.transformOrigin] -
     *
     * @param {number | 'auto' | 'inherit' | null} [opts.width] -
     *
@@ -79,7 +79,7 @@ export class TJSPositionData
       /** @type {number | null} */
       this.top = top;
 
-      /** @type {import('../transform/types').ITransformAPI.TransformOrigin | null} */
+      /** @type {import('../transform/types').TransformAPI.TransformOrigin | null} */
       this.transformOrigin = transformOrigin;
 
       /** @type {number | null} */

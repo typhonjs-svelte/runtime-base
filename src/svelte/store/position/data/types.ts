@@ -1,4 +1,4 @@
-import type { ITransformAPI } from '../transform/types';
+import type { TransformAPI } from '../transform/types';
 import type { TJSPosition }   from '../TJSPosition';
 
 /**
@@ -32,7 +32,7 @@ namespace Data {
 
       top: number | null;
 
-      transformOrigin: ITransformAPI.TransformOrigin | null;
+      transformOrigin: TransformAPI.TransformOrigin | null;
 
       translateX: number | null;
 
@@ -69,7 +69,7 @@ namespace Data {
          rotateZ?: number | null,
          scale?: number | null,
          top?: number | null,
-         transformOrigin?: ITransformAPI.TransformOrigin | null,
+         transformOrigin?: TransformAPI.TransformOrigin | null,
          translateX?: number | null,
          translateY?: number | null,
          translateZ?: number | null,

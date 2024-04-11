@@ -2,7 +2,7 @@ import type { Mat4, Vec3 } from '#runtime/math/gl-matrix';
 
 import type { Data }       from '../data/types';
 
-interface ITransformAPI
+interface TransformAPI
 {
    /**
     * @returns {boolean} Whether there are active transforms in local data.
@@ -117,14 +117,14 @@ interface ITransformAPI
     *
     * @param {Data.TJSPositionData} position - The position data to process.
     *
-    * @param {ITransformAPI.ITransformData} [output] - Optional ITransformAPI.Data output instance.
+    * @param {TransformAPI.ITransformData} [output] - Optional TransformAPI.Data output instance.
     *
     * @param {object} [validationData] - Optional validation data for adjustment parameters.
     *
-    * @returns {ITransformAPI.ITransformData} The output ITransformAPI.Data instance.
+    * @returns {TransformAPI.ITransformData} The output TransformAPI.Data instance.
     */
-   getData(position: Data.TJSPositionData, output?: ITransformAPI.ITransformData, validationData?: object):
-    ITransformAPI.ITransformData;
+   getData(position: Data.TJSPositionData, output?: TransformAPI.ITransformData, validationData?: object):
+    TransformAPI.ITransformData;
 
    /**
     * Creates a transform matrix based on local data applied in order it was added.
@@ -179,7 +179,7 @@ interface ITransformAPI
 /**
  * Provides additional interfaces and type aliases for the transform API.
  */
-namespace ITransformAPI {
+namespace TransformAPI {
    /**
     * Describes the constructor function for {@link ITransformData}.
     */
@@ -188,7 +188,7 @@ namespace ITransformAPI {
    }
 
    /**
-    * Provides the output data for {@link ITransformAPI.getData}.
+    * Provides the output data for {@link TransformAPI.getData}.
     */
    export interface ITransformData {
       /**
@@ -231,4 +231,4 @@ namespace ITransformAPI {
     'bottom right';
 }
 
-export { ITransformAPI }
+export { TransformAPI }

@@ -32,7 +32,7 @@ export class AnimationControl
    static get voidControl() { return this.#voidControl; }
 
    /**
-    * @param {object | null}  [animationData] - Animation data from {@link IAnimationAPI}.
+    * @param {object | null}  [animationData] - Animation data from {@link AnimationAPI}.
     *
     * @param {boolean}        [willFinish] - Promise that tracks animation finished state.
     */

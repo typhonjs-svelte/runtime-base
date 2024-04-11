@@ -21,7 +21,7 @@ const s_MAT4_TEMP = Mat4.create();
 const s_VEC3_TEMP = Vec3.create();
 
 /**
- * @implements {import('./types').ITransformAPI}
+ * @implements {import('./types').TransformAPI}
  */
 export class TJSTransforms
 {
@@ -286,11 +286,11 @@ export class TJSTransforms
     *
     * @param {import('../data/types').Data.TJSPositionData} position - The position data to process.
     *
-    * @param {import('./types').ITransformAPI.ITransformData} [output] - Optional TJSTransformData output instance.
+    * @param {import('./types').TransformAPI.ITransformData} [output] - Optional TJSTransformData output instance.
     *
     * @param {object} [validationData] - Optional validation data for adjustment parameters.
     *
-    * @returns {import('./types').ITransformAPI.ITransformData} The output TJSTransformData instance.
+    * @returns {import('./types').TransformAPI.ITransformData} The output TJSTransformData instance.
     */
    getData(position, output = new TJSTransformData(), validationData = {})
    {

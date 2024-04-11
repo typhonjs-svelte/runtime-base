@@ -6,7 +6,7 @@ import type {
 import type { TJSPositionParent }   from '../../index';
 import type { TJSPosition }         from '../../TJSPosition.js';
 import type { Data }                from '../../data/types';
-import type { ITransformAPI }       from '../../transform/types';
+import type { TransformAPI }       from '../../transform/types';
 
 /**
  * Provides the validator API implementation for {@link TJSPosition.validators}. You may add one or more validator
@@ -14,7 +14,7 @@ import type { ITransformAPI }       from '../../transform/types';
  * for browser bounds / transform checking available via {@link TJSPosition.Validators} or custom validators added which
  * may provide unique bounding validation / constraints.
  */
-interface IValidatorAPI
+interface ValidatorAPI
 {
    /**
     * @returns {boolean} Returns the enabled state.
@@ -34,17 +34,17 @@ interface IValidatorAPI
    /**
     * Provides an iterator for validators.
     *
-    * @yields {IValidatorAPI.ValidatorData}
-    * @returns {IterableIterator<IValidatorAPI.ValidatorData>} iterator.
+    * @yields {ValidatorAPI.ValidatorData}
+    * @returns {IterableIterator<ValidatorAPI.ValidatorData>} iterator.
     */
-   [Symbol.iterator](): IterableIterator<IValidatorAPI.ValidatorData>;
+   [Symbol.iterator](): IterableIterator<ValidatorAPI.ValidatorData>;
 
    /**
     * Adds the given validators.
     *
-    * @param {...(IValidatorAPI.ValidatorFn | IValidatorAPI.ValidatorData)}   validators - Validators to add.
+    * @param {...(ValidatorAPI.ValidatorFn | ValidatorAPI.ValidatorData)}   validators - Validators to add.
     */
-   add(...validators: (IValidatorAPI.ValidatorFn | IValidatorAPI.ValidatorData)[]): void;
+   add(...validators: (ValidatorAPI.ValidatorFn | ValidatorAPI.ValidatorData)[]): void;
 
    /**
     * Clears / removes all validators.
@@ -54,17 +54,17 @@ interface IValidatorAPI
    /**
     * Removes one or more given validators.
     *
-    * @param {...(IValidatorAPI.ValidatorFn | IValidatorAPI.ValidatorData)}   validators - Validators to remove.
+    * @param {...(ValidatorAPI.ValidatorFn | ValidatorAPI.ValidatorData)}   validators - Validators to remove.
     */
-   remove(...validators: (IValidatorAPI.ValidatorFn | IValidatorAPI.ValidatorData)[]): void;
+   remove(...validators: (ValidatorAPI.ValidatorFn | ValidatorAPI.ValidatorData)[]): void;
 
    /**
     * Remove validators by the provided callback. The callback takes 3 parameters: `id`, `validator`, and `weight`.
     * Any truthy value returned will remove that validator.
     *
-    * @param {IValidatorAPI.RemoveByCallback} callback - Callback function to evaluate each validator entry.
+    * @param {ValidatorAPI.RemoveByCallback} callback - Callback function to evaluate each validator entry.
     */
-   removeBy(callback: IValidatorAPI.RemoveByCallback): void;
+   removeBy(callback: ValidatorAPI.RemoveByCallback): void;
 
    /**
     * Removes any validators with matching IDs.
@@ -77,7 +77,7 @@ interface IValidatorAPI
 /**
  * Provides a namespace for all type aliases related to the validator API.
  */
-namespace IValidatorAPI {
+namespace ValidatorAPI {
    /**
     * The data passed to validator functions to determine if the new `position` / TJSPosition data is valid.
     */
@@ -105,7 +105,7 @@ namespace IValidatorAPI {
       /**
        * Current applies transforms / transform tracking & conversion utility.
        */
-      transforms: ITransformAPI;
+      transforms: TransformAPI;
 
       /**
        * Current height
@@ -213,4 +213,4 @@ namespace IValidatorAPI {
    }
 }
 
-export { IValidatorAPI }
+export { ValidatorAPI }

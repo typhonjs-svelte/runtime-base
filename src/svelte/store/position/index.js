@@ -18,10 +18,10 @@ export *                   from './TJSPosition.js';
  * @property {boolean} [transformSubscribed] Set to true when there are subscribers to the readable transform store.
  *
  * @property {(
- *    import('./system/validators/types').IValidatorAPI.ValidatorFn |
- *    import('./system/validators/types').IValidatorAPI.ValidatorData |
- *    Iterable<import('./system/validators/types').IValidatorAPI.ValidatorFn |
- *     import('./system/validators/types').IValidatorAPI.ValidatorData>
+ *    import('./system/validators/types').ValidatorAPI.ValidatorFn |
+ *    import('./system/validators/types').ValidatorAPI.ValidatorData |
+ *    Iterable<import('./system/validators/types').ValidatorAPI.ValidatorFn |
+ *     import('./system/validators/types').ValidatorAPI.ValidatorData>
  * )} [validator] - Provides an initial validator or list of validators.
  */
 
@@ -82,7 +82,7 @@ export *                   from './TJSPosition.js';
  * @property {import('svelte/store').Writable<number|null>} scale Derived store for `scale` updates.
  *
  * @property {import('svelte/store').Readable<
- *    import('./transform/types').ITransformAPI.ITransformData
+ *    import('./transform/types').TransformAPI.ITransformData
  * >} transform Readable store for transform data.
  *
  * @property {import('svelte/store').Writable<string>} transformOrigin Derived store for `transformOrigin`.

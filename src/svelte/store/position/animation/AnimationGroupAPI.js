@@ -16,7 +16,7 @@ import { AnimationGroupControl } from './AnimationGroupControl.js';
  *
  * @see AnimationAPI
  *
- * @implements {import('./types').IAnimationGroupAPI}
+ * @implements {import('./types').AnimationGroupAPI}
  */
 export class AnimationGroupAPI
 {
@@ -141,8 +141,8 @@ export class AnimationGroupAPI
     * @param {object | Function}   fromData -
     *
     * @param {(
-    *    import('./types').IAnimationAPI.TweenOptions |
-    *    (() => import('./types').IAnimationAPI.TweenOptions)
+    *    import('./types').AnimationAPI.TweenOptions |
+    *    (() => import('./types').AnimationAPI.TweenOptions)
     * )}   [options] -
     *
     * @returns {import('#runtime/util/animate').IBasicAnimation} Basic animation control.
@@ -594,14 +594,14 @@ export class AnimationGroupAPI
     *
     * @param {import('../types').TJSPositionTypes.PositionGroup} position - A position group.
     *
-    * @param {Iterable<import('./types').IAnimationAPI.AnimationKeys>}  keys -
+    * @param {Iterable<import('./types').AnimationAPI.AnimationKeys>}  keys -
     *
     * @param {(
-    *    import('./types').IAnimationAPI.QuickTweenOptions |
-    *    (() => import('./types').IAnimationAPI.QuickTweenOptions)
+    *    import('./types').AnimationAPI.QuickTweenOptions |
+    *    (() => import('./types').AnimationAPI.QuickTweenOptions)
     * )}   [options] - Quick tween options.
     *
-    * @returns {import('./types').IAnimationAPI.QuickToCallback} quick-to tween function.
+    * @returns {import('./types').AnimationAPI.QuickToCallback} quick-to tween function.
     */
    static quickTo(position, keys, options)
    {
@@ -616,7 +616,7 @@ export class AnimationGroupAPI
       }
 
       /**
-       * @type {import('./types').IAnimationAPI.QuickToCallback[]}
+       * @type {import('./types').AnimationAPI.QuickToCallback[]}
        */
       const quickToCallbacks = [];
 
@@ -807,7 +807,7 @@ export class AnimationGroupAPI
        *
        * @param {Function}          [options.interpolate] - Interpolation function.
        *
-       * @returns {import('./types').IAnimationAPI.QuickToCallback} The quickTo callback.
+       * @returns {import('./types').AnimationAPI.QuickToCallback} The quickTo callback.
        */
       quickToCB.options = (options) => // eslint-disable-line no-shadow
       {

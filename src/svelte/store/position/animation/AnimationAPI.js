@@ -20,7 +20,7 @@ import {
    setNumericDefaults }          from '../constants.js';
 
 /**
- * @implements {import('./types').IAnimationAPI}
+ * @implements {import('./types').AnimationAPI}
  */
 export class AnimationAPI
 {
@@ -194,7 +194,7 @@ export class AnimationAPI
     *
     * @param {import('../').TJSPositionDataExtended} fromData - The starting position.
     *
-    * @param {import('./types').IAnimationAPI.TweenOptions} [options] - Optional tween parameters.
+    * @param {import('./types').AnimationAPI.TweenOptions} [options] - Optional tween parameters.
     *
     * @returns {import('#runtime/util/animate').IBasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
@@ -266,7 +266,7 @@ export class AnimationAPI
     *
     * @param {import('../').TJSPositionDataExtended} toData - The ending position.
     *
-    * @param {import('./types').IAnimationAPI.TweenOptions} [options] - Optional tween parameters.
+    * @param {import('./types').AnimationAPI.TweenOptions} [options] - Optional tween parameters.
     *
     * @returns {import('#runtime/util/animate').IBasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
@@ -348,7 +348,7 @@ export class AnimationAPI
     *
     * @param {import('../').TJSPositionDataExtended} toData - The destination position.
     *
-    * @param {import('./types').IAnimationAPI.TweenOptions} [options] - Optional tween parameters.
+    * @param {import('./types').AnimationAPI.TweenOptions} [options] - Optional tween parameters.
     *
     * @returns {import('#runtime/util/animate').IBasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
@@ -415,11 +415,11 @@ export class AnimationAPI
    /**
     * Returns a function that provides an optimized way to constantly update a to-tween.
     *
-    * @param {Iterable<import('./types').IAnimationAPI.AnimationKeys>}  keys - The keys for quickTo.
+    * @param {Iterable<import('./types').AnimationAPI.AnimationKeys>}  keys - The keys for quickTo.
     *
-    * @param {import('./types').IAnimationAPI.QuickTweenOptions} [options] - Optional quick tween parameters.
+    * @param {import('./types').AnimationAPI.QuickTweenOptions} [options] - Optional quick tween parameters.
     *
-    * @returns {import('./types').IAnimationAPI.QuickToCallback} quick-to tween function.
+    * @returns {import('./types').AnimationAPI.QuickToCallback} quick-to tween function.
     */
    quickTo(keys, { duration = 1, ease = cubicOut, interpolate = lerp } = {})
    {
@@ -502,7 +502,7 @@ export class AnimationAPI
          start: void 0
       };
 
-      const quickToCB = /** @type {import('./types').IAnimationAPI.QuickToCallback} */ (...args) =>
+      const quickToCB = /** @type {import('./types').AnimationAPI.QuickToCallback} */ (...args) =>
       {
          const argsLength = args.length;
 
