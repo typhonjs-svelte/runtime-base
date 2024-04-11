@@ -11,7 +11,7 @@ export class BasicBounds extends SystemBase
     * @param {import('./types').IValidatorAPI.ValidationData}   valData - The associated validation data for position
     *        updates.
     *
-    * @returns {import('../../').TJSPositionData} Potentially adjusted position data.
+    * @returns {import('../../data/types').Data.TJSPositionData} Potentially adjusted position data.
     */
    validate(valData)
    {

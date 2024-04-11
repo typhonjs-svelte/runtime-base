@@ -1,9 +1,7 @@
-import { TJSPosition }     from './TJSPosition.js';
-import { TJSPositionData } from './TJSPositionData.js';
-
 export *                   from './action';
-
-export { TJSPosition, TJSPositionData }
+export *                   from './TJSPosition.js';
+// import { TJSPosition }     from './TJSPosition.js';
+// export { TJSPosition }
 
 // From: position/TJSPosition.js ----------------------------------------------------------------------------------------
 
@@ -28,7 +26,7 @@ export { TJSPosition, TJSPositionData }
  */
 
 /**
- * @typedef {TJSPositionOptions & Partial<TJSPositionData>} TJSPositionOptionsAll
+ * @typedef {TJSPositionOptions & Partial<import('./data/types').Data.TJSPositionData>} TJSPositionOptionsAll
  */
 
 /**

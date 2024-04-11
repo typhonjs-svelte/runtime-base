@@ -1,4 +1,7 @@
+import type { Readable }      from 'svelte/store';
+
 import type { TJSPosition }   from './TJSPosition';
+import type { Data }          from './data/types';
 import type { System }        from './system/types';
 
 /**
@@ -11,6 +14,8 @@ namespace TJSPositionTypes {
    export interface IPositionable {
       position: TJSPosition;
    }
+
+   export interface ITJSPosition extends Readable<Data.TJSPositionData> {}
 
    /**
     * Options for {@link TJSPosition.get}

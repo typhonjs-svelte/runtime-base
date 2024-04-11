@@ -5,6 +5,8 @@ import type {
 
 import type { IValidatorAPI }    from './validators/types';
 
+import type { Data }             from '../data/types';
+
 import type { TJSPosition }      from '../TJSPosition';
 
 /**
@@ -93,7 +95,7 @@ namespace System {
           *
           * @param {IValidatorAPI.ValidationData}   valData - The associated validation data for position updates.
           *
-          * @returns {TJSPositionData} Potentially adjusted position data.
+          * @returns {Data.TJSPositionData} Potentially adjusted position data.
           */
          validate: IValidatorAPI.ValidatorFn;
 

@@ -284,7 +284,7 @@ export class TJSTransforms
     * Collects all data including a bounding rect, transform matrix, and points array of the given
     * {@link TJSPositionData} instance with the applied local transform data.
     *
-    * @param {import('../').TJSPositionData} position - The position data to process.
+    * @param {import('../data/types').Data.TJSPositionData} position - The position data to process.
     *
     * @param {import('./types').ITransformAPI.ITransformData} [output] - Optional TJSTransformData output instance.
     *
@@ -404,7 +404,7 @@ export class TJSTransforms
     * then the stored local transform order is applied then all remaining transform keys are applied. This allows the
     * construction of a transform matrix in advance of setting local data and is useful in collision detection.
     *
-    * @param {object}   [data] - TJSPositionData instance or local transform data.
+    * @param {import('../data/types').Data.TJSPositionData}   [data] - TJSPositionData instance or local transform data.
     *
     * @param {import('#runtime/math/gl-matrix').Mat4}  [output] - The output mat4 instance.
     *
@@ -539,7 +539,7 @@ export class TJSTransforms
     * then the stored local transform order is applied then all remaining transform keys are applied. This allows the
     * construction of a transform matrix in advance of setting local data and is useful in collision detection.
     *
-    * @param {object}   [data] - TJSPositionData instance or local transform data.
+    * @param {import('../data/types').Data.TJSPositionData}   [data] - TJSPositionData instance or local transform data.
     *
     * @param {import('#runtime/math/gl-matrix').Mat4}  [output] - The output mat4 instance.
     *
@@ -631,7 +631,7 @@ export class TJSTransforms
    /**
     * Tests an object if it contains transform keys and the values are finite numbers.
     *
-    * @param {object} data - An object to test for transform data.
+    * @param {import('../data/types').Data.TJSPositionData} data - An object to test for transform data.
     *
     * @returns {boolean} Whether the given TJSPositionData has transforms.
     */

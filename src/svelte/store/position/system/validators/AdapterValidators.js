@@ -16,7 +16,7 @@ import { isObject }  from '#runtime/util/object';
  * This class forms the public API which is accessible from the {@link TJSPosition.validators} getter in the main
  * TJSPosition instance.
  * ```
- * const position = new TJSPosition(<TJSPositionData>);
+ * const position = new TJSPosition();
  * position.validators.add(...);
  * position.validators.clear();
  * position.validators.length;

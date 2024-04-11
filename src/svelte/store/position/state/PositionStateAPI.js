@@ -10,7 +10,7 @@ import {
  */
 export class PositionStateAPI
 {
-   /** @type {import('./').TJSPositionData} */
+   /** @type {import('../data/types').Data.TJSPositionData} */
    #data;
 
    /**
@@ -214,7 +214,7 @@ export class PositionStateAPI
     *
     * @param {string}   options.name - name to index this saved data.
     *
-    * @returns {import('./').TJSPositionData} Current position data.
+    * @returns {import('../data/types').Data.TJSPositionDataExtra} Current position data plus any extra data stored.
     */
    save({ name, ...extra })
    {

@@ -2,7 +2,7 @@ import type { EasingFunction }            from 'svelte/transition';
 
 import type { InterpolateFunction }       from '#runtime/math/interpolate';
 
-import type { TJSPositionData }           from '../';
+import type { Data }                      from '../data/types';
 
 import type { TJSPositionDataExtended }   from '../index.js';
 
@@ -99,12 +99,12 @@ interface IPositionStateAPI {
     *
     * @param {string}   options.name - name to index this saved data.
     *
-    * @returns {TJSPositionData} Current position data
+    * @returns {Data.TJSPositionDataExtra} Current position data
     */
    save({ name, ...extra }: {
       name: string;
       [key: string]: any;
-   }): TJSPositionData;
+   }): Data.TJSPositionDataExtra;
 
    /**
     * Directly sets a position state. Simply include extra properties in `options` to set extra data.

@@ -14,6 +14,7 @@ import { subscribeIgnoreFirst }  from '#runtime/util/store';
 import {
    AnimationAPI,
    AnimationGroupAPI }           from './animation';
+import { TJSPositionData }       from './data';
 import { PositionStateAPI }      from './state';
 import { SystemBase }            from './system';
 import { Centered }              from './system/initial';
@@ -26,6 +27,7 @@ import {
    TJSTransforms }               from './transform';
 import {
    convertRelative,
+   copyData,
    StyleCache }                  from './util';
 import {
    PositionChangeSet,
@@ -33,13 +35,12 @@ import {
    UpdateElementManager }        from './update';
 
 import * as constants            from './constants.js';
-import { TJSPositionData }       from './TJSPositionData.js';
 
 /**
  * Provides a store for position following the subscriber protocol in addition to providing individual writable derived
  * stores for each independent variable.
  *
- * @implements {import('svelte/store').Readable<TJSPositionData>}
+ * @implements {import('./types').TJSPositionTypes.ITJSPosition}
  */
 export class TJSPosition
 {
@@ -121,7 +122,7 @@ export class TJSPosition
    /**
     * Stores the subscribers.
     *
-    * @type {import('svelte/store').Subscriber<TJSPositionData>[]}
+    * @type {import('svelte/store').Subscriber<import('./data/types').Data.TJSPositionData>[]}
     */
    #subscriptions = [];
 
@@ -163,7 +164,12 @@ export class TJSPosition
    static get Animate() { return AnimationGroupAPI; }
 
    /**
-    * @returns {import('./types').TJSPositionTypes.PositionInitial} TJSPosition initial API.
+    * @returns {import('./data/types').Data.TJSPositionDataConstructor} TJSPositionData constructor.
+    */
+   static get Data() { return TJSPositionData; }
+
+   /**
+    * @returns {import('./types').TJSPositionTypes.PositionInitial} TJSPosition default initial helpers.
     */
    static get Initial() { return this.#positionInitial; }
 
@@ -188,6 +194,22 @@ export class TJSPosition
     * @returns {import('./types').TJSPositionTypes.PositionValidators} Available validators.
     */
    static get Validators() { return this.#positionValidators; }
+
+   /**
+    * Convenience to copy from source to target of two TJSPositionData like objects. If a target is not supplied a new
+    * {@link TJSPositionData} instance is created.
+    *
+    * @param {import('./data/types').Data.TJSPositionData}  source - The source instance to copy from.
+    *
+    * @param {import('./data/types').Data.TJSPositionData}  [target] - Target TJSPositionData like object; if one is not
+    *        provided a new instance is created.
+    *
+    * @returns {import('./data/types').Data.TJSPositionData} The target instance.
+    */
+   static copyData(source, target)
+   {
+      return copyData(source, target);
+   }
 
    /**
     * Returns a duplicate of a given position instance copying any options and validators.
@@ -805,16 +827,16 @@ export class TJSPosition
    }
 
    /**
-    * Assigns current position to object passed into method.
+    * Assigns current position data to object passed into method.
     *
-    * @param {object | TJSPositionData}  [position] - Target to assign current position data.
+    * @param {object}  [data] - Target to assign current position data.
     *
     * @param {import('./types').TJSPositionTypes.OptionsGet}   [options] - Defines options for specific keys and
     *        substituting null for numeric default values.
     *
-    * @returns {TJSPositionData} Passed in object with current position data.
+    * @returns {Partial<import('./data/types').Data.TJSPositionData>} Passed in object with current position data.
     */
-   get(position = {}, options)
+   get(data = {}, options)
    {
       const keys = options?.keys;
       const excludeKeys = options?.exclude;
@@ -825,24 +847,24 @@ export class TJSPosition
          // Replace any null values potentially with numeric default values.
          if (numeric)
          {
-            for (const key of keys) { position[key] = this[key] ?? constants.numericDefaults[key]; }
+            for (const key of keys) { data[key] = this[key] ?? constants.numericDefaults[key]; }
          }
          else // Accept current values.
          {
-            for (const key of keys) { position[key] = this[key]; }
+            for (const key of keys) { data[key] = this[key]; }
          }
 
          // Remove any excluded keys.
          if (isIterable(excludeKeys))
          {
-            for (const key of excludeKeys) { delete position[key]; }
+            for (const key of excludeKeys) { delete data[key]; }
          }
 
-         return position;
+         return data;
       }
       else
       {
-         const data = Object.assign(position, this.#data);
+         data = Object.assign(data, this.#data);
 
          // Remove any excluded keys.
          if (isIterable(excludeKeys))
@@ -858,7 +880,7 @@ export class TJSPosition
    }
 
    /**
-    * @returns {TJSPositionData} Current position data.
+    * @returns {import('./data/types').Data.TJSPositionData} Current position data.
     */
    toJSON()
    {
@@ -1125,8 +1147,8 @@ export class TJSPosition
    }
 
    /**
-    * @param {import('svelte/store').Subscriber<TJSPositionData>} handler - Callback function that is invoked on
-    *        update / changes. Receives a copy of the TJSPositionData.
+    * @param {import('svelte/store').Subscriber<import('./data/types').Data.TJSPositionData>} handler - Callback
+    *        function that is invoked on update / changes. Receives a copy of the TJSPositionData.
     *
     * @returns {import('svelte/store').Unsubscriber} Unsubscribe function.
     */
@@ -1159,9 +1181,9 @@ export class TJSPosition
     *
     * @param {number|null} opts.minWidth -
     *
-    * @param {number|'auto'|null} opts.width -
+    * @param {number|'auto'|'inherit'|null} opts.width -
     *
-    * @param {number|'auto'|null} opts.height -
+    * @param {number|'auto'|'inherit'|null} opts.height -
     *
     * @param {number|null} opts.rotateX -
     *
@@ -1191,7 +1213,7 @@ export class TJSPosition
     *
     * @param {StyleCache} styleCache -
     *
-    * @returns {null|TJSPositionData} Updated position data or null if validation fails.
+    * @returns {null | import('./data/types').Data.TJSPositionData} Updated position data or null if validation fails.
     */
    #updatePosition({
       // Directly supported parameters
@@ -1204,7 +1226,7 @@ export class TJSPosition
       ...rest
    } = {}, parent, el, styleCache)
    {
-      let currentPosition = s_DATA_UPDATE.copy(this.#data);
+      let currentPosition = copyData(this.#data, s_DATA_UPDATE);
 
       // Update width if an explicit value is passed, or if no width value is set on the element.
       if (el.style.width === '' || width !== void 0)

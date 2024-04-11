@@ -5,7 +5,8 @@ import * as constants from '../constants.js';
  *
  * @param {import('../').TJSPositionDataExtended}    positionData - position data.
  *
- * @param {import('../').TJSPosition | import('../').TJSPositionData}   position - The source position instance.
+ * @param {import('../').TJSPosition | import('../data/types').Data.TJSPositionData}   position - The source position
+ *        instance.
  */
 export function convertRelative(positionData, position)
 {

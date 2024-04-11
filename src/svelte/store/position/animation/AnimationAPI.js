@@ -24,7 +24,7 @@ import {
  */
 export class AnimationAPI
 {
-   /** @type {import('../').TJSPositionData} */
+   /** @type {import('../data/types').Data.TJSPositionData} */
    #data;
 
    /** @type {import('../').TJSPosition} */
@@ -47,7 +47,7 @@ export class AnimationAPI
    /**
     * @param {import('../').TJSPosition}       position -
     *
-    * @param {import('../').TJSPositionData}   data -
+    * @param {import('../data/types').Data.TJSPositionData}   data -
     */
    constructor(position, data)
    {

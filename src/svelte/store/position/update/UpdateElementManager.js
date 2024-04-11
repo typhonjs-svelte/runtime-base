@@ -1,5 +1,7 @@
 import { nextAnimationFrame } from '#runtime/util/animate';
 
+import { copyData }           from '../util'
+
 /**
  * Decouples updates to any parent target HTMLElement inline styles. Invoke
  * {@link TJSPosition.elementUpdated} to await on the returned promise that is resolved with the current
@@ -145,7 +147,7 @@ export class UpdateElementManager
       if (!changeSet.hasChange()) { return; }
 
       // Make a copy of the data.
-      const output = updateData.dataSubscribers.copy(data);
+      const output = copyData(data, updateData.dataSubscribers);
 
       const subscriptions = updateData.subscriptions;
 

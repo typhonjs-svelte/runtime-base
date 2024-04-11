@@ -1,6 +1,14 @@
-import { ITransformAPI } from '../transform/types';
+import type { ITransformAPI } from '../transform/types';
+import type { TJSPosition }   from '../TJSPosition';
 
+/**
+ * Defines the data objects / interfaces used by various TJSPosition APIs.
+ */
 namespace Data {
+   /**
+    * Defines the primary TJSPosition data object used by various TJSPosition APIs. To externally create a new instance
+    * use the static accessor {@link TJSPosition.Data}.
+    */
    export interface TJSPositionData {
       height: number | 'auto' | 'inherit' | null;
 
@@ -37,10 +45,16 @@ namespace Data {
       zIndex: number | null;
    }
 
+   /**
+    * Defines a TJSPositionData instance that has extra properties / attributes.
+    */
    export interface TJSPositionDataExtra extends TJSPositionData {
       [key: string]: any;
    }
 
+   /**
+    * Defines the constructor function for {@link TJSPositionData}.
+    */
    export interface TJSPositionDataConstructor {
       new ({ height, left, maxHeight, maxWidth, minHeight, minWidth, rotateX, rotateY, rotateZ, scale, translateX,
         translateY, translateZ, top, transformOrigin, width, zIndex }?: {

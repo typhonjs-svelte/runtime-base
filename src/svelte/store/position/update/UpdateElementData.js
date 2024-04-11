@@ -1,7 +1,7 @@
 import { writable }           from '#svelte/store';
 
+import { TJSPositionData }    from '../data';
 import { TJSTransformData }   from '../transform';
-import { TJSPositionData }    from '../TJSPositionData.js';
 
 export class UpdateElementData
 {
@@ -64,7 +64,7 @@ export class UpdateElementData
       this.transformData = new TJSTransformData();
 
       /**
-       * @type {(function(TJSPositionData): void)[]}
+       * @type {import('svelte/store').Subscriber<import('../data/types').Data.TJSPositionData>}
        */
       this.subscriptions = void 0;
 

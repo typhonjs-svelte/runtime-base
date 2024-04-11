@@ -5,7 +5,7 @@ import type {
 
 import type { TJSPositionParent }   from '../../index';
 import type { TJSPosition }         from '../../TJSPosition.js';
-import type { TJSPositionData }     from '../../TJSPositionData.js';
+import type { Data }                from '../../data/types';
 import type { ITransformAPI }       from '../../transform/types';
 
 /**
@@ -85,7 +85,7 @@ namespace IValidatorAPI {
       /**
        * New position data to evaluate.
        */
-      position: TJSPositionData;
+      position: Data.TJSPositionData;
 
       /**
        * Associated parent element / container.
@@ -159,7 +159,7 @@ namespace IValidatorAPI {
     */
    export type ValidatorData = {
       /**
-       * TJSPosition validator function that takes a {@link TJSPositionData} instance potentially modifying it or
+       * TJSPosition validator function that takes a {@link Data.TJSPositionData} instance potentially modifying it or
        * returning null if invalid.
        */
       validate: ValidatorFn;
@@ -196,14 +196,14 @@ namespace IValidatorAPI {
    export interface ValidatorFn extends Function
    {
       /**
-       * TJSPosition validator function that takes a {@link TJSPositionData} instance potentially modifying it or
-       * returning null if invalid.
+       * TJSPosition validator function that takes a {@link ValidationData} instance potentially modifying `position`
+       * data or returning null if invalid.
        *
        * @param {ValidationData} data - Validation data to handle.
        *
-       * @returns {TJSPositionData | null} The validated position data or null to cancel position update.
+       * @returns {Data.TJSPositionData | null} The validated position data or null to cancel position update.
        */
-      (data: ValidationData): TJSPositionData | null;
+      (data: ValidationData): Data.TJSPositionData | null;
 
       /**
        * Optional subscribe function following the Svelte store / subscribe pattern. On updates validation will
