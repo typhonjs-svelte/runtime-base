@@ -1,13 +1,556 @@
 import { clamp, degToRad } from '@typhonjs-svelte/runtime-base/math/util';
 import { propertyStore } from '@typhonjs-svelte/runtime-base/svelte/store/writable-derived';
 import { A11yHelper, StyleParse } from '@typhonjs-svelte/runtime-base/util/browser';
-import { isObject, isIterable, isPlainObject, hasSetter } from '@typhonjs-svelte/runtime-base/util/object';
+import { hasSetter, isIterable, isObject, isPlainObject } from '@typhonjs-svelte/runtime-base/util/object';
 import { subscribeIgnoreFirst } from '@typhonjs-svelte/runtime-base/util/store';
 import { Vec3, Mat4 } from '@typhonjs-svelte/runtime-base/math/gl-matrix';
 import { cubicOut, linear } from 'svelte/easing';
 import { lerp } from '@typhonjs-svelte/runtime-base/math/interpolate';
 import { writable } from 'svelte/store';
 import { nextAnimationFrame } from '@typhonjs-svelte/runtime-base/util/animate';
+
+/**
+ * Provides an action to apply a TJSPosition instance to a HTMLElement and invoke `position.parent`
+ *
+ * @param {HTMLElement}       node - The node associated with the action.
+ *
+ * @param {import('..').TJSPosition}   position - A position instance.
+ *
+ * @returns {import('svelte/action').ActionReturn<import('..').TJSPosition>} The action lifecycle methods.
+ */
+function applyPosition(node, position)
+{
+   if (hasSetter(position, 'parent')) { position.parent = node; }
+
+   return {
+      update: (newPosition) =>
+      {
+         // Sanity case to short circuit update if positions are the same instance.
+         if (newPosition === position && newPosition.parent === position.parent) { return; }
+
+         if (hasSetter(position, 'parent')) { position.parent = void 0; }
+
+         position = newPosition;
+
+         if (hasSetter(position, 'parent')) { position.parent = node; }
+      },
+
+      destroy: () => { if (hasSetter(position, 'parent')) { position.parent = void 0; } }
+   };
+}
+
+/**
+ * Provides an action to enable pointer dragging of an HTMLElement and invoke `position.set` on a given
+ * {@link TJSPosition} instance provided. When the attached boolean store state changes the draggable
+ * action is enabled or disabled.
+ *
+ * @param {HTMLElement}       node - The node associated with the action.
+ *
+ * @param {object}            params - Required parameters.
+ *
+ * @param {import('..').TJSPosition}   params.position - A position instance.
+ *
+ * @param {boolean}           [params.active=true] - A boolean value; attached to a readable store.
+ *
+ * @param {number}            [params.button=0] - MouseEvent button;
+ *        {@link https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button}.
+ *
+ * @param {import('svelte/store').Writable<boolean>} [params.storeDragging] - A writable store that tracks "dragging"
+ *        state.
+ *
+ * @param {boolean}           [params.tween=false] - When true tweening is enabled.
+ *
+ * @param {import('../animation/types').IAnimationAPI.QuickTweenOptions} [params.tweenOptions] - Quick tween options.
+ *
+ * @param {Iterable<string>}  [params.hasTargetClassList] - When defined any event targets that have a class in this
+ *        list are allowed.
+ *
+ * @param {Iterable<string>}  [params.ignoreTargetClassList] - When defined any event targets that have a class in this
+ *        list are ignored.
+ *
+ * @returns {import('svelte/action').ActionReturn<Record<string, any>>} Lifecycle functions.
+ */
+function draggable(node, { position, active = true, button = 0, storeDragging = void 0, tween = false,
+ tweenOptions = { duration: 1, ease: cubicOut }, hasTargetClassList, ignoreTargetClassList })
+{
+   if (hasTargetClassList !== void 0 && !isIterable(hasTargetClassList))
+   {
+      throw new TypeError(`'hasTargetClassList' is not iterable.`);
+   }
+
+   if (ignoreTargetClassList !== void 0 && !isIterable(ignoreTargetClassList))
+   {
+      throw new TypeError(`'ignoreTargetClassList' is not iterable.`);
+   }
+
+   /**
+    * Used for direct call to `position.set`.
+    *
+    * @type {{top: number, left: number}}
+    */
+   const positionData = { left: 0, top: 0 };
+
+   /**
+    * Duplicate the app / Positionable starting position to track differences.
+    *
+    * @type {object}
+    */
+   let initialPosition = null;
+
+   /**
+    * Stores the initial X / Y on drag down.
+    *
+    * @type {object}
+    */
+   let initialDragPoint = {};
+
+   /**
+    * Stores the current dragging state and gates the move pointer as the dragging store is not
+    * set until the first pointer move.
+    *
+    * @type {boolean}
+    */
+   let dragging = false;
+
+   /**
+    * Stores the quickTo callback to use for optimized tweening when easing is enabled.
+    *
+    * @type {import('../animation/types').IAnimationAPI.QuickToCallback}
+    */
+   let quickTo = position.animate.quickTo(['top', 'left'], tweenOptions);
+
+   /**
+    * Remember event handlers associated with this action, so they may be later unregistered.
+    *
+    *  @type {{ [key: string]: [string, Function, boolean] }}
+    */
+   const handlers = {
+      dragDown: ['pointerdown', onDragPointerDown, false],
+      dragMove: ['pointermove', onDragPointerChange, false],
+      dragUp: ['pointerup', onDragPointerUp, false]
+   };
+
+   /**
+    * Activates listeners.
+    */
+   function activateListeners()
+   {
+      // Drag handlers
+      node.addEventListener(...handlers.dragDown);
+      node.classList.add('draggable');
+   }
+
+   /**
+    * Removes listeners.
+    */
+   function removeListeners()
+   {
+      if (typeof storeDragging?.set === 'function') { storeDragging.set(false); }
+
+      // Drag handlers
+      node.removeEventListener(...handlers.dragDown);
+      node.removeEventListener(...handlers.dragMove);
+      node.removeEventListener(...handlers.dragUp);
+      node.classList.remove('draggable');
+   }
+
+   if (active)
+   {
+      activateListeners();
+   }
+
+   /**
+    * Handle the initial pointer down that activates dragging behavior for the positionable.
+    *
+    * @param {PointerEvent} event - The pointer down event.
+    */
+   function onDragPointerDown(event)
+   {
+      if (event.button !== button || !event.isPrimary) { return; }
+
+      // Do not process if the position system is not enabled.
+      if (!position.enabled) { return; }
+
+      // Potentially ignore this event if `ignoreTargetClassList` is defined and the `event.target` has a matching
+      // class.
+      if (ignoreTargetClassList !== void 0 && A11yHelper.isFocusTarget(event.target))
+      {
+         for (const targetClass of ignoreTargetClassList)
+         {
+            if (event.target.classList.contains(targetClass)) { return; }
+         }
+      }
+
+      // Potentially ignore this event if `hasTargetClassList` is defined and the `event.target` does not have any
+      // matching class from the list.
+      if (hasTargetClassList !== void 0 && A11yHelper.isFocusTarget(event.target))
+      {
+         let foundTarget = false;
+
+         for (const targetClass of hasTargetClassList)
+         {
+            if (event.target.classList.contains(targetClass))
+            {
+               foundTarget = true;
+               break;
+            }
+         }
+
+         if (!foundTarget) { return; }
+      }
+
+      event.preventDefault();
+
+      dragging = false;
+
+      // Record initial position.
+      initialPosition = position.get();
+      initialDragPoint = { x: event.clientX, y: event.clientY };
+
+      // Add move and pointer up handlers.
+      node.addEventListener(...handlers.dragMove);
+      node.addEventListener(...handlers.dragUp);
+
+      node.setPointerCapture(event.pointerId);
+   }
+
+   /**
+    * Move the positionable.
+    *
+    * @param {PointerEvent} event - The pointer move event.
+    */
+   function onDragPointerChange(event)
+   {
+      // See chorded button presses for pointer events:
+      // https://www.w3.org/TR/pointerevents3/#chorded-button-interactions
+      // TODO: Support different button configurations for PointerEvents.
+      if ((event.buttons & 1) === 0)
+      {
+         onDragPointerUp(event);
+         return;
+      }
+
+      if (event.button !== -1 || !event.isPrimary) { return; }
+
+      event.preventDefault();
+
+      // Only set store dragging on first move event.
+      if (!dragging && typeof storeDragging?.set === 'function')
+      {
+         dragging = true;
+         storeDragging.set(true);
+      }
+
+      /** @type {number} */
+      const newLeft = initialPosition.left + (event.clientX - initialDragPoint.x);
+      /** @type {number} */
+      const newTop = initialPosition.top + (event.clientY - initialDragPoint.y);
+
+      if (tween)
+      {
+         quickTo(newTop, newLeft);
+      }
+      else
+      {
+         positionData.left = newLeft;
+         positionData.top = newTop;
+
+         position.set(positionData);
+      }
+   }
+
+   /**
+    * Finish dragging and set the final position and removing listeners.
+    *
+    * @param {PointerEvent} event - The pointer up event.
+    */
+   function onDragPointerUp(event)
+   {
+      event.preventDefault();
+
+      dragging = false;
+      if (typeof storeDragging?.set === 'function') { storeDragging.set(false); }
+
+      node.removeEventListener(...handlers.dragMove);
+      node.removeEventListener(...handlers.dragUp);
+   }
+
+   return {
+      // The default of active being true won't automatically add listeners twice.
+      update: (options) =>
+      {
+         if (typeof options.active === 'boolean')
+         {
+            active = options.active;
+            if (active) { activateListeners(); }
+            else { removeListeners(); }
+         }
+
+         if (typeof options.button === 'number')
+         {
+            button = options.button;
+         }
+
+         if (options.position !== void 0 && options.position !== position)
+         {
+            position = options.position;
+            quickTo = position.animate.quickTo(['top', 'left'], tweenOptions);
+         }
+
+         if (typeof options.tween === 'boolean') { tween = options.tween; }
+
+         if (isObject(options.tweenOptions))
+         {
+            tweenOptions = options.tweenOptions;
+            quickTo.options(tweenOptions);
+         }
+
+         if (options.hasTargetClassList !== void 0)
+         {
+            if (!isIterable(options.hasTargetClassList))
+            {
+               throw new TypeError(`'hasTargetClassList' is not iterable.`);
+            }
+            else
+            {
+               hasTargetClassList = options.hasTargetClassList;
+            }
+         }
+
+         if (options.ignoreTargetClassList !== void 0)
+         {
+            if (!isIterable(options.ignoreTargetClassList))
+            {
+               throw new TypeError(`'ignoreTargetClassList' is not iterable.`);
+            }
+            else
+            {
+               ignoreTargetClassList = options.ignoreTargetClassList;
+            }
+         }
+      },
+
+      destroy: () => removeListeners()
+   };
+}
+
+/**
+ * Provides an instance of the {@link draggable} action options support / Readable store to make updating / setting
+ * draggable options much easier. When subscribing to the options instance returned by {@link draggable.options} the
+ * Subscriber handler receives the entire instance.
+ *
+ * @implements {import('./types').IDraggableOptions}
+ */
+class DraggableOptions
+{
+   /** @type {boolean} */
+   #initialTween;
+
+   /**
+    * @type {import('../animation/types').IAnimationAPI.QuickTweenOptions}
+    */
+   #initialTweenOptions;
+
+   /** @type {boolean} */
+   #tween;
+
+   /**
+    * @type {import('../animation/types').IAnimationAPI.QuickTweenOptions}
+    */
+   #tweenOptions = { duration: 1, ease: cubicOut };
+
+   /**
+    * Stores the subscribers.
+    *
+    * @type {import('svelte/store').Subscriber<import('./types').IDraggableOptions>[]}
+    */
+   #subscriptions = [];
+
+   /**
+    * @param {object} [opts] - Optional parameters.
+    *
+    * @param {boolean}  [opts.tween = false] - Tween enabled.
+    *
+    * @param {import('../animation/types').IAnimationAPI.QuickTweenOptions}   [opts.tweenOptions] - Quick tween options.
+    */
+   constructor({ tween = false, tweenOptions } = {})
+   {
+      // Define the following getters directly on this instance and make them enumerable. This allows them to be
+      // picked up w/ `Object.assign`.
+      Object.defineProperty(this, 'tween', {
+         get: () => { return this.#tween; },
+         set: (newTween) =>
+         {
+            if (typeof newTween !== 'boolean') { throw new TypeError(`'tween' is not a boolean.`); }
+
+            this.#tween = newTween;
+            this.#updateSubscribers();
+         },
+         enumerable: true
+      });
+
+      Object.defineProperty(this, 'tweenOptions', {
+         get: () => { return this.#tweenOptions; },
+         set: (newTweenOptions) =>
+         {
+            if (!isObject(newTweenOptions))
+            {
+               throw new TypeError(`'tweenOptions' is not an object.`);
+            }
+
+            if (newTweenOptions.duration !== void 0)
+            {
+               if (!Number.isFinite(newTweenOptions.duration))
+               {
+                  throw new TypeError(`'tweenOptions.duration' is not a finite number.`);
+               }
+
+               if (newTweenOptions.duration < 0)
+               {
+                  this.#tweenOptions.duration = 0;
+               }
+               else
+               {
+                  this.#tweenOptions.duration = newTweenOptions.duration;
+               }
+            }
+
+            if (newTweenOptions.ease !== void 0)
+            {
+               if (typeof newTweenOptions.ease !== 'function')
+               {
+                  throw new TypeError(`'tweenOptions.ease' is not a function.`);
+               }
+
+               this.#tweenOptions.ease = newTweenOptions.ease;
+            }
+
+            this.#updateSubscribers();
+         },
+         enumerable: true
+      });
+
+      // Set default options.
+      if (tween !== void 0) { this.tween = tween; }
+      if (tweenOptions !== void 0) { this.tweenOptions = tweenOptions; }
+
+      this.#initialTween = this.#tween;
+      this.#initialTweenOptions = Object.assign({}, this.#tweenOptions);
+   }
+
+   /**
+    * @returns {number} Get tween duration.
+    */
+   get tweenDuration() { return this.#tweenOptions.duration; }
+
+   /**
+    * @returns {import('svelte/transition').EasingFunction} Get easing function.
+    */
+   get tweenEase() { return this.#tweenOptions.ease; }
+
+   /**
+    * @param {number}   duration - Set tween duration.
+    */
+   set tweenDuration(duration)
+   {
+      if (!Number.isFinite(duration))
+      {
+         throw new TypeError(`'duration' is not a finite number.`);
+      }
+
+      if (duration < 0) { duration = 0; }
+
+      this.#tweenOptions.duration = duration;
+      this.#updateSubscribers();
+   }
+
+   /**
+    * @param {import('svelte/transition').EasingFunction} ease - Set easing function.
+    */
+   set tweenEase(ease)
+   {
+      if (typeof ease !== 'function')
+      {
+         throw new TypeError(`'ease' is not a function.`);
+      }
+
+      this.#tweenOptions.ease = ease;
+      this.#updateSubscribers();
+   }
+
+   /**
+    * Resets all options data to initial values.
+    */
+   reset()
+   {
+      this.#tween = this.#initialTween;
+      this.#tweenOptions = Object.assign({}, this.#initialTweenOptions);
+      this.#updateSubscribers();
+   }
+
+   /**
+    * Resets tween enabled state to initial value.
+    */
+   resetTween()
+   {
+      this.#tween = this.#initialTween;
+      this.#updateSubscribers();
+   }
+
+   /**
+    * Resets tween options to initial values.
+    */
+   resetTweenOptions()
+   {
+      this.#tweenOptions = Object.assign({}, this.#initialTweenOptions);
+      this.#updateSubscribers();
+   }
+
+   /**
+    * Store subscribe method.
+    *
+    * @param {import('svelte/store').Subscriber<import('./types').IDraggableOptions>} handler - Callback function that
+    *        is invoked on update / changes. Receives the DraggableOptions object / instance.
+    *
+    * @returns {import('svelte/store').Unsubscriber} Unsubscribe function.
+    */
+   subscribe(handler)
+   {
+      this.#subscriptions.push(handler); // add handler to the array of subscribers
+
+      handler(this);                     // call handler with current value
+
+      // Return unsubscribe function.
+      return () =>
+      {
+         const index = this.#subscriptions.findIndex((sub) => sub === handler);
+         if (index >= 0) { this.#subscriptions.splice(index, 1); }
+      };
+   }
+
+   #updateSubscribers()
+   {
+      const subscriptions = this.#subscriptions;
+
+      // Early out if there are no subscribers.
+      if (subscriptions.length > 0)
+      {
+         for (let cntr = 0; cntr < subscriptions.length; cntr++) { subscriptions[cntr](this); }
+      }
+   }
+}
+
+/**
+ * Define a function to get an IDraggableOptions instance.
+ *
+ * @param {({
+ *    tween?: boolean,
+ *    tweenOptions?: import('../animation/types').IAnimationAPI.QuickTweenOptions
+ * })} options - Initial options for IDraggableOptions.
+ *
+ * @returns {import('./types').IDraggableOptions} A new options instance.
+ */
+draggable.options = (options) => new DraggableOptions(options);
 
 /**
  * Defines reusable / frozen implementation of {@link BasicAnimationState}.
@@ -455,7 +998,8 @@ Object.freeze(transformOrigins);
  *
  * @param {import('../').TJSPositionDataExtended}    positionData - position data.
  *
- * @param {import('../').TJSPosition | import('../').TJSPositionData}   position - The source position instance.
+ * @param {import('../').TJSPosition | import('../data/types').Data.TJSPositionData}   position - The source position
+ *        instance.
  */
 function convertRelative(positionData, position)
 {
@@ -497,6 +1041,143 @@ function convertRelative(positionData, position)
          }
       }
    }
+}
+
+/**
+ * Defines stored positional data.
+ *
+ * @implements {import('./types').Data.TJSPositionData}
+ */
+class TJSPositionData
+{
+   /**
+    * @param {object} [opts] - Options.
+    *
+    * @param {number | 'auto' | 'inherit' | null} [opts.height] -
+    *
+    * @param {number | null} [opts.left] -
+    *
+    * @param {number | null} [opts.maxHeight] -
+    *
+    * @param {number | null} [opts.maxWidth] -
+    *
+    * @param {number | null} [opts.minHeight] -
+    *
+    * @param {number | null} [opts.minWidth] -
+    *
+    * @param {number | null} [opts.rotateX] -
+    *
+    * @param {number | null} [opts.rotateY] -
+    *
+    * @param {number | null} [opts.rotateZ] -
+    *
+    * @param {number | null} [opts.scale] -
+    *
+    * @param {number | null} [opts.translateX] -
+    *
+    * @param {number | null} [opts.translateY] -
+    *
+    * @param {number | null} [opts.translateZ] -
+    *
+    * @param {number | null} [opts.top] -
+    *
+    * @param {import('../transform/types').ITransformAPI.TransformOrigin | null} [opts.transformOrigin] -
+    *
+    * @param {number | 'auto' | 'inherit' | null} [opts.width] -
+    *
+    * @param {number | null} [opts.zIndex] -
+    */
+   constructor({ height = null, left = null, maxHeight = null, maxWidth = null, minHeight = null, minWidth = null,
+    rotateX = null, rotateY = null, rotateZ = null, scale = null, translateX = null, translateY = null,
+     translateZ = null, top = null, transformOrigin = null, width = null, zIndex = null } = {})
+   {
+      /** @type {number | 'auto' | 'inherit' | null} */
+      this.height = height;
+
+      /** @type {number | null} */
+      this.left = left;
+
+      /** @type {number | null} */
+      this.maxHeight = maxHeight;
+
+      /** @type {number | null} */
+      this.maxWidth = maxWidth;
+
+      /** @type {number | null} */
+      this.minHeight = minHeight;
+
+      /** @type {number | null} */
+      this.minWidth = minWidth;
+
+      /** @type {number | null} */
+      this.rotateX = rotateX;
+
+      /** @type {number | null} */
+      this.rotateY = rotateY;
+
+      /** @type {number | null} */
+      this.rotateZ = rotateZ;
+
+      /** @type {number | null} */
+      this.scale = scale;
+
+      /** @type {number | null} */
+      this.top = top;
+
+      /** @type {import('../transform/types').ITransformAPI.TransformOrigin | null} */
+      this.transformOrigin = transformOrigin;
+
+      /** @type {number | null} */
+      this.translateX = translateX;
+
+      /** @type {number | null} */
+      this.translateY = translateY;
+
+      /** @type {number | null} */
+      this.translateZ = translateZ;
+
+      /** @type {number | 'auto' | 'inherit' | null} */
+      this.width = width;
+
+      /** @type {number | null} */
+      this.zIndex = zIndex;
+
+      Object.seal(this);
+   }
+}
+
+/**
+ * Convenience to copy from source to target of two TJSPositionData like objects. If a target is not supplied a new
+ * {@link TJSPositionData} instance is created.
+ *
+ * @param {import('../data/types').Data.TJSPositionData}  source - The source instance to copy from.
+ *
+ * @param {import('../data/types').Data.TJSPositionData}  [target] - Target TJSPositionData like object; if one is not
+ *        provided a new instance is created.
+ *
+ * @returns {import('../data/types').Data.TJSPositionData} The target instance.
+ */
+function copyData(source, target = new TJSPositionData())
+{
+   target.height = source.height ?? null;
+   target.left = source.left ?? null;
+   target.maxHeight = source.maxHeight ?? null;
+   target.maxWidth = source.maxWidth ?? null;
+   target.minHeight = source.minHeight ?? null;
+   target.minWidth = source.minWidth ?? null;
+   target.rotateX = source.rotateX ?? null;
+   target.rotateY = source.rotateY ?? null;
+   target.rotateZ = source.rotateZ ?? null;
+   target.scale = source.scale ?? null;
+   target.top = source.top ?? null;
+   target.transformOrigin = source.transformOrigin ?? null;
+   target.translateX = source.translateX ?? null;
+   target.translateY = source.translateY ?? null;
+   target.translateZ = source.translateZ ?? null;
+   target.width = source.width ?? null;
+   target.zIndex = source.zIndex ?? null;
+
+   return target;
 }
 
 class StyleCache
@@ -665,7 +1346,7 @@ class StyleCache
  */
 class AnimationAPI
 {
-   /** @type {import('../').TJSPositionData} */
+   /** @type {import('../data/types').Data.TJSPositionData} */
    #data;
 
    /** @type {import('../').TJSPosition} */
@@ -688,7 +1369,7 @@ class AnimationAPI
    /**
     * @param {import('../').TJSPosition}       position -
     *
-    * @param {import('../').TJSPositionData}   data -
+    * @param {import('../data/types').Data.TJSPositionData}   data -
     */
    constructor(position, data)
    {
@@ -2259,7 +2940,7 @@ class AnimationGroupAPI
  */
 class PositionStateAPI
 {
-   /** @type {import('./').TJSPositionData} */
+   /** @type {import('../data/types').Data.TJSPositionData} */
    #data;
 
    /**
@@ -2463,7 +3144,7 @@ class PositionStateAPI
     *
     * @param {string}   options.name - name to index this saved data.
     *
-    * @returns {import('./').TJSPositionData} Current position data.
+    * @returns {import('../data/types').Data.TJSPositionDataExtra} Current position data plus any extra data stored.
     */
    save({ name, ...extra })
    {
@@ -2753,7 +3434,7 @@ class Centered extends SystemBase
  * This class forms the public API which is accessible from the {@link TJSPosition.validators} getter in the main
  * TJSPosition instance.
  * ```
- * const position = new TJSPosition(<TJSPositionData>);
+ * const position = new TJSPosition();
  * position.validators.add(...);
  * position.validators.clear();
  * position.validators.length;
@@ -3096,7 +3777,7 @@ class BasicBounds extends SystemBase
     * @param {import('./types').IValidatorAPI.ValidationData}   valData - The associated validation data for position
     *        updates.
     *
-    * @returns {import('../../').TJSPositionData} Potentially adjusted position data.
+    * @returns {import('../../data/types').Data.TJSPositionData} Potentially adjusted position data.
     */
    validate(valData)
    {
@@ -3217,7 +3898,7 @@ class TransformBounds extends SystemBase
     * @param {import('./types').IValidatorAPI.ValidationData}   valData - The associated validation data for position
     *        updates.
     *
-    * @returns {import('../../').TJSPositionData} Potentially adjusted position data.
+    * @returns {import('../../data/types').Data.TJSPositionData} Potentially adjusted position data.
     */
    validate(valData)
    {
@@ -3561,7 +4242,7 @@ class TJSTransforms
     * Collects all data including a bounding rect, transform matrix, and points array of the given
     * {@link TJSPositionData} instance with the applied local transform data.
     *
-    * @param {import('../').TJSPositionData} position - The position data to process.
+    * @param {import('../data/types').Data.TJSPositionData} position - The position data to process.
     *
     * @param {import('./types').ITransformAPI.ITransformData} [output] - Optional TJSTransformData output instance.
     *
@@ -3681,7 +4362,7 @@ class TJSTransforms
     * then the stored local transform order is applied then all remaining transform keys are applied. This allows the
     * construction of a transform matrix in advance of setting local data and is useful in collision detection.
     *
-    * @param {object}   [data] - TJSPositionData instance or local transform data.
+    * @param {import('../data/types').Data.TJSPositionData}   [data] - TJSPositionData instance or local transform data.
     *
     * @param {import('#runtime/math/gl-matrix').Mat4}  [output] - The output mat4 instance.
     *
@@ -3816,7 +4497,7 @@ class TJSTransforms
     * then the stored local transform order is applied then all remaining transform keys are applied. This allows the
     * construction of a transform matrix in advance of setting local data and is useful in collision detection.
     *
-    * @param {object}   [data] - TJSPositionData instance or local transform data.
+    * @param {import('../data/types').Data.TJSPositionData}   [data] - TJSPositionData instance or local transform data.
     *
     * @param {import('#runtime/math/gl-matrix').Mat4}  [output] - The output mat4 instance.
     *
@@ -3908,7 +4589,7 @@ class TJSTransforms
    /**
     * Tests an object if it contains transform keys and the values are finite numbers.
     *
-    * @param {object} data - An object to test for transform data.
+    * @param {import('../data/types').Data.TJSPositionData} data - An object to test for transform data.
     *
     * @returns {boolean} Whether the given TJSPositionData has transforms.
     */
@@ -4098,134 +4779,6 @@ class PositionChangeSet
    }
 }
 
-/**
- * Defines stored positional data.
- */
-class TJSPositionData
-{
-   constructor({ height = null, left = null, maxHeight = null, maxWidth = null, minHeight = null, minWidth = null,
-    rotateX = null, rotateY = null, rotateZ = null, scale = null, translateX = null, translateY = null,
-     translateZ = null, top = null, transformOrigin = null, width = null, zIndex = null } = {})
-   {
-      /**
-       * @type {number|'auto'|'inherit'|null}
-       */
-      this.height = height;
-
-      /**
-       * @type {number|null}
-       */
-      this.left = left;
-
-      /**
-       * @type {number|null}
-       */
-      this.maxHeight = maxHeight;
-
-      /**
-       * @type {number|null}
-       */
-      this.maxWidth = maxWidth;
-
-      /**
-       * @type {number|null}
-       */
-      this.minHeight = minHeight;
-
-      /**
-       * @type {number|null}
-       */
-      this.minWidth = minWidth;
-
-      /**
-       * @type {number|null}
-       */
-      this.rotateX = rotateX;
-
-      /**
-       * @type {number|null}
-       */
-      this.rotateY = rotateY;
-
-      /**
-       * @type {number|null}
-       */
-      this.rotateZ = rotateZ;
-
-      /**
-       * @type {number|null}
-       */
-      this.scale = scale;
-
-      /**
-       * @type {number|null}
-       */
-      this.top = top;
-
-      /**
-       * @type {import('./transform/types').ITransformAPI.TransformOrigin | null}
-       */
-      this.transformOrigin = transformOrigin;
-
-      /**
-       * @type {number|null}
-       */
-      this.translateX = translateX;
-
-      /**
-       * @type {number|null}
-       */
-      this.translateY = translateY;
-
-      /**
-       * @type {number|null}
-       */
-      this.translateZ = translateZ;
-
-      /**
-       * @type {number|'auto'|'inherit'|null}
-       */
-      this.width = width;
-
-      /**
-       * @type {number|null}
-       */
-      this.zIndex = zIndex;
-
-      Object.seal(this);
-   }
-
-   /**
-    * Copies given data to this instance.
-    *
-    * @param {TJSPositionData}   data - Copy from this instance.
-    *
-    * @returns {TJSPositionData} This instance.
-    */
-   copy(data)
-   {
-      this.height = data.height;
-      this.left = data.left;
-      this.maxHeight = data.maxHeight;
-      this.maxWidth = data.maxWidth;
-      this.minHeight = data.minHeight;
-      this.minWidth = data.minWidth;
-      this.rotateX = data.rotateX;
-      this.rotateY = data.rotateY;
-      this.rotateZ = data.rotateZ;
-      this.scale = data.scale;
-      this.top = data.top;
-      this.transformOrigin = data.transformOrigin;
-      this.translateX = data.translateX;
-      this.translateY = data.translateY;
-      this.translateZ = data.translateZ;
-      this.width = data.width;
-      this.zIndex = data.zIndex;
-
-      return this;
-   }
-}
-
 class UpdateElementData
 {
    constructor()
@@ -4287,7 +4840,7 @@ class UpdateElementData
       this.transformData = new TJSTransformData();
 
       /**
-       * @type {(function(TJSPositionData): void)[]}
+       * @type {import('svelte/store').Subscriber<import('../data/types').Data.TJSPositionData>}
        */
       this.subscriptions = void 0;
 
@@ -4464,7 +5017,7 @@ class UpdateElementManager
       if (!changeSet.hasChange()) { return; }
 
       // Make a copy of the data.
-      const output = updateData.dataSubscribers.copy(data);
+      const output = copyData(data, updateData.dataSubscribers);
 
       const subscriptions = updateData.subscriptions;
 
@@ -4619,7 +5172,7 @@ const s_VALIDATION_DATA$1 = {
  * Provides a store for position following the subscriber protocol in addition to providing individual writable derived
  * stores for each independent variable.
  *
- * @implements {import('svelte/store').Readable<TJSPositionData>}
+ * @implements {import('./types').TJSPositionTypes.ITJSPosition}
  */
 class TJSPosition
 {
@@ -4701,7 +5254,7 @@ class TJSPosition
    /**
     * Stores the subscribers.
     *
-    * @type {import('svelte/store').Subscriber<TJSPositionData>[]}
+    * @type {import('svelte/store').Subscriber<import('./data/types').Data.TJSPositionData>[]}
     */
    #subscriptions = [];
 
@@ -4743,7 +5296,12 @@ class TJSPosition
    static get Animate() { return AnimationGroupAPI; }
 
    /**
-    * @returns {import('./types').TJSPositionTypes.PositionInitial} TJSPosition initial API.
+    * @returns {import('./data/types').Data.TJSPositionDataConstructor} TJSPositionData constructor.
+    */
+   static get Data() { return TJSPositionData; }
+
+   /**
+    * @returns {import('./types').TJSPositionTypes.PositionInitial} TJSPosition default initial helpers.
     */
    static get Initial() { return this.#positionInitial; }
 
@@ -4768,6 +5326,22 @@ class TJSPosition
     * @returns {import('./types').TJSPositionTypes.PositionValidators} Available validators.
     */
    static get Validators() { return this.#positionValidators; }
+
+   /**
+    * Convenience to copy from source to target of two TJSPositionData like objects. If a target is not supplied a new
+    * {@link TJSPositionData} instance is created.
+    *
+    * @param {import('./data/types').Data.TJSPositionData}  source - The source instance to copy from.
+    *
+    * @param {import('./data/types').Data.TJSPositionData}  [target] - Target TJSPositionData like object; if one is not
+    *        provided a new instance is created.
+    *
+    * @returns {import('./data/types').Data.TJSPositionData} The target instance.
+    */
+   static copyData(source, target)
+   {
+      return copyData(source, target);
+   }
 
    /**
     * Returns a duplicate of a given position instance copying any options and validators.
@@ -5385,16 +5959,16 @@ class TJSPosition
    }
 
    /**
-    * Assigns current position to object passed into method.
+    * Assigns current position data to object passed into method.
     *
-    * @param {object | TJSPositionData}  [position] - Target to assign current position data.
+    * @param {object}  [data] - Target to assign current position data.
     *
     * @param {import('./types').TJSPositionTypes.OptionsGet}   [options] - Defines options for specific keys and
     *        substituting null for numeric default values.
     *
-    * @returns {TJSPositionData} Passed in object with current position data.
+    * @returns {Partial<import('./data/types').Data.TJSPositionData>} Passed in object with current position data.
     */
-   get(position = {}, options)
+   get(data = {}, options)
    {
       const keys = options?.keys;
       const excludeKeys = options?.exclude;
@@ -5405,24 +5979,24 @@ class TJSPosition
          // Replace any null values potentially with numeric default values.
          if (numeric)
          {
-            for (const key of keys) { position[key] = this[key] ?? numericDefaults[key]; }
+            for (const key of keys) { data[key] = this[key] ?? numericDefaults[key]; }
          }
          else // Accept current values.
          {
-            for (const key of keys) { position[key] = this[key]; }
+            for (const key of keys) { data[key] = this[key]; }
          }
 
          // Remove any excluded keys.
          if (isIterable(excludeKeys))
          {
-            for (const key of excludeKeys) { delete position[key]; }
+            for (const key of excludeKeys) { delete data[key]; }
          }
 
-         return position;
+         return data;
       }
       else
       {
-         const data = Object.assign(position, this.#data);
+         data = Object.assign(data, this.#data);
 
          // Remove any excluded keys.
          if (isIterable(excludeKeys))
@@ -5438,7 +6012,7 @@ class TJSPosition
    }
 
    /**
-    * @returns {TJSPositionData} Current position data.
+    * @returns {import('./data/types').Data.TJSPositionData} Current position data.
     */
    toJSON()
    {
@@ -5699,8 +6273,8 @@ class TJSPosition
    }
 
    /**
-    * @param {import('svelte/store').Subscriber<TJSPositionData>} handler - Callback function that is invoked on
-    *        update / changes. Receives a copy of the TJSPositionData.
+    * @param {import('svelte/store').Subscriber<import('./data/types').Data.TJSPositionData>} handler - Callback
+    *        function that is invoked on update / changes. Receives a copy of the TJSPositionData.
     *
     * @returns {import('svelte/store').Unsubscriber} Unsubscribe function.
     */
@@ -5733,9 +6307,9 @@ class TJSPosition
     *
     * @param {number|null} opts.minWidth -
     *
-    * @param {number|'auto'|null} opts.width -
+    * @param {number|'auto'|'inherit'|null} opts.width -
     *
-    * @param {number|'auto'|null} opts.height -
+    * @param {number|'auto'|'inherit'|null} opts.height -
     *
     * @param {number|null} opts.rotateX -
     *
@@ -5765,7 +6339,7 @@ class TJSPosition
     *
     * @param {StyleCache} styleCache -
     *
-    * @returns {null|TJSPositionData} Updated position data or null if validation fails.
+    * @returns {null | import('./data/types').Data.TJSPositionData} Updated position data or null if validation fails.
     */
    #updatePosition({
       // Directly supported parameters
@@ -5778,7 +6352,7 @@ class TJSPosition
       ...rest
    } = {}, parent, el, styleCache)
    {
-      let currentPosition = s_DATA_UPDATE.copy(this.#data);
+      let currentPosition = copyData(this.#data, s_DATA_UPDATE);
 
       // Update width if an explicit value is passed, or if no width value is set on the element.
       if (el.style.width === '' || width !== void 0)
@@ -5982,548 +6556,5 @@ const s_VALIDATION_DATA = {
 
 Object.seal(s_VALIDATION_DATA);
 
-/**
- * Provides an action to apply a TJSPosition instance to a HTMLElement and invoke `position.parent`
- *
- * @param {HTMLElement}       node - The node associated with the action.
- *
- * @param {import('..').TJSPosition}   position - A position instance.
- *
- * @returns {import('svelte/action').ActionReturn<import('..').TJSPosition>} The action lifecycle methods.
- */
-function applyPosition(node, position)
-{
-   if (hasSetter(position, 'parent')) { position.parent = node; }
-
-   return {
-      update: (newPosition) =>
-      {
-         // Sanity case to short circuit update if positions are the same instance.
-         if (newPosition === position && newPosition.parent === position.parent) { return; }
-
-         if (hasSetter(position, 'parent')) { position.parent = void 0; }
-
-         position = newPosition;
-
-         if (hasSetter(position, 'parent')) { position.parent = node; }
-      },
-
-      destroy: () => { if (hasSetter(position, 'parent')) { position.parent = void 0; } }
-   };
-}
-
-/**
- * Provides an action to enable pointer dragging of an HTMLElement and invoke `position.set` on a given
- * {@link TJSPosition} instance provided. When the attached boolean store state changes the draggable
- * action is enabled or disabled.
- *
- * @param {HTMLElement}       node - The node associated with the action.
- *
- * @param {object}            params - Required parameters.
- *
- * @param {import('..').TJSPosition}   params.position - A position instance.
- *
- * @param {boolean}           [params.active=true] - A boolean value; attached to a readable store.
- *
- * @param {number}            [params.button=0] - MouseEvent button;
- *        {@link https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button}.
- *
- * @param {import('svelte/store').Writable<boolean>} [params.storeDragging] - A writable store that tracks "dragging"
- *        state.
- *
- * @param {boolean}           [params.tween=false] - When true tweening is enabled.
- *
- * @param {import('../animation/types').IAnimationAPI.QuickTweenOptions} [params.tweenOptions] - Quick tween options.
- *
- * @param {Iterable<string>}  [params.hasTargetClassList] - When defined any event targets that have a class in this
- *        list are allowed.
- *
- * @param {Iterable<string>}  [params.ignoreTargetClassList] - When defined any event targets that have a class in this
- *        list are ignored.
- *
- * @returns {import('svelte/action').ActionReturn<Record<string, any>>} Lifecycle functions.
- */
-function draggable(node, { position, active = true, button = 0, storeDragging = void 0, tween = false,
- tweenOptions = { duration: 1, ease: cubicOut }, hasTargetClassList, ignoreTargetClassList })
-{
-   if (hasTargetClassList !== void 0 && !isIterable(hasTargetClassList))
-   {
-      throw new TypeError(`'hasTargetClassList' is not iterable.`);
-   }
-
-   if (ignoreTargetClassList !== void 0 && !isIterable(ignoreTargetClassList))
-   {
-      throw new TypeError(`'ignoreTargetClassList' is not iterable.`);
-   }
-
-   /**
-    * Used for direct call to `position.set`.
-    *
-    * @type {{top: number, left: number}}
-    */
-   const positionData = { left: 0, top: 0 };
-
-   /**
-    * Duplicate the app / Positionable starting position to track differences.
-    *
-    * @type {object}
-    */
-   let initialPosition = null;
-
-   /**
-    * Stores the initial X / Y on drag down.
-    *
-    * @type {object}
-    */
-   let initialDragPoint = {};
-
-   /**
-    * Stores the current dragging state and gates the move pointer as the dragging store is not
-    * set until the first pointer move.
-    *
-    * @type {boolean}
-    */
-   let dragging = false;
-
-   /**
-    * Stores the quickTo callback to use for optimized tweening when easing is enabled.
-    *
-    * @type {import('../animation/types').IAnimationAPI.QuickToCallback}
-    */
-   let quickTo = position.animate.quickTo(['top', 'left'], tweenOptions);
-
-   /**
-    * Remember event handlers associated with this action, so they may be later unregistered.
-    *
-    *  @type {{ [key: string]: [string, Function, boolean] }}
-    */
-   const handlers = {
-      dragDown: ['pointerdown', onDragPointerDown, false],
-      dragMove: ['pointermove', onDragPointerChange, false],
-      dragUp: ['pointerup', onDragPointerUp, false]
-   };
-
-   /**
-    * Activates listeners.
-    */
-   function activateListeners()
-   {
-      // Drag handlers
-      node.addEventListener(...handlers.dragDown);
-      node.classList.add('draggable');
-   }
-
-   /**
-    * Removes listeners.
-    */
-   function removeListeners()
-   {
-      if (typeof storeDragging?.set === 'function') { storeDragging.set(false); }
-
-      // Drag handlers
-      node.removeEventListener(...handlers.dragDown);
-      node.removeEventListener(...handlers.dragMove);
-      node.removeEventListener(...handlers.dragUp);
-      node.classList.remove('draggable');
-   }
-
-   if (active)
-   {
-      activateListeners();
-   }
-
-   /**
-    * Handle the initial pointer down that activates dragging behavior for the positionable.
-    *
-    * @param {PointerEvent} event - The pointer down event.
-    */
-   function onDragPointerDown(event)
-   {
-      if (event.button !== button || !event.isPrimary) { return; }
-
-      // Do not process if the position system is not enabled.
-      if (!position.enabled) { return; }
-
-      // Potentially ignore this event if `ignoreTargetClassList` is defined and the `event.target` has a matching
-      // class.
-      if (ignoreTargetClassList !== void 0 && A11yHelper.isFocusTarget(event.target))
-      {
-         for (const targetClass of ignoreTargetClassList)
-         {
-            if (event.target.classList.contains(targetClass)) { return; }
-         }
-      }
-
-      // Potentially ignore this event if `hasTargetClassList` is defined and the `event.target` does not have any
-      // matching class from the list.
-      if (hasTargetClassList !== void 0 && A11yHelper.isFocusTarget(event.target))
-      {
-         let foundTarget = false;
-
-         for (const targetClass of hasTargetClassList)
-         {
-            if (event.target.classList.contains(targetClass))
-            {
-               foundTarget = true;
-               break;
-            }
-         }
-
-         if (!foundTarget) { return; }
-      }
-
-      event.preventDefault();
-
-      dragging = false;
-
-      // Record initial position.
-      initialPosition = position.get();
-      initialDragPoint = { x: event.clientX, y: event.clientY };
-
-      // Add move and pointer up handlers.
-      node.addEventListener(...handlers.dragMove);
-      node.addEventListener(...handlers.dragUp);
-
-      node.setPointerCapture(event.pointerId);
-   }
-
-   /**
-    * Move the positionable.
-    *
-    * @param {PointerEvent} event - The pointer move event.
-    */
-   function onDragPointerChange(event)
-   {
-      // See chorded button presses for pointer events:
-      // https://www.w3.org/TR/pointerevents3/#chorded-button-interactions
-      // TODO: Support different button configurations for PointerEvents.
-      if ((event.buttons & 1) === 0)
-      {
-         onDragPointerUp(event);
-         return;
-      }
-
-      if (event.button !== -1 || !event.isPrimary) { return; }
-
-      event.preventDefault();
-
-      // Only set store dragging on first move event.
-      if (!dragging && typeof storeDragging?.set === 'function')
-      {
-         dragging = true;
-         storeDragging.set(true);
-      }
-
-      /** @type {number} */
-      const newLeft = initialPosition.left + (event.clientX - initialDragPoint.x);
-      /** @type {number} */
-      const newTop = initialPosition.top + (event.clientY - initialDragPoint.y);
-
-      if (tween)
-      {
-         quickTo(newTop, newLeft);
-      }
-      else
-      {
-         positionData.left = newLeft;
-         positionData.top = newTop;
-
-         position.set(positionData);
-      }
-   }
-
-   /**
-    * Finish dragging and set the final position and removing listeners.
-    *
-    * @param {PointerEvent} event - The pointer up event.
-    */
-   function onDragPointerUp(event)
-   {
-      event.preventDefault();
-
-      dragging = false;
-      if (typeof storeDragging?.set === 'function') { storeDragging.set(false); }
-
-      node.removeEventListener(...handlers.dragMove);
-      node.removeEventListener(...handlers.dragUp);
-   }
-
-   return {
-      // The default of active being true won't automatically add listeners twice.
-      update: (options) =>
-      {
-         if (typeof options.active === 'boolean')
-         {
-            active = options.active;
-            if (active) { activateListeners(); }
-            else { removeListeners(); }
-         }
-
-         if (typeof options.button === 'number')
-         {
-            button = options.button;
-         }
-
-         if (options.position !== void 0 && options.position !== position)
-         {
-            position = options.position;
-            quickTo = position.animate.quickTo(['top', 'left'], tweenOptions);
-         }
-
-         if (typeof options.tween === 'boolean') { tween = options.tween; }
-
-         if (isObject(options.tweenOptions))
-         {
-            tweenOptions = options.tweenOptions;
-            quickTo.options(tweenOptions);
-         }
-
-         if (options.hasTargetClassList !== void 0)
-         {
-            if (!isIterable(options.hasTargetClassList))
-            {
-               throw new TypeError(`'hasTargetClassList' is not iterable.`);
-            }
-            else
-            {
-               hasTargetClassList = options.hasTargetClassList;
-            }
-         }
-
-         if (options.ignoreTargetClassList !== void 0)
-         {
-            if (!isIterable(options.ignoreTargetClassList))
-            {
-               throw new TypeError(`'ignoreTargetClassList' is not iterable.`);
-            }
-            else
-            {
-               ignoreTargetClassList = options.ignoreTargetClassList;
-            }
-         }
-      },
-
-      destroy: () => removeListeners()
-   };
-}
-
-/**
- * Provides an instance of the {@link draggable} action options support / Readable store to make updating / setting
- * draggable options much easier. When subscribing to the options instance returned by {@link draggable.options} the
- * Subscriber handler receives the entire instance.
- *
- * @implements {import('./types').IDraggableOptions}
- */
-class DraggableOptions
-{
-   /** @type {boolean} */
-   #initialTween;
-
-   /**
-    * @type {import('../animation/types').IAnimationAPI.QuickTweenOptions}
-    */
-   #initialTweenOptions;
-
-   /** @type {boolean} */
-   #tween;
-
-   /**
-    * @type {import('../animation/types').IAnimationAPI.QuickTweenOptions}
-    */
-   #tweenOptions = { duration: 1, ease: cubicOut };
-
-   /**
-    * Stores the subscribers.
-    *
-    * @type {import('svelte/store').Subscriber<import('./types').IDraggableOptions>[]}
-    */
-   #subscriptions = [];
-
-   /**
-    * @param {object} [opts] - Optional parameters.
-    *
-    * @param {boolean}  [opts.tween = false] - Tween enabled.
-    *
-    * @param {import('../animation/types').IAnimationAPI.QuickTweenOptions}   [opts.tweenOptions] - Quick tween options.
-    */
-   constructor({ tween = false, tweenOptions } = {})
-   {
-      // Define the following getters directly on this instance and make them enumerable. This allows them to be
-      // picked up w/ `Object.assign`.
-      Object.defineProperty(this, 'tween', {
-         get: () => { return this.#tween; },
-         set: (newTween) =>
-         {
-            if (typeof newTween !== 'boolean') { throw new TypeError(`'tween' is not a boolean.`); }
-
-            this.#tween = newTween;
-            this.#updateSubscribers();
-         },
-         enumerable: true
-      });
-
-      Object.defineProperty(this, 'tweenOptions', {
-         get: () => { return this.#tweenOptions; },
-         set: (newTweenOptions) =>
-         {
-            if (!isObject(newTweenOptions))
-            {
-               throw new TypeError(`'tweenOptions' is not an object.`);
-            }
-
-            if (newTweenOptions.duration !== void 0)
-            {
-               if (!Number.isFinite(newTweenOptions.duration))
-               {
-                  throw new TypeError(`'tweenOptions.duration' is not a finite number.`);
-               }
-
-               if (newTweenOptions.duration < 0)
-               {
-                  this.#tweenOptions.duration = 0;
-               }
-               else
-               {
-                  this.#tweenOptions.duration = newTweenOptions.duration;
-               }
-            }
-
-            if (newTweenOptions.ease !== void 0)
-            {
-               if (typeof newTweenOptions.ease !== 'function')
-               {
-                  throw new TypeError(`'tweenOptions.ease' is not a function.`);
-               }
-
-               this.#tweenOptions.ease = newTweenOptions.ease;
-            }
-
-            this.#updateSubscribers();
-         },
-         enumerable: true
-      });
-
-      // Set default options.
-      if (tween !== void 0) { this.tween = tween; }
-      if (tweenOptions !== void 0) { this.tweenOptions = tweenOptions; }
-
-      this.#initialTween = this.#tween;
-      this.#initialTweenOptions = Object.assign({}, this.#tweenOptions);
-   }
-
-   /**
-    * @returns {number} Get tween duration.
-    */
-   get tweenDuration() { return this.#tweenOptions.duration; }
-
-   /**
-    * @returns {import('svelte/transition').EasingFunction} Get easing function.
-    */
-   get tweenEase() { return this.#tweenOptions.ease; }
-
-   /**
-    * @param {number}   duration - Set tween duration.
-    */
-   set tweenDuration(duration)
-   {
-      if (!Number.isFinite(duration))
-      {
-         throw new TypeError(`'duration' is not a finite number.`);
-      }
-
-      if (duration < 0) { duration = 0; }
-
-      this.#tweenOptions.duration = duration;
-      this.#updateSubscribers();
-   }
-
-   /**
-    * @param {import('svelte/transition').EasingFunction} ease - Set easing function.
-    */
-   set tweenEase(ease)
-   {
-      if (typeof ease !== 'function')
-      {
-         throw new TypeError(`'ease' is not a function.`);
-      }
-
-      this.#tweenOptions.ease = ease;
-      this.#updateSubscribers();
-   }
-
-   /**
-    * Resets all options data to initial values.
-    */
-   reset()
-   {
-      this.#tween = this.#initialTween;
-      this.#tweenOptions = Object.assign({}, this.#initialTweenOptions);
-      this.#updateSubscribers();
-   }
-
-   /**
-    * Resets tween enabled state to initial value.
-    */
-   resetTween()
-   {
-      this.#tween = this.#initialTween;
-      this.#updateSubscribers();
-   }
-
-   /**
-    * Resets tween options to initial values.
-    */
-   resetTweenOptions()
-   {
-      this.#tweenOptions = Object.assign({}, this.#initialTweenOptions);
-      this.#updateSubscribers();
-   }
-
-   /**
-    * Store subscribe method.
-    *
-    * @param {import('svelte/store').Subscriber<import('./types').IDraggableOptions>} handler - Callback function that
-    *        is invoked on update / changes. Receives the DraggableOptions object / instance.
-    *
-    * @returns {import('svelte/store').Unsubscriber} Unsubscribe function.
-    */
-   subscribe(handler)
-   {
-      this.#subscriptions.push(handler); // add handler to the array of subscribers
-
-      handler(this);                     // call handler with current value
-
-      // Return unsubscribe function.
-      return () =>
-      {
-         const index = this.#subscriptions.findIndex((sub) => sub === handler);
-         if (index >= 0) { this.#subscriptions.splice(index, 1); }
-      };
-   }
-
-   #updateSubscribers()
-   {
-      const subscriptions = this.#subscriptions;
-
-      // Early out if there are no subscribers.
-      if (subscriptions.length > 0)
-      {
-         for (let cntr = 0; cntr < subscriptions.length; cntr++) { subscriptions[cntr](this); }
-      }
-   }
-}
-
-/**
- * Define a function to get an IDraggableOptions instance.
- *
- * @param {({
- *    tween?: boolean,
- *    tweenOptions?: import('../animation/types').IAnimationAPI.QuickTweenOptions
- * })} options - Initial options for IDraggableOptions.
- *
- * @returns {import('./types').IDraggableOptions} A new options instance.
- */
-draggable.options = (options) => new DraggableOptions(options);
-
-export { TJSPosition, TJSPositionData, applyPosition, draggable };
+export { TJSPosition, applyPosition, draggable };
 //# sourceMappingURL=index.js.map

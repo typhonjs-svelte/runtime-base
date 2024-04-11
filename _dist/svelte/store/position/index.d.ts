@@ -7,6 +7,83 @@ import { EasingFunction } from 'svelte/transition';
 import { InterpolateFunction } from '@typhonjs-svelte/runtime-base/math/interpolate';
 import { IBasicAnimation } from '@typhonjs-svelte/runtime-base/util/animate';
 
+/**
+ * Defines the data objects / interfaces used by various TJSPosition APIs.
+ */
+declare namespace Data {
+  /**
+   * Defines the primary TJSPosition data object used by various TJSPosition APIs. To externally create a new instance
+   * use the static accessor {@link TJSPosition.Data}.
+   */
+  interface TJSPositionData {
+    height: number | 'auto' | 'inherit' | null;
+    left: number | null;
+    maxHeight: number | null;
+    maxWidth: number | null;
+    minHeight: number | null;
+    minWidth: number | null;
+    rotateX: number | null;
+    rotateY: number | null;
+    rotateZ: number | null;
+    scale: number | null;
+    top: number | null;
+    transformOrigin: ITransformAPI.TransformOrigin | null;
+    translateX: number | null;
+    translateY: number | null;
+    translateZ: number | null;
+    width: number | 'auto' | 'inherit' | null;
+    zIndex: number | null;
+  }
+  /**
+   * Defines a TJSPositionData instance that has extra properties / attributes.
+   */
+  interface TJSPositionDataExtra extends TJSPositionData {
+    [key: string]: any;
+  }
+  /**
+   * Defines the constructor function for {@link TJSPositionData}.
+   */
+  interface TJSPositionDataConstructor {
+    new ({
+      height,
+      left,
+      maxHeight,
+      maxWidth,
+      minHeight,
+      minWidth,
+      rotateX,
+      rotateY,
+      rotateZ,
+      scale,
+      translateX,
+      translateY,
+      translateZ,
+      top,
+      transformOrigin,
+      width,
+      zIndex,
+    }?: {
+      height?: number | 'auto' | 'inherit' | null;
+      left?: number | null;
+      maxHeight?: number | null;
+      maxWidth?: number | null;
+      minHeight?: number | null;
+      minWidth?: number | null;
+      rotateX?: number | null;
+      rotateY?: number | null;
+      rotateZ?: number | null;
+      scale?: number | null;
+      top?: number | null;
+      transformOrigin?: ITransformAPI.TransformOrigin | null;
+      translateX?: number | null;
+      translateY?: number | null;
+      translateZ?: number | null;
+      width?: number | 'auto' | 'inherit' | null;
+      zIndex?: number | null;
+    }): TJSPositionData;
+  }
+}
+
 interface ITransformAPI {
   /**
    * @returns {boolean} Whether there are active transforms in local data.
@@ -102,7 +179,7 @@ interface ITransformAPI {
    * Collects all data including a bounding rect, transform matrix, and points array of the given
    * {@link TJSPositionData} instance with the applied local transform data.
    *
-   * @param {TJSPositionData} position - The position data to process.
+   * @param {Data.TJSPositionData} position - The position data to process.
    *
    * @param {ITransformAPI.ITransformData} [output] - Optional ITransformAPI.Data output instance.
    *
@@ -111,7 +188,7 @@ interface ITransformAPI {
    * @returns {ITransformAPI.ITransformData} The output ITransformAPI.Data instance.
    */
   getData(
-    position: TJSPositionData,
+    position: Data.TJSPositionData,
     output?: ITransformAPI.ITransformData,
     validationData?: object,
   ): ITransformAPI.ITransformData;
@@ -122,7 +199,7 @@ interface ITransformAPI {
    * then the stored local transform order is applied then all remaining transform keys are applied. This allows the
    * construction of a transform matrix in advance of setting local data and is useful in collision detection.
    *
-   * @param {object}   [data] - TJSPositionData instance or local transform data.
+   * @param {Data.TJSPositionData}   [data] - TJSPositionData instance or local transform data.
    *
    * @param {Mat4}  [output] - The output mat4 instance.
    *
@@ -139,7 +216,7 @@ interface ITransformAPI {
    * then the stored local transform order is applied then all remaining transform keys are applied. This allows the
    * construction of a transform matrix in advance of setting local data and is useful in collision detection.
    *
-   * @param {object}   [data] - TJSPositionData instance or local transform data.
+   * @param {Data.TJSPositionData}   [data] - TJSPositionData instance or local transform data.
    *
    * @param {Mat4}  [output] - The output mat4 instance.
    *
@@ -149,7 +226,7 @@ interface ITransformAPI {
   /**
    * Tests an object if it contains transform keys and the values are finite numbers.
    *
-   * @param {object} data - An object to test for transform data.
+   * @param {Data.TJSPositionData} data - An object to test for transform data.
    *
    * @returns {boolean} Whether the given TJSPositionData has transforms.
    */
@@ -209,125 +286,6 @@ declare namespace ITransformAPI {
     | 'bottom left'
     | 'bottom center'
     | 'bottom right';
-}
-
-/**
- * Defines stored positional data.
- */
-declare class TJSPositionData {
-  constructor({
-    height,
-    left,
-    maxHeight,
-    maxWidth,
-    minHeight,
-    minWidth,
-    rotateX,
-    rotateY,
-    rotateZ,
-    scale,
-    translateX,
-    translateY,
-    translateZ,
-    top,
-    transformOrigin,
-    width,
-    zIndex,
-  }?: {
-    height?: any;
-    left?: any;
-    maxHeight?: any;
-    maxWidth?: any;
-    minHeight?: any;
-    minWidth?: any;
-    rotateX?: any;
-    rotateY?: any;
-    rotateZ?: any;
-    scale?: any;
-    translateX?: any;
-    translateY?: any;
-    translateZ?: any;
-    top?: any;
-    transformOrigin?: any;
-    width?: any;
-    zIndex?: any;
-  });
-  /**
-   * @type {number|'auto'|'inherit'|null}
-   */
-  height: number | 'auto' | 'inherit' | null;
-  /**
-   * @type {number|null}
-   */
-  left: number | null;
-  /**
-   * @type {number|null}
-   */
-  maxHeight: number | null;
-  /**
-   * @type {number|null}
-   */
-  maxWidth: number | null;
-  /**
-   * @type {number|null}
-   */
-  minHeight: number | null;
-  /**
-   * @type {number|null}
-   */
-  minWidth: number | null;
-  /**
-   * @type {number|null}
-   */
-  rotateX: number | null;
-  /**
-   * @type {number|null}
-   */
-  rotateY: number | null;
-  /**
-   * @type {number|null}
-   */
-  rotateZ: number | null;
-  /**
-   * @type {number|null}
-   */
-  scale: number | null;
-  /**
-   * @type {number|null}
-   */
-  top: number | null;
-  /**
-   * @type {import('./transform/types').ITransformAPI.TransformOrigin | null}
-   */
-  transformOrigin: ITransformAPI.TransformOrigin | null;
-  /**
-   * @type {number|null}
-   */
-  translateX: number | null;
-  /**
-   * @type {number|null}
-   */
-  translateY: number | null;
-  /**
-   * @type {number|null}
-   */
-  translateZ: number | null;
-  /**
-   * @type {number|'auto'|'inherit'|null}
-   */
-  width: number | 'auto' | 'inherit' | null;
-  /**
-   * @type {number|null}
-   */
-  zIndex: number | null;
-  /**
-   * Copies given data to this instance.
-   *
-   * @param {TJSPositionData}   data - Copy from this instance.
-   *
-   * @returns {TJSPositionData} This instance.
-   */
-  copy(data: TJSPositionData): TJSPositionData;
 }
 
 /**
@@ -397,7 +355,7 @@ declare namespace IValidatorAPI {
     /**
      * New position data to evaluate.
      */
-    position: TJSPositionData;
+    position: Data.TJSPositionData;
     /**
      * Associated parent element / container.
      */
@@ -457,7 +415,7 @@ declare namespace IValidatorAPI {
    */
   type ValidatorData = {
     /**
-     * TJSPosition validator function that takes a {@link TJSPositionData} instance potentially modifying it or
+     * TJSPosition validator function that takes a {@link Data.TJSPositionData} instance potentially modifying it or
      * returning null if invalid.
      */
     validate: ValidatorFn;
@@ -487,14 +445,14 @@ declare namespace IValidatorAPI {
   type RemoveByCallback = (data: ValidatorData) => boolean;
   interface ValidatorFn extends Function {
     /**
-     * TJSPosition validator function that takes a {@link TJSPositionData} instance potentially modifying it or
-     * returning null if invalid.
+     * TJSPosition validator function that takes a {@link ValidationData} instance potentially modifying `position`
+     * data or returning null if invalid.
      *
      * @param {ValidationData} data - Validation data to handle.
      *
-     * @returns {TJSPositionData | null} The validated position data or null to cancel position update.
+     * @returns {Data.TJSPositionData | null} The validated position data or null to cancel position update.
      */
-    (data: ValidationData): TJSPositionData | null;
+    (data: ValidationData): Data.TJSPositionData | null;
     /**
      * Optional subscribe function following the Svelte store / subscribe pattern. On updates validation will
      * be processed again.
@@ -593,7 +551,7 @@ declare namespace System {
        *
        * @param {IValidatorAPI.ValidationData}   valData - The associated validation data for position updates.
        *
-       * @returns {TJSPositionData} Potentially adjusted position data.
+       * @returns {Data.TJSPositionData} Potentially adjusted position data.
        */
       validate: IValidatorAPI.ValidatorFn;
       /**
@@ -846,9 +804,9 @@ interface IPositionStateAPI {
    *
    * @param {string}   options.name - name to index this saved data.
    *
-   * @returns {TJSPositionData} Current position data
+   * @returns {Data.TJSPositionDataExtra} Current position data
    */
-  save({ name, ...extra }: { name: string; [key: string]: any }): TJSPositionData;
+  save({ name, ...extra }: { name: string; [key: string]: any }): Data.TJSPositionDataExtra;
   /**
    * Directly sets a position state. Simply include extra properties in `options` to set extra data.
    *
@@ -863,15 +821,19 @@ interface IPositionStateAPI {
  * Provides a store for position following the subscriber protocol in addition to providing individual writable derived
  * stores for each independent variable.
  *
- * @implements {import('svelte/store').Readable<TJSPositionData>}
+ * @implements {import('./types').TJSPositionTypes.ITJSPosition}
  */
-declare class TJSPosition implements Readable<TJSPositionData> {
+declare class TJSPosition implements TJSPositionTypes.ITJSPosition {
   /**
    * @returns {import('./animation/types').IAnimationGroupAPI} Public Animation API.
    */
   static get Animate(): IAnimationGroupAPI;
   /**
-   * @returns {import('./types').TJSPositionTypes.PositionInitial} TJSPosition initial API.
+   * @returns {import('./data/types').Data.TJSPositionDataConstructor} TJSPositionData constructor.
+   */
+  static get Data(): Data.TJSPositionDataConstructor;
+  /**
+   * @returns {import('./types').TJSPositionTypes.PositionInitial} TJSPosition default initial helpers.
    */
   static get Initial(): TJSPositionTypes.PositionInitial;
   /**
@@ -893,6 +855,18 @@ declare class TJSPosition implements Readable<TJSPositionData> {
    * @returns {import('./types').TJSPositionTypes.PositionValidators} Available validators.
    */
   static get Validators(): TJSPositionTypes.PositionValidators;
+  /**
+   * Convenience to copy from source to target of two TJSPositionData like objects. If a target is not supplied a new
+   * {@link TJSPositionData} instance is created.
+   *
+   * @param {import('./data/types').Data.TJSPositionData}  source - The source instance to copy from.
+   *
+   * @param {import('./data/types').Data.TJSPositionData}  [target] - Target TJSPositionData like object; if one is not
+   *        provided a new instance is created.
+   *
+   * @returns {import('./data/types').Data.TJSPositionData} The target instance.
+   */
+  static copyData(source: Data.TJSPositionData, target?: Data.TJSPositionData): Data.TJSPositionData;
   /**
    * Returns a duplicate of a given position instance copying any options and validators.
    *
@@ -1133,20 +1107,20 @@ declare class TJSPosition implements Readable<TJSPositionData> {
    */
   get zIndex(): number;
   /**
-   * Assigns current position to object passed into method.
+   * Assigns current position data to object passed into method.
    *
-   * @param {object | TJSPositionData}  [position] - Target to assign current position data.
+   * @param {object}  [data] - Target to assign current position data.
    *
    * @param {import('./types').TJSPositionTypes.OptionsGet}   [options] - Defines options for specific keys and
    *        substituting null for numeric default values.
    *
-   * @returns {TJSPositionData} Passed in object with current position data.
+   * @returns {Partial<import('./data/types').Data.TJSPositionData>} Passed in object with current position data.
    */
-  get(position?: object | TJSPositionData, options?: TJSPositionTypes.OptionsGet): TJSPositionData;
+  get(data?: object, options?: TJSPositionTypes.OptionsGet): Partial<Data.TJSPositionData>;
   /**
-   * @returns {TJSPositionData} Current position data.
+   * @returns {import('./data/types').Data.TJSPositionData} Current position data.
    */
-  toJSON(): TJSPositionData;
+  toJSON(): Data.TJSPositionData;
   /**
    * All calculation and updates of position are implemented in {@link TJSPosition}. This allows position to be fully
    * reactive and in control of updating inline styles for the application.
@@ -1183,12 +1157,12 @@ declare class TJSPosition implements Readable<TJSPositionData> {
     },
   ): TJSPosition;
   /**
-   * @param {import('svelte/store').Subscriber<TJSPositionData>} handler - Callback function that is invoked on
-   *        update / changes. Receives a copy of the TJSPositionData.
+   * @param {import('svelte/store').Subscriber<import('./data/types').Data.TJSPositionData>} handler - Callback
+   *        function that is invoked on update / changes. Receives a copy of the TJSPositionData.
    *
    * @returns {import('svelte/store').Unsubscriber} Unsubscribe function.
    */
-  subscribe(handler: svelte_store.Subscriber<TJSPositionData>): svelte_store.Unsubscriber;
+  subscribe(handler: svelte_store.Subscriber<Data.TJSPositionData>): svelte_store.Unsubscriber;
   #private;
 }
 
@@ -1202,6 +1176,7 @@ declare namespace TJSPositionTypes {
   interface IPositionable {
     position: TJSPosition;
   }
+  interface ITJSPosition extends Readable<Data.TJSPositionData> {}
   /**
    * Options for {@link TJSPosition.get}
    */
@@ -1635,7 +1610,7 @@ type TJSPositionOptions = {
     | IValidatorAPI.ValidatorData
     | Iterable<IValidatorAPI.ValidatorFn | IValidatorAPI.ValidatorData>;
 };
-type TJSPositionOptionsAll = TJSPositionOptions & Partial<TJSPositionData>;
+type TJSPositionOptionsAll = TJSPositionOptions & Partial<Data.TJSPositionData>;
 /**
  * Defines the TJSPosition parent
  * element. Provide either an HTMLElement directly or an object with an `elementTarget` property / accessor defining
@@ -1837,6 +1812,7 @@ type TJSPositionDataExtended = {
 };
 
 export {
+  Data,
   IAnimationAPI,
   type IAnimationGroupAPI,
   type IDraggableOptions,
@@ -1845,7 +1821,6 @@ export {
   IValidatorAPI,
   System,
   TJSPosition,
-  TJSPositionData,
   type TJSPositionDataExtended,
   type TJSPositionOptions,
   type TJSPositionOptionsAll,
