@@ -286,11 +286,11 @@ export class TJSTransforms
     *
     * @param {import('../data/types').Data.TJSPositionData} position - The position data to process.
     *
-    * @param {import('./types').TransformAPI.ITransformData} [output] - Optional TJSTransformData output instance.
+    * @param {import('./types').TransformAPI.TransformData} [output] - Optional TJSTransformData output instance.
     *
     * @param {object} [validationData] - Optional validation data for adjustment parameters.
     *
-    * @returns {import('./types').TransformAPI.ITransformData} The output TJSTransformData instance.
+    * @returns {import('./types').TransformAPI.TransformData} The output TJSTransformData instance.
     */
    getData(position, output = new TJSTransformData(), validationData = {})
    {

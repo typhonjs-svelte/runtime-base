@@ -76,7 +76,7 @@ export class UpdateElementData
       // When there are subscribers set option to calculate transform updates; set to false when no subscribers.
 
       /**
-       * @type {import('svelte/store').Writable<import('../transform/types').TransformAPI.ITransformData>}
+       * @type {import('svelte/store').Writable<import('../transform/types').TransformAPI.TransformData>}
        */
       this.storeTransform = writable(this.transformData, () =>
       {

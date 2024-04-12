@@ -3,7 +3,7 @@ import { Mat4, Vec3 }   from '#runtime/math/gl-matrix';
 /**
  * Provides the output data for {@link TransformAPI.getData}.
  *
- * @implements {import('./types').TransformAPI.ITransformData}
+ * @implements {import('./types').TransformAPI.TransformData}
  */
 export class TJSTransformData
 {

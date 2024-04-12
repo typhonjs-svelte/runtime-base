@@ -1,9 +1,9 @@
 import { A11yHelper } from '#runtime/util/browser';
 
 /**
- * Provides a base {@link System.ISystemBase} implementation.
+ * Provides a base {@link System.SystemBase} implementation.
  *
- * @implements {import('./types').System.ISystemBase}
+ * @implements {import('./types').System.SystemBase}
  */
 export class SystemBase
 {

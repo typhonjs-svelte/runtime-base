@@ -117,14 +117,14 @@ interface TransformAPI
     *
     * @param {Data.TJSPositionData} position - The position data to process.
     *
-    * @param {TransformAPI.ITransformData} [output] - Optional TransformAPI.Data output instance.
+    * @param {TransformAPI.TransformData} [output] - Optional TransformAPI.Data output instance.
     *
     * @param {object} [validationData] - Optional validation data for adjustment parameters.
     *
-    * @returns {TransformAPI.ITransformData} The output TransformAPI.Data instance.
+    * @returns {TransformAPI.TransformData} The output TransformAPI.Data instance.
     */
-   getData(position: Data.TJSPositionData, output?: TransformAPI.ITransformData, validationData?: object):
-    TransformAPI.ITransformData;
+   getData(position: Data.TJSPositionData, output?: TransformAPI.TransformData, validationData?: object):
+    TransformAPI.TransformData;
 
    /**
     * Creates a transform matrix based on local data applied in order it was added.
@@ -181,16 +181,16 @@ interface TransformAPI
  */
 namespace TransformAPI {
    /**
-    * Describes the constructor function for {@link ITransformData}.
+    * Describes the constructor function for {@link TransformData}.
     */
-   export interface ITransformDataConstructor {
-      new (): ITransformData;
+   export interface TransformDataConstructor {
+      new (): TransformData;
    }
 
    /**
     * Provides the output data for {@link TransformAPI.getData}.
     */
-   export interface ITransformData {
+   export interface TransformData {
       /**
        * @returns {DOMRect} The bounding rectangle.
        */

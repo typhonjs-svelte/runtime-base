@@ -174,14 +174,14 @@ export class TJSPosition
    static get Initial() { return this.#positionInitial; }
 
    /**
-    * @returns {import('./system/types').System.ISystemBaseConstructor} `SystemBase` constructor.
+    * @returns {import('./system/types').System.SystemBaseConstructor} `SystemBase` constructor.
     */
    static get SystemBase() { return SystemBase; }
 
    /**
     * Returns TJSTransformData class / constructor.
     *
-    * @returns {import('./transform/types').TransformAPI.ITransformDataConstructor} ITransformData class /
+    * @returns {import('./transform/types').TransformAPI.TransformDataConstructor} TransformData class /
     *          constructor.
     */
    static get TransformData() { return TJSTransformData; }
@@ -539,7 +539,7 @@ export class TJSPosition
    /**
     * Returns the transform data for the readable store.
     *
-    * @returns {import('./transform/types').TransformAPI.ITransformData} Transform Data.
+    * @returns {import('./transform/types').TransformAPI.TransformData} Transform Data.
     */
    get transform()
    {

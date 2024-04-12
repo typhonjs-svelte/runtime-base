@@ -21,13 +21,13 @@ namespace System {
     * `Centered` positioning is available via {@link TJSPosition.Initial}. To
     *
     * To create a unique initial position system extend {@link TJSPosition.SystemBase} and implement the
-    * {@link IInitialSystem} interface.
+    * {@link InitialSystem} interface.
     */
    export namespace Initial {
       /**
        * Provides helper functions to initially position an element.
        */
-      export interface IInitialSystem extends ISystemBase {
+      export interface InitialSystem extends SystemBase {
          /**
           * Get the left constraint.
           *
@@ -48,9 +48,9 @@ namespace System {
       }
 
       /**
-       * Describes the constructor function for an {@link IInitialSystem} implementation.
+       * Describes the constructor function for an {@link InitialSystem} implementation.
        */
-      export interface IInitialSystemConstructor {
+      export interface InitialSystemConstructor {
          /**
           * @param {object}      [options] - Initial options.
           *
@@ -73,7 +73,7 @@ namespace System {
             lock?: boolean,
             width?: number,
             height?: number
-         }): IInitialSystem;
+         }): InitialSystem;
       }
    }
 
@@ -81,14 +81,14 @@ namespace System {
     * Defines the position validator extension point for constraining positional changes. The browser window / element
     * bounds validation with and without transform support is available via {@link TJSPosition.Validators}.
     *
-    * To create a unique validator extend {@link TJSPosition.SystemBase} and implement the {@link IValidatorSystem}
+    * To create a unique validator extend {@link TJSPosition.SystemBase} and implement the {@link ValidatorSystem}
     * interface.
     */
    export namespace Validator {
       /**
        * Provides a system to validate positional changes.
        */
-      export interface IValidatorSystem extends ISystemBase {
+      export interface ValidatorSystem extends SystemBase {
          /**
           * Provides a validator that respects transforms in positional data constraining the position to within the
           * target elements bounds.
@@ -117,9 +117,9 @@ namespace System {
       }
 
       /**
-       * Describes the constructor function for an {@link IValidatorSystem} implementation.
+       * Describes the constructor function for an {@link ValidatorSystem} implementation.
        */
-      export interface IValidatorSystemConstructor {
+      export interface ValidatorSystemConstructor {
          /**
           * @param {object}      [options] - Initial options.
           *
@@ -142,11 +142,11 @@ namespace System {
             lock?: boolean,
             width?: number,
             height?: number
-         }): IValidatorSystem;
+         }): ValidatorSystem;
       }
    }
 
-   export interface ISystemBase {
+   export interface SystemBase {
       /**
        * @returns {boolean} The current constrain state.
        */
@@ -213,9 +213,9 @@ namespace System {
    }
 
    /**
-    * Describes the constructor function for anu {@link ISystemBase} implementation.
+    * Describes the constructor function for anu {@link SystemBase} implementation.
     */
-   export interface ISystemBaseConstructor {
+   export interface SystemBaseConstructor {
       /**
        * @param {object}      [options] - Initial options.
        *
@@ -238,7 +238,7 @@ namespace System {
          lock?: boolean,
          width?: number,
          height?: number
-      }): ISystemBase;
+      }): SystemBase;
    }
 }
 
