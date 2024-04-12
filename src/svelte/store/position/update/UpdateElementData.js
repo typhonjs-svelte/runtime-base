@@ -19,12 +19,12 @@ export class UpdateElementData
        *
        * @type {TJSPositionData}
        */
-      this.dataSubscribers = new TJSPositionData();
+      this.dataSubscribers = Object.seal(new TJSPositionData());
 
       /**
        * Stores the current dimension data used for the readable `dimension` store.
        *
-       * @type {{width: number | 'auto', height: number | 'auto'}}
+       * @type {{width: number | 'auto' | 'inherit', height: number | 'auto' | 'inherit'}}
        */
       this.dimensionData = { width: 0, height: 0 };
 

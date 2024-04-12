@@ -96,7 +96,5 @@ export class TJSPositionData
 
       /** @type {number | null} */
       this.zIndex = zIndex;
-
-      Object.seal(this);
    }
 }

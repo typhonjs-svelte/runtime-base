@@ -65,7 +65,7 @@ export class TJSPosition
    /**
     * @type {TJSPositionData}
     */
-   #data = new TJSPositionData();
+   #data = Object.seal(new TJSPositionData());
 
    /**
     * Provides the animation API.
@@ -1406,7 +1406,7 @@ export class TJSPosition
    }
 }
 
-const s_DATA_UPDATE = new TJSPositionData();
+const s_DATA_UPDATE = Object.seal(new TJSPositionData());
 
 /**
  * @type {import('./system/validators/types').ValidatorAPI.ValidationData}
