@@ -306,7 +306,7 @@ function draggable(node, { position, active = true, button = 0, storeDragging = 
  * draggable options much easier. When subscribing to the options instance returned by {@link draggable.options} the
  * Subscriber handler receives the entire instance.
  *
- * @implements {import('./types').DraggableOptions}
+ * @implements {import('./types').Action.DraggableOptions}
  */
 class DraggableOptions
 {
@@ -329,7 +329,7 @@ class DraggableOptions
    /**
     * Stores the subscribers.
     *
-    * @type {import('svelte/store').Subscriber<import('./types').DraggableOptions>[]}
+    * @type {import('svelte/store').Subscriber<import('./types').Action.DraggableOptions>[]}
     */
    #subscriptions = [];
 
@@ -476,7 +476,7 @@ class DraggableOptions
    /**
     * Store subscribe method.
     *
-    * @param {import('svelte/store').Subscriber<import('./types').DraggableOptions>} handler - Callback function that
+    * @param {import('svelte/store').Subscriber<import('./types').Action.DraggableOptions>} handler - Callback function that
     *        is invoked on update / changes. Receives the DraggableOptions object / instance.
     *
     * @returns {import('svelte/store').Unsubscriber} Unsubscribe function.
@@ -515,7 +515,7 @@ class DraggableOptions
  *    tweenOptions?: import('../animation/types').AnimationAPI.QuickTweenOptions
  * })} options - Initial options for DraggableOptions.
  *
- * @returns {import('./types').DraggableOptions} A new options instance.
+ * @returns {import('./types').Action.DraggableOptions} A new options instance.
  */
 draggable.options = (options) => new DraggableOptions(options);
 
