@@ -27,7 +27,7 @@ declare namespace Data {
     rotateZ: number | null;
     scale: number | null;
     top: number | null;
-    transformOrigin: ITransformAPI.TransformOrigin | null;
+    transformOrigin: TransformAPI.TransformOrigin | null;
     translateX: number | null;
     translateY: number | null;
     translateZ: number | null;
@@ -74,7 +74,7 @@ declare namespace Data {
       rotateZ?: number | null;
       scale?: number | null;
       top?: number | null;
-      transformOrigin?: ITransformAPI.TransformOrigin | null;
+      transformOrigin?: TransformAPI.TransformOrigin | null;
       translateX?: number | null;
       translateY?: number | null;
       translateZ?: number | null;
@@ -84,7 +84,7 @@ declare namespace Data {
   }
 }
 
-interface ITransformAPI {
+interface TransformAPI {
   /**
    * @returns {boolean} Whether there are active transforms in local data.
    */
@@ -181,17 +181,17 @@ interface ITransformAPI {
    *
    * @param {Data.TJSPositionData} position - The position data to process.
    *
-   * @param {ITransformAPI.ITransformData} [output] - Optional ITransformAPI.Data output instance.
+   * @param {TransformAPI.TransformData} [output] - Optional TransformAPI.Data output instance.
    *
    * @param {object} [validationData] - Optional validation data for adjustment parameters.
    *
-   * @returns {ITransformAPI.ITransformData} The output ITransformAPI.Data instance.
+   * @returns {TransformAPI.TransformData} The output TransformAPI.Data instance.
    */
   getData(
     position: Data.TJSPositionData,
-    output?: ITransformAPI.ITransformData,
+    output?: TransformAPI.TransformData,
     validationData?: object,
-  ): ITransformAPI.ITransformData;
+  ): TransformAPI.TransformData;
   /**
    * Creates a transform matrix based on local data applied in order it was added.
    *
@@ -241,17 +241,17 @@ interface ITransformAPI {
 /**
  * Provides additional interfaces and type aliases for the transform API.
  */
-declare namespace ITransformAPI {
+declare namespace TransformAPI {
   /**
-   * Describes the constructor function for {@link ITransformData}.
+   * Describes the constructor function for {@link TransformData}.
    */
-  interface ITransformDataConstructor {
-    new (): ITransformData;
+  interface TransformDataConstructor {
+    new (): TransformData;
   }
   /**
-   * Provides the output data for {@link ITransformAPI.getData}.
+   * Provides the output data for {@link TransformAPI.getData}.
    */
-  interface ITransformData {
+  interface TransformData {
     /**
      * @returns {DOMRect} The bounding rectangle.
      */
@@ -294,7 +294,7 @@ declare namespace ITransformAPI {
  * for browser bounds / transform checking available via {@link TJSPosition.Validators} or custom validators added which
  * may provide unique bounding validation / constraints.
  */
-interface IValidatorAPI {
+interface ValidatorAPI {
   /**
    * @returns {boolean} Returns the enabled state.
    */
@@ -310,16 +310,16 @@ interface IValidatorAPI {
   /**
    * Provides an iterator for validators.
    *
-   * @yields {IValidatorAPI.ValidatorData}
-   * @returns {IterableIterator<IValidatorAPI.ValidatorData>} iterator.
+   * @yields {ValidatorAPI.ValidatorData}
+   * @returns {IterableIterator<ValidatorAPI.ValidatorData>} iterator.
    */
-  [Symbol.iterator](): IterableIterator<IValidatorAPI.ValidatorData>;
+  [Symbol.iterator](): IterableIterator<ValidatorAPI.ValidatorData>;
   /**
    * Adds the given validators.
    *
-   * @param {...(IValidatorAPI.ValidatorFn | IValidatorAPI.ValidatorData)}   validators - Validators to add.
+   * @param {...(ValidatorAPI.ValidatorFn | ValidatorAPI.ValidatorData)}   validators - Validators to add.
    */
-  add(...validators: (IValidatorAPI.ValidatorFn | IValidatorAPI.ValidatorData)[]): void;
+  add(...validators: (ValidatorAPI.ValidatorFn | ValidatorAPI.ValidatorData)[]): void;
   /**
    * Clears / removes all validators.
    */
@@ -327,16 +327,16 @@ interface IValidatorAPI {
   /**
    * Removes one or more given validators.
    *
-   * @param {...(IValidatorAPI.ValidatorFn | IValidatorAPI.ValidatorData)}   validators - Validators to remove.
+   * @param {...(ValidatorAPI.ValidatorFn | ValidatorAPI.ValidatorData)}   validators - Validators to remove.
    */
-  remove(...validators: (IValidatorAPI.ValidatorFn | IValidatorAPI.ValidatorData)[]): void;
+  remove(...validators: (ValidatorAPI.ValidatorFn | ValidatorAPI.ValidatorData)[]): void;
   /**
    * Remove validators by the provided callback. The callback takes 3 parameters: `id`, `validator`, and `weight`.
    * Any truthy value returned will remove that validator.
    *
-   * @param {IValidatorAPI.RemoveByCallback} callback - Callback function to evaluate each validator entry.
+   * @param {ValidatorAPI.RemoveByCallback} callback - Callback function to evaluate each validator entry.
    */
-  removeBy(callback: IValidatorAPI.RemoveByCallback): void;
+  removeBy(callback: ValidatorAPI.RemoveByCallback): void;
   /**
    * Removes any validators with matching IDs.
    *
@@ -347,7 +347,7 @@ interface IValidatorAPI {
 /**
  * Provides a namespace for all type aliases related to the validator API.
  */
-declare namespace IValidatorAPI {
+declare namespace ValidatorAPI {
   /**
    * The data passed to validator functions to determine if the new `position` / TJSPosition data is valid.
    */
@@ -371,7 +371,7 @@ declare namespace IValidatorAPI {
     /**
      * Current applies transforms / transform tracking & conversion utility.
      */
-    transforms: ITransformAPI;
+    transforms: TransformAPI;
     /**
      * Current height
      */
@@ -473,13 +473,13 @@ declare namespace System {
    * `Centered` positioning is available via {@link TJSPosition.Initial}. To
    *
    * To create a unique initial position system extend {@link TJSPosition.SystemBase} and implement the
-   * {@link IInitialSystem} interface.
+   * {@link InitialSystem} interface.
    */
   namespace Initial {
     /**
      * Provides helper functions to initially position an element.
      */
-    interface IInitialSystem extends ISystemBase {
+    interface InitialSystem extends SystemBase {
       /**
        * Get the left constraint.
        *
@@ -498,9 +498,9 @@ declare namespace System {
       getTop(height: number): number;
     }
     /**
-     * Describes the constructor function for an {@link IInitialSystem} implementation.
+     * Describes the constructor function for an {@link InitialSystem} implementation.
      */
-    interface IInitialSystemConstructor {
+    interface InitialSystemConstructor {
       /**
        * @param {object}      [options] - Initial options.
        *
@@ -530,30 +530,30 @@ declare namespace System {
         lock?: boolean;
         width?: number;
         height?: number;
-      }): IInitialSystem;
+      }): InitialSystem;
     }
   }
   /**
    * Defines the position validator extension point for constraining positional changes. The browser window / element
    * bounds validation with and without transform support is available via {@link TJSPosition.Validators}.
    *
-   * To create a unique validator extend {@link TJSPosition.SystemBase} and implement the {@link IValidatorSystem}
+   * To create a unique validator extend {@link TJSPosition.SystemBase} and implement the {@link ValidatorSystem}
    * interface.
    */
   namespace Validator {
     /**
      * Provides a system to validate positional changes.
      */
-    interface IValidatorSystem extends ISystemBase {
+    interface ValidatorSystem extends SystemBase {
       /**
        * Provides a validator that respects transforms in positional data constraining the position to within the
        * target elements bounds.
        *
-       * @param {IValidatorAPI.ValidationData}   valData - The associated validation data for position updates.
+       * @param {ValidatorAPI.ValidationData}   valData - The associated validation data for position updates.
        *
        * @returns {Data.TJSPositionData} Potentially adjusted position data.
        */
-      validate: IValidatorAPI.ValidatorFn;
+      validate: ValidatorAPI.ValidatorFn;
       /**
        * An ID associated with this validator. Can be used to remove the validator; default: `undefined`.
        */
@@ -569,9 +569,9 @@ declare namespace System {
       weight?: number;
     }
     /**
-     * Describes the constructor function for an {@link IValidatorSystem} implementation.
+     * Describes the constructor function for an {@link ValidatorSystem} implementation.
      */
-    interface IValidatorSystemConstructor {
+    interface ValidatorSystemConstructor {
       /**
        * @param {object}      [options] - Initial options.
        *
@@ -601,10 +601,10 @@ declare namespace System {
         lock?: boolean;
         width?: number;
         height?: number;
-      }): IValidatorSystem;
+      }): ValidatorSystem;
     }
   }
-  interface ISystemBase {
+  interface SystemBase {
     /**
      * @returns {boolean} The current constrain state.
      */
@@ -659,9 +659,9 @@ declare namespace System {
     setDimension(width: number, height: number): void;
   }
   /**
-   * Describes the constructor function for anu {@link ISystemBase} implementation.
+   * Describes the constructor function for anu {@link SystemBase} implementation.
    */
-  interface ISystemBaseConstructor {
+  interface SystemBaseConstructor {
     /**
      * @param {object}      [options] - Initial options.
      *
@@ -691,7 +691,7 @@ declare namespace System {
       lock?: boolean;
       width?: number;
       height?: number;
-    }): ISystemBase;
+    }): SystemBase;
   }
 }
 
@@ -706,7 +706,7 @@ declare namespace System {
  */
 declare function applyPosition(node: HTMLElement, position: TJSPosition): svelte_action.ActionReturn<TJSPosition>;
 
-interface IPositionStateAPI {
+interface PositionStateAPI {
   /**
    * Returns any stored save state by name.
    *
@@ -748,7 +748,7 @@ interface IPositionStateAPI {
   /**
      * Restores a saved positional state returning the data. Several optional parameters are available
      * to control whether the restore action occurs silently (no store / inline styles updates), animates
-     -   * to the stored data, or simply sets the stored data. Restoring via {@link IAnimationAPI.to}
+     -   * to the stored data, or simply sets the stored data. Restoring via {@link AnimationAPI.to}
      * allows specification of the duration, easing, and interpolate functions along with configuring a Promise to be
      * returned if awaiting the end of the animation.
      *
@@ -825,9 +825,9 @@ interface IPositionStateAPI {
  */
 declare class TJSPosition implements TJSPositionTypes.ITJSPosition {
   /**
-   * @returns {import('./animation/types').IAnimationGroupAPI} Public Animation API.
+   * @returns {import('./animation/types').AnimationGroupAPI} Public Animation API.
    */
-  static get Animate(): IAnimationGroupAPI;
+  static get Animate(): AnimationGroupAPI;
   /**
    * @returns {import('./data/types').Data.TJSPositionDataConstructor} TJSPositionData constructor.
    */
@@ -837,16 +837,16 @@ declare class TJSPosition implements TJSPositionTypes.ITJSPosition {
    */
   static get Initial(): TJSPositionTypes.PositionInitial;
   /**
-   * @returns {import('./system/types').System.ISystemBaseConstructor} `SystemBase` constructor.
+   * @returns {import('./system/types').System.SystemBaseConstructor} `SystemBase` constructor.
    */
-  static get SystemBase(): System.ISystemBaseConstructor;
+  static get SystemBase(): System.SystemBaseConstructor;
   /**
    * Returns TJSTransformData class / constructor.
    *
-   * @returns {import('./transform/types').ITransformAPI.ITransformDataConstructor} ITransformData class /
+   * @returns {import('./transform/types').TransformAPI.TransformDataConstructor} TransformData class /
    *          constructor.
    */
-  static get TransformData(): ITransformAPI.ITransformDataConstructor;
+  static get TransformData(): TransformAPI.TransformDataConstructor;
   /**
    * Returns default validators.
    *
@@ -890,9 +890,9 @@ declare class TJSPosition implements TJSPositionTypes.ITJSPosition {
   /**
    * Returns the animation API.
    *
-   * @returns {import('./animation/types').IAnimationAPI} Animation API.
+   * @returns {import('./animation/types').AnimationAPI} Animation API.
    */
-  get animate(): IAnimationAPI;
+  get animate(): AnimationAPI;
   /**
    * Returns the dimension data for the readable store.
    *
@@ -941,9 +941,9 @@ declare class TJSPosition implements TJSPositionTypes.ITJSPosition {
   /**
    * Returns the state API.
    *
-   * @returns {import('./state/types').IPositionStateAPI} TJSPosition state API.
+   * @returns {import('./state/types').PositionStateAPI} TJSPosition state API.
    */
-  get state(): IPositionStateAPI;
+  get state(): PositionStateAPI;
   /**
    * Returns the derived writable stores for individual data variables.
    *
@@ -953,15 +953,15 @@ declare class TJSPosition implements TJSPositionTypes.ITJSPosition {
   /**
    * Returns the transform data for the readable store.
    *
-   * @returns {import('./transform/types').ITransformAPI.ITransformData} Transform Data.
+   * @returns {import('./transform/types').TransformAPI.TransformData} Transform Data.
    */
-  get transform(): ITransformAPI.ITransformData;
+  get transform(): TransformAPI.TransformData;
   /**
    * Returns the validators.
    *
-   * @returns {import('./system/validators/types').IValidatorAPI} validators.
+   * @returns {import('./system/validators/types').ValidatorAPI} validators.
    */
-  get validators(): IValidatorAPI;
+  get validators(): ValidatorAPI;
   /**
    * @param {number | string | null} height -
    */
@@ -1059,13 +1059,13 @@ declare class TJSPosition implements TJSPositionTypes.ITJSPosition {
    */
   get top(): number;
   /**
-   * @param {import('./transform/types').ITransformAPI.TransformOrigin} transformOrigin -
+   * @param {import('./transform/types').TransformAPI.TransformOrigin} transformOrigin -
    */
-  set transformOrigin(transformOrigin: ITransformAPI.TransformOrigin);
+  set transformOrigin(transformOrigin: TransformAPI.TransformOrigin);
   /**
-   * @returns {import('./transform/types').ITransformAPI.TransformOrigin | null} transformOrigin
+   * @returns {import('./transform/types').TransformAPI.TransformOrigin | null} transformOrigin
    */
-  get transformOrigin(): ITransformAPI.TransformOrigin;
+  get transformOrigin(): TransformAPI.TransformOrigin;
   /**
    * @param {number | string | null} translateX -
    */
@@ -1173,7 +1173,7 @@ declare namespace TJSPositionTypes {
   /**
    * Defines the shape of an instance / object that is positionable.
    */
-  interface IPositionable {
+  interface Positionable {
     position: TJSPosition;
   }
   interface ITJSPosition extends Readable<Data.TJSPositionData> {}
@@ -1197,43 +1197,43 @@ declare namespace TJSPositionTypes {
   /**
    * Defines one or more positions or positionable objects.
    */
-  type PositionGroup = TJSPosition | IPositionable | Iterable<TJSPosition> | Iterable<IPositionable>;
+  type PositionGroup = TJSPosition | Positionable | Iterable<TJSPosition> | Iterable<Positionable>;
   /**
-   * Provides the default {@link System.Initial.IInitialSystem} implementations available.
+   * Provides the default {@link System.Initial.InitialSystem} implementations available.
    */
   type PositionInitial = {
     /**
      * A locked instance of the `Centered` initial helper suitable for displaying elements in the browser window.
      */
-    browserCentered: System.Initial.IInitialSystem;
+    browserCentered: System.Initial.InitialSystem;
     /**
      * The `Centered` class constructor to instantiate a new instance.
      * @constructor
      */
-    Centered: System.Initial.IInitialSystemConstructor;
+    Centered: System.Initial.InitialSystemConstructor;
   };
   /**
-   * Provides the default {@link System.Initial.IValidatorSystem} implementations available.
+   * Provides the default {@link System.Initial.ValidatorSystem} implementations available.
    */
   type PositionValidators = {
     /**
      * The `BasicBounds` class constructor to instantiate a new instance.
      */
-    BasicBounds: System.Validator.IValidatorSystemConstructor;
+    BasicBounds: System.Validator.ValidatorSystemConstructor;
     /**
      * A locked instance of the `BasicBounds` validator suitable for non-transformed bounds checking against the
      * browser window.
      */
-    basicWindow: System.Validator.IValidatorSystem;
+    basicWindow: System.Validator.ValidatorSystem;
     /**
      * The `TransformBounds` class constructor to instantiate a new instance.
      */
-    TransformBounds: System.Validator.IValidatorSystemConstructor;
+    TransformBounds: System.Validator.ValidatorSystemConstructor;
     /**
      * A locked instance of the `TransformBounds` validator suitable for transformed bounds checking against the
      * browser window.
      */
-    transformWindow: System.Validator.IValidatorSystem;
+    transformWindow: System.Validator.ValidatorSystem;
   };
 }
 
@@ -1242,9 +1242,9 @@ declare namespace TJSPositionTypes {
  * {@link TJSPosition.Animate}.
  *
  *
- * @see IAnimationAPI
+ * @see AnimationAPI
  */
-interface IAnimationGroupAPI {
+interface AnimationGroupAPI {
   /**
    * Cancels any animation for given PositionGroup data.
    *
@@ -1274,14 +1274,14 @@ interface IAnimationGroupAPI {
    *
    * @param {object | Function} fromData -
    *
-   * @param {IAnimationAPI.TweenOptions | (() => IAnimationAPI.TweenOptions)}   [options] -
+   * @param {AnimationAPI.TweenOptions | (() => AnimationAPI.TweenOptions)}   [options] -
    *
    * @returns {IBasicAnimation} Basic animation control.
    */
   from(
     position: TJSPositionTypes.PositionGroup,
     fromData: object | Function,
-    options?: IAnimationAPI.TweenOptions | (() => IAnimationAPI.TweenOptions),
+    options?: AnimationAPI.TweenOptions | (() => AnimationAPI.TweenOptions),
   ): IBasicAnimation;
   /**
    * Provides the `fromTo` animation tween for one or more TJSPosition instances as a group.
@@ -1319,19 +1319,19 @@ interface IAnimationGroupAPI {
    *
    * @param {TJSPositionTypes.PositionGroup} position - A position group.
    *
-   * @param {Iterable<IAnimationAPI.AnimationKeys>}  keys -
+   * @param {Iterable<AnimationAPI.AnimationKeys>}  keys -
    *
-   * @param {IAnimationAPI.QuickTweenOptions | (() => IAnimationAPI.QuickTweenOptions)}  [options] -
+   * @param {AnimationAPI.QuickTweenOptions | (() => AnimationAPI.QuickTweenOptions)}  [options] -
    *
-   * @returns {IAnimationAPI.QuickToCallback} quick-to tween function.
+   * @returns {AnimationAPI.QuickToCallback} quick-to tween function.
    */
   quickTo(
     position: TJSPositionTypes.PositionGroup,
-    keys: Iterable<IAnimationAPI.AnimationKeys>,
-    options?: IAnimationAPI.QuickTweenOptions | (() => IAnimationAPI.QuickTweenOptions),
-  ): IAnimationAPI.QuickToCallback;
+    keys: Iterable<AnimationAPI.AnimationKeys>,
+    options?: AnimationAPI.QuickTweenOptions | (() => AnimationAPI.QuickTweenOptions),
+  ): AnimationAPI.QuickToCallback;
 }
-interface IAnimationAPI {
+interface AnimationAPI {
   /**
    * Returns whether there are scheduled animations whether active or delayed for this TJSPosition.
    *
@@ -1353,11 +1353,11 @@ interface IAnimationAPI {
    *
    * @param {TJSPositionDataExtended} fromData - The starting position.
    *
-   * @param {IAnimationAPI.TweenOptions} [options] - Optional tween parameters.
+   * @param {AnimationAPI.TweenOptions} [options] - Optional tween parameters.
    *
    * @returns {IBasicAnimation}  A control object that can cancel animation and provides a `finished` Promise.
    */
-  from(fromData: TJSPositionDataExtended, options?: IAnimationAPI.TweenOptions): IBasicAnimation;
+  from(fromData: TJSPositionDataExtended, options?: AnimationAPI.TweenOptions): IBasicAnimation;
   /**
    * Provides a tween from given position data to the current position.
    *
@@ -1365,40 +1365,40 @@ interface IAnimationAPI {
    *
    * @param {TJSPositionDataExtended} toData - The ending position.
    *
-   * @param {IAnimationAPI.TweenOptions} [options] - Optional tween parameters.
+   * @param {AnimationAPI.TweenOptions} [options] - Optional tween parameters.
    *
    * @returns {IBasicAnimation}  A control object that can cancel animation and provides a `finished` Promise.
    */
   fromTo(
     fromData: TJSPositionDataExtended,
     toData: TJSPositionDataExtended,
-    options?: IAnimationAPI.TweenOptions,
+    options?: AnimationAPI.TweenOptions,
   ): IBasicAnimation;
   /**
    * Provides a tween to given position data from the current position.
    *
    * @param {TJSPositionDataExtended} toData - The destination position.
    *
-   * @param {IAnimationAPI.TweenOptions} [options] - Optional tween parameters.
+   * @param {AnimationAPI.TweenOptions} [options] - Optional tween parameters.
    *
    * @returns {IBasicAnimation}  A control object that can cancel animation and provides a `finished` Promise.
    */
-  to(toData: TJSPositionDataExtended, options?: IAnimationAPI.TweenOptions): IBasicAnimation;
+  to(toData: TJSPositionDataExtended, options?: AnimationAPI.TweenOptions): IBasicAnimation;
   /**
    * Returns a function that provides an optimized way to constantly update a to-tween.
    *
-   * @param {Iterable<IAnimationAPI.AnimationKeys>}  keys - The keys for quickTo.
+   * @param {Iterable<AnimationAPI.AnimationKeys>}  keys - The keys for quickTo.
    *
-   * @param {IAnimationAPI.QuickTweenOptions} [options] - Optional quick tween parameters.
+   * @param {AnimationAPI.QuickTweenOptions} [options] - Optional quick tween parameters.
    *
-   * @returns {IAnimationAPI.QuickToCallback} quick-to tween function.
+   * @returns {AnimationAPI.QuickToCallback} quick-to tween function.
    */
   quickTo(
-    keys: Iterable<IAnimationAPI.AnimationKeys>,
-    options?: IAnimationAPI.QuickTweenOptions,
-  ): IAnimationAPI.QuickToCallback;
+    keys: Iterable<AnimationAPI.AnimationKeys>,
+    options?: AnimationAPI.QuickTweenOptions,
+  ): AnimationAPI.QuickToCallback;
 }
-declare namespace IAnimationAPI {
+declare namespace AnimationAPI {
   /**
    * The position keys that can be animated.
    */
@@ -1470,48 +1470,50 @@ declare namespace IAnimationAPI {
   }
 }
 
-/**
- * Provides an interface of the {@link draggable} action options support / Readable store to make updating / setting
- * draggable options much easier. When subscribing to the options instance returned by {@link draggable.options} the
- * Subscriber handler receives the entire instance.
- */
-interface IDraggableOptions extends Readable<IDraggableOptions> {
+declare namespace Action {
   /**
-   * Tweening enabled state.
+   * Provides an interface of the {@link draggable} action options support / Readable store to make updating / setting
+   * draggable options much easier. When subscribing to the options instance returned by {@link draggable.options} the
+   * Subscriber handler receives the entire instance.
    */
-  tween: boolean;
-  /**
-   * Quick tween options for easing function and duration.
-   */
-  tweenOptions: IAnimationAPI.QuickTweenOptions;
-  /**
-   * @returns {number} Get tween duration.
-   */
-  get tweenDuration(): number;
-  /**
-   * @returns {EasingFunction} Get easing function.
-   */
-  get tweenEase(): EasingFunction;
-  /**
-   * @param {number}   duration - Set tween duration.
-   */
-  set tweenDuration(duration: number);
-  /**
-   * @param {EasingFunction} ease - Set easing function.
-   */
-  set tweenEase(ease: EasingFunction);
-  /**
-   * Resets all options data to initial values.
-   */
-  reset(): void;
-  /**
-   * Resets tween enabled state to initial value.
-   */
-  resetTween(): void;
-  /**
-   * Resets tween options to initial values.
-   */
-  resetTweenOptions(): void;
+  interface DraggableOptions extends Readable<DraggableOptions> {
+    /**
+     * Tweening enabled state.
+     */
+    tween: boolean;
+    /**
+     * Quick tween options for easing function and duration.
+     */
+    tweenOptions: AnimationAPI.QuickTweenOptions;
+    /**
+     * @returns {number} Get tween duration.
+     */
+    get tweenDuration(): number;
+    /**
+     * @returns {EasingFunction} Get easing function.
+     */
+    get tweenEase(): EasingFunction;
+    /**
+     * @param {number}   duration - Set tween duration.
+     */
+    set tweenDuration(duration: number);
+    /**
+     * @param {EasingFunction} ease - Set easing function.
+     */
+    set tweenEase(ease: EasingFunction);
+    /**
+     * Resets all options data to initial values.
+     */
+    reset(): void;
+    /**
+     * Resets tween enabled state to initial value.
+     */
+    resetTween(): void;
+    /**
+     * Resets tween options to initial values.
+     */
+    resetTweenOptions(): void;
+  }
 }
 
 /**
@@ -1535,7 +1537,7 @@ interface IDraggableOptions extends Readable<IDraggableOptions> {
  *
  * @param {boolean}           [params.tween=false] - When true tweening is enabled.
  *
- * @param {import('../animation/types').IAnimationAPI.QuickTweenOptions} [params.tweenOptions] - Quick tween options.
+ * @param {import('../animation/types').AnimationAPI.QuickTweenOptions} [params.tweenOptions] - Quick tween options.
  *
  * @param {Iterable<string>}  [params.hasTargetClassList] - When defined any event targets that have a class in this
  *        list are allowed.
@@ -1562,23 +1564,26 @@ declare function draggable(
     button?: number;
     storeDragging?: svelte_store.Writable<boolean>;
     tween?: boolean;
-    tweenOptions?: IAnimationAPI.QuickTweenOptions;
+    tweenOptions?: AnimationAPI.QuickTweenOptions;
     hasTargetClassList?: Iterable<string>;
     ignoreTargetClassList?: Iterable<string>;
   },
 ): svelte_action.ActionReturn<Record<string, any>>;
 declare namespace draggable {
   /**
-   * Define a function to get an IDraggableOptions instance.
+   * Define a function to get an DraggableOptions instance.
    *
    * @param {({
    *    tween?: boolean,
-   *    tweenOptions?: import('../animation/types').IAnimationAPI.QuickTweenOptions
-   * })} options - Initial options for IDraggableOptions.
+   *    tweenOptions?: import('../animation/types').AnimationAPI.QuickTweenOptions
+   * })} options - Initial options for DraggableOptions.
    *
-   * @returns {import('./types').IDraggableOptions} A new options instance.
+   * @returns {import('./types').Action.DraggableOptions} A new options instance.
    */
-  function options(options: { tween?: boolean; tweenOptions?: IAnimationAPI.QuickTweenOptions }): IDraggableOptions;
+  function options(options: {
+    tween?: boolean;
+    tweenOptions?: AnimationAPI.QuickTweenOptions;
+  }): Action.DraggableOptions;
 }
 
 /**
@@ -1593,7 +1598,7 @@ type TJSPositionOptions = {
    * Provides a helper for setting
    * initial position location.
    */
-  initial?: System.Initial.IInitialSystem;
+  initial?: System.Initial.InitialSystem;
   /**
    * Sets TJSPosition to orthographic mode using just transform / matrix3d for positioning.
    */
@@ -1606,9 +1611,9 @@ type TJSPositionOptions = {
    * - Provides an initial validator or list of validators.
    */
   validator?:
-    | IValidatorAPI.ValidatorFn
-    | IValidatorAPI.ValidatorData
-    | Iterable<IValidatorAPI.ValidatorFn | IValidatorAPI.ValidatorData>;
+    | ValidatorAPI.ValidatorFn
+    | ValidatorAPI.ValidatorData
+    | Iterable<ValidatorAPI.ValidatorFn | ValidatorAPI.ValidatorData>;
 };
 type TJSPositionOptionsAll = TJSPositionOptions & Partial<Data.TJSPositionData>;
 /**
@@ -1712,7 +1717,7 @@ type TJSPositionStores = {
   /**
    * Readable store for transform data.
    */
-  transform: svelte_store.Readable<ITransformAPI.ITransformData>;
+  transform: svelte_store.Readable<TransformAPI.TransformData>;
   /**
    * Derived store for `transformOrigin`.
    */
@@ -1812,13 +1817,11 @@ type TJSPositionDataExtended = {
 };
 
 export {
+  Action,
+  AnimationAPI,
+  type AnimationGroupAPI,
   Data,
-  IAnimationAPI,
-  type IAnimationGroupAPI,
-  type IDraggableOptions,
-  type IPositionStateAPI,
-  ITransformAPI,
-  IValidatorAPI,
+  type PositionStateAPI,
   System,
   TJSPosition,
   type TJSPositionDataExtended,
@@ -1827,6 +1830,8 @@ export {
   type TJSPositionParent,
   type TJSPositionStores,
   TJSPositionTypes,
+  TransformAPI,
+  ValidatorAPI,
   applyPosition,
   draggable,
 };

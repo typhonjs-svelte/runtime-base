@@ -60,7 +60,7 @@ function applyPosition(node, position)
  *
  * @param {boolean}           [params.tween=false] - When true tweening is enabled.
  *
- * @param {import('../animation/types').IAnimationAPI.QuickTweenOptions} [params.tweenOptions] - Quick tween options.
+ * @param {import('../animation/types').AnimationAPI.QuickTweenOptions} [params.tweenOptions] - Quick tween options.
  *
  * @param {Iterable<string>}  [params.hasTargetClassList] - When defined any event targets that have a class in this
  *        list are allowed.
@@ -115,7 +115,7 @@ function draggable(node, { position, active = true, button = 0, storeDragging = 
    /**
     * Stores the quickTo callback to use for optimized tweening when easing is enabled.
     *
-    * @type {import('../animation/types').IAnimationAPI.QuickToCallback}
+    * @type {import('../animation/types').AnimationAPI.QuickToCallback}
     */
    let quickTo = position.animate.quickTo(['top', 'left'], tweenOptions);
 
@@ -339,7 +339,7 @@ function draggable(node, { position, active = true, button = 0, storeDragging = 
  * draggable options much easier. When subscribing to the options instance returned by {@link draggable.options} the
  * Subscriber handler receives the entire instance.
  *
- * @implements {import('./types').IDraggableOptions}
+ * @implements {import('./types').Action.DraggableOptions}
  */
 class DraggableOptions
 {
@@ -347,7 +347,7 @@ class DraggableOptions
    #initialTween;
 
    /**
-    * @type {import('../animation/types').IAnimationAPI.QuickTweenOptions}
+    * @type {import('../animation/types').AnimationAPI.QuickTweenOptions}
     */
    #initialTweenOptions;
 
@@ -355,14 +355,14 @@ class DraggableOptions
    #tween;
 
    /**
-    * @type {import('../animation/types').IAnimationAPI.QuickTweenOptions}
+    * @type {import('../animation/types').AnimationAPI.QuickTweenOptions}
     */
    #tweenOptions = { duration: 1, ease: cubicOut };
 
    /**
     * Stores the subscribers.
     *
-    * @type {import('svelte/store').Subscriber<import('./types').IDraggableOptions>[]}
+    * @type {import('svelte/store').Subscriber<import('./types').Action.DraggableOptions>[]}
     */
    #subscriptions = [];
 
@@ -371,7 +371,7 @@ class DraggableOptions
     *
     * @param {boolean}  [opts.tween = false] - Tween enabled.
     *
-    * @param {import('../animation/types').IAnimationAPI.QuickTweenOptions}   [opts.tweenOptions] - Quick tween options.
+    * @param {import('../animation/types').AnimationAPI.QuickTweenOptions}   [opts.tweenOptions] - Quick tween options.
     */
    constructor({ tween = false, tweenOptions } = {})
    {
@@ -509,7 +509,7 @@ class DraggableOptions
    /**
     * Store subscribe method.
     *
-    * @param {import('svelte/store').Subscriber<import('./types').IDraggableOptions>} handler - Callback function that
+    * @param {import('svelte/store').Subscriber<import('./types').Action.DraggableOptions>} handler - Callback function that
     *        is invoked on update / changes. Receives the DraggableOptions object / instance.
     *
     * @returns {import('svelte/store').Unsubscriber} Unsubscribe function.
@@ -541,14 +541,14 @@ class DraggableOptions
 }
 
 /**
- * Define a function to get an IDraggableOptions instance.
+ * Define a function to get an DraggableOptions instance.
  *
  * @param {({
  *    tween?: boolean,
- *    tweenOptions?: import('../animation/types').IAnimationAPI.QuickTweenOptions
- * })} options - Initial options for IDraggableOptions.
+ *    tweenOptions?: import('../animation/types').AnimationAPI.QuickTweenOptions
+ * })} options - Initial options for DraggableOptions.
  *
- * @returns {import('./types').IDraggableOptions} A new options instance.
+ * @returns {import('./types').Action.DraggableOptions} A new options instance.
  */
 draggable.options = (options) => new DraggableOptions(options);
 
@@ -595,7 +595,7 @@ class AnimationControl
    static get voidControl() { return this.#voidControl; }
 
    /**
-    * @param {object | null}  [animationData] - Animation data from {@link IAnimationAPI}.
+    * @param {object | null}  [animationData] - Animation data from {@link AnimationAPI}.
     *
     * @param {boolean}        [willFinish] - Promise that tracks animation finished state.
     */
@@ -880,7 +880,7 @@ AnimationManager.animate();
 /**
  * Stores the TJSPositionData properties that can be animated.
  *
- * @type {Set<import('./animation/types').IAnimationAPI.AnimationKeys>}
+ * @type {Set<import('./animation/types').AnimationAPI.AnimationKeys>}
  */
 const animateKeys = new Set([
    // Main keys
@@ -1081,7 +1081,7 @@ class TJSPositionData
     *
     * @param {number | null} [opts.top] -
     *
-    * @param {import('../transform/types').ITransformAPI.TransformOrigin | null} [opts.transformOrigin] -
+    * @param {import('../transform/types').TransformAPI.TransformOrigin | null} [opts.transformOrigin] -
     *
     * @param {number | 'auto' | 'inherit' | null} [opts.width] -
     *
@@ -1124,7 +1124,7 @@ class TJSPositionData
       /** @type {number | null} */
       this.top = top;
 
-      /** @type {import('../transform/types').ITransformAPI.TransformOrigin | null} */
+      /** @type {import('../transform/types').TransformAPI.TransformOrigin | null} */
       this.transformOrigin = transformOrigin;
 
       /** @type {number | null} */
@@ -1141,8 +1141,6 @@ class TJSPositionData
 
       /** @type {number | null} */
       this.zIndex = zIndex;
-
-      Object.seal(this);
    }
 }
 
@@ -1342,7 +1340,7 @@ class StyleCache
 }
 
 /**
- * @implements {import('./types').IAnimationAPI}
+ * @implements {import('./types').AnimationAPI}
  */
 class AnimationAPI
 {
@@ -1516,7 +1514,7 @@ class AnimationAPI
     *
     * @param {import('../').TJSPositionDataExtended} fromData - The starting position.
     *
-    * @param {import('./types').IAnimationAPI.TweenOptions} [options] - Optional tween parameters.
+    * @param {import('./types').AnimationAPI.TweenOptions} [options] - Optional tween parameters.
     *
     * @returns {import('#runtime/util/animate').IBasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
@@ -1588,7 +1586,7 @@ class AnimationAPI
     *
     * @param {import('../').TJSPositionDataExtended} toData - The ending position.
     *
-    * @param {import('./types').IAnimationAPI.TweenOptions} [options] - Optional tween parameters.
+    * @param {import('./types').AnimationAPI.TweenOptions} [options] - Optional tween parameters.
     *
     * @returns {import('#runtime/util/animate').IBasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
@@ -1670,7 +1668,7 @@ class AnimationAPI
     *
     * @param {import('../').TJSPositionDataExtended} toData - The destination position.
     *
-    * @param {import('./types').IAnimationAPI.TweenOptions} [options] - Optional tween parameters.
+    * @param {import('./types').AnimationAPI.TweenOptions} [options] - Optional tween parameters.
     *
     * @returns {import('#runtime/util/animate').IBasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
@@ -1737,11 +1735,11 @@ class AnimationAPI
    /**
     * Returns a function that provides an optimized way to constantly update a to-tween.
     *
-    * @param {Iterable<import('./types').IAnimationAPI.AnimationKeys>}  keys - The keys for quickTo.
+    * @param {Iterable<import('./types').AnimationAPI.AnimationKeys>}  keys - The keys for quickTo.
     *
-    * @param {import('./types').IAnimationAPI.QuickTweenOptions} [options] - Optional quick tween parameters.
+    * @param {import('./types').AnimationAPI.QuickTweenOptions} [options] - Optional quick tween parameters.
     *
-    * @returns {import('./types').IAnimationAPI.QuickToCallback} quick-to tween function.
+    * @returns {import('./types').AnimationAPI.QuickToCallback} quick-to tween function.
     */
    quickTo(keys, { duration = 1, ease = cubicOut, interpolate = lerp } = {})
    {
@@ -1824,7 +1822,7 @@ class AnimationAPI
          start: void 0
       };
 
-      const quickToCB = /** @type {import('./types').IAnimationAPI.QuickToCallback} */ (...args) =>
+      const quickToCB = /** @type {import('./types').AnimationAPI.QuickToCallback} */ (...args) =>
       {
          const argsLength = args.length;
 
@@ -2056,7 +2054,7 @@ class AnimationGroupControl
  *
  * @see AnimationAPI
  *
- * @implements {import('./types').IAnimationGroupAPI}
+ * @implements {import('./types').AnimationGroupAPI}
  */
 class AnimationGroupAPI
 {
@@ -2181,8 +2179,8 @@ class AnimationGroupAPI
     * @param {object | Function}   fromData -
     *
     * @param {(
-    *    import('./types').IAnimationAPI.TweenOptions |
-    *    (() => import('./types').IAnimationAPI.TweenOptions)
+    *    import('./types').AnimationAPI.TweenOptions |
+    *    (() => import('./types').AnimationAPI.TweenOptions)
     * )}   [options] -
     *
     * @returns {import('#runtime/util/animate').IBasicAnimation} Basic animation control.
@@ -2634,14 +2632,14 @@ class AnimationGroupAPI
     *
     * @param {import('../types').TJSPositionTypes.PositionGroup} position - A position group.
     *
-    * @param {Iterable<import('./types').IAnimationAPI.AnimationKeys>}  keys -
+    * @param {Iterable<import('./types').AnimationAPI.AnimationKeys>}  keys -
     *
     * @param {(
-    *    import('./types').IAnimationAPI.QuickTweenOptions |
-    *    (() => import('./types').IAnimationAPI.QuickTweenOptions)
+    *    import('./types').AnimationAPI.QuickTweenOptions |
+    *    (() => import('./types').AnimationAPI.QuickTweenOptions)
     * )}   [options] - Quick tween options.
     *
-    * @returns {import('./types').IAnimationAPI.QuickToCallback} quick-to tween function.
+    * @returns {import('./types').AnimationAPI.QuickToCallback} quick-to tween function.
     */
    static quickTo(position, keys, options)
    {
@@ -2656,7 +2654,7 @@ class AnimationGroupAPI
       }
 
       /**
-       * @type {import('./types').IAnimationAPI.QuickToCallback[]}
+       * @type {import('./types').AnimationAPI.QuickToCallback[]}
        */
       const quickToCallbacks = [];
 
@@ -2847,7 +2845,7 @@ class AnimationGroupAPI
        *
        * @param {Function}          [options.interpolate] - Interpolation function.
        *
-       * @returns {import('./types').IAnimationAPI.QuickToCallback} The quickTo callback.
+       * @returns {import('./types').AnimationAPI.QuickToCallback} The quickTo callback.
        */
       quickToCB.options = (options) => // eslint-disable-line no-shadow
       {
@@ -2936,7 +2934,7 @@ class AnimationGroupAPI
 }
 
 /**
- * @implements {import('./types').IPositionStateAPI}
+ * @implements {import('./types').PositionStateAPI}
  */
 class PositionStateAPI
 {
@@ -3054,7 +3052,7 @@ class PositionStateAPI
    /**
     * Restores a saved positional state returning the data. Several optional parameters are available
     * to control whether the restore action occurs silently (no store / inline styles updates), animates
--   * to the stored data, or simply sets the stored data. Restoring via {@link IAnimationAPI.to}
+-   * to the stored data, or simply sets the stored data. Restoring via {@link AnimationAPI.to}
     * allows specification of the duration, easing, and interpolate functions along with configuring a Promise to be
     * returned if awaiting the end of the animation.
     *
@@ -3173,9 +3171,9 @@ class PositionStateAPI
 }
 
 /**
- * Provides a base {@link System.ISystemBase} implementation.
+ * Provides a base {@link System.SystemBase} implementation.
  *
- * @implements {import('./types').System.ISystemBase}
+ * @implements {import('./types').System.SystemBase}
  */
 class SystemBase
 {
@@ -3382,9 +3380,9 @@ class SystemBase
 }
 
 /**
- * Provides a {@link System.Initial.IInitialSystem} implementation to center an element being positioned.
+ * Provides a {@link System.Initial.InitialSystem} implementation to center an element being positioned.
  *
- * @implements {import('../types').System.Initial.IInitialSystem}
+ * @implements {import('../types').System.Initial.InitialSystem}
  */
 class Centered extends SystemBase
 {
@@ -3443,7 +3441,7 @@ class Centered extends SystemBase
  * position.validators.removeById(...);
  * ```
  *
- * @implements {import('./types').IValidatorAPI}
+ * @implements {import('./types').ValidatorAPI}
  */
 class AdapterValidators
 {
@@ -3451,17 +3449,17 @@ class AdapterValidators
    #enabled = true;
 
    /**
-    * @type {import('./types').IValidatorAPI.ValidatorData[]}
+    * @type {import('./types').ValidatorAPI.ValidatorData[]}
     */
    #validatorData;
 
    /**
-    * @type {Map<import('./types').IValidatorAPI.ValidationFn, import('svelte/store').Unsubscriber>}
+    * @type {Map<import('./types').ValidatorAPI.ValidationFn, import('svelte/store').Unsubscriber>}
     */
    #mapUnsubscribe = new Map();
 
    /**
-    * @returns {[AdapterValidators, import('./types').IValidatorAPI.ValidatorData[]]} Returns this and internal storage
+    * @returns {[AdapterValidators, import('./types').ValidatorAPI.ValidatorData[]]} Returns this and internal storage
     * for validator adapter.
     */
    static create()
@@ -3503,8 +3501,8 @@ class AdapterValidators
    /**
     * Provides an iterator for validators.
     *
-    * @yields {import('./types').IValidatorAPI.ValidatorData}
-    * @returns {IterableIterator<import('./types').IValidatorAPI.ValidatorData>} iterator.
+    * @yields {import('./types').ValidatorAPI.ValidatorData}
+    * @returns {IterableIterator<import('./types').ValidatorAPI.ValidatorData>} iterator.
     */
    *[Symbol.iterator]()
    {
@@ -3520,8 +3518,8 @@ class AdapterValidators
     * Adds the given validators.
     *
     * @param {...(
-    *    import('./types').IValidatorAPI.ValidatorFn |
-    *    import('./types').IValidatorAPI.ValidatorData
+    *    import('./types').ValidatorAPI.ValidatorFn |
+    *    import('./types').ValidatorAPI.ValidatorData
     * )}   validators - Validators to add.
     */
    add(...validators)
@@ -3542,7 +3540,7 @@ class AdapterValidators
             throw new TypeError(`AdapterValidator error: 'validator' is not a function or object.`);
          }
 
-         /** @type {import('./types').IValidatorAPI.ValidatorData} */
+         /** @type {import('./types').ValidatorAPI.ValidatorData} */
          let data = void 0;
 
          /** @type {(...args: any[]) => import('svelte/store').Unsubscriber} */
@@ -3653,8 +3651,8 @@ class AdapterValidators
     * Removes one or more given validators.
     *
     * @param {...(
-    *    import('./types').IValidatorAPI.ValidatorFn |
-    *    import('./types').IValidatorAPI.ValidatorData
+    *    import('./types').ValidatorAPI.ValidatorFn |
+    *    import('./types').ValidatorAPI.ValidatorData
     * )}   validators - Validators to remove.
     */
    remove(...validators)
@@ -3696,7 +3694,7 @@ class AdapterValidators
     * Remove validators by the provided callback. The callback takes 3 parameters: `id`, `validator`, and `weight`.
     * Any truthy value returned will remove that validator.
     *
-    * @param {import('./types').IValidatorAPI.RemoveByCallback} callback - Callback function to evaluate each validator
+    * @param {import('./types').ValidatorAPI.RemoveByCallback} callback - Callback function to evaluate each validator
     *        entry.
     */
    removeBy(callback)
@@ -3774,7 +3772,7 @@ class BasicBounds extends SystemBase
     * Provides a validator that respects transforms in positional data constraining the position to within the target
     * elements bounds.
     *
-    * @param {import('./types').IValidatorAPI.ValidationData}   valData - The associated validation data for position
+    * @param {import('./types').ValidatorAPI.ValidationData}   valData - The associated validation data for position
     *        updates.
     *
     * @returns {import('../../data/types').Data.TJSPositionData} Potentially adjusted position data.
@@ -3821,9 +3819,9 @@ class BasicBounds extends SystemBase
 }
 
 /**
- * Provides the output data for {@link ITransformAPI.getData}.
+ * Provides the output data for {@link TransformAPI.getData}.
  *
- * @implements {import('./types').ITransformAPI.ITransformData}
+ * @implements {import('./types').TransformAPI.TransformData}
  */
 class TJSTransformData
 {
@@ -3895,7 +3893,7 @@ class TransformBounds extends SystemBase
     * Provides a validator that respects transforms in positional data constraining the position to within the target
     * elements bounds.
     *
-    * @param {import('./types').IValidatorAPI.ValidationData}   valData - The associated validation data for position
+    * @param {import('./types').ValidatorAPI.ValidationData}   valData - The associated validation data for position
     *        updates.
     *
     * @returns {import('../../data/types').Data.TJSPositionData} Potentially adjusted position data.
@@ -3979,7 +3977,7 @@ const s_MAT4_TEMP = Mat4.create();
 const s_VEC3_TEMP = Vec3.create();
 
 /**
- * @implements {import('./types').ITransformAPI}
+ * @implements {import('./types').TransformAPI}
  */
 class TJSTransforms
 {
@@ -4244,11 +4242,11 @@ class TJSTransforms
     *
     * @param {import('../data/types').Data.TJSPositionData} position - The position data to process.
     *
-    * @param {import('./types').ITransformAPI.ITransformData} [output] - Optional TJSTransformData output instance.
+    * @param {import('./types').TransformAPI.TransformData} [output] - Optional TJSTransformData output instance.
     *
     * @param {object} [validationData] - Optional validation data for adjustment parameters.
     *
-    * @returns {import('./types').ITransformAPI.ITransformData} The output TJSTransformData instance.
+    * @returns {import('./types').TransformAPI.TransformData} The output TJSTransformData instance.
     */
    getData(position, output = new TJSTransformData(), validationData = {})
    {
@@ -4795,12 +4793,12 @@ class UpdateElementData
        *
        * @type {TJSPositionData}
        */
-      this.dataSubscribers = new TJSPositionData();
+      this.dataSubscribers = Object.seal(new TJSPositionData());
 
       /**
        * Stores the current dimension data used for the readable `dimension` store.
        *
-       * @type {{width: number | 'auto', height: number | 'auto'}}
+       * @type {{width: number | 'auto' | 'inherit', height: number | 'auto' | 'inherit'}}
        */
       this.dimensionData = { width: 0, height: 0 };
 
@@ -4852,7 +4850,7 @@ class UpdateElementData
       // When there are subscribers set option to calculate transform updates; set to false when no subscribers.
 
       /**
-       * @type {import('svelte/store').Writable<import('../transform/types').ITransformAPI.ITransformData>}
+       * @type {import('svelte/store').Writable<import('../transform/types').TransformAPI.TransformData>}
        */
       this.storeTransform = writable(this.transformData, () =>
       {
@@ -5197,12 +5195,12 @@ class TJSPosition
    /**
     * @type {TJSPositionData}
     */
-   #data = new TJSPositionData();
+   #data = Object.seal(new TJSPositionData());
 
    /**
     * Provides the animation API.
     *
-    * @type {import('./animation/types').IAnimationAPI}
+    * @type {import('./animation/types').AnimationAPI}
     */
    #animate = new AnimationAPI(this, this.#data);
 
@@ -5281,7 +5279,7 @@ class TJSPosition
    #validators;
 
    /**
-    * @type {import('./system/validators/types').IValidatorAPI.ValidatorData[]}
+    * @type {import('./system/validators/types').ValidatorAPI.ValidatorData[]}
     */
    #validatorData;
 
@@ -5291,7 +5289,7 @@ class TJSPosition
    #state = new PositionStateAPI(this, this.#data, this.#transforms);
 
    /**
-    * @returns {import('./animation/types').IAnimationGroupAPI} Public Animation API.
+    * @returns {import('./animation/types').AnimationGroupAPI} Public Animation API.
     */
    static get Animate() { return AnimationGroupAPI; }
 
@@ -5306,14 +5304,14 @@ class TJSPosition
    static get Initial() { return this.#positionInitial; }
 
    /**
-    * @returns {import('./system/types').System.ISystemBaseConstructor} `SystemBase` constructor.
+    * @returns {import('./system/types').System.SystemBaseConstructor} `SystemBase` constructor.
     */
    static get SystemBase() { return SystemBase; }
 
    /**
     * Returns TJSTransformData class / constructor.
     *
-    * @returns {import('./transform/types').ITransformAPI.ITransformDataConstructor} ITransformData class /
+    * @returns {import('./transform/types').TransformAPI.TransformDataConstructor} TransformData class /
     *          constructor.
     */
    static get TransformData() { return TJSTransformData; }
@@ -5587,8 +5585,8 @@ class TJSPosition
          {
             /**
              * @type {(
-             *    import('./system/validators/types').IValidatorAPI.ValidatorFn |
-             *    import('./system/validators/types').IValidatorAPI.ValidatorData
+             *    import('./system/validators/types').ValidatorAPI.ValidatorFn |
+             *    import('./system/validators/types').ValidatorAPI.ValidatorData
              * )}
              */
             const validatorFn = options.validator;
@@ -5600,7 +5598,7 @@ class TJSPosition
    /**
     * Returns the animation API.
     *
-    * @returns {import('./animation/types').IAnimationAPI} Animation API.
+    * @returns {import('./animation/types').AnimationAPI} Animation API.
     */
    get animate()
    {
@@ -5657,7 +5655,7 @@ class TJSPosition
    /**
     * Returns the state API.
     *
-    * @returns {import('./state/types').IPositionStateAPI} TJSPosition state API.
+    * @returns {import('./state/types').PositionStateAPI} TJSPosition state API.
     */
    get state() { return this.#state; }
 
@@ -5671,7 +5669,7 @@ class TJSPosition
    /**
     * Returns the transform data for the readable store.
     *
-    * @returns {import('./transform/types').ITransformAPI.ITransformData} Transform Data.
+    * @returns {import('./transform/types').TransformAPI.TransformData} Transform Data.
     */
    get transform()
    {
@@ -5681,7 +5679,7 @@ class TJSPosition
    /**
     * Returns the validators.
     *
-    * @returns {import('./system/validators/types').IValidatorAPI} validators.
+    * @returns {import('./system/validators/types').ValidatorAPI} validators.
     */
    get validators() { return this.#validators; }
 
@@ -5785,7 +5783,7 @@ class TJSPosition
    get top() { return this.#data.top; }
 
    /**
-    * @returns {import('./transform/types').ITransformAPI.TransformOrigin | null} transformOrigin
+    * @returns {import('./transform/types').TransformAPI.TransformOrigin | null} transformOrigin
     */
    get transformOrigin() { return this.#data.transformOrigin; }
 
@@ -5911,7 +5909,7 @@ class TJSPosition
    }
 
    /**
-    * @param {import('./transform/types').ITransformAPI.TransformOrigin} transformOrigin -
+    * @param {import('./transform/types').TransformAPI.TransformOrigin} transformOrigin -
     */
    set transformOrigin(transformOrigin)
    {
@@ -6532,10 +6530,10 @@ class TJSPosition
    }
 }
 
-const s_DATA_UPDATE = new TJSPositionData();
+const s_DATA_UPDATE = Object.seal(new TJSPositionData());
 
 /**
- * @type {import('./system/validators/types').IValidatorAPI.ValidationData}
+ * @type {import('./system/validators/types').ValidatorAPI.ValidationData}
  */
 const s_VALIDATION_DATA = {
    position: void 0,
