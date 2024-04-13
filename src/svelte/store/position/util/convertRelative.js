@@ -3,10 +3,9 @@ import * as constants from '../constants.js';
 /**
  * Converts any relative string values for animatable keys to actual updates performed against current data.
  *
- * @param {import('../').TJSPositionDataExtended}    positionData - position data.
+ * @param {Partial<import('../data/types').Data.TJSPositionDataRelative>}  positionData - position data.
  *
- * @param {import('../').TJSPosition | import('../data/types').Data.TJSPositionData}   position - The source position
- *        instance.
+ * @param {import('../').TJSPosition}   position - The source position instance.
  */
 export function convertRelative(positionData, position)
 {
@@ -27,7 +26,7 @@ export function convertRelative(positionData, position)
          if (!regexResults)
          {
             throw new Error(
-             `convertRelative error: malformed relative key (${key}) with value (${value})`);
+             `TJSPosition - convertRelative error: malformed relative key (${key}) with value (${value}).`);
          }
 
          const current = position[key];
@@ -47,5 +46,7 @@ export function convertRelative(positionData, position)
                break;
          }
       }
+
+      return positionData;
    }
 }
