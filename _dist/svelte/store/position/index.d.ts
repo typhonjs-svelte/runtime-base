@@ -1,7 +1,7 @@
 import { Mat4, Vec3 } from '@typhonjs-svelte/runtime-base/math/gl-matrix';
 import * as _runtime_svelte_action_dom from '@typhonjs-svelte/runtime-base/svelte/action/dom';
 import * as svelte_store from 'svelte/store';
-import { Subscriber, Invalidator, Unsubscriber, Readable, Writable } from 'svelte/store';
+import { Subscriber, Invalidator, Unsubscriber, Writable, Readable } from 'svelte/store';
 import * as svelte_action from 'svelte/action';
 import { EasingFunction } from 'svelte/transition';
 import { InterpolateFunction } from '@typhonjs-svelte/runtime-base/math/interpolate';
@@ -40,6 +40,15 @@ declare namespace Data {
   interface TJSPositionDataExtra extends TJSPositionData {
     [key: string]: any;
   }
+  /**
+   * Defines an extension to {@link Data.TJSPositionData} where each property can also be a string. This string should
+   * be in the form of '+=', '-=', or '*=' and float / numeric value. IE '+=0.2'. {@link TJSPosition.set} will
+   * apply the `addition`, `subtraction`, or `multiplication` operation specified against the current value of the
+   * given property.
+   */
+  type TJSPositionDataRelative = {
+    [P in keyof TJSPositionData]: TJSPositionData[P] | string;
+  };
   /**
    * Defines the constructor function for {@link TJSPositionData}.
    */
@@ -1345,39 +1354,31 @@ declare class TJSPosition implements TJSPositionTypes.ITJSPosition {
   toJSON(): Data.TJSPositionData;
   /**
    * All calculation and updates of position are implemented in {@link TJSPosition}. This allows position to be fully
-   * reactive and in control of updating inline styles for the application.
+   * reactive and in control of updating inline styles for a connected {@link HTMLElement}.
    *
-   * Note: the logic for updating position is improved and changes a few aspects from the default
-   * {@link globalThis.Application.setPosition}. The gate on `popOut` is removed, so to ensure no positional
-   * application occurs popOut applications can set `this.options.positionable` to false ensuring no positional inline
-   * styles are applied.
-   *
-   * The initial set call on an application with a target element will always set width / height as this is
-   * necessary for correct calculations.
+   * The initial set call with a target element will always set width / height as this is necessary for correct
+   * calculations.
    *
    * When a target element is present updated styles are applied after validation. To modify the behavior of set
-   * implement one or more validator functions and add them from the application via
-   * `this.position.validators.add(<Function>)`.
+   * implement one or more validator functions and add them via the validator API available from
+   * {@link TJSPosition.validators}.
    *
-   * Updates to any target element are decoupled from the underlying TJSPosition data. This method returns this instance
-   * that you can then await on the target element inline style update by using {@link TJSPosition.elementUpdated}.
+   * Updates to any target element are decoupled from the underlying TJSPosition data. This method returns this
+   * instance that you can then await on the target element inline style update by using
+   * {@link TJSPosition.elementUpdated}.
    *
-   * @param {import('./').TJSPositionDataExtended} [position] - TJSPosition data to set.
+   * Relative updates to any property of {@link TJSPositionData} are possible by specifying properties as strings.
+   * This string should be in the form of '+=', '-=', or '*=' and float / numeric value. IE '+=0.2'.
+   * {@link TJSPosition.set} will apply the `addition`, `subtraction`, or `multiplication` operation specified against
+   * the current value of the given property.
    *
-   * @param {object} [options] - Additional options.
+   * @param {Partial<import('./data/types').Data.TJSPositionDataRelative>} [position] - TJSPosition data to set.
    *
-   * @param {boolean} [options.immediateElementUpdate] Perform the update to position state immediately. Callers can
-   *        specify to immediately update the associated element. This is useful if set is called from
-   *        requestAnimationFrame / rAF. Library integrations like GSAP invoke set from rAF.
+   * @param {import('./types').TJSPositionTypes.OptionsSet} [options] - Additional options.
    *
    * @returns {TJSPosition} This TJSPosition instance.
    */
-  set(
-    position?: TJSPositionDataExtended,
-    options?: {
-      immediateElementUpdate?: boolean;
-    },
-  ): TJSPosition;
+  set(position?: Partial<Data.TJSPositionDataRelative>, options?: TJSPositionTypes.OptionsSet): TJSPosition;
   /**
    * @param {import('svelte/store').Subscriber<import('./data/types').Data.TJSPositionData>} handler - Callback
    *        function that is invoked on update / changes. Receives a copy of the TJSPositionData.
@@ -1385,6 +1386,14 @@ declare class TJSPosition implements TJSPositionTypes.ITJSPosition {
    * @returns {import('svelte/store').Unsubscriber} Unsubscribe function.
    */
   subscribe(handler: svelte_store.Subscriber<Data.TJSPositionData>): svelte_store.Unsubscriber;
+  /**
+   * Provides the {@link Writable} store `update` method. Receive and return a {@link TJSPositionData} instance to
+   * update the position state. You may manipulate numeric properties by providing relative adjustments described in
+   * {@link TJSPositionDataRelative}.
+   *
+   * @param {import('svelte/store').Updater<import('./data/types').Data.TJSPositionDataRelative>} updater -
+   */
+  update(updater: svelte_store.Updater<Data.TJSPositionDataRelative>): void;
   #private;
 }
 
@@ -1398,9 +1407,14 @@ declare namespace TJSPositionTypes {
   interface Positionable {
     position: TJSPosition;
   }
-  interface ITJSPosition extends Readable<Data.TJSPositionData> {}
   /**
-   * Options for {@link TJSPosition.get}
+   * Provides an overloaded {@link Writable} store interface for {@link TJSPosition.set}.
+   */
+  interface ITJSPosition extends Writable<Data.TJSPositionDataRelative> {
+    set(this: void, value: Data.TJSPositionDataRelative, options?: OptionsSet): TJSPosition;
+  }
+  /**
+   * Options for {@link TJSPosition.get}.
    */
   type OptionsGet = {
     /**
@@ -1412,9 +1426,20 @@ declare namespace TJSPositionTypes {
      */
     exclude?: Iterable<string>;
     /**
-     * When true any `null` values are converted into defaults.
+     * When true any `null` values are converted into default numeric values.
      */
     numeric?: boolean;
+  };
+  /**
+   * Options for {@link TJSPosition.set}.
+   */
+  type OptionsSet = {
+    /**
+     * Perform the update to position state immediately. Callers can specify to immediately update the associated
+     * element. This is useful if set is called from requestAnimationFrame / rAF. Library integrations like GSAP
+     * invoke set from rAF.
+     */
+    immediateElementUpdate: boolean;
   };
   /**
    * Defines one or more positions or positionable objects.

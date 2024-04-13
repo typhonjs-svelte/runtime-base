@@ -886,25 +886,25 @@ AnimationManager.animate();
 /**
  * Stores the TJSPositionData properties that can be animated.
  *
- * @type {Set<import('./animation/types').AnimationAPI.AnimationKeys>}
+ * @type {Set<string>}
  */
-const animateKeys = new Set([
+const animateKeys = Object.freeze(new Set([
    // Main keys
    'left', 'top', 'maxWidth', 'maxHeight', 'minWidth', 'minHeight', 'width', 'height',
    'rotateX', 'rotateY', 'rotateZ', 'scale', 'translateX', 'translateY', 'translateZ', 'zIndex',
 
    // Aliases
    'rotation'
-]);
+]));
 
 /**
  * Defines the keys of TJSPositionData that are transform keys.
  *
  * @type {string[]}
  */
-const transformKeys = ['rotateX', 'rotateY', 'rotateZ', 'scale', 'translateX', 'translateY', 'translateZ'];
-
-Object.freeze(transformKeys);
+const transformKeys = Object.freeze([
+ 'rotateX', 'rotateY', 'rotateZ', 'scale', 'translateX', 'translateY', 'translateZ'
+]);
 
 /**
  * Parses a relative value string in the form of '+=', '-=', or '*=' and float / numeric value. IE '+=0.2'.
@@ -919,7 +919,7 @@ const relativeRegex = /^([-+*])=(-?[\d]*\.?[\d]+)$/;
  *
  * @type {{rotation: number, scale: number, minWidth: null, minHeight: null, translateZ: number, top: number, left: number, maxHeight: null, translateY: number, translateX: number, width: number, transformOrigin: null, rotateX: number, rotateY: number, height: number, maxWidth: null, zIndex: null, rotateZ: number}}
  */
-const numericDefaults = {
+const numericDefaults = Object.freeze({
    // Other keys
    height: 0,
    left: 0,
@@ -941,9 +941,7 @@ const numericDefaults = {
    translateZ: 0,
 
    rotation: 0
-};
-
-Object.freeze(numericDefaults);
+});
 
 /**
  * Sets numeric defaults for a {@link TJSPositionData} like object.
@@ -970,7 +968,7 @@ function setNumericDefaults(data)
  *
  * @type {object}
  */
-const transformKeysBitwise = {
+const transformKeysBitwise = Object.freeze({
    rotateX: 1,
    rotateY: 2,
    rotateZ: 4,
@@ -978,9 +976,7 @@ const transformKeysBitwise = {
    translateX: 16,
    translateY: 32,
    translateZ: 64
-};
-
-Object.freeze(transformKeysBitwise);
+});
 
 /**
  * Defines the default transform origin.
@@ -994,18 +990,15 @@ const transformOriginDefault = 'top left';
  *
  * @type {string[]}
  */
-const transformOrigins = ['top left', 'top center', 'top right', 'center left', 'center', 'center right', 'bottom left',
- 'bottom center', 'bottom right'];
-
-Object.freeze(transformOrigins);
+const transformOrigins = Object.freeze(['top left', 'top center', 'top right', 'center left', 'center', 'center right',
+ 'bottom left', 'bottom center', 'bottom right']);
 
 /**
  * Converts any relative string values for animatable keys to actual updates performed against current data.
  *
- * @param {import('../').TJSPositionDataExtended}    positionData - position data.
+ * @param {Partial<import('../data/types').Data.TJSPositionDataRelative>}  positionData - position data.
  *
- * @param {import('../').TJSPosition | import('../data/types').Data.TJSPositionData}   position - The source position
- *        instance.
+ * @param {import('../').TJSPosition}   position - The source position instance.
  */
 function convertRelative(positionData, position)
 {
@@ -1026,7 +1019,7 @@ function convertRelative(positionData, position)
          if (!regexResults)
          {
             throw new Error(
-             `convertRelative error: malformed relative key (${key}) with value (${value})`);
+             `TJSPosition - convertRelative error: malformed relative key (${key}) with value (${value}).`);
          }
 
          const current = position[key];
@@ -1046,6 +1039,8 @@ function convertRelative(positionData, position)
                break;
          }
       }
+
+      return positionData;
    }
 }
 
@@ -6025,30 +6020,27 @@ class TJSPosition
 
    /**
     * All calculation and updates of position are implemented in {@link TJSPosition}. This allows position to be fully
-    * reactive and in control of updating inline styles for the application.
+    * reactive and in control of updating inline styles for a connected {@link HTMLElement}.
     *
-    * Note: the logic for updating position is improved and changes a few aspects from the default
-    * {@link globalThis.Application.setPosition}. The gate on `popOut` is removed, so to ensure no positional
-    * application occurs popOut applications can set `this.options.positionable` to false ensuring no positional inline
-    * styles are applied.
-    *
-    * The initial set call on an application with a target element will always set width / height as this is
-    * necessary for correct calculations.
+    * The initial set call with a target element will always set width / height as this is necessary for correct
+    * calculations.
     *
     * When a target element is present updated styles are applied after validation. To modify the behavior of set
-    * implement one or more validator functions and add them from the application via
-    * `this.position.validators.add(<Function>)`.
+    * implement one or more validator functions and add them via the validator API available from
+    * {@link TJSPosition.validators}.
     *
-    * Updates to any target element are decoupled from the underlying TJSPosition data. This method returns this instance
-    * that you can then await on the target element inline style update by using {@link TJSPosition.elementUpdated}.
+    * Updates to any target element are decoupled from the underlying TJSPosition data. This method returns this
+    * instance that you can then await on the target element inline style update by using
+    * {@link TJSPosition.elementUpdated}.
     *
-    * @param {import('./').TJSPositionDataExtended} [position] - TJSPosition data to set.
+    * Relative updates to any property of {@link TJSPositionData} are possible by specifying properties as strings.
+    * This string should be in the form of '+=', '-=', or '*=' and float / numeric value. IE '+=0.2'.
+    * {@link TJSPosition.set} will apply the `addition`, `subtraction`, or `multiplication` operation specified against
+    * the current value of the given property.
     *
-    * @param {object} [options] - Additional options.
+    * @param {Partial<import('./data/types').Data.TJSPositionDataRelative>} [position] - TJSPosition data to set.
     *
-    * @param {boolean} [options.immediateElementUpdate] Perform the update to position state immediately. Callers can
-    *        specify to immediately update the associated element. This is useful if set is called from
-    *        requestAnimationFrame / rAF. Library integrations like GSAP invoke set from rAF.
+    * @param {import('./types').TJSPositionTypes.OptionsSet} [options] - Additional options.
     *
     * @returns {TJSPosition} This TJSPosition instance.
     */
@@ -6294,6 +6286,22 @@ class TJSPosition
          const index = this.#subscriptions.findIndex((sub) => sub === handler);
          if (index >= 0) { this.#subscriptions.splice(index, 1); }
       };
+   }
+
+   /**
+    * Provides the {@link Writable} store `update` method. Receive and return a {@link TJSPositionData} instance to
+    * update the position state. You may manipulate numeric properties by providing relative adjustments described in
+    * {@link TJSPositionDataRelative}.
+    *
+    * @param {import('svelte/store').Updater<import('./data/types').Data.TJSPositionDataRelative>} updater -
+   */
+   update(updater)
+   {
+      const result = updater(this.get());
+
+      if (!isObject(result)) { throw new TypeError(`'result' of 'updater' is not an object.`); }
+
+      this.set(result);
    }
 
    /**
