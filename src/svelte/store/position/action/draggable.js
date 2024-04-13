@@ -13,29 +13,10 @@ import {
  *
  * @param {HTMLElement}       node - The node associated with the action.
  *
- * @param {object}            params - Required parameters.
+ * @param {import('./types').Action.DraggableOptions} options - Draggable action options.
  *
- * @param {import('..').TJSPosition}   params.position - A position instance.
- *
- * @param {boolean}           [params.active=true] - A boolean value; attached to a readable store.
- *
- * @param {number}            [params.button=0] - MouseEvent button;
- *        {@link https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button}.
- *
- * @param {import('svelte/store').Writable<boolean>} [params.storeDragging] - A writable store that tracks "dragging"
- *        state.
- *
- * @param {boolean}           [params.tween=false] - When true tweening is enabled.
- *
- * @param {import('../animation/types').AnimationAPI.QuickTweenOptions} [params.tweenOptions] - Quick tween options.
- *
- * @param {Iterable<string>}  [params.hasTargetClassList] - When defined any event targets that have a class in this
- *        list are allowed.
- *
- * @param {Iterable<string>}  [params.ignoreTargetClassList] - When defined any event targets that have a class in this
- *        list are ignored.
- *
- * @returns {import('svelte/action').ActionReturn<Record<string, any>>} Lifecycle functions.
+ * @returns {import('svelte/action').ActionReturn<import('./types').Action.DraggableOptions>} Action lifecycle
+ *          functions.
  */
 function draggable(node, { position, active = true, button = 0, storeDragging = void 0, tween = false,
  tweenOptions = { duration: 1, ease: cubicOut }, hasTargetClassList, ignoreTargetClassList })
@@ -56,6 +37,13 @@ function draggable(node, { position, active = true, button = 0, storeDragging = 
     * @type {{top: number, left: number}}
     */
    const positionData = { left: 0, top: 0 };
+
+   /**
+    * Find actual position instance checking for a Positionable instance.
+    *
+    * @type {import('..').TJSPosition}
+    */
+   let actualPosition = position?.position ?? position;
 
    /**
     * Duplicate the app / Positionable starting position to track differences.
@@ -84,7 +72,7 @@ function draggable(node, { position, active = true, button = 0, storeDragging = 
     *
     * @type {import('../animation/types').AnimationAPI.QuickToCallback}
     */
-   let quickTo = position.animate.quickTo(['top', 'left'], tweenOptions);
+   let quickTo = actualPosition.animate.quickTo(['top', 'left'], tweenOptions);
 
    /**
     * Remember event handlers associated with this action, so they may be later unregistered.
@@ -136,7 +124,7 @@ function draggable(node, { position, active = true, button = 0, storeDragging = 
       if (event.button !== button || !event.isPrimary) { return; }
 
       // Do not process if the position system is not enabled.
-      if (!position.enabled) { return; }
+      if (!actualPosition.enabled) { return; }
 
       // Potentially ignore this event if `ignoreTargetClassList` is defined and the `event.target` has a matching
       // class.
@@ -171,7 +159,7 @@ function draggable(node, { position, active = true, button = 0, storeDragging = 
       dragging = false;
 
       // Record initial position.
-      initialPosition = position.get();
+      initialPosition = actualPosition.get();
       initialDragPoint = { x: event.clientX, y: event.clientY };
 
       // Add move and pointer up handlers.
@@ -222,7 +210,7 @@ function draggable(node, { position, active = true, button = 0, storeDragging = 
          positionData.left = newLeft;
          positionData.top = newTop;
 
-         position.set(positionData);
+         actualPosition.set(positionData);
       }
    }
 
@@ -258,10 +246,15 @@ function draggable(node, { position, active = true, button = 0, storeDragging = 
             button = options.button;
          }
 
-         if (options.position !== void 0 && options.position !== position)
+         if (options.position !== void 0)
          {
-            position = options.position;
-            quickTo = position.animate.quickTo(['top', 'left'], tweenOptions);
+            // Find actual position instance checking for a Positionable instance.
+            const newPosition = options.position?.position ?? options.position;
+            if (newPosition !== actualPosition)
+            {
+               actualPosition = newPosition;
+               quickTo = actualPosition.animate.quickTo(['top', 'left'], tweenOptions);
+            }
          }
 
          if (typeof options.tween === 'boolean') { tween = options.tween; }
@@ -306,9 +299,9 @@ function draggable(node, { position, active = true, button = 0, storeDragging = 
  * draggable options much easier. When subscribing to the options instance returned by {@link draggable.options} the
  * Subscriber handler receives the entire instance.
  *
- * @implements {import('./types').Action.DraggableOptions}
+ * @implements {import('./types').Action.DraggableOptionsStore}
  */
-class DraggableOptions
+class DraggableOptionsStore
 {
    /** @type {boolean} */
    #initialTween;
@@ -329,7 +322,7 @@ class DraggableOptions
    /**
     * Stores the subscribers.
     *
-    * @type {import('svelte/store').Subscriber<import('./types').Action.DraggableOptions>[]}
+    * @type {import('svelte/store').Subscriber<import('./types').Action.DraggableOptionsStore>[]}
     */
    #subscriptions = [];
 
@@ -476,8 +469,8 @@ class DraggableOptions
    /**
     * Store subscribe method.
     *
-    * @param {import('svelte/store').Subscriber<import('./types').Action.DraggableOptions>} handler - Callback function that
-    *        is invoked on update / changes. Receives the DraggableOptions object / instance.
+    * @param {import('svelte/store').Subscriber<import('./types').Action.DraggableOptionsStore>} handler - Callback function that
+    *        is invoked on update / changes. Receives the DraggableOptionsStore object / instance.
     *
     * @returns {import('svelte/store').Unsubscriber} Unsubscribe function.
     */
@@ -508,15 +501,15 @@ class DraggableOptions
 }
 
 /**
- * Define a function to get an DraggableOptions instance.
+ * Define a function to get an DraggableOptionsStore instance.
  *
  * @param {({
  *    tween?: boolean,
  *    tweenOptions?: import('../animation/types').AnimationAPI.QuickTweenOptions
- * })} options - Initial options for DraggableOptions.
+ * })} options - Initial options for DraggableOptionsStore.
  *
- * @returns {import('./types').Action.DraggableOptions} A new options instance.
+ * @returns {import('./types').Action.DraggableOptionsStore} A new options instance.
  */
-draggable.options = (options) => new DraggableOptions(options);
+draggable.options = (options) => new DraggableOptionsStore(options);
 
 export { draggable };
