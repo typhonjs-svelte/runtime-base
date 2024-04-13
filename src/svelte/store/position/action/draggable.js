@@ -15,7 +15,7 @@ import {
  *
  * @param {import('./types').Action.DraggableOptions} options - Draggable action options.
  *
- * @returns {import('svelte/action').ActionReturn<import('./types').Action.DraggableOptions>} Action lifecycle
+ * @returns {import('svelte/action').ActionReturn<Partial<import('./types').Action.DraggableOptions>>} Action lifecycle
  *          functions.
  */
 function draggable(node, { position, enabled = true, button = 0, storeDragging = void 0, tween = false,
