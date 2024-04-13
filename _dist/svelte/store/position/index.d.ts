@@ -1,7 +1,7 @@
 import { Mat4, Vec3 } from '@typhonjs-svelte/runtime-base/math/gl-matrix';
 import * as _runtime_svelte_action_dom from '@typhonjs-svelte/runtime-base/svelte/action/dom';
 import * as svelte_store from 'svelte/store';
-import { Subscriber, Invalidator, Unsubscriber, Readable } from 'svelte/store';
+import { Subscriber, Invalidator, Unsubscriber, Readable, Writable } from 'svelte/store';
 import * as svelte_action from 'svelte/action';
 import { EasingFunction } from 'svelte/transition';
 import { InterpolateFunction } from '@typhonjs-svelte/runtime-base/math/interpolate';
@@ -1472,11 +1472,50 @@ declare namespace AnimationAPI {
 
 declare namespace Action {
   /**
+   * Defines the options for the {@link draggable} action.
+   */
+  type DraggableOptions = {
+    /**
+     * A position or positionable instance.
+     */
+    position: TJSPosition | TJSPositionTypes.Positionable;
+    /**
+     * MouseEvent button that activates dragging; default: 0
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button
+     */
+    button?: number;
+    /**
+     * A boolean value; controlling the `enabled` state.
+     */
+    enabled: boolean;
+    /**
+     *  When defined any event targets that have a class in this list are allowed.
+     */
+    hasTargetClassList?: Iterable<string>;
+    /**
+     * When defined any event targets that have a class in this list are ignored.
+     */
+    ignoreTargetClassList?: Iterable<string>;
+    /**
+     *  A writable store that tracks "dragging" state.
+     */
+    storeDragging?: Writable<boolean>;
+    /**
+     * When true tweening is enabled; default: false
+     */
+    tween?: boolean;
+    /**
+     * Quick tween options.
+     */
+    tweenOptions?: AnimationAPI.QuickTweenOptions;
+  };
+  /**
    * Provides an interface of the {@link draggable} action options support / Readable store to make updating / setting
    * draggable options much easier. When subscribing to the options instance returned by {@link draggable.options} the
    * Subscriber handler receives the entire instance.
    */
-  interface DraggableOptions extends Readable<DraggableOptions> {
+  interface DraggableOptionsStore extends Readable<DraggableOptionsStore> {
     /**
      * Tweening enabled state.
      */
@@ -1523,67 +1562,39 @@ declare namespace Action {
  *
  * @param {HTMLElement}       node - The node associated with the action.
  *
- * @param {object}            params - Required parameters.
+ * @param {import('./types').Action.DraggableOptions} options - Draggable action options.
  *
- * @param {import('..').TJSPosition}   params.position - A position instance.
- *
- * @param {boolean}           [params.active=true] - A boolean value; attached to a readable store.
- *
- * @param {number}            [params.button=0] - MouseEvent button;
- *        {@link https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button}.
- *
- * @param {import('svelte/store').Writable<boolean>} [params.storeDragging] - A writable store that tracks "dragging"
- *        state.
- *
- * @param {boolean}           [params.tween=false] - When true tweening is enabled.
- *
- * @param {import('../animation/types').AnimationAPI.QuickTweenOptions} [params.tweenOptions] - Quick tween options.
- *
- * @param {Iterable<string>}  [params.hasTargetClassList] - When defined any event targets that have a class in this
- *        list are allowed.
- *
- * @param {Iterable<string>}  [params.ignoreTargetClassList] - When defined any event targets that have a class in this
- *        list are ignored.
- *
- * @returns {import('svelte/action').ActionReturn<Record<string, any>>} Lifecycle functions.
+ * @returns {import('svelte/action').ActionReturn<import('./types').Action.DraggableOptions>} Action lifecycle
+ *          functions.
  */
 declare function draggable(
   node: HTMLElement,
   {
     position,
-    active,
+    enabled,
     button,
     storeDragging,
     tween,
     tweenOptions,
     hasTargetClassList,
     ignoreTargetClassList,
-  }: {
-    position: TJSPosition;
-    active?: boolean;
-    button?: number;
-    storeDragging?: svelte_store.Writable<boolean>;
-    tween?: boolean;
-    tweenOptions?: AnimationAPI.QuickTweenOptions;
-    hasTargetClassList?: Iterable<string>;
-    ignoreTargetClassList?: Iterable<string>;
-  },
-): svelte_action.ActionReturn<Record<string, any>>;
+  }: Action.DraggableOptions,
+): svelte_action.ActionReturn<Action.DraggableOptions>;
 declare namespace draggable {
   /**
-   * Define a function to get an DraggableOptions instance.
+   * Define a function to get an DraggableOptionsStore instance.
    *
    * @param {({
    *    tween?: boolean,
    *    tweenOptions?: import('../animation/types').AnimationAPI.QuickTweenOptions
-   * })} options - Initial options for DraggableOptions.
+   * })} options - Initial options for DraggableOptionsStore.
    *
-   * @returns {import('./types').Action.DraggableOptions} A new options instance.
+   * @returns {import('./types').Action.DraggableOptionsStore} A new options instance.
    */
   function options(options: {
     tween?: boolean;
     tweenOptions?: AnimationAPI.QuickTweenOptions;
-  }): Action.DraggableOptions;
+  }): Action.DraggableOptionsStore;
 }
 
 /**
