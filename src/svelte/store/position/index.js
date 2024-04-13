@@ -1,7 +1,5 @@
 export *                   from './action';
 export *                   from './TJSPosition.js';
-// import { TJSPosition }     from './TJSPosition.js';
-// export { TJSPosition }
 
 // From: position/TJSPosition.js ----------------------------------------------------------------------------------------
 
