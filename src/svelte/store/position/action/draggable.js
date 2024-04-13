@@ -18,7 +18,7 @@ import {
  * @returns {import('svelte/action').ActionReturn<import('./types').Action.DraggableOptions>} Action lifecycle
  *          functions.
  */
-function draggable(node, { position, active = true, button = 0, storeDragging = void 0, tween = false,
+function draggable(node, { position, enabled = true, button = 0, storeDragging = void 0, tween = false,
  tweenOptions = { duration: 1, ease: cubicOut }, hasTargetClassList, ignoreTargetClassList })
 {
    if (hasTargetClassList !== void 0 && !isIterable(hasTargetClassList))
@@ -109,7 +109,7 @@ function draggable(node, { position, active = true, button = 0, storeDragging = 
       node.classList.remove('draggable');
    }
 
-   if (active)
+   if (enabled)
    {
       activateListeners();
    }
@@ -231,21 +231,9 @@ function draggable(node, { position, active = true, button = 0, storeDragging = 
    }
 
    return {
-      // The default of active being true won't automatically add listeners twice.
+      // The default of enabled being true won't automatically add listeners twice.
       update: (options) =>
       {
-         if (typeof options.active === 'boolean')
-         {
-            active = options.active;
-            if (active) { activateListeners(); }
-            else { removeListeners(); }
-         }
-
-         if (typeof options.button === 'number')
-         {
-            button = options.button;
-         }
-
          if (options.position !== void 0)
          {
             // Find actual position instance checking for a Positionable instance.
@@ -255,6 +243,18 @@ function draggable(node, { position, active = true, button = 0, storeDragging = 
                actualPosition = newPosition;
                quickTo = actualPosition.animate.quickTo(['top', 'left'], tweenOptions);
             }
+         }
+
+         if (typeof options.enabled === 'boolean')
+         {
+            enabled = options.enabled;
+            if (enabled) { activateListeners(); }
+            else { removeListeners(); }
+         }
+
+         if (typeof options.button === 'number')
+         {
+            button = options.button;
          }
 
          if (typeof options.tween === 'boolean') { tween = options.tween; }
