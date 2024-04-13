@@ -1,25 +1,25 @@
 /**
  * Stores the TJSPositionData properties that can be animated.
  *
- * @type {Set<import('./animation/types').AnimationAPI.AnimationKeys>}
+ * @type {Set<string>}
  */
-const animateKeys = new Set([
+const animateKeys = Object.freeze(new Set([
    // Main keys
    'left', 'top', 'maxWidth', 'maxHeight', 'minWidth', 'minHeight', 'width', 'height',
    'rotateX', 'rotateY', 'rotateZ', 'scale', 'translateX', 'translateY', 'translateZ', 'zIndex',
 
    // Aliases
    'rotation'
-]);
+]));
 
 /**
  * Defines the keys of TJSPositionData that are transform keys.
  *
  * @type {string[]}
  */
-const transformKeys = ['rotateX', 'rotateY', 'rotateZ', 'scale', 'translateX', 'translateY', 'translateZ'];
-
-Object.freeze(transformKeys);
+const transformKeys = Object.freeze([
+ 'rotateX', 'rotateY', 'rotateZ', 'scale', 'translateX', 'translateY', 'translateZ'
+]);
 
 /**
  * Parses a relative value string in the form of '+=', '-=', or '*=' and float / numeric value. IE '+=0.2'.
@@ -34,7 +34,7 @@ const relativeRegex = /^([-+*])=(-?[\d]*\.?[\d]+)$/;
  *
  * @type {{rotation: number, scale: number, minWidth: null, minHeight: null, translateZ: number, top: number, left: number, maxHeight: null, translateY: number, translateX: number, width: number, transformOrigin: null, rotateX: number, rotateY: number, height: number, maxWidth: null, zIndex: null, rotateZ: number}}
  */
-const numericDefaults = {
+const numericDefaults = Object.freeze({
    // Other keys
    height: 0,
    left: 0,
@@ -56,9 +56,7 @@ const numericDefaults = {
    translateZ: 0,
 
    rotation: 0
-};
-
-Object.freeze(numericDefaults);
+});
 
 /**
  * Sets numeric defaults for a {@link TJSPositionData} like object.
@@ -85,7 +83,7 @@ function setNumericDefaults(data)
  *
  * @type {object}
  */
-const transformKeysBitwise = {
+const transformKeysBitwise = Object.freeze({
    rotateX: 1,
    rotateY: 2,
    rotateZ: 4,
@@ -93,9 +91,7 @@ const transformKeysBitwise = {
    translateX: 16,
    translateY: 32,
    translateZ: 64
-};
-
-Object.freeze(transformKeysBitwise);
+});
 
 /**
  * Defines the default transform origin.
@@ -109,10 +105,8 @@ const transformOriginDefault = 'top left';
  *
  * @type {string[]}
  */
-const transformOrigins = ['top left', 'top center', 'top right', 'center left', 'center', 'center right', 'bottom left',
- 'bottom center', 'bottom right'];
-
-Object.freeze(transformOrigins);
+const transformOrigins = Object.freeze(['top left', 'top center', 'top right', 'center left', 'center', 'center right',
+ 'bottom left', 'bottom center', 'bottom right']);
 
 export {
    animateKeys,
