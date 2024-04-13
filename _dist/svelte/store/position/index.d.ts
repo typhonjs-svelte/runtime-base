@@ -1564,7 +1564,7 @@ declare namespace Action {
  *
  * @param {import('./types').Action.DraggableOptions} options - Draggable action options.
  *
- * @returns {import('svelte/action').ActionReturn<import('./types').Action.DraggableOptions>} Action lifecycle
+ * @returns {import('svelte/action').ActionReturn<Partial<import('./types').Action.DraggableOptions>>} Action lifecycle
  *          functions.
  */
 declare function draggable(
@@ -1579,7 +1579,7 @@ declare function draggable(
     hasTargetClassList,
     ignoreTargetClassList,
   }: Action.DraggableOptions,
-): svelte_action.ActionReturn<Action.DraggableOptions>;
+): svelte_action.ActionReturn<Partial<Action.DraggableOptions>>;
 declare namespace draggable {
   /**
    * Define a function to get an DraggableOptionsStore instance.
