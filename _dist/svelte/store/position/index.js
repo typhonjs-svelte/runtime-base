@@ -14,28 +14,41 @@ import { nextAnimationFrame } from '@typhonjs-svelte/runtime-base/util/animate';
  *
  * @param {HTMLElement}       node - The node associated with the action.
  *
- * @param {import('..').TJSPosition}   position - A position instance.
+ * @param {import('..').TJSPosition | import('../types').TJSPositionTypes.Positionable}   position - A position or
+ *        positionable instance.
  *
- * @returns {import('svelte/action').ActionReturn<import('..').TJSPosition>} The action lifecycle methods.
+ * @returns {(import('svelte/action').ActionReturn<
+ *    import('..').TJSPosition |
+ *    import('../types').TJSPositionTypes.Positionable
+ * >)} The action lifecycle methods.
  */
 function applyPosition(node, position)
 {
-   if (hasSetter(position, 'parent')) { position.parent = node; }
+   /**
+    * Find actual position instance checking for a Positionable instance.
+    *
+    * @type {import('..').TJSPosition}
+    */
+   let actualPosition = position?.position ?? position;
+
+   if (hasSetter(actualPosition, 'parent')) { actualPosition.parent = node; }
 
    return {
       update: (newPosition) =>
       {
+         const newActualPosition = newPosition?.position ?? newPosition;
+
          // Sanity case to short circuit update if positions are the same instance.
-         if (newPosition === position && newPosition.parent === position.parent) { return; }
+         if (newActualPosition === actualPosition && newActualPosition.parent === actualPosition.parent) { return; }
 
-         if (hasSetter(position, 'parent')) { position.parent = void 0; }
+         if (hasSetter(actualPosition, 'parent')) { actualPosition.parent = void 0; }
 
-         position = newPosition;
+         actualPosition = newActualPosition;
 
-         if (hasSetter(position, 'parent')) { position.parent = node; }
+         if (hasSetter(actualPosition, 'parent')) { actualPosition.parent = node; }
       },
 
-      destroy: () => { if (hasSetter(position, 'parent')) { position.parent = void 0; } }
+      destroy: () => { if (hasSetter(actualPosition, 'parent')) { actualPosition.parent = void 0; } }
    };
 }
 
