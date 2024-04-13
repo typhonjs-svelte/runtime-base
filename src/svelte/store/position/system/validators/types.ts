@@ -6,7 +6,7 @@ import type {
 import type { TJSPositionParent }   from '../../index';
 import type { TJSPosition }         from '../../TJSPosition.js';
 import type { Data }                from '../../data/types';
-import type { TransformAPI }       from '../../transform/types';
+import type { TransformAPI }        from '../../transform/types';
 
 /**
  * Provides the validator API implementation for {@link TJSPosition.validators}. You may add one or more validator
