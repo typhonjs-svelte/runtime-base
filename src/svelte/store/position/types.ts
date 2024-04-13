@@ -1,4 +1,4 @@
-import type { Readable }      from 'svelte/store';
+import type { Writable }      from 'svelte/store';
 
 import type { TJSPosition }   from './TJSPosition';
 import type { Data }          from './data/types';
@@ -15,10 +15,16 @@ namespace TJSPositionTypes {
       position: TJSPosition;
    }
 
-   export interface ITJSPosition extends Readable<Data.TJSPositionData> {}
+   /**
+    * Provides an overloaded {@link Writable} store interface for {@link TJSPosition.set}.
+    */
+   export interface ITJSPosition extends Writable<Data.TJSPositionDataRelative>
+   {
+      set(this: void, value: Data.TJSPositionDataRelative, options?: OptionsSet): TJSPosition;
+   }
 
    /**
-    * Options for {@link TJSPosition.get}
+    * Options for {@link TJSPosition.get}.
     */
    export type OptionsGet = {
       /**
@@ -32,9 +38,21 @@ namespace TJSPositionTypes {
       exclude?: Iterable<string>;
 
       /**
-       * When true any `null` values are converted into defaults.
+       * When true any `null` values are converted into default numeric values.
        */
       numeric?: boolean;
+   }
+
+   /**
+    * Options for {@link TJSPosition.set}.
+    */
+   export type OptionsSet = {
+      /**
+       * Perform the update to position state immediately. Callers can specify to immediately update the associated
+       * element. This is useful if set is called from requestAnimationFrame / rAF. Library integrations like GSAP
+       * invoke set from rAF.
+       */
+      immediateElementUpdate: boolean;
    }
 
    /**

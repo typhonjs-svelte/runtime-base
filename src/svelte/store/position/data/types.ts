@@ -53,6 +53,16 @@ namespace Data {
    }
 
    /**
+    * Defines an extension to {@link Data.TJSPositionData} where each property can also be a string. This string should
+    * be in the form of '+=', '-=', or '*=' and float / numeric value. IE '+=0.2'. {@link TJSPosition.set} will
+    * apply the `addition`, `subtraction`, or `multiplication` operation specified against the current value of the
+    * given property.
+    */
+   export type TJSPositionDataRelative = {
+      [P in keyof TJSPositionData]: TJSPositionData[P] | string;
+   };
+
+   /**
     * Defines the constructor function for {@link TJSPositionData}.
     */
    export interface TJSPositionDataConstructor {

@@ -889,30 +889,27 @@ export class TJSPosition
 
    /**
     * All calculation and updates of position are implemented in {@link TJSPosition}. This allows position to be fully
-    * reactive and in control of updating inline styles for the application.
+    * reactive and in control of updating inline styles for a connected {@link HTMLElement}.
     *
-    * Note: the logic for updating position is improved and changes a few aspects from the default
-    * {@link globalThis.Application.setPosition}. The gate on `popOut` is removed, so to ensure no positional
-    * application occurs popOut applications can set `this.options.positionable` to false ensuring no positional inline
-    * styles are applied.
-    *
-    * The initial set call on an application with a target element will always set width / height as this is
-    * necessary for correct calculations.
+    * The initial set call with a target element will always set width / height as this is necessary for correct
+    * calculations.
     *
     * When a target element is present updated styles are applied after validation. To modify the behavior of set
-    * implement one or more validator functions and add them from the application via
-    * `this.position.validators.add(<Function>)`.
+    * implement one or more validator functions and add them via the validator API available from
+    * {@link TJSPosition.validators}.
     *
-    * Updates to any target element are decoupled from the underlying TJSPosition data. This method returns this instance
-    * that you can then await on the target element inline style update by using {@link TJSPosition.elementUpdated}.
+    * Updates to any target element are decoupled from the underlying TJSPosition data. This method returns this
+    * instance that you can then await on the target element inline style update by using
+    * {@link TJSPosition.elementUpdated}.
     *
-    * @param {import('./').TJSPositionDataExtended} [position] - TJSPosition data to set.
+    * Relative updates to any property of {@link TJSPositionData} are possible by specifying properties as strings.
+    * This string should be in the form of '+=', '-=', or '*=' and float / numeric value. IE '+=0.2'.
+    * {@link TJSPosition.set} will apply the `addition`, `subtraction`, or `multiplication` operation specified against
+    * the current value of the given property.
     *
-    * @param {object} [options] - Additional options.
+    * @param {Partial<import('./data/types').Data.TJSPositionDataRelative>} [position] - TJSPosition data to set.
     *
-    * @param {boolean} [options.immediateElementUpdate] Perform the update to position state immediately. Callers can
-    *        specify to immediately update the associated element. This is useful if set is called from
-    *        requestAnimationFrame / rAF. Library integrations like GSAP invoke set from rAF.
+    * @param {import('./types').TJSPositionTypes.OptionsSet} [options] - Additional options.
     *
     * @returns {TJSPosition} This TJSPosition instance.
     */
@@ -1164,6 +1161,22 @@ export class TJSPosition
          const index = this.#subscriptions.findIndex((sub) => sub === handler);
          if (index >= 0) { this.#subscriptions.splice(index, 1); }
       };
+   }
+
+   /**
+    * Provides the {@link Writable} store `update` method. Receive and return a {@link TJSPositionData} instance to
+    * update the position state. You may manipulate numeric properties by providing relative adjustments described in
+    * {@link TJSPositionDataRelative}.
+    *
+    * @param {import('svelte/store').Updater<import('./data/types').Data.TJSPositionDataRelative>} updater -
+   */
+   update(updater)
+   {
+      const result = updater(this.get());
+
+      if (!isObject(result)) { throw new TypeError(`'result' of 'updater' is not an object.`); }
+
+      this.set(result);
    }
 
    /**
