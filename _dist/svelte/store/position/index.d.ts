@@ -815,7 +815,9 @@ declare class TJSPosition implements TJSPositionTypes.ITJSPosition {
    */
   get zIndex(): number;
   /**
-   * Assigns current position data to object passed into method.
+   * Assigns current position data to given object `data` object. By default, `null` position data is not assigned.
+   * Other options allow configuration of the data assigned including setting default numeric values for any properties
+   * that are null.
    *
    * @param {object}  [data] - Target to assign current position data.
    *
@@ -1174,15 +1176,19 @@ declare namespace AnimationAPI {
      */
     delay?: number;
   };
+  /**
+   * The `quickTo` callback function returned from {@link AnimationAPI.quickTo} and {@link AnimationGroupAPI.quickTo}.
+   */
   interface QuickToCallback extends Function {
     /**
-     * @param args - Individual numbers corresponding to the order in which animation keys are specified.
+     * @param args - Individual numbers or relative strings corresponding to the order in which animation keys are
+     * specified.
      */
-    (...args: number[]): void;
+    (...args: (string | number)[]): void;
     /**
-     * @param arg - A single object with animation keys specified and numerical values.
+     * @param arg - A single object with animation keys specified and numerical or relative string values.
      */
-    (arg: Record<AnimationKeys, number>): void;
+    (arg: Record<AnimationKeys, string | number>): void;
     /**
      * The keys assigned for this quickTo callback.
      */

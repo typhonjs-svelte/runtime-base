@@ -886,7 +886,7 @@ AnimationManager.animate();
 /**
  * Stores the TJSPositionData properties that can be animated.
  *
- * @type {Set<string>}
+ * @type {ReadonlySet<string>}
  */
 const animateKeys = Object.freeze(new Set([
    // Main keys
@@ -907,11 +907,16 @@ const transformKeys = Object.freeze([
 ]);
 
 /**
- * Parses a relative value string in the form of '+=', '-=', or '*=' and float / numeric value. IE '+=0.2'.
+ * Parses relative values in addition to other string formats such as percent value. Relative values must start with
+ * leading values '+=', '-=', or '*=' followed by a float / numeric value. IE `+=45` or for percentage '+=10%'.
+ * Also handles exact percent value such as `10` or `10%`. Percentage values are based on the current value,
+ * parent element constraints, or constraints of the type of value like rotation being bound by 360 degrees.
+ *
+ * TODO: In the future support more specific CSS unit types.
  *
  * @type {RegExp}
  */
-const relativeRegex = /^([-+*])=(-?[\d]*\.?[\d]+)$/;
+const regexRelative = /^(?<operation>[-+*]=)?(?<value>-?\d*\.?\d+)(?<unit>%|%~|px)?$/;
 
 /**
  * Provides numeric defaults for all parameters. This is used by {@link TJSPosition.get} to optionally
@@ -993,54 +998,189 @@ const transformOriginDefault = 'top left';
 const transformOrigins = Object.freeze(['top left', 'top center', 'top right', 'center left', 'center', 'center right',
  'bottom left', 'bottom center', 'bottom right']);
 
-/**
- * Converts any relative string values for animatable keys to actual updates performed against current data.
- *
- * @param {Partial<import('../data/types').Data.TJSPositionDataRelative>}  positionData - position data.
- *
- * @param {import('../').TJSPosition}   position - The source position instance.
- */
-function convertRelative(positionData, position)
+class ConvertRelative
 {
-   for (const key in positionData)
+   /**
+    * Animation keys for different processing categories.
+    *
+    * @type {{numPx: Readonly<Set<string>>, percentParent: Readonly<Set<string>>}}
+    */
+   static #animKeyTypes = {
+      // Animation keys that can be specified in `px` converted to a number.
+      numPx: Object.freeze(new Set(['left', 'top', 'maxWidth', 'maxHeight', 'minWidth', 'minHeight', 'width', 'height',
+       'translateX', 'translateY', 'translateZ'])),
+
+      // Animation keys that can be specified in percentage of parent element constraint.
+      percentParent: Object.freeze(new Set(['left', 'top', 'maxWidth', 'maxHeight', 'minWidth', 'minHeight', 'width',
+       'height']))
+   };
+
+   /**
+    * Stores the results for match groups from `constants.regexRelative`;
+    *
+    * @type {import('./types').RelativeMatch}
+    */
+   static #relativeMatch = Object.seal({
+      operation: void 0,
+      value: void 0,
+      unit: void 0
+   });
+
+   /**
+    * Converts any relative string values for animatable keys to actual updates performed against current data.
+    *
+    * @param {Partial<import('../data/types').Data.TJSPositionDataRelative>}  data - position data.
+    *
+    * @param {import('../data/types').Data.TJSPositionData}   position - The source position data.
+    *
+    * @param {HTMLElement} el - Target positioned element.
+    */
+   static process(data, position, el)
    {
-      // Key is animatable / numeric.
-      if (animateKeys.has(key))
+      for (const key in data)
       {
-         const value = positionData[key];
-
-         if (typeof value !== 'string') { continue; }
-
-         // Ignore 'auto' and 'inherit' string values.
-         if (value === 'auto' || value === 'inherit') { continue; }
-
-         const regexResults = relativeRegex.exec(value);
-
-         if (!regexResults)
+         // Key is animatable / numeric.
+         if (animateKeys.has(key))
          {
-            throw new Error(
-             `TJSPosition - convertRelative error: malformed relative key (${key}) with value (${value}).`);
+            const value = data[key];
+
+            if (typeof value !== 'string') { continue; }
+
+            // Ignore 'auto' and 'inherit' string values.
+            if (value === 'auto' || value === 'inherit') { continue; }
+
+            /** @type {import('../animation/types').AnimationAPI.AnimationKeys} */
+            const animKey = key;
+
+            const regexResults = regexRelative.exec(value);
+
+            // Additional state indicating a particular key is not handled.
+            let notHandledWarning = false;
+
+            if (regexResults)
+            {
+               const results = this.#relativeMatch;
+
+               results.operation = regexResults.groups.operation;
+               results.value = parseFloat(regexResults.groups.value);
+               results.unit = regexResults.groups.unit;
+
+               const current = position[key];
+               switch (results.unit)
+               {
+                  case '%~':
+                     notHandledWarning = this.#handleRelativePercent(animKey, current, data, position, el, results);
+                     break;
+
+                  // Animation keys that support `px` / treat as raw number.
+                  case 'px':
+                     notHandledWarning = this.#animKeyTypes.numPx.has(key) ?
+                      this.#handleRelativeNum(animKey, current, data, position, el, results) : true;
+                     break;
+
+                  // No units / treat as raw number.
+                  default:
+                     notHandledWarning = this.#handleRelativeNum(animKey, current, data, position, el, results);
+                     break;
+               }
+
+               continue;
+            }
+
+            if (!regexResults || notHandledWarning)
+            {
+               console.warn(
+                `TJSPosition - ConvertRelative warning: malformed key '${key}' with value '${value}'.`);
+               data[key] = void 0;
+            }
          }
 
-         const current = position[key];
+         return data;
+      }
+   }
 
-         switch (regexResults[1])
-         {
-            case '-':
-               positionData[key] = current - parseFloat(regexResults[2]);
-               break;
+   /**
+    * @param {import('../animation/types').AnimationAPI.AnimationKeys} key - Animation key.
+    *
+    * @param {number}   current - Current value
+    *
+    * @param {Partial<import('../data/types').Data.TJSPositionDataRelative>}  data - Source data to convert.
+    *
+    * @param {import('../data/types').Data.TJSPositionData} position - Current position data.
+    *
+    * @param {HTMLElement} el - Positioned element.
+    *
+    * @param {import('./types').RelativeMatch}  results - Relative match results.
+    *
+    * @returns {boolean} Adjustment successful.
+    */
+   static #handleRelativeNum(key, current, data, position, el, results)
+   {
+      switch (results.operation)
+      {
+         case '-=':
+            data[key] = current - results.value;
+            break;
 
-            case '+':
-               positionData[key] = current + parseFloat(regexResults[2]);
-               break;
+         case '+=':
+            data[key] = current + results.value;
+            break;
 
-            case '*':
-               positionData[key] = current * parseFloat(regexResults[2]);
-               break;
-         }
+         case '*=':
+            data[key] = current * results.value;
+            break;
       }
 
-      return positionData;
+      return true;
+   }
+
+   /**
+    * Handles the `%~` unit type where values are adjusted against the current value for the given key.
+    *
+    * @param {import('../animation/types').AnimationAPI.AnimationKeys} key - Animation key.
+    *
+    * @param {number}   current - Current value
+    *
+    * @param {Partial<import('../data/types').Data.TJSPositionDataRelative>}  data - Source data to convert.
+    *
+    * @param {import('../data/types').Data.TJSPositionData} position - Current position data.
+    *
+    * @param {HTMLElement} el - Positioned element.
+    *
+    * @param {import('./types').RelativeMatch}  results - Relative match results.
+    *
+    * @returns {boolean} Adjustment successful.
+    */
+   static #handleRelativePercent(key, current, data, position, el, results)
+   {
+      // Normalize percentage.
+      results.value = results.value / 100;
+
+      if (!results.operation)
+      {
+         data[key] = current * results.value;
+         return true;
+      }
+
+      switch (results.operation)
+      {
+         case '-=':
+            data[key] = current - (current * results.value);
+            break;
+
+         case '+=':
+            data[key] = current + (current * results.value);
+            break;
+
+         case '*=':
+            data[key] = current * (current * results.value);
+            break;
+
+         default:
+            return false;
+      }
+
+      return true;
    }
 }
 
@@ -1583,7 +1723,7 @@ class AnimationAPI
          }
       }
 
-      convertRelative(initial, data);
+      ConvertRelative.process(initial, data, el);
 
       return this.#addAnimation(initial, destination, duration, el, delay, ease, interpolate);
    }
@@ -1666,8 +1806,8 @@ class AnimationAPI
          }
       }
 
-      convertRelative(initial, data);
-      convertRelative(destination, data);
+      ConvertRelative.process(initial, data, el);
+      ConvertRelative.process(destination, data, el);
 
       return this.#addAnimation(initial, destination, duration, el, delay, ease, interpolate);
    }
@@ -1736,7 +1876,7 @@ class AnimationAPI
          }
       }
 
-      convertRelative(destination, data);
+      ConvertRelative.process(destination, data, el);
 
       return this.#addAnimation(initial, destination, duration, el, delay, ease, interpolate);
    }
@@ -1862,8 +2002,6 @@ class AnimationAPI
             }
          }
 
-         convertRelative(destination, data);
-
          // Set initial data for transform values that are often null by default.
          setNumericDefaults(initial);
          setNumericDefaults(destination);
@@ -1871,6 +2009,8 @@ class AnimationAPI
          // Set target element to animation data to track if it is removed from the DOM hence ending the animation.
          const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
          animationData.el = A11yHelper.isFocusTarget(targetEl) && targetEl.isConnected ? targetEl : void 0;
+
+         ConvertRelative.process(destination, data, animationData.el);
 
          // Reschedule the quickTo animation with AnimationManager as it is finished.
          if (animationData.finished)
@@ -5966,7 +6106,9 @@ class TJSPosition
    }
 
    /**
-    * Assigns current position data to object passed into method.
+    * Assigns current position data to given object `data` object. By default, `null` position data is not assigned.
+    * Other options allow configuration of the data assigned including setting default numeric values for any properties
+    * that are null.
     *
     * @param {object}  [data] - Target to assign current position data.
     *
@@ -6107,7 +6249,7 @@ class TJSPosition
          }
 
          // Converts any relative string position data to numeric inputs.
-         convertRelative(position, this);
+         ConvertRelative.process(position, this.#data, el);
 
          position = this.#updatePosition(position, parent, el, styleCache);
 
