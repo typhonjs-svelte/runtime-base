@@ -1,301 +1,11 @@
 import { Mat4, Vec3 } from '@typhonjs-svelte/runtime-base/math/gl-matrix';
+import { EasingFunction } from 'svelte/transition';
+import { InterpolateFunction } from '@typhonjs-svelte/runtime-base/math/interpolate';
+import { IBasicAnimation } from '@typhonjs-svelte/runtime-base/util/animate';
 import * as _runtime_svelte_action_dom from '@typhonjs-svelte/runtime-base/svelte/action/dom';
 import * as svelte_store from 'svelte/store';
 import { Subscriber, Invalidator, Unsubscriber, Writable, Readable } from 'svelte/store';
 import * as svelte_action from 'svelte/action';
-import { EasingFunction } from 'svelte/transition';
-import { InterpolateFunction } from '@typhonjs-svelte/runtime-base/math/interpolate';
-import { IBasicAnimation } from '@typhonjs-svelte/runtime-base/util/animate';
-
-/**
- * Defines the data objects / interfaces used by various TJSPosition APIs.
- */
-declare namespace Data {
-  /**
-   * Defines the primary TJSPosition data object used by various TJSPosition APIs. To externally create a new instance
-   * use the static accessor {@link TJSPosition.Data}.
-   */
-  interface TJSPositionData {
-    height: number | 'auto' | 'inherit' | null;
-    left: number | null;
-    maxHeight: number | null;
-    maxWidth: number | null;
-    minHeight: number | null;
-    minWidth: number | null;
-    rotateX: number | null;
-    rotateY: number | null;
-    rotateZ: number | null;
-    scale: number | null;
-    top: number | null;
-    transformOrigin: TransformAPI.TransformOrigin | null;
-    translateX: number | null;
-    translateY: number | null;
-    translateZ: number | null;
-    width: number | 'auto' | 'inherit' | null;
-    zIndex: number | null;
-  }
-  /**
-   * Defines a TJSPositionData instance that has extra properties / attributes.
-   */
-  interface TJSPositionDataExtra extends TJSPositionData {
-    [key: string]: any;
-  }
-  /**
-   * Defines an extension to {@link Data.TJSPositionData} where each property can also be a string. This string should
-   * be in the form of '+=', '-=', or '*=' and float / numeric value. IE '+=0.2'. {@link TJSPosition.set} will
-   * apply the `addition`, `subtraction`, or `multiplication` operation specified against the current value of the
-   * given property.
-   */
-  type TJSPositionDataRelative = {
-    [P in keyof TJSPositionData]: TJSPositionData[P] | string;
-  };
-  /**
-   * Defines the constructor function for {@link TJSPositionData}.
-   */
-  interface TJSPositionDataConstructor {
-    new ({
-      height,
-      left,
-      maxHeight,
-      maxWidth,
-      minHeight,
-      minWidth,
-      rotateX,
-      rotateY,
-      rotateZ,
-      scale,
-      translateX,
-      translateY,
-      translateZ,
-      top,
-      transformOrigin,
-      width,
-      zIndex,
-    }?: {
-      height?: number | 'auto' | 'inherit' | null;
-      left?: number | null;
-      maxHeight?: number | null;
-      maxWidth?: number | null;
-      minHeight?: number | null;
-      minWidth?: number | null;
-      rotateX?: number | null;
-      rotateY?: number | null;
-      rotateZ?: number | null;
-      scale?: number | null;
-      top?: number | null;
-      transformOrigin?: TransformAPI.TransformOrigin | null;
-      translateX?: number | null;
-      translateY?: number | null;
-      translateZ?: number | null;
-      width?: number | 'auto' | 'inherit' | null;
-      zIndex?: number | null;
-    }): TJSPositionData;
-  }
-}
-
-interface TransformAPI {
-  /**
-   * @returns {boolean} Whether there are active transforms in local data.
-   */
-  get isActive(): boolean;
-  /**
-   * @returns {number | undefined} Any local `rotateX` data.
-   */
-  get rotateX(): number | undefined;
-  /**
-   * @returns {number | undefined} Any local `rotateY` data.
-   */
-  get rotateY(): number | undefined;
-  /**
-   * @returns {number | undefined} Any local `rotateZ` data.
-   */
-  get rotateZ(): number | undefined;
-  /**
-   * @returns {number | undefined} Any local `scale` data.
-   */
-  get scale(): number | undefined;
-  /**
-   * @returns {number | undefined} Any local `translateX` data.
-   */
-  get translateX(): number | undefined;
-  /**
-   * @returns {number | undefined} Any local `translateY` data.
-   */
-  get translateY(): number | undefined;
-  /**
-   * @returns {number | undefined} Any local `translateZ` data.
-   */
-  get translateZ(): number | undefined;
-  /**
-   * Sets the local `rotateX` data if the value is a finite number otherwise removes the local data.
-   *
-   * @param {number | null | undefined}   value - A value to set.
-   */
-  set rotateX(value: number | null | undefined);
-  /**
-   * Sets the local `rotateY` data if the value is a finite number otherwise removes the local data.
-   *
-   * @param {number | null | undefined}   value - A value to set.
-   */
-  set rotateY(value: number | null | undefined);
-  /**
-   * Sets the local `rotateZ` data if the value is a finite number otherwise removes the local data.
-   *
-   * @param {number | null | undefined}   value - A value to set.
-   */
-  set rotateZ(value: number | null | undefined);
-  /**
-   * Sets the local `scale` data if the value is a finite number otherwise removes the local data.
-   *
-   * @param {number | null | undefined}   value - A value to set.
-   */
-  set scale(value: number | null | undefined);
-  /**
-   * Sets the local `translateX` data if the value is a finite number otherwise removes the local data.
-   *
-   * @param {number | null | undefined}   value - A value to set.
-   */
-  set translateX(value: number | null | undefined);
-  /**
-   * Sets the local `translateY` data if the value is a finite number otherwise removes the local data.
-   *
-   * @param {number | null | undefined}   value - A value to set.
-   */
-  set translateY(value: number | null | undefined);
-  /**
-   * Sets the local `translateZ` data if the value is a finite number otherwise removes the local data.
-   *
-   * @param {number | null | undefined}   value - A value to set.
-   */
-  set translateZ(value: number | null | undefined);
-  /**
-   * Returns the `matrix3d` CSS transform for the given position / transform data.
-   *
-   * @param {object} [data] - Optional position data otherwise use local stored transform data.
-   *
-   * @returns {string} The CSS `matrix3d` string.
-   */
-  getCSS(data?: object): string;
-  /**
-   * Returns the `matrix3d` CSS transform for the given position / transform data.
-   *
-   * @param {object} [data] - Optional position data otherwise use local stored transform data.
-   *
-   * @returns {string} The CSS `matrix3d` string.
-   */
-  getCSSOrtho(data?: object): string;
-  /**
-   * Collects all data including a bounding rect, transform matrix, and points array of the given
-   * {@link TJSPositionData} instance with the applied local transform data.
-   *
-   * @param {Data.TJSPositionData} position - The position data to process.
-   *
-   * @param {TransformAPI.TransformData} [output] - Optional TransformAPI.Data output instance.
-   *
-   * @param {object} [validationData] - Optional validation data for adjustment parameters.
-   *
-   * @returns {TransformAPI.TransformData} The output TransformAPI.Data instance.
-   */
-  getData(
-    position: Data.TJSPositionData,
-    output?: TransformAPI.TransformData,
-    validationData?: object,
-  ): TransformAPI.TransformData;
-  /**
-   * Creates a transform matrix based on local data applied in order it was added.
-   *
-   * If no data object is provided then the source is the local transform data. If another data object is supplied
-   * then the stored local transform order is applied then all remaining transform keys are applied. This allows the
-   * construction of a transform matrix in advance of setting local data and is useful in collision detection.
-   *
-   * @param {Data.TJSPositionData}   [data] - TJSPositionData instance or local transform data.
-   *
-   * @param {Mat4}  [output] - The output mat4 instance.
-   *
-   * @returns {Mat4} Transform matrix.
-   */
-  getMat4(data?: object, output?: Mat4): Mat4;
-  /**
-   * Provides an orthographic enhancement to convert left / top positional data to a translate operation.
-   *
-   * This transform matrix takes into account that the remaining operations are , but adds any left / top attributes
-   * from passed in data to translate X / Y.
-   *
-   * If no data object is provided then the source is the local transform data. If another data object is supplied
-   * then the stored local transform order is applied then all remaining transform keys are applied. This allows the
-   * construction of a transform matrix in advance of setting local data and is useful in collision detection.
-   *
-   * @param {Data.TJSPositionData}   [data] - TJSPositionData instance or local transform data.
-   *
-   * @param {Mat4}  [output] - The output mat4 instance.
-   *
-   * @returns {Mat4} Transform matrix.
-   */
-  getMat4Ortho(data?: object, output?: Mat4): Mat4;
-  /**
-   * Tests an object if it contains transform keys and the values are finite numbers.
-   *
-   * @param {Data.TJSPositionData} data - An object to test for transform data.
-   *
-   * @returns {boolean} Whether the given TJSPositionData has transforms.
-   */
-  hasTransform(data: object): boolean;
-  /**
-   * Resets internal data from the given object containing valid transform keys.
-   *
-   * @param {object}   data - An object with transform data.
-   */
-  reset(data: object): void;
-}
-/**
- * Provides additional interfaces and type aliases for the transform API.
- */
-declare namespace TransformAPI {
-  /**
-   * Describes the constructor function for {@link TransformData}.
-   */
-  interface TransformDataConstructor {
-    new (): TransformData;
-  }
-  /**
-   * Provides the output data for {@link TransformAPI.getData}.
-   */
-  interface TransformData {
-    /**
-     * @returns {DOMRect} The bounding rectangle.
-     */
-    get boundingRect(): DOMRect;
-    /**
-     * @returns {Vec3[]} The transformed corner points as Vec3 in screen space.
-     */
-    get corners(): Vec3[];
-    /**
-     * @returns {string} Returns the CSS style string for the transform matrix.
-     */
-    get css(): string;
-    /**
-     * @returns {Mat4} The transform matrix.
-     */
-    get mat4(): Mat4;
-    /**
-     * @returns {Mat4[]} The pre / post translation matrices for origin translation.
-     */
-    get originTranslations(): Mat4[];
-  }
-  /**
-   * The supported transform origin strings.
-   */
-  type TransformOrigin =
-    | 'top left'
-    | 'top center'
-    | 'top right'
-    | 'center left'
-    | 'center'
-    | 'center right'
-    | 'bottom left'
-    | 'bottom center'
-    | 'bottom right';
-}
 
 /**
  * Provides the validator API implementation for {@link TJSPosition.validators}. You may add one or more validator
@@ -468,6 +178,117 @@ declare namespace ValidatorAPI {
      */
     subscribe?(this: void, run: Subscriber<any>, invalidate?: Invalidator<any>): Unsubscriber;
   }
+}
+
+interface PositionStateAPI {
+  /**
+   * Returns any stored save state by name.
+   *
+   * @param {object}   options - Options
+   *
+   * @param {string}   options.name - Saved data set name.
+   *
+   * @returns {TJSPositionDataExtended} The saved data set.
+   */
+  get({ name }: { name: string }): TJSPositionDataExtended;
+  /**
+   * Returns any associated default data.
+   *
+   * @returns {TJSPositionDataExtended} Associated default data.
+   */
+  getDefault(): TJSPositionDataExtended;
+  /**
+   * Removes and returns any position state by name.
+   *
+   * @param {object}   options - Options.
+   *
+   * @param {string}   options.name - Name to remove and retrieve.
+   *
+   * @returns {TJSPositionDataExtended} Saved position data.
+   */
+  remove({ name }: { name: string }): TJSPositionDataExtended;
+  /**
+   * Resets data to default values and invokes set.
+   *
+   * @param {object}   [options] - Optional parameters.
+   *
+   * @param {boolean}  [options.keepZIndex=false] - When true keeps current z-index.
+   *
+   * @param {boolean}  [options.invokeSet=true] - When true invokes set method.
+   *
+   * @returns {boolean} Operation successful.
+   */
+  reset({ keepZIndex, invokeSet }: { keepZIndex: boolean; invokeSet: boolean }): boolean;
+  /**
+     * Restores a saved positional state returning the data. Several optional parameters are available
+     * to control whether the restore action occurs silently (no store / inline styles updates), animates
+     -   * to the stored data, or simply sets the stored data. Restoring via {@link AnimationAPI.to}
+     * allows specification of the duration, easing, and interpolate functions along with configuring a Promise to be
+     * returned if awaiting the end of the animation.
+     *
+     * @param {object}            options - Parameters
+     *
+     * @param {string}            options.name - Saved data set name.
+     *
+     * @param {boolean}           [options.remove=false] - Remove data set.
+     *
+     * @param {Iterable<string>}  [options.properties] - Specific properties to set / animate.
+     *
+     * @param {boolean}           [options.silent] - Set position data directly; no store or style updates.
+     *
+     * @param {boolean}           [options.async=false] - If animating return a Promise that resolves with any saved
+     *        data.
+     *
+     * @param {boolean}           [options.animateTo=false] - Animate to restore data.
+     *
+     * @param {number}            [options.duration=0.1] - Duration in seconds.
+     *
+     * @param {EasingFunction}    [options.ease=linear] - Easing function.
+     *
+     * @param {InterpolateFunction}  [options.interpolate=lerp] - Interpolation function.
+     *
+     * @returns {TJSPositionDataExtended | Promise<TJSPositionDataExtended>} Saved position data.
+     */
+  restore({
+    name,
+    remove,
+    properties,
+    silent,
+    async,
+    animateTo,
+    duration,
+    ease,
+    interpolate,
+  }: {
+    name: string;
+    remove?: boolean;
+    properties?: Iterable<string>;
+    silent?: boolean;
+    async?: boolean;
+    animateTo?: boolean;
+    duration?: number;
+    ease?: EasingFunction;
+    interpolate?: InterpolateFunction;
+  }): TJSPositionDataExtended | Promise<TJSPositionDataExtended>;
+  /**
+   * Saves current position state with the opportunity to add extra data to the saved state. Simply include
+   * extra properties in `options` to save extra data.
+   *
+   * @param {object}   options - Options.
+   *
+   * @param {string}   options.name - name to index this saved data.
+   *
+   * @returns {Data.TJSPositionDataExtra} Current position data
+   */
+  save({ name, ...extra }: { name: string; [key: string]: any }): Data.TJSPositionDataExtra;
+  /**
+   * Directly sets a position state. Simply include extra properties in `options` to set extra data.
+   *
+   * @param {object}   options - Options.
+   *
+   * @param {string}   options.name - name to index this saved data.
+   */
+  set({ name, ...data }: { name: string; [key: string]: any }): void;
 }
 
 /**
@@ -701,350 +522,6 @@ declare namespace System {
       width?: number;
       height?: number;
     }): SystemBase;
-  }
-}
-
-interface PositionStateAPI {
-  /**
-   * Returns any stored save state by name.
-   *
-   * @param {object}   options - Options
-   *
-   * @param {string}   options.name - Saved data set name.
-   *
-   * @returns {TJSPositionDataExtended} The saved data set.
-   */
-  get({ name }: { name: string }): TJSPositionDataExtended;
-  /**
-   * Returns any associated default data.
-   *
-   * @returns {TJSPositionDataExtended} Associated default data.
-   */
-  getDefault(): TJSPositionDataExtended;
-  /**
-   * Removes and returns any position state by name.
-   *
-   * @param {object}   options - Options.
-   *
-   * @param {string}   options.name - Name to remove and retrieve.
-   *
-   * @returns {TJSPositionDataExtended} Saved position data.
-   */
-  remove({ name }: { name: string }): TJSPositionDataExtended;
-  /**
-   * Resets data to default values and invokes set.
-   *
-   * @param {object}   [options] - Optional parameters.
-   *
-   * @param {boolean}  [options.keepZIndex=false] - When true keeps current z-index.
-   *
-   * @param {boolean}  [options.invokeSet=true] - When true invokes set method.
-   *
-   * @returns {boolean} Operation successful.
-   */
-  reset({ keepZIndex, invokeSet }: { keepZIndex: boolean; invokeSet: boolean }): boolean;
-  /**
-     * Restores a saved positional state returning the data. Several optional parameters are available
-     * to control whether the restore action occurs silently (no store / inline styles updates), animates
-     -   * to the stored data, or simply sets the stored data. Restoring via {@link AnimationAPI.to}
-     * allows specification of the duration, easing, and interpolate functions along with configuring a Promise to be
-     * returned if awaiting the end of the animation.
-     *
-     * @param {object}            options - Parameters
-     *
-     * @param {string}            options.name - Saved data set name.
-     *
-     * @param {boolean}           [options.remove=false] - Remove data set.
-     *
-     * @param {Iterable<string>}  [options.properties] - Specific properties to set / animate.
-     *
-     * @param {boolean}           [options.silent] - Set position data directly; no store or style updates.
-     *
-     * @param {boolean}           [options.async=false] - If animating return a Promise that resolves with any saved
-     *        data.
-     *
-     * @param {boolean}           [options.animateTo=false] - Animate to restore data.
-     *
-     * @param {number}            [options.duration=0.1] - Duration in seconds.
-     *
-     * @param {EasingFunction}    [options.ease=linear] - Easing function.
-     *
-     * @param {InterpolateFunction}  [options.interpolate=lerp] - Interpolation function.
-     *
-     * @returns {TJSPositionDataExtended | Promise<TJSPositionDataExtended>} Saved position data.
-     */
-  restore({
-    name,
-    remove,
-    properties,
-    silent,
-    async,
-    animateTo,
-    duration,
-    ease,
-    interpolate,
-  }: {
-    name: string;
-    remove?: boolean;
-    properties?: Iterable<string>;
-    silent?: boolean;
-    async?: boolean;
-    animateTo?: boolean;
-    duration?: number;
-    ease?: EasingFunction;
-    interpolate?: InterpolateFunction;
-  }): TJSPositionDataExtended | Promise<TJSPositionDataExtended>;
-  /**
-   * Saves current position state with the opportunity to add extra data to the saved state. Simply include
-   * extra properties in `options` to save extra data.
-   *
-   * @param {object}   options - Options.
-   *
-   * @param {string}   options.name - name to index this saved data.
-   *
-   * @returns {Data.TJSPositionDataExtra} Current position data
-   */
-  save({ name, ...extra }: { name: string; [key: string]: any }): Data.TJSPositionDataExtra;
-  /**
-   * Directly sets a position state. Simply include extra properties in `options` to set extra data.
-   *
-   * @param {object}   options - Options.
-   *
-   * @param {string}   options.name - name to index this saved data.
-   */
-  set({ name, ...data }: { name: string; [key: string]: any }): void;
-}
-
-/**
- * Provides a public API for grouping multiple {@link TJSPosition} animations together and is accessible from
- * {@link TJSPosition.Animate}.
- *
- *
- * @see AnimationAPI
- */
-interface AnimationGroupAPI {
-  /**
-   * Cancels any animation for given PositionGroup data.
-   *
-   * @param {TJSPositionTypes.PositionGroup} position - The position group to cancel.
-   */
-  cancel(position: TJSPositionTypes.PositionGroup): void;
-  /**
-   * Cancels all TJSPosition animation.
-   */
-  cancelAll(): void;
-  /**
-   * Gets all animation controls for the given position group data.
-   *
-   * @param {TJSPositionTypes.PositionGroup} position - A position group.
-   *
-   * @returns {{ position: TJSPosition, data: object | undefined, controls: IBasicAnimation[]}[]} Results array.
-   */
-  getScheduled(position: TJSPositionTypes.PositionGroup): {
-    position: TJSPosition;
-    data: object | undefined;
-    controls: IBasicAnimation[];
-  }[];
-  /**
-   * Provides the `from` animation tween for one or more TJSPosition instances as a group.
-   *
-   * @param {TJSPositionTypes.PositionGroup}  position - A position group.
-   *
-   * @param {object | Function} fromData -
-   *
-   * @param {AnimationAPI.TweenOptions | (() => AnimationAPI.TweenOptions)}   [options] -
-   *
-   * @returns {IBasicAnimation} Basic animation control.
-   */
-  from(
-    position: TJSPositionTypes.PositionGroup,
-    fromData: object | Function,
-    options?: AnimationAPI.TweenOptions | (() => AnimationAPI.TweenOptions),
-  ): IBasicAnimation;
-  /**
-   * Provides the `fromTo` animation tween for one or more TJSPosition instances as a group.
-   *
-   * @param {TJSPositionTypes.PositionGroup} position - A position group.
-   *
-   * @param {object | Function}   fromData -
-   *
-   * @param {object | Function}   toData -
-   *
-   * @param {object | Function}   [options] -
-   *
-   * @returns {IBasicAnimation} Basic animation control.
-   */
-  fromTo(
-    position: TJSPositionTypes.PositionGroup,
-    fromData: object | Function,
-    toData: object | Function,
-    options?: object | Function,
-  ): IBasicAnimation;
-  /**
-   * Provides the `to` animation tween for one or more TJSPosition instances as a group.
-   *
-   * @param {TJSPositionTypes.PositionGroup} position - A position group.
-   *
-   * @param {object | Function}   toData -
-   *
-   * @param {object | Function}   [options] -
-   *
-   * @returns {IBasicAnimation} Basic animation control.
-   */
-  to(position: TJSPositionTypes.PositionGroup, toData: object | Function, options?: object | Function): IBasicAnimation;
-  /**
-   * Provides the `to` animation tween for one or more TJSPosition instances as a group.
-   *
-   * @param {TJSPositionTypes.PositionGroup} position - A position group.
-   *
-   * @param {Iterable<AnimationAPI.AnimationKeys>}  keys -
-   *
-   * @param {AnimationAPI.QuickTweenOptions | (() => AnimationAPI.QuickTweenOptions)}  [options] -
-   *
-   * @returns {AnimationAPI.QuickToCallback} quick-to tween function.
-   */
-  quickTo(
-    position: TJSPositionTypes.PositionGroup,
-    keys: Iterable<AnimationAPI.AnimationKeys>,
-    options?: AnimationAPI.QuickTweenOptions | (() => AnimationAPI.QuickTweenOptions),
-  ): AnimationAPI.QuickToCallback;
-}
-interface AnimationAPI {
-  /**
-   * Returns whether there are scheduled animations whether active or delayed for this TJSPosition.
-   *
-   * @returns {boolean} Are there active animation instances.
-   */
-  get isScheduled(): boolean;
-  /**
-   * Cancels all animation instances for this TJSPosition instance.
-   */
-  cancel(): void;
-  /**
-   * Returns all currently scheduled AnimationControl instances for this TJSPosition instance.
-   *
-   * @returns {IBasicAnimation[]} All currently scheduled animation controls for this TJSPosition instance.
-   */
-  getScheduled(): IBasicAnimation[];
-  /**
-   * Provides a tween from given position data to the current position.
-   *
-   * @param {TJSPositionDataExtended} fromData - The starting position.
-   *
-   * @param {AnimationAPI.TweenOptions} [options] - Optional tween parameters.
-   *
-   * @returns {IBasicAnimation}  A control object that can cancel animation and provides a `finished` Promise.
-   */
-  from(fromData: TJSPositionDataExtended, options?: AnimationAPI.TweenOptions): IBasicAnimation;
-  /**
-   * Provides a tween from given position data to the current position.
-   *
-   * @param {TJSPositionDataExtended} fromData - The starting position.
-   *
-   * @param {TJSPositionDataExtended} toData - The ending position.
-   *
-   * @param {AnimationAPI.TweenOptions} [options] - Optional tween parameters.
-   *
-   * @returns {IBasicAnimation}  A control object that can cancel animation and provides a `finished` Promise.
-   */
-  fromTo(
-    fromData: TJSPositionDataExtended,
-    toData: TJSPositionDataExtended,
-    options?: AnimationAPI.TweenOptions,
-  ): IBasicAnimation;
-  /**
-   * Provides a tween to given position data from the current position.
-   *
-   * @param {TJSPositionDataExtended} toData - The destination position.
-   *
-   * @param {AnimationAPI.TweenOptions} [options] - Optional tween parameters.
-   *
-   * @returns {IBasicAnimation}  A control object that can cancel animation and provides a `finished` Promise.
-   */
-  to(toData: TJSPositionDataExtended, options?: AnimationAPI.TweenOptions): IBasicAnimation;
-  /**
-   * Returns a function that provides an optimized way to constantly update a to-tween.
-   *
-   * @param {Iterable<AnimationAPI.AnimationKeys>}  keys - The keys for quickTo.
-   *
-   * @param {AnimationAPI.QuickTweenOptions} [options] - Optional quick tween parameters.
-   *
-   * @returns {AnimationAPI.QuickToCallback} quick-to tween function.
-   */
-  quickTo(
-    keys: Iterable<AnimationAPI.AnimationKeys>,
-    options?: AnimationAPI.QuickTweenOptions,
-  ): AnimationAPI.QuickToCallback;
-}
-declare namespace AnimationAPI {
-  /**
-   * The position keys that can be animated.
-   */
-  type AnimationKeys =
-    | 'left'
-    | 'top'
-    | 'maxWidth'
-    | 'maxHeight'
-    | 'minWidth'
-    | 'minHeight'
-    | 'width'
-    | 'height'
-    | 'rotateX'
-    | 'rotateY'
-    | 'rotateZ'
-    | 'scale'
-    | 'translateX'
-    | 'translateY'
-    | 'translateZ'
-    | 'zIndex'
-    | 'rotation';
-  /**
-   * Defines the quick tweening options.
-   */
-  type QuickTweenOptions = {
-    /**
-     * Duration in seconds; default: 1
-     */
-    duration?: number;
-    /**
-     * Easing function; default: cubicOut
-     */
-    ease?: EasingFunction;
-    /**
-     * Interpolation function; default: lerp
-     */
-    interpolate?: InterpolateFunction;
-  };
-  /**
-   * Defines the tweening options.
-   */
-  type TweenOptions = QuickTweenOptions & {
-    /**
-     * Delay in seconds before animation starts; default: 0
-     */
-    delay?: number;
-  };
-  interface QuickToCallback extends Function {
-    /**
-     * @param args - Individual numbers corresponding to the order in which animation keys are specified.
-     */
-    (...args: number[]): void;
-    /**
-     * @param arg - A single object with animation keys specified and numerical values.
-     */
-    (arg: Record<AnimationKeys, number>): void;
-    /**
-     * The keys assigned for this quickTo callback.
-     */
-    readonly keys: AnimationKeys[];
-    /**
-     * Sets options of quickTo tween.
-     *
-     * @param data - Quick tween options.
-     *
-     * @returns This quickTo callback function.
-     */
-    options: (data: QuickTweenOptions) => QuickToCallback;
   }
 }
 
@@ -1420,11 +897,11 @@ declare namespace TJSPositionTypes {
     /**
      * When provided only these keys are copied.
      */
-    keys?: Iterable<string>;
+    keys?: Iterable<keyof Data.TJSPositionData>;
     /**
      * When provided these keys are excluded.
      */
-    exclude?: Iterable<string>;
+    exclude?: Iterable<keyof Data.TJSPositionData>;
     /**
      * When true any `null` values are converted into default numeric values.
      */
@@ -1482,6 +959,534 @@ declare namespace TJSPositionTypes {
      */
     transformWindow: System.Validator.ValidatorSystem;
   };
+}
+
+/**
+ * Provides a public API for grouping multiple {@link TJSPosition} animations together and is accessible from
+ * {@link TJSPosition.Animate}.
+ *
+ *
+ * @see AnimationAPI
+ */
+interface AnimationGroupAPI {
+  /**
+   * Cancels any animation for given PositionGroup data.
+   *
+   * @param {TJSPositionTypes.PositionGroup} position - The position group to cancel.
+   */
+  cancel(position: TJSPositionTypes.PositionGroup): void;
+  /**
+   * Cancels all TJSPosition animation.
+   */
+  cancelAll(): void;
+  /**
+   * Gets all animation controls for the given position group data.
+   *
+   * @param {TJSPositionTypes.PositionGroup} position - A position group.
+   *
+   * @returns {{ position: TJSPosition, data: object | undefined, controls: IBasicAnimation[]}[]} Results array.
+   */
+  getScheduled(position: TJSPositionTypes.PositionGroup): {
+    position: TJSPosition;
+    data: object | undefined;
+    controls: IBasicAnimation[];
+  }[];
+  /**
+   * Provides the `from` animation tween for one or more TJSPosition instances as a group.
+   *
+   * @param {TJSPositionTypes.PositionGroup}  position - A position group.
+   *
+   * @param {object | Function} fromData -
+   *
+   * @param {AnimationAPI.TweenOptions | (() => AnimationAPI.TweenOptions)}   [options] -
+   *
+   * @returns {IBasicAnimation} Basic animation control.
+   */
+  from(
+    position: TJSPositionTypes.PositionGroup,
+    fromData: object | Function,
+    options?: AnimationAPI.TweenOptions | (() => AnimationAPI.TweenOptions),
+  ): IBasicAnimation;
+  /**
+   * Provides the `fromTo` animation tween for one or more TJSPosition instances as a group.
+   *
+   * @param {TJSPositionTypes.PositionGroup} position - A position group.
+   *
+   * @param {object | Function}   fromData -
+   *
+   * @param {object | Function}   toData -
+   *
+   * @param {object | Function}   [options] -
+   *
+   * @returns {IBasicAnimation} Basic animation control.
+   */
+  fromTo(
+    position: TJSPositionTypes.PositionGroup,
+    fromData: object | Function,
+    toData: object | Function,
+    options?: object | Function,
+  ): IBasicAnimation;
+  /**
+   * Provides the `to` animation tween for one or more TJSPosition instances as a group.
+   *
+   * @param {TJSPositionTypes.PositionGroup} position - A position group.
+   *
+   * @param {object | Function}   toData -
+   *
+   * @param {object | Function}   [options] -
+   *
+   * @returns {IBasicAnimation} Basic animation control.
+   */
+  to(position: TJSPositionTypes.PositionGroup, toData: object | Function, options?: object | Function): IBasicAnimation;
+  /**
+   * Provides the `to` animation tween for one or more TJSPosition instances as a group.
+   *
+   * @param {TJSPositionTypes.PositionGroup} position - A position group.
+   *
+   * @param {Iterable<AnimationAPI.AnimationKeys>}  keys -
+   *
+   * @param {AnimationAPI.QuickTweenOptions | (() => AnimationAPI.QuickTweenOptions)}  [options] -
+   *
+   * @returns {AnimationAPI.QuickToCallback} quick-to tween function.
+   */
+  quickTo(
+    position: TJSPositionTypes.PositionGroup,
+    keys: Iterable<AnimationAPI.AnimationKeys>,
+    options?: AnimationAPI.QuickTweenOptions | (() => AnimationAPI.QuickTweenOptions),
+  ): AnimationAPI.QuickToCallback;
+}
+interface AnimationAPI {
+  /**
+   * Returns whether there are scheduled animations whether active or delayed for this TJSPosition.
+   *
+   * @returns {boolean} Are there active animation instances.
+   */
+  get isScheduled(): boolean;
+  /**
+   * Cancels all animation instances for this TJSPosition instance.
+   */
+  cancel(): void;
+  /**
+   * Returns all currently scheduled AnimationControl instances for this TJSPosition instance.
+   *
+   * @returns {IBasicAnimation[]} All currently scheduled animation controls for this TJSPosition instance.
+   */
+  getScheduled(): IBasicAnimation[];
+  /**
+   * Provides a tween from given position data to the current position.
+   *
+   * @param {TJSPositionDataExtended} fromData - The starting position.
+   *
+   * @param {AnimationAPI.TweenOptions} [options] - Optional tween parameters.
+   *
+   * @returns {IBasicAnimation}  A control object that can cancel animation and provides a `finished` Promise.
+   */
+  from(fromData: TJSPositionDataExtended, options?: AnimationAPI.TweenOptions): IBasicAnimation;
+  /**
+   * Provides a tween from given position data to the current position.
+   *
+   * @param {TJSPositionDataExtended} fromData - The starting position.
+   *
+   * @param {TJSPositionDataExtended} toData - The ending position.
+   *
+   * @param {AnimationAPI.TweenOptions} [options] - Optional tween parameters.
+   *
+   * @returns {IBasicAnimation}  A control object that can cancel animation and provides a `finished` Promise.
+   */
+  fromTo(
+    fromData: TJSPositionDataExtended,
+    toData: TJSPositionDataExtended,
+    options?: AnimationAPI.TweenOptions,
+  ): IBasicAnimation;
+  /**
+   * Provides a tween to given position data from the current position.
+   *
+   * @param {TJSPositionDataExtended} toData - The destination position.
+   *
+   * @param {AnimationAPI.TweenOptions} [options] - Optional tween parameters.
+   *
+   * @returns {IBasicAnimation}  A control object that can cancel animation and provides a `finished` Promise.
+   */
+  to(toData: TJSPositionDataExtended, options?: AnimationAPI.TweenOptions): IBasicAnimation;
+  /**
+   * Returns a function that provides an optimized way to constantly update a to-tween.
+   *
+   * @param {Iterable<AnimationAPI.AnimationKeys>}  keys - The keys for quickTo.
+   *
+   * @param {AnimationAPI.QuickTweenOptions} [options] - Optional quick tween parameters.
+   *
+   * @returns {AnimationAPI.QuickToCallback} quick-to tween function.
+   */
+  quickTo(
+    keys: Iterable<AnimationAPI.AnimationKeys>,
+    options?: AnimationAPI.QuickTweenOptions,
+  ): AnimationAPI.QuickToCallback;
+}
+declare namespace AnimationAPI {
+  /**
+   * The position keys that can be animated.
+   */
+  type AnimationKeys =
+    | 'left'
+    | 'top'
+    | 'maxWidth'
+    | 'maxHeight'
+    | 'minWidth'
+    | 'minHeight'
+    | 'width'
+    | 'height'
+    | 'rotateX'
+    | 'rotateY'
+    | 'rotateZ'
+    | 'scale'
+    | 'translateX'
+    | 'translateY'
+    | 'translateZ'
+    | 'zIndex'
+    | 'rotation';
+  /**
+   * Defines the quick tweening options.
+   */
+  type QuickTweenOptions = {
+    /**
+     * Duration in seconds; default: 1
+     */
+    duration?: number;
+    /**
+     * Easing function; default: cubicOut
+     */
+    ease?: EasingFunction;
+    /**
+     * Interpolation function; default: lerp
+     */
+    interpolate?: InterpolateFunction;
+  };
+  /**
+   * Defines the tweening options.
+   */
+  type TweenOptions = QuickTweenOptions & {
+    /**
+     * Delay in seconds before animation starts; default: 0
+     */
+    delay?: number;
+  };
+  interface QuickToCallback extends Function {
+    /**
+     * @param args - Individual numbers corresponding to the order in which animation keys are specified.
+     */
+    (...args: number[]): void;
+    /**
+     * @param arg - A single object with animation keys specified and numerical values.
+     */
+    (arg: Record<AnimationKeys, number>): void;
+    /**
+     * The keys assigned for this quickTo callback.
+     */
+    readonly keys: AnimationKeys[];
+    /**
+     * Sets options of quickTo tween.
+     *
+     * @param data - Quick tween options.
+     *
+     * @returns This quickTo callback function.
+     */
+    options: (data: QuickTweenOptions) => QuickToCallback;
+  }
+}
+
+/**
+ * Defines the data objects / interfaces used by various TJSPosition APIs.
+ */
+declare namespace Data {
+  /**
+   * Defines the primary TJSPosition data object used by various TJSPosition APIs. To externally create a new instance
+   * use the static accessor {@link TJSPosition.Data}.
+   */
+  interface TJSPositionData {
+    height: number | 'auto' | 'inherit' | null;
+    left: number | null;
+    maxHeight: number | null;
+    maxWidth: number | null;
+    minHeight: number | null;
+    minWidth: number | null;
+    rotateX: number | null;
+    rotateY: number | null;
+    rotateZ: number | null;
+    scale: number | null;
+    top: number | null;
+    transformOrigin: TransformAPI.TransformOrigin | null;
+    translateX: number | null;
+    translateY: number | null;
+    translateZ: number | null;
+    width: number | 'auto' | 'inherit' | null;
+    zIndex: number | null;
+    rotation: number | null;
+  }
+  /**
+   * Defines a TJSPositionData instance that has extra properties / attributes.
+   */
+  interface TJSPositionDataExtra extends TJSPositionData {
+    [key: string]: any;
+  }
+  /**
+   * Defines an extension to {@link Data.TJSPositionData} where each animatable property defined by
+   * {@link AnimationAPI.AnimationKeys} can also be a relative string. This string should be in the form of '+=', '-=',
+   * or '*=' and float / numeric value. IE '+=0.2'. {@link TJSPosition.set} will apply the `addition`, `subtraction`,
+   * or `multiplication` operation specified against the current value of the given property.
+   */
+  type TJSPositionDataRelative = {
+    [P in keyof TJSPositionData as P extends AnimationAPI.AnimationKeys ? P : never]: TJSPositionData[P] | string;
+  } & {
+    [P in keyof TJSPositionData as P extends AnimationAPI.AnimationKeys ? never : P]: TJSPositionData[P];
+  };
+  /**
+   * Defines the constructor function for {@link TJSPositionData}.
+   */
+  interface TJSPositionDataConstructor {
+    new ({
+      height,
+      left,
+      maxHeight,
+      maxWidth,
+      minHeight,
+      minWidth,
+      rotateX,
+      rotateY,
+      rotateZ,
+      scale,
+      translateX,
+      translateY,
+      translateZ,
+      top,
+      transformOrigin,
+      width,
+      zIndex,
+      rotation,
+    }?: {
+      height?: number | 'auto' | 'inherit' | null;
+      left?: number | null;
+      maxHeight?: number | null;
+      maxWidth?: number | null;
+      minHeight?: number | null;
+      minWidth?: number | null;
+      rotateX?: number | null;
+      rotateY?: number | null;
+      rotateZ?: number | null;
+      scale?: number | null;
+      top?: number | null;
+      transformOrigin?: TransformAPI.TransformOrigin | null;
+      translateX?: number | null;
+      translateY?: number | null;
+      translateZ?: number | null;
+      width?: number | 'auto' | 'inherit' | null;
+      zIndex?: number | null;
+      rotation?: number | null;
+    }): TJSPositionData;
+  }
+}
+
+interface TransformAPI {
+  /**
+   * @returns {boolean} Whether there are active transforms in local data.
+   */
+  get isActive(): boolean;
+  /**
+   * @returns {number | undefined} Any local `rotateX` data.
+   */
+  get rotateX(): number | undefined;
+  /**
+   * @returns {number | undefined} Any local `rotateY` data.
+   */
+  get rotateY(): number | undefined;
+  /**
+   * @returns {number | undefined} Any local `rotateZ` data.
+   */
+  get rotateZ(): number | undefined;
+  /**
+   * @returns {number | undefined} Any local `scale` data.
+   */
+  get scale(): number | undefined;
+  /**
+   * @returns {number | undefined} Any local `translateX` data.
+   */
+  get translateX(): number | undefined;
+  /**
+   * @returns {number | undefined} Any local `translateY` data.
+   */
+  get translateY(): number | undefined;
+  /**
+   * @returns {number | undefined} Any local `translateZ` data.
+   */
+  get translateZ(): number | undefined;
+  /**
+   * Sets the local `rotateX` data if the value is a finite number otherwise removes the local data.
+   *
+   * @param {number | null | undefined}   value - A value to set.
+   */
+  set rotateX(value: number | null | undefined);
+  /**
+   * Sets the local `rotateY` data if the value is a finite number otherwise removes the local data.
+   *
+   * @param {number | null | undefined}   value - A value to set.
+   */
+  set rotateY(value: number | null | undefined);
+  /**
+   * Sets the local `rotateZ` data if the value is a finite number otherwise removes the local data.
+   *
+   * @param {number | null | undefined}   value - A value to set.
+   */
+  set rotateZ(value: number | null | undefined);
+  /**
+   * Sets the local `scale` data if the value is a finite number otherwise removes the local data.
+   *
+   * @param {number | null | undefined}   value - A value to set.
+   */
+  set scale(value: number | null | undefined);
+  /**
+   * Sets the local `translateX` data if the value is a finite number otherwise removes the local data.
+   *
+   * @param {number | null | undefined}   value - A value to set.
+   */
+  set translateX(value: number | null | undefined);
+  /**
+   * Sets the local `translateY` data if the value is a finite number otherwise removes the local data.
+   *
+   * @param {number | null | undefined}   value - A value to set.
+   */
+  set translateY(value: number | null | undefined);
+  /**
+   * Sets the local `translateZ` data if the value is a finite number otherwise removes the local data.
+   *
+   * @param {number | null | undefined}   value - A value to set.
+   */
+  set translateZ(value: number | null | undefined);
+  /**
+   * Returns the `matrix3d` CSS transform for the given position / transform data.
+   *
+   * @param {object} [data] - Optional position data otherwise use local stored transform data.
+   *
+   * @returns {string} The CSS `matrix3d` string.
+   */
+  getCSS(data?: object): string;
+  /**
+   * Returns the `matrix3d` CSS transform for the given position / transform data.
+   *
+   * @param {object} [data] - Optional position data otherwise use local stored transform data.
+   *
+   * @returns {string} The CSS `matrix3d` string.
+   */
+  getCSSOrtho(data?: object): string;
+  /**
+   * Collects all data including a bounding rect, transform matrix, and points array of the given
+   * {@link TJSPositionData} instance with the applied local transform data.
+   *
+   * @param {Data.TJSPositionData} position - The position data to process.
+   *
+   * @param {TransformAPI.TransformData} [output] - Optional TransformAPI.Data output instance.
+   *
+   * @param {object} [validationData] - Optional validation data for adjustment parameters.
+   *
+   * @returns {TransformAPI.TransformData} The output TransformAPI.Data instance.
+   */
+  getData(
+    position: Data.TJSPositionData,
+    output?: TransformAPI.TransformData,
+    validationData?: object,
+  ): TransformAPI.TransformData;
+  /**
+   * Creates a transform matrix based on local data applied in order it was added.
+   *
+   * If no data object is provided then the source is the local transform data. If another data object is supplied
+   * then the stored local transform order is applied then all remaining transform keys are applied. This allows the
+   * construction of a transform matrix in advance of setting local data and is useful in collision detection.
+   *
+   * @param {Data.TJSPositionData}   [data] - TJSPositionData instance or local transform data.
+   *
+   * @param {Mat4}  [output] - The output mat4 instance.
+   *
+   * @returns {Mat4} Transform matrix.
+   */
+  getMat4(data?: object, output?: Mat4): Mat4;
+  /**
+   * Provides an orthographic enhancement to convert left / top positional data to a translate operation.
+   *
+   * This transform matrix takes into account that the remaining operations are , but adds any left / top attributes
+   * from passed in data to translate X / Y.
+   *
+   * If no data object is provided then the source is the local transform data. If another data object is supplied
+   * then the stored local transform order is applied then all remaining transform keys are applied. This allows the
+   * construction of a transform matrix in advance of setting local data and is useful in collision detection.
+   *
+   * @param {Data.TJSPositionData}   [data] - TJSPositionData instance or local transform data.
+   *
+   * @param {Mat4}  [output] - The output mat4 instance.
+   *
+   * @returns {Mat4} Transform matrix.
+   */
+  getMat4Ortho(data?: object, output?: Mat4): Mat4;
+  /**
+   * Tests an object if it contains transform keys and the values are finite numbers.
+   *
+   * @param {Data.TJSPositionData} data - An object to test for transform data.
+   *
+   * @returns {boolean} Whether the given TJSPositionData has transforms.
+   */
+  hasTransform(data: object): boolean;
+  /**
+   * Resets internal data from the given object containing valid transform keys.
+   *
+   * @param {object}   data - An object with transform data.
+   */
+  reset(data: object): void;
+}
+/**
+ * Provides additional interfaces and type aliases for the transform API.
+ */
+declare namespace TransformAPI {
+  /**
+   * Describes the constructor function for {@link TransformData}.
+   */
+  interface TransformDataConstructor {
+    new (): TransformData;
+  }
+  /**
+   * Provides the output data for {@link TransformAPI.getData}.
+   */
+  interface TransformData {
+    /**
+     * @returns {DOMRect} The bounding rectangle.
+     */
+    get boundingRect(): DOMRect;
+    /**
+     * @returns {Vec3[]} The transformed corner points as Vec3 in screen space.
+     */
+    get corners(): Vec3[];
+    /**
+     * @returns {string} Returns the CSS style string for the transform matrix.
+     */
+    get css(): string;
+    /**
+     * @returns {Mat4} The transform matrix.
+     */
+    get mat4(): Mat4;
+    /**
+     * @returns {Mat4[]} The pre / post translation matrices for origin translation.
+     */
+    get originTranslations(): Mat4[];
+  }
+  /**
+   * The supported transform origin strings.
+   */
+  type TransformOrigin =
+    | 'top left'
+    | 'top center'
+    | 'top right'
+    | 'center left'
+    | 'center'
+    | 'center right'
+    | 'bottom left'
+    | 'bottom center'
+    | 'bottom right';
 }
 
 /**
