@@ -5979,18 +5979,18 @@ class TJSPosition
    {
       const keys = options?.keys;
       const excludeKeys = options?.exclude;
+      const nullable = options?.nullable ?? false;
       const numeric = options?.numeric ?? false;
 
       if (isIterable(keys))
       {
-         // Replace any null values potentially with numeric default values.
-         if (numeric)
+         for (const key of keys)
          {
-            for (const key of keys) { data[key] = this[key] ?? numericDefaults[key]; }
-         }
-         else // Accept current values.
-         {
-            for (const key of keys) { data[key] = this[key]; }
+            // Convert any null values to numeric defaults if `numeric` is true.
+            data[key] = numeric ? this[key] ?? numericDefaults[key] : this[key];
+
+            // Potentially remove null keys.
+            if (!nullable && data[key] === null) { delete data[key]; }
          }
 
          // Remove any excluded keys.
@@ -6013,6 +6013,14 @@ class TJSPosition
 
          // Potentially set numeric defaults.
          if (numeric) { setNumericDefaults(data); }
+
+         if (!nullable)
+         {
+            for (const key in data)
+            {
+               if (data[key] === null) { delete data[key]; }
+            }
+         }
 
          return data;
       }
