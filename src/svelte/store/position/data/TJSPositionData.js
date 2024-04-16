@@ -41,10 +41,13 @@ export class TJSPositionData
     * @param {number | 'auto' | 'inherit' | null} [opts.width] -
     *
     * @param {number | null} [opts.zIndex] -
+    *
+    * @param {number | null} [opts.rotation] - Alias for `rotateZ`.
     */
-   constructor({ height = null, left = null, maxHeight = null, maxWidth = null, minHeight = null, minWidth = null,
-    rotateX = null, rotateY = null, rotateZ = null, scale = null, translateX = null, translateY = null,
-     translateZ = null, top = null, transformOrigin = null, width = null, zIndex = null } = {})
+   constructor({ height = void 0, left = void 0, maxHeight = void 0, maxWidth = void 0, minHeight = void 0,
+    minWidth = void 0, rotateX = void 0, rotateY = void 0, rotateZ = void 0, scale = void 0, translateX = void 0,
+     translateY = void 0, translateZ = void 0, top = void 0, transformOrigin = void 0, width = void 0, zIndex = void 0,
+      rotation = void 0 } = {})
    {
       /** @type {number | 'auto' | 'inherit' | null} */
       this.height = height;
@@ -96,5 +99,10 @@ export class TJSPositionData
 
       /** @type {number | null} */
       this.zIndex = zIndex;
+
+      // Aliases -----------------------------------------------------------------------------------------------------
+
+      /** @type {number | null} */
+      this.rotation = rotation; // Alias for `rotateZ`.
    }
 }

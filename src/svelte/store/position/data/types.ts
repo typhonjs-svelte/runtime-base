@@ -1,3 +1,4 @@
+import type { AnimationAPI } from '../animation/types';
 import type { TransformAPI } from '../transform/types';
 import type { TJSPosition }   from '../TJSPosition';
 
@@ -43,6 +44,10 @@ namespace Data {
       width: number | 'auto' | 'inherit' | null;
 
       zIndex: number | null;
+
+      // Aliases -----------------------------------------------------------------------------------------------------
+
+      rotation: number | null; // Alias for `rotateZ`.
    }
 
    /**
@@ -53,13 +58,15 @@ namespace Data {
    }
 
    /**
-    * Defines an extension to {@link Data.TJSPositionData} where each property can also be a string. This string should
-    * be in the form of '+=', '-=', or '*=' and float / numeric value. IE '+=0.2'. {@link TJSPosition.set} will
-    * apply the `addition`, `subtraction`, or `multiplication` operation specified against the current value of the
-    * given property.
+    * Defines an extension to {@link Data.TJSPositionData} where each animatable property defined by
+    * {@link AnimationAPI.AnimationKeys} can also be a relative string. This string should be in the form of '+=', '-=',
+    * or '*=' and float / numeric value. IE '+=0.2'. {@link TJSPosition.set} will apply the `addition`, `subtraction`,
+    * or `multiplication` operation specified against the current value of the given property.
     */
    export type TJSPositionDataRelative = {
-      [P in keyof TJSPositionData]: TJSPositionData[P] | string;
+      [P in keyof TJSPositionData as P extends AnimationAPI.AnimationKeys ? P : never]: TJSPositionData[P] | string;
+   } & {
+      [P in keyof TJSPositionData as P extends AnimationAPI.AnimationKeys ? never : P]: TJSPositionData[P];
    };
 
    /**
@@ -67,7 +74,7 @@ namespace Data {
     */
    export interface TJSPositionDataConstructor {
       new ({ height, left, maxHeight, maxWidth, minHeight, minWidth, rotateX, rotateY, rotateZ, scale, translateX,
-        translateY, translateZ, top, transformOrigin, width, zIndex }?: {
+        translateY, translateZ, top, transformOrigin, width, zIndex, rotation }?: {
          height?: number | 'auto' | 'inherit' | null,
          left?: number | null,
          maxHeight?: number | null,
@@ -85,6 +92,7 @@ namespace Data {
          translateZ?: number | null,
          width?: number | 'auto' | 'inherit' | null,
          zIndex?: number | null,
+         rotation?: number | null
       }): TJSPositionData;
    }
 }

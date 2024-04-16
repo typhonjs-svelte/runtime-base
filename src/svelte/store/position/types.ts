@@ -30,12 +30,12 @@ namespace TJSPositionTypes {
       /**
        * When provided only these keys are copied.
        */
-      keys?: Iterable<string>;
+      keys?: Iterable<keyof Data.TJSPositionData>;
 
       /**
        * When provided these keys are excluded.
        */
-      exclude?: Iterable<string>;
+      exclude?: Iterable<keyof Data.TJSPositionData>;
 
       /**
        * When true any `null` values are converted into default numeric values.
