@@ -38,6 +38,11 @@ namespace TJSPositionTypes {
       exclude?: Iterable<keyof Data.TJSPositionData>;
 
       /**
+       * When true all `nullable` values are included.
+       */
+      nullable?: boolean;
+
+      /**
        * When true any `null` values are converted into default numeric values.
        */
       numeric?: boolean;

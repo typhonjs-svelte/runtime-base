@@ -827,7 +827,9 @@ export class TJSPosition
    }
 
    /**
-    * Assigns current position data to object passed into method.
+    * Assigns current position data to given object `data` object. By default, `null` position data is not assigned.
+    * Other options allow configuration of the data assigned including setting default numeric values for any properties
+    * that are null.
     *
     * @param {object}  [data] - Target to assign current position data.
     *
@@ -840,18 +842,18 @@ export class TJSPosition
    {
       const keys = options?.keys;
       const excludeKeys = options?.exclude;
+      const nullable = options?.nullable ?? false;
       const numeric = options?.numeric ?? false;
 
       if (isIterable(keys))
       {
-         // Replace any null values potentially with numeric default values.
-         if (numeric)
+         for (const key of keys)
          {
-            for (const key of keys) { data[key] = this[key] ?? constants.numericDefaults[key]; }
-         }
-         else // Accept current values.
-         {
-            for (const key of keys) { data[key] = this[key]; }
+            // Convert any null values to numeric defaults if `numeric` is true.
+            data[key] = numeric ? this[key] ?? constants.numericDefaults[key] : this[key];
+
+            // Potentially remove null keys.
+            if (!nullable && data[key] === null) { delete data[key]; }
          }
 
          // Remove any excluded keys.
@@ -874,6 +876,14 @@ export class TJSPosition
 
          // Potentially set numeric defaults.
          if (numeric) { constants.setNumericDefaults(data); }
+
+         if (!nullable)
+         {
+            for (const key in data)
+            {
+               if (data[key] === null) { delete data[key]; }
+            }
+         }
 
          return data;
       }
