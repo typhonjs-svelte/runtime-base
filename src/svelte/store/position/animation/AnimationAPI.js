@@ -13,7 +13,7 @@ import { AnimationManager }      from './AnimationManager.js';
 
 import { basicAnimationState }   from "./basicAnimationState.js";
 
-import { convertRelative }       from '../util';
+import { ConvertRelative }       from '../util';
 
 import {
    animateKeys,
@@ -254,7 +254,7 @@ export class AnimationAPI
          }
       }
 
-      convertRelative(initial, data);
+      ConvertRelative.process(initial, data, el);
 
       return this.#addAnimation(initial, destination, duration, el, delay, ease, interpolate);
    }
@@ -337,8 +337,8 @@ export class AnimationAPI
          }
       }
 
-      convertRelative(initial, data);
-      convertRelative(destination, data);
+      ConvertRelative.process(initial, data, el);
+      ConvertRelative.process(destination, data, el);
 
       return this.#addAnimation(initial, destination, duration, el, delay, ease, interpolate);
    }
@@ -407,7 +407,7 @@ export class AnimationAPI
          }
       }
 
-      convertRelative(destination, data);
+      ConvertRelative.process(destination, data, el);
 
       return this.#addAnimation(initial, destination, duration, el, delay, ease, interpolate);
    }
@@ -533,8 +533,6 @@ export class AnimationAPI
             }
          }
 
-         convertRelative(destination, data);
-
          // Set initial data for transform values that are often null by default.
          setNumericDefaults(initial);
          setNumericDefaults(destination);
@@ -542,6 +540,8 @@ export class AnimationAPI
          // Set target element to animation data to track if it is removed from the DOM hence ending the animation.
          const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
          animationData.el = A11yHelper.isFocusTarget(targetEl) && targetEl.isConnected ? targetEl : void 0;
+
+         ConvertRelative.process(destination, data, animationData.el);
 
          // Reschedule the quickTo animation with AnimationManager as it is finished.
          if (animationData.finished)

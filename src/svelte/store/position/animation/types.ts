@@ -214,17 +214,21 @@ namespace AnimationAPI {
       delay?: number;
    };
 
+   /**
+    * The `quickTo` callback function returned from {@link AnimationAPI.quickTo} and {@link AnimationGroupAPI.quickTo}.
+    */
    export interface QuickToCallback extends Function
    {
       /**
-       * @param args - Individual numbers corresponding to the order in which animation keys are specified.
+       * @param args - Individual numbers or relative strings corresponding to the order in which animation keys are
+       * specified.
        */
-      (...args: number[]): void;
+      (...args: (string | number)[]): void;
 
       /**
-       * @param arg - A single object with animation keys specified and numerical values.
+       * @param arg - A single object with animation keys specified and numerical or relative string values.
        */
-      (arg: Record<AnimationKeys, number>): void;
+      (arg: Record<AnimationKeys, string | number>): void;
 
       /**
        * The keys assigned for this quickTo callback.

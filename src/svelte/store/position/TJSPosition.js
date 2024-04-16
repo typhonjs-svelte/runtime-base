@@ -26,7 +26,7 @@ import {
    TJSTransformData,
    TJSTransforms }               from './transform';
 import {
-   convertRelative,
+   ConvertRelative,
    copyData,
    StyleCache }                  from './util';
 import {
@@ -976,7 +976,7 @@ export class TJSPosition
          }
 
          // Converts any relative string position data to numeric inputs.
-         convertRelative(position, this);
+         ConvertRelative.process(position, this.#data, el);
 
          position = this.#updatePosition(position, parent, el, styleCache);
 

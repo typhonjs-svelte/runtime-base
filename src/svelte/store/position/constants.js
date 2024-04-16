@@ -1,7 +1,7 @@
 /**
  * Stores the TJSPositionData properties that can be animated.
  *
- * @type {Set<string>}
+ * @type {ReadonlySet<string>}
  */
 const animateKeys = Object.freeze(new Set([
    // Main keys
@@ -22,11 +22,16 @@ const transformKeys = Object.freeze([
 ]);
 
 /**
- * Parses a relative value string in the form of '+=', '-=', or '*=' and float / numeric value. IE '+=0.2'.
+ * Parses relative values in addition to other string formats such as percent value. Relative values must start with
+ * leading values '+=', '-=', or '*=' followed by a float / numeric value. IE `+=45` or for percentage '+=10%'.
+ * Also handles exact percent value such as `10` or `10%`. Percentage values are based on the current value,
+ * parent element constraints, or constraints of the type of value like rotation being bound by 360 degrees.
+ *
+ * TODO: In the future support more specific CSS unit types.
  *
  * @type {RegExp}
  */
-const relativeRegex = /^([-+*])=(-?[\d]*\.?[\d]+)$/;
+const regexRelative = /^(?<operation>[-+*]=)?(?<value>-?\d*\.?\d+)(?<unit>%|%~|px)?$/;
 
 /**
  * Provides numeric defaults for all parameters. This is used by {@link TJSPosition.get} to optionally
@@ -111,7 +116,7 @@ const transformOrigins = Object.freeze(['top left', 'top center', 'top right', '
 export {
    animateKeys,
    numericDefaults,
-   relativeRegex,
+   regexRelative,
    setNumericDefaults,
    transformKeys,
    transformKeysBitwise,
