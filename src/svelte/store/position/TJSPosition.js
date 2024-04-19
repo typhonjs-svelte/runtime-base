@@ -63,40 +63,11 @@ export class TJSPosition
     *
     * @type {Readonly<import('./types').TJSPositionTypes.PositionValidators>}
     */
-   static #positionValidators = {
+   static #positionValidators = Object.freeze({
       BasicBounds,
       basicWindow: new BasicBounds({ lock: true }),
       TransformBounds,
       transformWindow: new TransformBounds({ lock: true })
-   };
-
-   /**
-    * Temporary data storage for `TJSPosition.#updatePosition`.
-    *
-    * @type {TJSPositionData}
-    */
-   static #updateDataCopy = Object.seal(new TJSPositionData());
-
-   /**
-    * Temporary data storage for `TJSPosition.#updatePosition`.
-    *
-    * @type {import('./system/validators/types').ValidatorAPI.ValidationData}
-    */
-   static #validationData = Object.seal({
-      position: void 0,
-      parent: void 0,
-      el: void 0,
-      computed: void 0,
-      transforms: void 0,
-      height: void 0,
-      width: void 0,
-      marginLeft: void 0,
-      marginTop: void 0,
-      maxHeight: void 0,
-      maxWidth: void 0,
-      minHeight: void 0,
-      minWidth: void 0,
-      rest: void 0
    });
 
    /**
@@ -1240,6 +1211,37 @@ export class TJSPosition
 
       this.set(result);
    }
+
+   // Internal Implementation ----------------------------------------------------------------------------------------
+
+   /**
+    * Temporary data storage for `TJSPosition.#updatePosition`.
+    *
+    * @type {TJSPositionData}
+    */
+   static #updateDataCopy = Object.seal(new TJSPositionData());
+
+   /**
+    * Temporary data storage for `TJSPosition.#updatePosition`.
+    *
+    * @type {import('./system/validators/types').ValidatorAPI.ValidationData}
+    */
+   static #validationData = Object.seal({
+      position: void 0,
+      parent: void 0,
+      el: void 0,
+      computed: void 0,
+      transforms: void 0,
+      height: void 0,
+      width: void 0,
+      marginLeft: void 0,
+      marginTop: void 0,
+      maxHeight: void 0,
+      maxWidth: void 0,
+      minHeight: void 0,
+      minWidth: void 0,
+      rest: void 0
+   });
 
    /**
     * @param {import('./').TJSPositionDataExtended} opts -
