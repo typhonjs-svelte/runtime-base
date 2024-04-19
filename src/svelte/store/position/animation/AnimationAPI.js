@@ -11,13 +11,11 @@ import {
 import { AnimationControl }      from './AnimationControl.js';
 import { AnimationManager }      from './AnimationManager.js';
 
-import { basicAnimationState }   from "./basicAnimationState.js";
+import { basicAnimationState }   from './basicAnimationState.js';
 
 import { ConvertRelative }       from '../util';
 
-import {
-   animateKeys,
-   setNumericDefaults }          from '../constants.js';
+import * as constants            from '../constants.js';
 
 /**
  * @implements {import('./types').AnimationAPI}
@@ -89,8 +87,8 @@ export class AnimationAPI
    #addAnimation(initial, destination, duration, el, delay, ease, interpolate)
    {
       // Set initial data for transform values that are often null by default.
-      setNumericDefaults(initial);
-      setNumericDefaults(destination);
+      constants.setNumericDefaults(initial);
+      constants.setNumericDefaults(destination);
 
       // Reject all initial data that is not a number.
       for (const key in initial)
@@ -247,10 +245,13 @@ export class AnimationAPI
       // Set initial data if the key / data is defined and the end position is not equal to current data.
       for (const key in fromData)
       {
-         if (data[key] !== void 0 && fromData[key] !== data[key])
+         // Must use actual key from any aliases.
+         const aliasedKey = constants.animateKeyAliases.get(key) ?? key;
+
+         if (data[aliasedKey] !== void 0 && fromData[key] !== data[aliasedKey])
          {
             initial[key] = fromData[key];
-            destination[key] = data[key];
+            destination[key] = data[aliasedKey];
          }
       }
 
@@ -330,7 +331,10 @@ export class AnimationAPI
             continue;
          }
 
-         if (data[key] !== void 0)
+         // Must use actual key from any aliases.
+         const aliasedKey = constants.animateKeyAliases.get(key) ?? key;
+
+         if (data[aliasedKey] !== void 0)
          {
             initial[key] = fromData[key];
             destination[key] = toData[key];
@@ -400,10 +404,13 @@ export class AnimationAPI
       // Set initial data if the key / data is defined and the end position is not equal to current data.
       for (const key in toData)
       {
-         if (data[key] !== void 0 && toData[key] !== data[key])
+         // Must use actual key from any aliases.
+         const aliasedKey = constants.animateKeyAliases.get(key) ?? key;
+
+         if (data[aliasedKey] !== void 0 && toData[key] !== data[aliasedKey])
          {
             destination[key] = toData[key];
-            initial[key] = data[key];
+            initial[key] = data[aliasedKey];
          }
       }
 
@@ -464,15 +471,19 @@ export class AnimationAPI
             throw new TypeError(`AnimationAPI.quickTo error: key ('${key}') is not a string.`);
          }
 
-         if (!animateKeys.has(key))
+         if (!constants.animateKeys.has(key))
          {
             throw new Error(`AnimationAPI.quickTo error: key ('${key}') is not animatable.`);
          }
 
-         if (data[key] !== void 0)
+         // Must use actual key from any aliases.
+         const aliasedKey = constants.animateKeyAliases.get(key) ?? key;
+         const value = data[aliasedKey] ?? constants.numericDefaults[aliasedKey];
+
+         if (value !== null)
          {
-            destination[key] = data[key];
-            initial[key] = data[key];
+            destination[key] = value;
+            initial[key] = value;
          }
       }
 
@@ -511,7 +522,11 @@ export class AnimationAPI
          for (let cntr = keysArray.length; --cntr >= 0;)
          {
             const key = keysArray[cntr];
-            if (data[key] !== void 0) { initial[key] = data[key]; }
+
+            // Must use actual key from any aliases.
+            const aliasedKey = constants.animateKeyAliases.get(key) ?? key;
+
+            if (data[aliasedKey] !== void 0) { initial[key] = data[aliasedKey]; }
          }
 
          // Handle case where the first arg is an object. Update all quickTo keys from data contained in the object.
@@ -534,8 +549,8 @@ export class AnimationAPI
          }
 
          // Set initial data for transform values that are often null by default.
-         setNumericDefaults(initial);
-         setNumericDefaults(destination);
+         constants.setNumericDefaults(initial);
+         constants.setNumericDefaults(destination);
 
          // Set target element to animation data to track if it is removed from the DOM hence ending the animation.
          const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
