@@ -1244,45 +1244,7 @@ export class TJSPosition
    });
 
    /**
-    * @param {import('./').TJSPositionDataExtended} opts -
-    *
-    * @param {number|null} opts.left -
-    *
-    * @param {number|null} opts.top -
-    *
-    * @param {number|null} opts.maxHeight -
-    *
-    * @param {number|null} opts.maxWidth -
-    *
-    * @param {number|null} opts.minHeight -
-    *
-    * @param {number|null} opts.minWidth -
-    *
-    * @param {number|'auto'|'inherit'|null} opts.width -
-    *
-    * @param {number|'auto'|'inherit'|null} opts.height -
-    *
-    * @param {number|null} opts.rotateX -
-    *
-    * @param {number|null} opts.rotateY -
-    *
-    * @param {number|null} opts.rotateZ -
-    *
-    * @param {number|null} opts.scale -
-    *
-    * @param {string} opts.transformOrigin -
-    *
-    * @param {number|null} opts.translateX -
-    *
-    * @param {number|null} opts.translateY -
-    *
-    * @param {number|null} opts.translateZ -
-    *
-    * @param {number|null} opts.zIndex -
-    *
-    * @param {number|null} opts.rotation - alias for rotateZ
-    *
-    * @param {*} opts.rest -
+    * @param {import('./data/types').Data.TJSPositionData} data -
     *
     * @param {object} parent -
     *
