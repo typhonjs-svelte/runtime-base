@@ -60,12 +60,12 @@ export class TJSPositionDataUtil
     * Convenience to copy from source to target of two TJSPositionData like objects. If a target is not supplied a new
     * {@link TJSPositionData} instance is created.
     *
-    * @param {import('./types').Data.TJSPositionData}  source - The source instance to copy from.
+    * @param {Partial<import('./types').Data.TJSPositionData>}  source - The source instance to copy from.
     *
-    * @param {import('./types').Data.TJSPositionData}  [target] - Target TJSPositionData like object; if one is not
-    *        provided a new instance is created.
+    * @param {import('./types').Data.TJSPositionData}  [target] - Target TJSPositionData like object; if one
+    *        is not provided a new instance is created.
     *
-    * @returns {import('./types').Data.TJSPositionData} The target instance.
+    * @returns {import('./types').Data.TJSPositionData} The target instance with all TJSPositionData fields.
     */
    static copyData(source, target = new TJSPositionData())
    {
