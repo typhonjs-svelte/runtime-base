@@ -1,6 +1,6 @@
-import { nextAnimationFrame } from '#runtime/util/animate';
+import { nextAnimationFrame }    from '#runtime/util/animate';
 
-import { copyData }           from '../util'
+import { TJSPositionDataUtil }   from '../data';
 
 /**
  * Decouples updates to any parent target HTMLElement inline styles. Invoke
@@ -147,7 +147,7 @@ export class UpdateElementManager
       if (!changeSet.hasChange()) { return; }
 
       // Make a copy of the data.
-      const output = copyData(data, updateData.dataSubscribers);
+      const output = TJSPositionDataUtil.copyData(data, updateData.dataSubscribers);
 
       const subscriptions = updateData.subscriptions;
 

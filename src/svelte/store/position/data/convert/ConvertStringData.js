@@ -1,6 +1,10 @@
-import * as constants from '../../constants.js';
+import { TJSPositionDataUtil }   from '../TJSPositionDataUtil.js';
 
-export class ConvertRelative
+/**
+ * Converts {@link TJSPositionData} properties defined as strings to number values. The string values can be defined
+ * as relative adjustments with a leading operator. Various unit formats are supported as well.
+ */
+export class ConvertStringData
 {
    /**
     * Animation keys for different processing categories.
@@ -18,11 +22,23 @@ export class ConvertRelative
    };
 
    /**
-    * Stores the results for match groups from `constants.regexRelative`;
+    * Parses string data values. Relative values must start with leading values '+=', '-=', or '*=' followed by a
+    * float / numeric value. IE `+=45` or for percentage '+=10%'. Also handles exact percent value such as `10` or
+    * `10%`. Percentage values are based on the current value, parent element constraints, or constraints of the type
+    * of value like rotation being bound by 360 degrees.
     *
-    * @type {import('./types').RelativeMatch}
+    * TODO: In the future support more specific CSS unit types.
+    *
+    * @type {RegExp}
     */
-   static #relativeMatch = Object.seal({
+   static #regexStringData = /^(?<operation>[-+*]=)?(?<value>-?\d*\.?\d+)(?<unit>%|%~|px)?$/;
+
+   /**
+    * Stores the results for match groups from `regexStringData`;
+    *
+    * @type {import('./types').StringMatch}
+    */
+   static #matchResults = Object.seal({
       operation: void 0,
       value: void 0,
       unit: void 0
@@ -45,7 +61,7 @@ export class ConvertRelative
       for (const key in data)
       {
          // Key is animatable / numeric.
-         if (constants.animateKeys.has(key))
+         if (TJSPositionDataUtil.isAnimKey(key))
          {
             const value = data[key];
 
@@ -57,23 +73,21 @@ export class ConvertRelative
             /** @type {import('../animation/types').AnimationAPI.AnimationKeys} */
             const animKey = key;
 
-            const regexResults = constants.regexRelative.exec(value);
+            const regexResults = this.#regexStringData.exec(value);
 
             // Additional state indicating a particular key is not handled.
             let notHandledWarning = false;
 
             if (regexResults)
             {
-               const results = this.#relativeMatch;
+               const results = this.#matchResults;
 
                results.operation = regexResults.groups.operation;
                results.value = parseFloat(regexResults.groups.value);
                results.unit = regexResults.groups.unit;
 
-               // Retrieve current value, but if null use the numeric default. Must use non-aliased key for correct
-               // current value;
-               const aliasedKey = constants.animateKeyAliases.get(key) ?? key;
-               const current = position[aliasedKey] ?? constants.numericDefaults[aliasedKey];
+               // Retrieve current value, but if null use the numeric default.
+               const current = TJSPositionDataUtil.getDataOrDefault(position, key, true);
 
                switch (results.unit)
                {
@@ -92,7 +106,7 @@ export class ConvertRelative
                         if (parentClientHeight === void 0 || parentClientWidth === void 0)
                         {
                            console.warn(
-                            `TJSPosition - ConvertRelative warning: could not determine parent constraints for key '${
+                            `TJSPosition - ConvertStringData warning: could not determine parent constraints for key '${
                              key}' with value '${value}'.`);
                            data[key] = void 0;
                            continue;
@@ -128,7 +142,7 @@ export class ConvertRelative
             if (!regexResults || notHandledWarning)
             {
                console.warn(
-                `TJSPosition - ConvertRelative warning: malformed key '${key}' with value '${value}'.`);
+                `TJSPosition - ConvertStringData warning: malformed key '${key}' with value '${value}'.`);
                data[key] = void 0;
             }
          }
@@ -151,7 +165,7 @@ export class ConvertRelative
     *
     * @param {HTMLElement} el - Positioned element.
     *
-    * @param {import('./types').RelativeMatch}  results - Relative match results.
+    * @param {import('./types').StringMatch}  results - Match results.
     *
     * @param {number}  parentClientHeight - Parent element client height.
     *
@@ -234,7 +248,7 @@ export class ConvertRelative
     *
     * @param {HTMLElement} el - Positioned element.
     *
-    * @param {import('./types').RelativeMatch}  results - Relative match results.
+    * @param {import('./types').StringMatch}  results - Match results.
     *
     * @returns {boolean} Adjustment successful.
     */
@@ -274,7 +288,7 @@ export class ConvertRelative
     *
     * @param {HTMLElement} el - Positioned element.
     *
-    * @param {import('./types').RelativeMatch}  results - Relative match results.
+    * @param {import('./types').StringMatch}  results - Match results.
     *
     * @returns {boolean} Adjustment successful.
     */

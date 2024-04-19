@@ -14,25 +14,31 @@ import { subscribeIgnoreFirst }  from '#runtime/util/store';
 import {
    AnimationAPI,
    AnimationGroupAPI }           from './animation';
-import { TJSPositionData }       from './data';
+
+import {
+   ConvertStringData,
+   TJSPositionData,
+   TJSPositionDataUtil }         from './data';
+
 import { PositionStateAPI }      from './state';
 import { SystemBase }            from './system';
 import { Centered }              from './system/initial';
+
 import {
    AdapterValidators,
    BasicBounds,
    TransformBounds }             from './system/validators';
+
 import {
    TJSTransformData,
    TJSTransforms }               from './transform';
-import {
-   ConvertRelative,
-   copyData,
-   StyleCache }                  from './util';
+
 import {
    PositionChangeSet,
    UpdateElementData,
    UpdateElementManager }        from './update';
+
+import { StyleCache }            from './util';
 
 import * as constants            from './constants.js';
 
@@ -208,7 +214,7 @@ export class TJSPosition
     */
    static copyData(source, target)
    {
-      return copyData(source, target);
+      return TJSPositionDataUtil.copyData(source, target);
    }
 
    /**
@@ -850,7 +856,7 @@ export class TJSPosition
          for (const key of keys)
          {
             // Convert any null values to numeric defaults if `numeric` is true.
-            data[key] = numeric ? this[key] ?? constants.numericDefaults[key] : this[key];
+            data[key] = numeric ? TJSPositionDataUtil.getDataOrDefault(this, key) : this[key];
 
             // Potentially remove null keys.
             if (!nullable && data[key] === null) { delete data[key]; }
@@ -875,7 +881,7 @@ export class TJSPosition
          }
 
          // Potentially set numeric defaults.
-         if (numeric) { constants.setNumericDefaults(data); }
+         if (numeric) { TJSPositionDataUtil.setNumericDefaults(data); }
 
          if (!nullable)
          {
@@ -975,8 +981,8 @@ export class TJSPosition
             this.#updateElementData.queued = false;
          }
 
-         // Converts any relative string position data to numeric inputs.
-         ConvertRelative.process(position, this.#data, el);
+         // Converts any string position data to numeric inputs.
+         ConvertStringData.process(position, this.#data, el);
 
          position = this.#updatePosition(position, parent, el, styleCache);
 
@@ -1249,7 +1255,7 @@ export class TJSPosition
       ...rest
    } = {}, parent, el, styleCache)
    {
-      let currentPosition = copyData(this.#data, s_DATA_UPDATE);
+      let currentPosition = TJSPositionDataUtil.copyData(this.#data, s_DATA_UPDATE);
 
       // Update width if an explicit value is passed, or if no width value is set on the element.
       if (el.style.width === '' || width !== void 0)

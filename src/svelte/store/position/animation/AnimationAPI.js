@@ -13,9 +13,9 @@ import { AnimationManager }      from './AnimationManager.js';
 
 import { basicAnimationState }   from './basicAnimationState.js';
 
-import { ConvertRelative }       from '../util';
-
-import * as constants            from '../constants.js';
+import {
+   ConvertStringData,
+   TJSPositionDataUtil }         from '../data';
 
 /**
  * @implements {import('./types').AnimationAPI}
@@ -87,8 +87,8 @@ export class AnimationAPI
    #addAnimation(initial, destination, duration, el, delay, ease, interpolate)
    {
       // Set initial data for transform values that are often null by default.
-      constants.setNumericDefaults(initial);
-      constants.setNumericDefaults(destination);
+      TJSPositionDataUtil.setNumericDefaults(initial);
+      TJSPositionDataUtil.setNumericDefaults(destination);
 
       // Reject all initial data that is not a number.
       for (const key in initial)
@@ -246,16 +246,16 @@ export class AnimationAPI
       for (const key in fromData)
       {
          // Must use actual key from any aliases.
-         const aliasedKey = constants.animateKeyAliases.get(key) ?? key;
+         const animKey = TJSPositionDataUtil.getAnimKey(key);
 
-         if (data[aliasedKey] !== void 0 && fromData[key] !== data[aliasedKey])
+         if (data[animKey] !== void 0 && fromData[key] !== data[animKey])
          {
             initial[key] = fromData[key];
-            destination[key] = data[aliasedKey];
+            destination[key] = data[animKey];
          }
       }
 
-      ConvertRelative.process(initial, data, el);
+      ConvertStringData.process(initial, data, el);
 
       return this.#addAnimation(initial, destination, duration, el, delay, ease, interpolate);
    }
@@ -332,17 +332,17 @@ export class AnimationAPI
          }
 
          // Must use actual key from any aliases.
-         const aliasedKey = constants.animateKeyAliases.get(key) ?? key;
+         const animKey = TJSPositionDataUtil.getAnimKey(key);
 
-         if (data[aliasedKey] !== void 0)
+         if (data[animKey] !== void 0)
          {
             initial[key] = fromData[key];
             destination[key] = toData[key];
          }
       }
 
-      ConvertRelative.process(initial, data, el);
-      ConvertRelative.process(destination, data, el);
+      ConvertStringData.process(initial, data, el);
+      ConvertStringData.process(destination, data, el);
 
       return this.#addAnimation(initial, destination, duration, el, delay, ease, interpolate);
    }
@@ -405,16 +405,16 @@ export class AnimationAPI
       for (const key in toData)
       {
          // Must use actual key from any aliases.
-         const aliasedKey = constants.animateKeyAliases.get(key) ?? key;
+         const animKey = TJSPositionDataUtil.getAnimKey(key);
 
-         if (data[aliasedKey] !== void 0 && toData[key] !== data[aliasedKey])
+         if (data[animKey] !== void 0 && toData[key] !== data[animKey])
          {
             destination[key] = toData[key];
-            initial[key] = data[aliasedKey];
+            initial[key] = data[animKey];
          }
       }
 
-      ConvertRelative.process(destination, data, el);
+      ConvertStringData.process(destination, data, el);
 
       return this.#addAnimation(initial, destination, duration, el, delay, ease, interpolate);
    }
@@ -471,14 +471,13 @@ export class AnimationAPI
             throw new TypeError(`AnimationAPI.quickTo error: key ('${key}') is not a string.`);
          }
 
-         if (!constants.animateKeys.has(key))
+         if (!TJSPositionDataUtil.isAnimKey(key))
          {
             throw new Error(`AnimationAPI.quickTo error: key ('${key}') is not animatable.`);
          }
 
          // Must use actual key from any aliases.
-         const aliasedKey = constants.animateKeyAliases.get(key) ?? key;
-         const value = data[aliasedKey] ?? constants.numericDefaults[aliasedKey];
+         const value = TJSPositionDataUtil.getDataOrDefault(data, key, true);
 
          if (value !== null)
          {
@@ -524,9 +523,9 @@ export class AnimationAPI
             const key = keysArray[cntr];
 
             // Must use actual key from any aliases.
-            const aliasedKey = constants.animateKeyAliases.get(key) ?? key;
+            const animKey = TJSPositionDataUtil.getAnimKey(key);
 
-            if (data[aliasedKey] !== void 0) { initial[key] = data[aliasedKey]; }
+            if (data[animKey] !== void 0) { initial[key] = data[animKey]; }
          }
 
          // Handle case where the first arg is an object. Update all quickTo keys from data contained in the object.
@@ -549,14 +548,14 @@ export class AnimationAPI
          }
 
          // Set initial data for transform values that are often null by default.
-         constants.setNumericDefaults(initial);
-         constants.setNumericDefaults(destination);
+         TJSPositionDataUtil.setNumericDefaults(initial);
+         TJSPositionDataUtil.setNumericDefaults(destination);
 
          // Set target element to animation data to track if it is removed from the DOM hence ending the animation.
          const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
          animationData.el = A11yHelper.isFocusTarget(targetEl) && targetEl.isConnected ? targetEl : void 0;
 
-         ConvertRelative.process(destination, data, animationData.el);
+         ConvertStringData.process(destination, data, animationData.el);
 
          // Reschedule the quickTo animation with AnimationManager as it is finished.
          if (animationData.finished)
