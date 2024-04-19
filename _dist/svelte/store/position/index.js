@@ -898,6 +898,13 @@ const animateKeys = Object.freeze(new Set([
 ]));
 
 /**
+ * Stores the TJSPositionData property aliases that can be animated.
+ *
+ * @type {Readonly<Map<string, string>>}
+ */
+const animateKeyAliases = Object.freeze(new Map([['rotation', 'rotateZ']]));
+
+/**
  * Defines the keys of TJSPositionData that are transform keys.
  *
  * @type {string[]}
@@ -1037,6 +1044,9 @@ class ConvertRelative
     */
    static process(data, position, el)
    {
+      /** @type {number} */
+      let parentClientHeight = void 0, parentClientWidth = void 0;
+
       for (const key in data)
       {
          // Key is animatable / numeric.
@@ -1065,9 +1075,42 @@ class ConvertRelative
                results.value = parseFloat(regexResults.groups.value);
                results.unit = regexResults.groups.unit;
 
-               const current = position[key];
+               // Retrieve current value, but if null use the numeric default. Must use non-aliased key for correct
+               // current value;
+               const aliasedKey = animateKeyAliases.get(key) ?? key;
+               const current = position[aliasedKey] ?? numericDefaults[aliasedKey];
+
                switch (results.unit)
                {
+                  // Animation keys that support percentage changes including constraints against the parent element.
+                  case '%':
+                  {
+                     // Cache parent client width / height on first parent percent based key.
+                     if (this.#animKeyTypes.percentParent.has(key))
+                     {
+                        if (!Number.isFinite(parentClientHeight) && el?.parentElement?.isConnected)
+                        {
+                           parentClientHeight = el.parentElement.clientHeight;
+                           parentClientWidth = el.parentElement.clientWidth;
+                        }
+
+                        if (parentClientHeight === void 0 || parentClientWidth === void 0)
+                        {
+                           console.warn(
+                            `TJSPosition - ConvertRelative warning: could not determine parent constraints for key '${
+                             key}' with value '${value}'.`);
+                           data[key] = void 0;
+                           continue;
+                        }
+                     }
+
+                     notHandledWarning = this.#handlePercent(animKey, current, data, position, el, results,
+                      parentClientHeight, parentClientWidth);
+
+                     break;
+                  }
+
+                  // Animation keys that support percentage changes from current values.
                   case '%~':
                      notHandledWarning = this.#handleRelativePercent(animKey, current, data, position, el, results);
                      break;
@@ -1100,6 +1143,92 @@ class ConvertRelative
    }
 
    /**
+    * Handles the `%` unit type where values are adjusted against the parent element client width / height or in the
+    * case of rotation the percentage of 360 degrees.
+    *
+    * @param {import('../animation/types').AnimationAPI.AnimationKeys} key - Animation key.
+    *
+    * @param {number}   current - Current value
+    *
+    * @param {Partial<import('../data/types').Data.TJSPositionDataRelative>}  data - Source data to convert.
+    *
+    * @param {import('../data/types').Data.TJSPositionData} position - Current position data.
+    *
+    * @param {HTMLElement} el - Positioned element.
+    *
+    * @param {import('./types').RelativeMatch}  results - Relative match results.
+    *
+    * @param {number}  parentClientHeight - Parent element client height.
+    *
+    * @param {number}  parentClientWidth - Parent element client width.
+    *
+    * @returns {boolean} Adjustment successful.
+    */
+   static #handlePercent(key, current, data, position, el, results, parentClientHeight, parentClientWidth)
+   {
+      /** @type {number} */
+      let value = void 0;
+
+      switch (key)
+      {
+         // Calculate value; take into account keys that calculate parent client width.
+         case 'left':
+         case 'maxWidth':
+         case 'minWidth':
+         case 'width':
+         case 'translateX':
+            value = parentClientWidth * (results.value / 100);
+            break;
+
+         // Calculate value; take into account keys that calculate parent client height.
+         case 'top':
+         case 'maxHeight':
+         case 'minHeight':
+         case 'height':
+         case 'translateY':
+            value = parentClientHeight * (results.value / 100);
+            break;
+
+         // Calculate value; convert percentage into degrees
+         case 'rotateX':
+         case 'rotateY':
+         case 'rotateZ':
+         case 'rotation':
+            value = 360 * (results.value / 100);
+            break;
+
+         default:
+            return false;
+      }
+
+      if (!results.operation)
+      {
+         data[key] = value;
+         return true;
+      }
+
+      switch (results.operation)
+      {
+         case '-=':
+            data[key] = current - value;
+            break;
+
+         case '+=':
+            data[key] = current + value;
+            break;
+
+         case '*=':
+            data[key] = current * value;
+            break;
+
+         default:
+            return false;
+      }
+
+      return true;
+   }
+
+   /**
     * @param {import('../animation/types').AnimationAPI.AnimationKeys} key - Animation key.
     *
     * @param {number}   current - Current value
@@ -1129,6 +1258,9 @@ class ConvertRelative
          case '*=':
             data[key] = current * results.value;
             break;
+
+         default:
+            return false;
       }
 
       return true;
@@ -1716,10 +1848,13 @@ class AnimationAPI
       // Set initial data if the key / data is defined and the end position is not equal to current data.
       for (const key in fromData)
       {
-         if (data[key] !== void 0 && fromData[key] !== data[key])
+         // Must use actual key from any aliases.
+         const aliasedKey = animateKeyAliases.get(key) ?? key;
+
+         if (data[aliasedKey] !== void 0 && fromData[key] !== data[aliasedKey])
          {
             initial[key] = fromData[key];
-            destination[key] = data[key];
+            destination[key] = data[aliasedKey];
          }
       }
 
@@ -1799,7 +1934,10 @@ class AnimationAPI
             continue;
          }
 
-         if (data[key] !== void 0)
+         // Must use actual key from any aliases.
+         const aliasedKey = animateKeyAliases.get(key) ?? key;
+
+         if (data[aliasedKey] !== void 0)
          {
             initial[key] = fromData[key];
             destination[key] = toData[key];
@@ -1869,10 +2007,13 @@ class AnimationAPI
       // Set initial data if the key / data is defined and the end position is not equal to current data.
       for (const key in toData)
       {
-         if (data[key] !== void 0 && toData[key] !== data[key])
+         // Must use actual key from any aliases.
+         const aliasedKey = animateKeyAliases.get(key) ?? key;
+
+         if (data[aliasedKey] !== void 0 && toData[key] !== data[aliasedKey])
          {
             destination[key] = toData[key];
-            initial[key] = data[key];
+            initial[key] = data[aliasedKey];
          }
       }
 
@@ -1938,11 +2079,24 @@ class AnimationAPI
             throw new Error(`AnimationAPI.quickTo error: key ('${key}') is not animatable.`);
          }
 
-         if (data[key] !== void 0)
+         // Must use actual key from any aliases.
+         const aliasedKey = animateKeyAliases.get(key) ?? key;
+         const value = data[aliasedKey] ?? numericDefaults[aliasedKey];
+
+         if (value !== null)
          {
-            destination[key] = data[key];
-            initial[key] = data[key];
+            destination[key] = value;
+            initial[key] = value;
          }
+         // if (data[aliasedKey] !== void 0)
+         // {
+
+            // destination[key] = value;
+            // initial[key] = value;
+
+            // destination[key] = data[aliasedKey];
+            // initial[key] = data[aliasedKey];
+         // }
       }
 
       const keysArray = [...keys];
@@ -1980,7 +2134,11 @@ class AnimationAPI
          for (let cntr = keysArray.length; --cntr >= 0;)
          {
             const key = keysArray[cntr];
-            if (data[key] !== void 0) { initial[key] = data[key]; }
+
+            // Must use actual key from any aliases.
+            const aliasedKey = animateKeyAliases.get(key) ?? key;
+
+            if (data[aliasedKey] !== void 0) { initial[key] = data[aliasedKey]; }
          }
 
          // Handle case where the first arg is an object. Update all quickTo keys from data contained in the object.
