@@ -3,7 +3,7 @@
 /**
  * Defines the relative match group results from `regexRelative` used in
  */
-export type RelativeMatch = {
+export type StringMatch = {
    /**
     * The operation to perform if any: '+=' | '-=' | '*='
     */
