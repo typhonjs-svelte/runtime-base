@@ -13,6 +13,13 @@ const animateKeys = Object.freeze(new Set([
 ]));
 
 /**
+ * Stores the TJSPositionData property aliases that can be animated.
+ *
+ * @type {Readonly<Map<string, string>>}
+ */
+const animateKeyAliases = Object.freeze(new Map([['rotation', 'rotateZ']]));
+
+/**
  * Defines the keys of TJSPositionData that are transform keys.
  *
  * @type {string[]}
@@ -115,6 +122,7 @@ const transformOrigins = Object.freeze(['top left', 'top center', 'top right', '
 
 export {
    animateKeys,
+   animateKeyAliases,
    numericDefaults,
    regexRelative,
    setNumericDefaults,
