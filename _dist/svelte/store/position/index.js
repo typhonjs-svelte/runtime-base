@@ -1052,12 +1052,12 @@ class TJSPositionDataUtil
     * Convenience to copy from source to target of two TJSPositionData like objects. If a target is not supplied a new
     * {@link TJSPositionData} instance is created.
     *
-    * @param {import('./types').Data.TJSPositionData}  source - The source instance to copy from.
+    * @param {Partial<import('./types').Data.TJSPositionData>}  source - The source instance to copy from.
     *
-    * @param {import('./types').Data.TJSPositionData}  [target] - Target TJSPositionData like object; if one is not
-    *        provided a new instance is created.
+    * @param {import('./types').Data.TJSPositionData}  [target] - Target TJSPositionData like object; if one
+    *        is not provided a new instance is created.
     *
-    * @returns {import('./types').Data.TJSPositionData} The target instance.
+    * @returns {import('./types').Data.TJSPositionData} The target instance with all TJSPositionData fields.
     */
    static copyData(source, target = new TJSPositionData())
    {
@@ -4109,64 +4109,17 @@ class TransformBounds extends SystemBase
 }
 
 /**
- * Defines the keys of TJSPositionData that are transform keys.
- *
- * @type {string[]}
- */
-const transformKeys = Object.freeze([
- 'rotateX', 'rotateY', 'rotateZ', 'scale', 'translateX', 'translateY', 'translateZ'
-]);
-
-/**
- * Defines bitwise keys for transforms used in {@link TJSTransforms.getMat4}.
- *
- * @type {object}
- */
-const transformKeysBitwise = Object.freeze({
-   rotateX: 1,
-   rotateY: 2,
-   rotateZ: 4,
-   scale: 8,
-   translateX: 16,
-   translateY: 32,
-   translateZ: 64
-});
-
-/**
- * Defines the default transform origin.
- *
- * @type {string}
- */
-const transformOriginDefault = 'top left';
-
-/**
- * Defines the valid transform origins.
- *
- * @type {string[]}
- */
-const transformOrigins = Object.freeze(['top left', 'top center', 'top right', 'center left', 'center', 'center right',
- 'bottom left', 'bottom center', 'bottom right']);
-
-/** @type {number[]} */
-const s_SCALE_VECTOR = [1, 1, 1];
-
-/** @type {number[]} */
-const s_TRANSLATE_VECTOR = [0, 0, 0];
-
-/** @type {import('#runtime/math/gl-matrix').Mat4} */
-const s_MAT4_RESULT = Mat4.create();
-
-/** @type {import('#runtime/math/gl-matrix').Mat4} */
-const s_MAT4_TEMP = Mat4.create();
-
-/** @type {import('#runtime/math/gl-matrix').Vec3} */
-const s_VEC3_TEMP = Vec3.create();
-
-/**
  * @implements {import('./types').TransformAPI}
  */
 class TJSTransforms
 {
+   /**
+    * Stores transform data.
+    *
+    * @type {Partial<import('../data/types').Data.TJSPositionData>}
+    */
+   #data = {};
+
    /**
     * Stores the transform keys in the order added.
     *
@@ -4174,9 +4127,70 @@ class TJSTransforms
     */
    #orderList = [];
 
-   constructor()
+   /**
+    * Defines the keys of TJSPositionData that are transform keys.
+    *
+    * @type {string[]}
+    */
+   static #transformKeys = Object.freeze([
+    'rotateX', 'rotateY', 'rotateZ', 'scale', 'translateX', 'translateY', 'translateZ'
+   ]);
+
+   /**
+    * Defines bitwise keys for transforms used in {@link TJSTransforms.getMat4}.
+    *
+    * @type {object}
+    */
+   static #transformKeysBitwise = Object.freeze({
+      rotateX: 1,
+      rotateY: 2,
+      rotateZ: 4,
+      scale: 8,
+      translateX: 16,
+      translateY: 32,
+      translateZ: 64
+   });
+
+   /**
+    * Defines the default transform origin.
+    *
+    * @type {Readonly<import('./types').TransformAPI.TransformOrigin>}
+    */
+   static #transformOriginDefault = 'top left';
+
+   /**
+    * Defines the valid transform origins.
+    *
+    * @type {Readonly<import('./types').TransformAPI.TransformOrigin[]>}
+    */
+   static #transformOrigins = Object.freeze(['top left', 'top center', 'top right', 'center left', 'center',
+    'center right', 'bottom left', 'bottom center', 'bottom right']);
+
+   // Temporary variables --------------------------------------------------------------------------------------------
+
+   /** @type {import('#runtime/math/gl-matrix').Mat4} */
+   static #mat4Result = Mat4.create();
+
+   /** @type {import('#runtime/math/gl-matrix').Mat4} */
+   static #mat4Temp = Mat4.create();
+
+   /** @type {import('#runtime/math/gl-matrix').Vec3} */
+   static #vec3Temp = Vec3.create();
+
+   /** @type {number[]} */
+   static #vectorScale = [1, 1, 1];
+
+   /** @type {number[]} */
+   static #vectorTranslate = [0, 0, 0];
+
+   /**
+    * Returns a list of supported transform origins.
+    *
+    * @returns {Readonly<import('./types').TransformAPI.TransformOrigin[]>}
+    */
+   static get transformOrigins()
    {
-      this._data = {};
+      return this.#transformOrigins;
    }
 
    /**
@@ -4187,37 +4201,37 @@ class TJSTransforms
    /**
     * @returns {number|undefined} Any local rotateX data.
     */
-   get rotateX() { return this._data.rotateX; }
+   get rotateX() { return this.#data.rotateX; }
 
    /**
     * @returns {number|undefined} Any local rotateY data.
     */
-   get rotateY() { return this._data.rotateY; }
+   get rotateY() { return this.#data.rotateY; }
 
    /**
     * @returns {number|undefined} Any local rotateZ data.
     */
-   get rotateZ() { return this._data.rotateZ; }
+   get rotateZ() { return this.#data.rotateZ; }
 
    /**
     * @returns {number|undefined} Any local rotateZ scale.
     */
-   get scale() { return this._data.scale; }
+   get scale() { return this.#data.scale; }
 
    /**
     * @returns {number|undefined} Any local translateZ data.
     */
-   get translateX() { return this._data.translateX; }
+   get translateX() { return this.#data.translateX; }
 
    /**
     * @returns {number|undefined} Any local translateZ data.
     */
-   get translateY() { return this._data.translateY; }
+   get translateY() { return this.#data.translateY; }
 
    /**
     * @returns {number|undefined} Any local translateZ data.
     */
-   get translateZ() { return this._data.translateZ; }
+   get translateZ() { return this.#data.translateZ; }
 
    /**
     * Sets the local rotateX data if the value is a finite number otherwise removes the local data.
@@ -4228,19 +4242,19 @@ class TJSTransforms
    {
       if (Number.isFinite(value))
       {
-         if (this._data.rotateX === void 0) { this.#orderList.push('rotateX'); }
+         if (this.#data.rotateX === void 0) { this.#orderList.push('rotateX'); }
 
-         this._data.rotateX = value;
+         this.#data.rotateX = value;
       }
       else
       {
-         if (this._data.rotateX !== void 0)
+         if (this.#data.rotateX !== void 0)
          {
             const index = this.#orderList.findIndex((entry) => entry === 'rotateX');
             if (index >= 0) { this.#orderList.splice(index, 1); }
          }
 
-         delete this._data.rotateX;
+         delete this.#data.rotateX;
       }
    }
 
@@ -4253,19 +4267,19 @@ class TJSTransforms
    {
       if (Number.isFinite(value))
       {
-         if (this._data.rotateY === void 0) { this.#orderList.push('rotateY'); }
+         if (this.#data.rotateY === void 0) { this.#orderList.push('rotateY'); }
 
-         this._data.rotateY = value;
+         this.#data.rotateY = value;
       }
       else
       {
-         if (this._data.rotateY !== void 0)
+         if (this.#data.rotateY !== void 0)
          {
             const index = this.#orderList.findIndex((entry) => entry === 'rotateY');
             if (index >= 0) { this.#orderList.splice(index, 1); }
          }
 
-         delete this._data.rotateY;
+         delete this.#data.rotateY;
       }
    }
 
@@ -4278,20 +4292,20 @@ class TJSTransforms
    {
       if (Number.isFinite(value))
       {
-         if (this._data.rotateZ === void 0) { this.#orderList.push('rotateZ'); }
+         if (this.#data.rotateZ === void 0) { this.#orderList.push('rotateZ'); }
 
-         this._data.rotateZ = value;
+         this.#data.rotateZ = value;
       }
 
       else
       {
-         if (this._data.rotateZ !== void 0)
+         if (this.#data.rotateZ !== void 0)
          {
             const index = this.#orderList.findIndex((entry) => entry === 'rotateZ');
             if (index >= 0) { this.#orderList.splice(index, 1); }
          }
 
-         delete this._data.rotateZ;
+         delete this.#data.rotateZ;
       }
    }
 
@@ -4304,19 +4318,19 @@ class TJSTransforms
    {
       if (Number.isFinite(value))
       {
-         if (this._data.scale === void 0) { this.#orderList.push('scale'); }
+         if (this.#data.scale === void 0) { this.#orderList.push('scale'); }
 
-         this._data.scale = value;
+         this.#data.scale = value;
       }
       else
       {
-         if (this._data.scale !== void 0)
+         if (this.#data.scale !== void 0)
          {
             const index = this.#orderList.findIndex((entry) => entry === 'scale');
             if (index >= 0) { this.#orderList.splice(index, 1); }
          }
 
-         delete this._data.scale;
+         delete this.#data.scale;
       }
    }
 
@@ -4329,20 +4343,20 @@ class TJSTransforms
    {
       if (Number.isFinite(value))
       {
-         if (this._data.translateX === void 0) { this.#orderList.push('translateX'); }
+         if (this.#data.translateX === void 0) { this.#orderList.push('translateX'); }
 
-         this._data.translateX = value;
+         this.#data.translateX = value;
       }
 
       else
       {
-         if (this._data.translateX !== void 0)
+         if (this.#data.translateX !== void 0)
          {
             const index = this.#orderList.findIndex((entry) => entry === 'translateX');
             if (index >= 0) { this.#orderList.splice(index, 1); }
          }
 
-         delete this._data.translateX;
+         delete this.#data.translateX;
       }
    }
 
@@ -4355,20 +4369,20 @@ class TJSTransforms
    {
       if (Number.isFinite(value))
       {
-         if (this._data.translateY === void 0) { this.#orderList.push('translateY'); }
+         if (this.#data.translateY === void 0) { this.#orderList.push('translateY'); }
 
-         this._data.translateY = value;
+         this.#data.translateY = value;
       }
 
       else
       {
-         if (this._data.translateY !== void 0)
+         if (this.#data.translateY !== void 0)
          {
             const index = this.#orderList.findIndex((entry) => entry === 'translateY');
             if (index >= 0) { this.#orderList.splice(index, 1); }
          }
 
-         delete this._data.translateY;
+         delete this.#data.translateY;
       }
    }
 
@@ -4381,20 +4395,20 @@ class TJSTransforms
    {
       if (Number.isFinite(value))
       {
-         if (this._data.translateZ === void 0) { this.#orderList.push('translateZ'); }
+         if (this.#data.translateZ === void 0) { this.#orderList.push('translateZ'); }
 
-         this._data.translateZ = value;
+         this.#data.translateZ = value;
       }
 
       else
       {
-         if (this._data.translateZ !== void 0)
+         if (this.#data.translateZ !== void 0)
          {
             const index = this.#orderList.findIndex((entry) => entry === 'translateZ');
             if (index >= 0) { this.#orderList.splice(index, 1); }
          }
 
-         delete this._data.translateZ;
+         delete this.#data.translateZ;
       }
    }
 
@@ -4405,9 +4419,9 @@ class TJSTransforms
     *
     * @returns {string} The CSS matrix3d string.
     */
-   getCSS(data = this._data)
+   getCSS(data = this.#data)
    {
-      return `matrix3d(${this.getMat4(data, s_MAT4_RESULT).join(',')})`;
+      return `matrix3d(${this.getMat4(data, TJSTransforms.#mat4Result).join(',')})`;
    }
 
    /**
@@ -4417,9 +4431,9 @@ class TJSTransforms
     *
     * @returns {string} The CSS matrix3d string.
     */
-   getCSSOrtho(data = this._data)
+   getCSSOrtho(data = this.#data)
    {
-      return `matrix3d(${this.getMat4Ortho(data, s_MAT4_RESULT).join(',')})`;
+      return `matrix3d(${this.getMat4Ortho(data, TJSTransforms.#mat4Result).join(',')})`;
    }
 
    /**
@@ -4439,7 +4453,7 @@ class TJSTransforms
       const valWidth = validationData.width ?? 0;
       const valHeight = validationData.height ?? 0;
       const valOffsetTop = validationData.offsetTop ?? validationData.marginTop ?? 0;
-      const valOffsetLeft = validationData.offsetLeft ?? validationData.offsetLeft ?? 0;
+      const valOffsetLeft = validationData.offsetLeft ?? validationData.marginLeft ?? 0;
 
       position.top += valOffsetTop;
       position.left += valOffsetLeft;
@@ -4463,9 +4477,9 @@ class TJSTransforms
 
          const matrix = this.getMat4(position, output.mat4);
 
-         const translate = s_GET_ORIGIN_TRANSLATION(position.transformOrigin, width, height, output.originTranslations);
+         const translate = TJSTransforms.#getOriginTranslation(position.transformOrigin, width, height, output.originTranslations);
 
-         if (transformOriginDefault === position.transformOrigin)
+         if (TJSTransforms.#transformOriginDefault === position.transformOrigin)
          {
             Vec3.transformMat4(rect[0], rect[0], matrix);
             Vec3.transformMat4(rect[1], rect[1], matrix);
@@ -4552,7 +4566,7 @@ class TJSTransforms
     *
     * @returns {import('#runtime/math/gl-matrix').Mat4} Transform matrix.
     */
-   getMat4(data = this._data, output = Mat4.create())
+   getMat4(data = this.#data, output = Mat4.create())
    {
       const matrix = Mat4.identity(output);
 
@@ -4569,100 +4583,100 @@ class TJSTransforms
          switch (key)
          {
             case 'rotateX':
-               seenKeys |= transformKeysBitwise.rotateX;
-               Mat4.multiply(matrix, matrix, Mat4.fromXRotation(s_MAT4_TEMP, degToRad(data[key])));
+               seenKeys |= TJSTransforms.#transformKeysBitwise.rotateX;
+               Mat4.multiply(matrix, matrix, Mat4.fromXRotation(TJSTransforms.#mat4Temp, degToRad(data[key])));
                break;
 
             case 'rotateY':
-               seenKeys |= transformKeysBitwise.rotateY;
-               Mat4.multiply(matrix, matrix, Mat4.fromYRotation(s_MAT4_TEMP, degToRad(data[key])));
+               seenKeys |= TJSTransforms.#transformKeysBitwise.rotateY;
+               Mat4.multiply(matrix, matrix, Mat4.fromYRotation(TJSTransforms.#mat4Temp, degToRad(data[key])));
                break;
 
             case 'rotateZ':
-               seenKeys |= transformKeysBitwise.rotateZ;
-               Mat4.multiply(matrix, matrix, Mat4.fromZRotation(s_MAT4_TEMP, degToRad(data[key])));
+               seenKeys |= TJSTransforms.#transformKeysBitwise.rotateZ;
+               Mat4.multiply(matrix, matrix, Mat4.fromZRotation(TJSTransforms.#mat4Temp, degToRad(data[key])));
                break;
 
             case 'scale':
-               seenKeys |= transformKeysBitwise.scale;
-               s_SCALE_VECTOR[0] = s_SCALE_VECTOR[1] = data[key];
-               Mat4.multiply(matrix, matrix, Mat4.fromScaling(s_MAT4_TEMP, s_SCALE_VECTOR));
+               seenKeys |= TJSTransforms.#transformKeysBitwise.scale;
+               TJSTransforms.#vectorScale[0] = TJSTransforms.#vectorScale[1] = data[key];
+               Mat4.multiply(matrix, matrix, Mat4.fromScaling(TJSTransforms.#mat4Temp, TJSTransforms.#vectorScale));
                break;
 
             case 'translateX':
-               seenKeys |= transformKeysBitwise.translateX;
-               s_TRANSLATE_VECTOR[0] = data.translateX;
-               s_TRANSLATE_VECTOR[1] = 0;
-               s_TRANSLATE_VECTOR[2] = 0;
-               Mat4.multiply(matrix, matrix, Mat4.fromTranslation(s_MAT4_TEMP, s_TRANSLATE_VECTOR));
+               seenKeys |= TJSTransforms.#transformKeysBitwise.translateX;
+               TJSTransforms.#vectorTranslate[0] = data.translateX;
+               TJSTransforms.#vectorTranslate[1] = 0;
+               TJSTransforms.#vectorTranslate[2] = 0;
+               Mat4.multiply(matrix, matrix, Mat4.fromTranslation(TJSTransforms.#mat4Temp, TJSTransforms.#vectorTranslate));
                break;
 
             case 'translateY':
-               seenKeys |= transformKeysBitwise.translateY;
-               s_TRANSLATE_VECTOR[0] = 0;
-               s_TRANSLATE_VECTOR[1] = data.translateY;
-               s_TRANSLATE_VECTOR[2] = 0;
-               Mat4.multiply(matrix, matrix, Mat4.fromTranslation(s_MAT4_TEMP, s_TRANSLATE_VECTOR));
+               seenKeys |= TJSTransforms.#transformKeysBitwise.translateY;
+               TJSTransforms.#vectorTranslate[0] = 0;
+               TJSTransforms.#vectorTranslate[1] = data.translateY;
+               TJSTransforms.#vectorTranslate[2] = 0;
+               Mat4.multiply(matrix, matrix, Mat4.fromTranslation(TJSTransforms.#mat4Temp, TJSTransforms.#vectorTranslate));
                break;
 
             case 'translateZ':
-               seenKeys |= transformKeysBitwise.translateZ;
-               s_TRANSLATE_VECTOR[0] = 0;
-               s_TRANSLATE_VECTOR[1] = 0;
-               s_TRANSLATE_VECTOR[2] = data.translateZ;
-               Mat4.multiply(matrix, matrix, Mat4.fromTranslation(s_MAT4_TEMP, s_TRANSLATE_VECTOR));
+               seenKeys |= TJSTransforms.#transformKeysBitwise.translateZ;
+               TJSTransforms.#vectorTranslate[0] = 0;
+               TJSTransforms.#vectorTranslate[1] = 0;
+               TJSTransforms.#vectorTranslate[2] = data.translateZ;
+               Mat4.multiply(matrix, matrix, Mat4.fromTranslation(TJSTransforms.#mat4Temp, TJSTransforms.#vectorTranslate));
                break;
          }
       }
 
       // Now apply any new keys not set in local transform data that have not been applied yet.
-      if (data !== this._data)
+      if (data !== this.#data)
       {
-         for (let cntr = 0; cntr < transformKeys.length; cntr++)
+         for (let cntr = 0; cntr < TJSTransforms.#transformKeys.length; cntr++)
          {
-            const key = transformKeys[cntr];
+            const key = TJSTransforms.#transformKeys[cntr];
 
             // Reject bad / no data or if the key has already been applied.
-            if (data[key] === null || (seenKeys & transformKeysBitwise[key]) > 0) { continue; }
+            if (data[key] === null || (seenKeys & TJSTransforms.#transformKeysBitwise[key]) > 0) { continue; }
 
             switch (key)
             {
                case 'rotateX':
-                  Mat4.multiply(matrix, matrix, Mat4.fromXRotation(s_MAT4_TEMP, degToRad(data[key])));
+                  Mat4.multiply(matrix, matrix, Mat4.fromXRotation(TJSTransforms.#mat4Temp, degToRad(data[key])));
                   break;
 
                case 'rotateY':
-                  Mat4.multiply(matrix, matrix, Mat4.fromYRotation(s_MAT4_TEMP, degToRad(data[key])));
+                  Mat4.multiply(matrix, matrix, Mat4.fromYRotation(TJSTransforms.#mat4Temp, degToRad(data[key])));
                   break;
 
                case 'rotateZ':
-                  Mat4.multiply(matrix, matrix, Mat4.fromZRotation(s_MAT4_TEMP, degToRad(data[key])));
+                  Mat4.multiply(matrix, matrix, Mat4.fromZRotation(TJSTransforms.#mat4Temp, degToRad(data[key])));
                   break;
 
                case 'scale':
-                  s_SCALE_VECTOR[0] = s_SCALE_VECTOR[1] = data[key];
-                  Mat4.multiply(matrix, matrix, Mat4.fromScaling(s_MAT4_TEMP, s_SCALE_VECTOR));
+                  TJSTransforms.#vectorScale[0] = TJSTransforms.#vectorScale[1] = data[key];
+                  Mat4.multiply(matrix, matrix, Mat4.fromScaling(TJSTransforms.#mat4Temp, TJSTransforms.#vectorScale));
                   break;
 
                case 'translateX':
-                  s_TRANSLATE_VECTOR[0] = data[key];
-                  s_TRANSLATE_VECTOR[1] = 0;
-                  s_TRANSLATE_VECTOR[2] = 0;
-                  Mat4.multiply(matrix, matrix, Mat4.fromTranslation(s_MAT4_TEMP, s_TRANSLATE_VECTOR));
+                  TJSTransforms.#vectorTranslate[0] = data[key];
+                  TJSTransforms.#vectorTranslate[1] = 0;
+                  TJSTransforms.#vectorTranslate[2] = 0;
+                  Mat4.multiply(matrix, matrix, Mat4.fromTranslation(TJSTransforms.#mat4Temp, TJSTransforms.#vectorTranslate));
                   break;
 
                case 'translateY':
-                  s_TRANSLATE_VECTOR[0] = 0;
-                  s_TRANSLATE_VECTOR[1] = data[key];
-                  s_TRANSLATE_VECTOR[2] = 0;
-                  Mat4.multiply(matrix, matrix, Mat4.fromTranslation(s_MAT4_TEMP, s_TRANSLATE_VECTOR));
+                  TJSTransforms.#vectorTranslate[0] = 0;
+                  TJSTransforms.#vectorTranslate[1] = data[key];
+                  TJSTransforms.#vectorTranslate[2] = 0;
+                  Mat4.multiply(matrix, matrix, Mat4.fromTranslation(TJSTransforms.#mat4Temp, TJSTransforms.#vectorTranslate));
                   break;
 
                case 'translateZ':
-                  s_TRANSLATE_VECTOR[0] = 0;
-                  s_TRANSLATE_VECTOR[1] = 0;
-                  s_TRANSLATE_VECTOR[2] = data[key];
-                  Mat4.multiply(matrix, matrix, Mat4.fromTranslation(s_MAT4_TEMP, s_TRANSLATE_VECTOR));
+                  TJSTransforms.#vectorTranslate[0] = 0;
+                  TJSTransforms.#vectorTranslate[1] = 0;
+                  TJSTransforms.#vectorTranslate[2] = data[key];
+                  Mat4.multiply(matrix, matrix, Mat4.fromTranslation(TJSTransforms.#mat4Temp, TJSTransforms.#vectorTranslate));
                   break;
             }
          }
@@ -4681,29 +4695,30 @@ class TJSTransforms
     * then the stored local transform order is applied then all remaining transform keys are applied. This allows the
     * construction of a transform matrix in advance of setting local data and is useful in collision detection.
     *
-    * @param {import('../data/types').Data.TJSPositionData}   [data] - TJSPositionData instance or local transform data.
+    * @param {Partial<import('../data/types').Data.TJSPositionData>}   [data] - TJSPositionData instance or local
+    *        transform data.
     *
     * @param {import('#runtime/math/gl-matrix').Mat4}  [output] - The output mat4 instance.
     *
     * @returns {import('#runtime/math/gl-matrix').Mat4} Transform matrix.
     */
-   getMat4Ortho(data = this._data, output = Mat4.create())
+   getMat4Ortho(data = this.#data, output = Mat4.create())
    {
       const matrix = Mat4.identity(output);
 
       // Attempt to retrieve values from passed in data otherwise default to 0.
       // Always perform the translation last regardless of order added to local transform data.
       // Add data.left to translateX and data.top to translateY.
-      s_TRANSLATE_VECTOR[0] = (data.left ?? 0) + (data.translateX ?? 0);
-      s_TRANSLATE_VECTOR[1] = (data.top ?? 0) + (data.translateY ?? 0);
-      s_TRANSLATE_VECTOR[2] = data.translateZ ?? 0;
-      Mat4.multiply(matrix, matrix, Mat4.fromTranslation(s_MAT4_TEMP, s_TRANSLATE_VECTOR));
+      TJSTransforms.#vectorTranslate[0] = (data.left ?? 0) + (data.translateX ?? 0);
+      TJSTransforms.#vectorTranslate[1] = (data.top ?? 0) + (data.translateY ?? 0);
+      TJSTransforms.#vectorTranslate[2] = data.translateZ ?? 0;
+      Mat4.multiply(matrix, matrix, Mat4.fromTranslation(TJSTransforms.#mat4Temp, TJSTransforms.#vectorTranslate));
 
       // Scale can also be applied out of order.
       if (data.scale !== null)
       {
-         s_SCALE_VECTOR[0] = s_SCALE_VECTOR[1] = data.scale;
-         Mat4.multiply(matrix, matrix, Mat4.fromScaling(s_MAT4_TEMP, s_SCALE_VECTOR));
+         TJSTransforms.#vectorScale[0] = TJSTransforms.#vectorScale[1] = data.scale;
+         Mat4.multiply(matrix, matrix, Mat4.fromScaling(TJSTransforms.#mat4Temp, TJSTransforms.#vectorScale));
       }
 
       // Early out if there is not rotation data.
@@ -4724,44 +4739,44 @@ class TJSTransforms
          switch (key)
          {
             case 'rotateX':
-               seenKeys |= transformKeysBitwise.rotateX;
-               Mat4.multiply(matrix, matrix, Mat4.fromXRotation(s_MAT4_TEMP, degToRad(data[key])));
+               seenKeys |= TJSTransforms.#transformKeysBitwise.rotateX;
+               Mat4.multiply(matrix, matrix, Mat4.fromXRotation(TJSTransforms.#mat4Temp, degToRad(data[key])));
                break;
 
             case 'rotateY':
-               seenKeys |= transformKeysBitwise.rotateY;
-               Mat4.multiply(matrix, matrix, Mat4.fromYRotation(s_MAT4_TEMP, degToRad(data[key])));
+               seenKeys |= TJSTransforms.#transformKeysBitwise.rotateY;
+               Mat4.multiply(matrix, matrix, Mat4.fromYRotation(TJSTransforms.#mat4Temp, degToRad(data[key])));
                break;
 
             case 'rotateZ':
-               seenKeys |= transformKeysBitwise.rotateZ;
-               Mat4.multiply(matrix, matrix, Mat4.fromZRotation(s_MAT4_TEMP, degToRad(data[key])));
+               seenKeys |= TJSTransforms.#transformKeysBitwise.rotateZ;
+               Mat4.multiply(matrix, matrix, Mat4.fromZRotation(TJSTransforms.#mat4Temp, degToRad(data[key])));
                break;
          }
       }
 
       // Now apply any new keys not set in local transform data that have not been applied yet.
-      if (data !== this._data)
+      if (data !== this.#data)
       {
-         for (let cntr = 0; cntr < transformKeys.length; cntr++)
+         for (let cntr = 0; cntr < TJSTransforms.#transformKeys.length; cntr++)
          {
-            const key = transformKeys[cntr];
+            const key = TJSTransforms.#transformKeys[cntr];
 
             // Reject bad / no data or if the key has already been applied.
-            if (data[key] === null || (seenKeys & transformKeysBitwise[key]) > 0) { continue; }
+            if (data[key] === null || (seenKeys & TJSTransforms.#transformKeysBitwise[key]) > 0) { continue; }
 
             switch (key)
             {
                case 'rotateX':
-                  Mat4.multiply(matrix, matrix, Mat4.fromXRotation(s_MAT4_TEMP, degToRad(data[key])));
+                  Mat4.multiply(matrix, matrix, Mat4.fromXRotation(TJSTransforms.#mat4Temp, degToRad(data[key])));
                   break;
 
                case 'rotateY':
-                  Mat4.multiply(matrix, matrix, Mat4.fromYRotation(s_MAT4_TEMP, degToRad(data[key])));
+                  Mat4.multiply(matrix, matrix, Mat4.fromYRotation(TJSTransforms.#mat4Temp, degToRad(data[key])));
                   break;
 
                case 'rotateZ':
-                  Mat4.multiply(matrix, matrix, Mat4.fromZRotation(s_MAT4_TEMP, degToRad(data[key])));
+                  Mat4.multiply(matrix, matrix, Mat4.fromZRotation(TJSTransforms.#mat4Temp, degToRad(data[key])));
                   break;
             }
          }
@@ -4779,7 +4794,7 @@ class TJSTransforms
     */
    hasTransform(data)
    {
-      for (const key of transformKeys)
+      for (const key of TJSTransforms.#transformKeys)
       {
          if (Number.isFinite(data[key])) { return true; }
       }
@@ -4796,132 +4811,134 @@ class TJSTransforms
    {
       for (const key in data)
       {
-         if (transformKeys.includes(key))
+         if (TJSTransforms.#transformKeys.includes(key))
          {
             if (Number.isFinite(data[key]))
             {
-               this._data[key] = data[key];
+               this.#data[key] = data[key];
             }
             else
             {
                const index = this.#orderList.findIndex((entry) => entry === key);
                if (index >= 0) { this.#orderList.splice(index, 1); }
 
-               delete this._data[key];
+               delete this.#data[key];
             }
          }
       }
    }
-}
 
-/**
- * Returns the translations necessary to translate a matrix operation based on the `transformOrigin` parameter of the
- * given position instance. The first entry / index 0 is the pre-translation and last entry / index 1 is the post-
- * translation.
- *
- * This method is used internally, but may be useful if you need the origin translation matrices to transform
- * bespoke points based on any `transformOrigin` set in {@link TJSPositionData}.
- *
- * @param {string}   transformOrigin - The transform origin attribute from TJSPositionData.
- *
- * @param {number}   width - The TJSPositionData width or validation data width when 'auto'.
- *
- * @param {number}   height - The TJSPositionData height or validation data height when 'auto'.
- *
- * @param {import('#runtime/math/gl-matrix').Mat4[]}   output - Output Mat4 array.
- *
- * @returns {import('#runtime/math/gl-matrix').Mat4[]} Output Mat4 array.
- */
-function s_GET_ORIGIN_TRANSLATION(transformOrigin, width, height, output)
-{
-   const vector = s_VEC3_TEMP;
+   // Internal implementation ----------------------------------------------------------------------------------------
 
-   switch (transformOrigin)
+   /**
+    * Returns the translations necessary to translate a matrix operation based on the `transformOrigin` parameter of the
+    * given position instance. The first entry / index 0 is the pre-translation and last entry / index 1 is the post-
+    * translation.
+    *
+    * This method is used internally, but may be useful if you need the origin translation matrices to transform
+    * bespoke points based on any `transformOrigin` set in {@link TJSPositionData}.
+    *
+    * @param {string}   transformOrigin - The transform origin attribute from TJSPositionData.
+    *
+    * @param {number}   width - The TJSPositionData width or validation data width when 'auto'.
+    *
+    * @param {number}   height - The TJSPositionData height or validation data height when 'auto'.
+    *
+    * @param {import('#runtime/math/gl-matrix').Mat4[]}   output - Output Mat4 array.
+    *
+    * @returns {import('#runtime/math/gl-matrix').Mat4[]} Output Mat4 array.
+    */
+   static #getOriginTranslation(transformOrigin, width, height, output)
    {
-      case 'top left':
-         vector[0] = vector[1] = 0;
-         Mat4.fromTranslation(output[0], vector);
-         Mat4.fromTranslation(output[1], vector);
-         break;
+      const vector = TJSTransforms.#vec3Temp;
 
-      case 'top center':
-         vector[0] = -width * 0.5;
-         vector[1] = 0;
-         Mat4.fromTranslation(output[0], vector);
-         vector[0] = width * 0.5;
-         Mat4.fromTranslation(output[1], vector);
-         break;
+      switch (transformOrigin)
+      {
+         case 'top left':
+            vector[0] = vector[1] = 0;
+            Mat4.fromTranslation(output[0], vector);
+            Mat4.fromTranslation(output[1], vector);
+            break;
 
-      case 'top right':
-         vector[0] = -width;
-         vector[1] = 0;
-         Mat4.fromTranslation(output[0], vector);
-         vector[0] = width;
-         Mat4.fromTranslation(output[1], vector);
-         break;
+         case 'top center':
+            vector[0] = -width * 0.5;
+            vector[1] = 0;
+            Mat4.fromTranslation(output[0], vector);
+            vector[0] = width * 0.5;
+            Mat4.fromTranslation(output[1], vector);
+            break;
 
-      case 'center left':
-         vector[0] = 0;
-         vector[1] = -height * 0.5;
-         Mat4.fromTranslation(output[0], vector);
-         vector[1] = height * 0.5;
-         Mat4.fromTranslation(output[1], vector);
-         break;
+         case 'top right':
+            vector[0] = -width;
+            vector[1] = 0;
+            Mat4.fromTranslation(output[0], vector);
+            vector[0] = width;
+            Mat4.fromTranslation(output[1], vector);
+            break;
 
-      // By default, null / no transform is 'center'.
-      case null:
-      case 'center':
-         vector[0] = -width * 0.5;
-         vector[1] = -height * 0.5;
-         Mat4.fromTranslation(output[0], vector);
-         vector[0] = width * 0.5;
-         vector[1] = height * 0.5;
-         Mat4.fromTranslation(output[1], vector);
-         break;
+         case 'center left':
+            vector[0] = 0;
+            vector[1] = -height * 0.5;
+            Mat4.fromTranslation(output[0], vector);
+            vector[1] = height * 0.5;
+            Mat4.fromTranslation(output[1], vector);
+            break;
 
-      case 'center right':
-         vector[0] = -width;
-         vector[1] = -height * 0.5;
-         Mat4.fromTranslation(output[0], vector);
-         vector[0] = width;
-         vector[1] = height * 0.5;
-         Mat4.fromTranslation(output[1], vector);
-         break;
+         // By default, null / no transform is 'center'.
+         case null:
+         case 'center':
+            vector[0] = -width * 0.5;
+            vector[1] = -height * 0.5;
+            Mat4.fromTranslation(output[0], vector);
+            vector[0] = width * 0.5;
+            vector[1] = height * 0.5;
+            Mat4.fromTranslation(output[1], vector);
+            break;
 
-      case 'bottom left':
-         vector[0] = 0;
-         vector[1] = -height;
-         Mat4.fromTranslation(output[0], vector);
-         vector[1] = height;
-         Mat4.fromTranslation(output[1], vector);
-         break;
+         case 'center right':
+            vector[0] = -width;
+            vector[1] = -height * 0.5;
+            Mat4.fromTranslation(output[0], vector);
+            vector[0] = width;
+            vector[1] = height * 0.5;
+            Mat4.fromTranslation(output[1], vector);
+            break;
 
-      case 'bottom center':
-         vector[0] = -width * 0.5;
-         vector[1] = -height;
-         Mat4.fromTranslation(output[0], vector);
-         vector[0] = width * 0.5;
-         vector[1] = height;
-         Mat4.fromTranslation(output[1], vector);
-         break;
+         case 'bottom left':
+            vector[0] = 0;
+            vector[1] = -height;
+            Mat4.fromTranslation(output[0], vector);
+            vector[1] = height;
+            Mat4.fromTranslation(output[1], vector);
+            break;
 
-      case 'bottom right':
-         vector[0] = -width;
-         vector[1] = -height;
-         Mat4.fromTranslation(output[0], vector);
-         vector[0] = width;
-         vector[1] = height;
-         Mat4.fromTranslation(output[1], vector);
-         break;
+         case 'bottom center':
+            vector[0] = -width * 0.5;
+            vector[1] = -height;
+            Mat4.fromTranslation(output[0], vector);
+            vector[0] = width * 0.5;
+            vector[1] = height;
+            Mat4.fromTranslation(output[1], vector);
+            break;
 
-      // No valid transform origin parameter; set identity.
-      default:
-         Mat4.identity(output[0]);
-         Mat4.identity(output[1]);
-         break;
+         case 'bottom right':
+            vector[0] = -width;
+            vector[1] = -height;
+            Mat4.fromTranslation(output[0], vector);
+            vector[0] = width;
+            vector[1] = height;
+            Mat4.fromTranslation(output[1], vector);
+            break;
+
+         // No valid transform origin parameter; set identity.
+         default:
+            Mat4.identity(output[0]);
+            Mat4.identity(output[1]);
+            break;
+      }
+
+      return output;
    }
-
-   return output;
 }
 
 class PositionChangeSet
@@ -5006,7 +5023,7 @@ class UpdateElementData
       this.queued = false;
 
       /**
-       * @type {import('../util').StyleCache}
+       * @type {import('../util').TJSPositionStyleCache}
        */
       this.styleCache = void 0;
 
@@ -5072,8 +5089,6 @@ class UpdateElementManager
 
    static updatePromise;
 
-   static get promise() { return this.updatePromise; }
-
    /**
     * Potentially adds the given element and internal updateData instance to the list.
     *
@@ -5136,17 +5151,17 @@ class UpdateElementManager
 
          if (updateData.options.ortho)
          {
-            s_UPDATE_ELEMENT_ORTHO(el, updateData);
+            UpdateElementManager.#updateElementOrtho(el, updateData);
          }
          else
          {
-            s_UPDATE_ELEMENT(el, updateData);
+            UpdateElementManager.#updateElement(el, updateData);
          }
 
          // If calculate transform options is enabled then update the transform data and set the readable store.
          if (updateData.options.calculateTransform || updateData.options.transformSubscribed)
          {
-            s_UPDATE_TRANSFORM(el, updateData);
+            UpdateElementManager.#updateTransform(el, updateData);
          }
 
          // Update all subscribers with changed data.
@@ -5173,17 +5188,17 @@ class UpdateElementManager
 
       if (updateData.options.ortho)
       {
-         s_UPDATE_ELEMENT_ORTHO(el, updateData);
+         UpdateElementManager.#updateElementOrtho(el, updateData);
       }
       else
       {
-         s_UPDATE_ELEMENT(el, updateData);
+         UpdateElementManager.#updateElement(el, updateData);
       }
 
       // If calculate transform options is enabled then update the transform data and set the readable store.
       if (updateData.options.calculateTransform || updateData.options.transformSubscribed)
       {
-         s_UPDATE_TRANSFORM(el, updateData);
+         UpdateElementManager.#updateTransform(el, updateData);
       }
 
       // Update all subscribers with changed data.
@@ -5221,138 +5236,148 @@ class UpdateElementManager
 
       changeSet.set(false);
    }
+
+   // Internal Implementation ----------------------------------------------------------------------------------------
+
+   /**
+    * Temporary data for
+    * @type {{width, marginTop, height, marginLeft}}
+    */
+   static #validationData = Object.seal({
+      height: void 0,
+      width: void 0,
+      marginLeft: void 0,
+      marginTop: void 0
+   });
+
+   /**
+    * Decouples updates to any parent target HTMLElement inline styles. Invoke {@link TJSPosition.elementUpdated} to
+    * await on the returned promise that is resolved with the current render time via `nextAnimationFrame` /
+    * `requestAnimationFrame`. This allows the underlying data model to be updated immediately while updates to the
+    * element are in sync with the browser and potentially in the future be further throttled.
+    *
+    * @param {HTMLElement} el - The target HTMLElement.
+    *
+    * @param {import('./').UpdateElementData} updateData - Update data.
+    */
+   static #updateElement(el, updateData)
+   {
+      const changeSet = updateData.changeSet;
+      const data = updateData.data;
+
+      if (changeSet.left)
+      {
+         el.style.left = `${data.left}px`;
+      }
+
+      if (changeSet.top)
+      {
+         el.style.top = `${data.top}px`;
+      }
+
+      if (changeSet.zIndex)
+      {
+         el.style.zIndex = typeof data.zIndex === 'number' ? `${data.zIndex}` : null;
+      }
+
+      if (changeSet.width)
+      {
+         el.style.width = typeof data.width === 'number' ? `${data.width}px` : data.width;
+      }
+
+      if (changeSet.height)
+      {
+         el.style.height = typeof data.height === 'number' ? `${data.height}px` : data.height;
+      }
+
+      if (changeSet.transformOrigin)
+      {
+         el.style.transformOrigin = data.transformOrigin;
+      }
+
+      // Update all transforms in order added to transforms object.
+      if (changeSet.transform)
+      {
+         el.style.transform = updateData.transforms.isActive ? updateData.transforms.getCSS() : null;
+      }
+   }
+
+   /**
+    * Decouples updates to any parent target HTMLElement inline styles. Invoke
+    * {@link TJSPosition.elementUpdated} to await on the returned promise that is resolved with the current
+    * render time via `nextAnimationFrame` / `requestAnimationFrame`. This allows the underlying data model to be updated
+    * immediately while updates to the element are in sync with the browser and potentially in the future be further
+    * throttled.
+    *
+    * @param {HTMLElement} el - The target HTMLElement.
+    *
+    * @param {import('./').UpdateElementData} updateData - Update data.
+    */
+   static #updateElementOrtho(el, updateData)
+   {
+      const changeSet = updateData.changeSet;
+      const data = updateData.data;
+
+      if (changeSet.zIndex)
+      {
+         el.style.zIndex = typeof data.zIndex === 'number' ? `${data.zIndex}` : null;
+      }
+
+      if (changeSet.width)
+      {
+         el.style.width = typeof data.width === 'number' ? `${data.width}px` : data.width;
+      }
+
+      if (changeSet.height)
+      {
+         el.style.height = typeof data.height === 'number' ? `${data.height}px` : data.height;
+      }
+
+      if (changeSet.transformOrigin)
+      {
+         el.style.transformOrigin = data.transformOrigin;
+      }
+
+      // Update all transforms in order added to transforms object.
+      if (changeSet.left || changeSet.top || changeSet.transform)
+      {
+         el.style.transform = updateData.transforms.getCSSOrtho(data);
+      }
+   }
+
+   /**
+    * Updates the applied transform data and sets the readble `transform` store.
+    *
+    * @param {HTMLElement} el - The target HTMLElement.
+    *
+    * @param {import('./').UpdateElementData} updateData - Update element data.
+    */
+   static #updateTransform(el, updateData)
+   {
+      const validationData = this.#validationData;
+
+      validationData.height = updateData.data.height !== 'auto' && updateData.data.height !== 'inherit' ?
+       updateData.data.height : updateData.styleCache.offsetHeight;
+
+      validationData.width = updateData.data.width !== 'auto' && updateData.data.height !== 'inherit' ?
+       updateData.data.width : updateData.styleCache.offsetWidth;
+
+      validationData.marginLeft = updateData.styleCache.marginLeft;
+
+      validationData.marginTop = updateData.styleCache.marginTop;
+
+      // Get transform data. First set constraints including any margin top / left as offsets and width / height. Used
+      // when position width / height is 'auto'.
+      updateData.transforms.getData(updateData.data, updateData.transformData, validationData);
+
+      updateData.storeTransform.set(updateData.transformData);
+   }
 }
 
 /**
- * Decouples updates to any parent target HTMLElement inline styles. Invoke
- * {@link TJSPosition.elementUpdated} to await on the returned promise that is resolved with the current
- * render time via `nextAnimationFrame` / `requestAnimationFrame`. This allows the underlying data model to be updated
- * immediately while updates to the element are in sync with the browser and potentially in the future be further
- * throttled.
- *
- * @param {HTMLElement} el - The target HTMLElement.
- *
- * @param {import('./').UpdateElementData} updateData - Update data.
+ * Caches computed styles of a {@link TJSPosition} target element.
  */
-function s_UPDATE_ELEMENT(el, updateData)
-{
-   const changeSet = updateData.changeSet;
-   const data = updateData.data;
-
-   if (changeSet.left)
-   {
-      el.style.left = `${data.left}px`;
-   }
-
-   if (changeSet.top)
-   {
-      el.style.top = `${data.top}px`;
-   }
-
-   if (changeSet.zIndex)
-   {
-      el.style.zIndex = typeof data.zIndex === 'number' ? `${data.zIndex}` : null;
-   }
-
-   if (changeSet.width)
-   {
-      el.style.width = typeof data.width === 'number' ? `${data.width}px` : data.width;
-   }
-
-   if (changeSet.height)
-   {
-      el.style.height = typeof data.height === 'number' ? `${data.height}px` : data.height;
-   }
-
-   if (changeSet.transformOrigin)
-   {
-      el.style.transformOrigin = data.transformOrigin;
-   }
-
-   // Update all transforms in order added to transforms object.
-   if (changeSet.transform)
-   {
-      el.style.transform = updateData.transforms.isActive ? updateData.transforms.getCSS() : null;
-   }
-}
-
-/**
- * Decouples updates to any parent target HTMLElement inline styles. Invoke
- * {@link TJSPosition.elementUpdated} to await on the returned promise that is resolved with the current
- * render time via `nextAnimationFrame` / `requestAnimationFrame`. This allows the underlying data model to be updated
- * immediately while updates to the element are in sync with the browser and potentially in the future be further
- * throttled.
- *
- * @param {HTMLElement} el - The target HTMLElement.
- *
- * @param {import('./').UpdateElementData} updateData - Update data.
- */
-function s_UPDATE_ELEMENT_ORTHO(el, updateData)
-{
-   const changeSet = updateData.changeSet;
-   const data = updateData.data;
-
-   if (changeSet.zIndex)
-   {
-      el.style.zIndex = typeof data.zIndex === 'number' ? `${data.zIndex}` : null;
-   }
-
-   if (changeSet.width)
-   {
-      el.style.width = typeof data.width === 'number' ? `${data.width}px` : data.width;
-   }
-
-   if (changeSet.height)
-   {
-      el.style.height = typeof data.height === 'number' ? `${data.height}px` : data.height;
-   }
-
-   if (changeSet.transformOrigin)
-   {
-      el.style.transformOrigin = data.transformOrigin;
-   }
-
-   // Update all transforms in order added to transforms object.
-   if (changeSet.left || changeSet.top || changeSet.transform)
-   {
-      el.style.transform = updateData.transforms.getCSSOrtho(data);
-   }
-}
-
-/**
- * Updates the applied transform data and sets the readble `transform` store.
- *
- * @param {HTMLElement} el - The target HTMLElement.
- *
- * @param {import('./').UpdateElementData} updateData - Update element data.
- */
-function s_UPDATE_TRANSFORM(el, updateData)
-{
-   s_VALIDATION_DATA$1.height = updateData.data.height !== 'auto' ? updateData.data.height :
-    updateData.styleCache.offsetHeight;
-
-   s_VALIDATION_DATA$1.width = updateData.data.width !== 'auto' ? updateData.data.width :
-    updateData.styleCache.offsetWidth;
-
-   s_VALIDATION_DATA$1.marginLeft = updateData.styleCache.marginLeft;
-
-   s_VALIDATION_DATA$1.marginTop = updateData.styleCache.marginTop;
-
-   // Get transform data. First set constraints including any margin top / left as offsets and width / height. Used
-   // when position width / height is 'auto'.
-   updateData.transforms.getData(updateData.data, updateData.transformData, s_VALIDATION_DATA$1);
-
-   updateData.storeTransform.set(updateData.transformData);
-}
-
-const s_VALIDATION_DATA$1 = {
-   height: void 0,
-   width: void 0,
-   marginLeft: void 0,
-   marginTop: void 0
-};
-
-class StyleCache
+class TJSPositionStyleCache
 {
    constructor()
    {
@@ -5522,24 +5547,30 @@ class StyleCache
 class TJSPosition
 {
    /**
-    * @type {import('./types').TJSPositionTypes.PositionInitial}
+    * Public API for {@link TJSPosition.Initial}.
+    *
+    * @type {Readonly<import('./types').TJSPositionTypes.PositionInitial>}
     */
-   static #positionInitial = {
+   static #positionInitial = Object.freeze({
       browserCentered: new Centered({ lock: true }),
       Centered
-   };
+   });
 
    /**
-    * @type {import('./types').TJSPositionTypes.PositionValidators}
+    * Public API for {@link TJSPosition.Validators}
+    *
+    * @type {Readonly<import('./types').TJSPositionTypes.PositionValidators>}
     */
-   static #positionValidators = {
+   static #positionValidators = Object.freeze({
       BasicBounds,
       basicWindow: new BasicBounds({ lock: true }),
       TransformBounds,
       transformWindow: new TransformBounds({ lock: true })
-   };
+   });
 
    /**
+    * Stores all position data / properties.
+    *
     * @type {TJSPositionData}
     */
    #data = Object.seal(new TJSPositionData());
@@ -5592,7 +5623,7 @@ class TJSPosition
    /**
     * Stores an instance of the computer styles for the target element.
     *
-    * @type {StyleCache}
+    * @type {TJSPositionStyleCache}
     */
    #styleCache;
 
@@ -5646,7 +5677,7 @@ class TJSPosition
    static get Data() { return TJSPositionData; }
 
    /**
-    * @returns {import('./types').TJSPositionTypes.PositionInitial} TJSPosition default initial helpers.
+    * @returns {Readonly<import('./types').TJSPositionTypes.PositionInitial>} TJSPosition default initial helpers.
     */
    static get Initial() { return this.#positionInitial; }
 
@@ -5668,20 +5699,30 @@ class TJSPosition
     *
     * Note: `basicWindow` and `BasicBounds` will eventually be removed.
     *
-    * @returns {import('./types').TJSPositionTypes.PositionValidators} Available validators.
+    * @returns {Readonly<import('./types').TJSPositionTypes.PositionValidators>} Available validators.
     */
    static get Validators() { return this.#positionValidators; }
+
+   /**
+    * Returns a list of supported transform origins.
+    *
+    * @returns {Readonly<import('./types').TransformAPI.TransformOrigin[]>}
+    */
+   static get transformOrigins()
+   {
+      return TJSTransforms.transformOrigins;
+   }
 
    /**
     * Convenience to copy from source to target of two TJSPositionData like objects. If a target is not supplied a new
     * {@link TJSPositionData} instance is created.
     *
-    * @param {import('./data/types').Data.TJSPositionData}  source - The source instance to copy from.
+    * @param {Partial<import('./data/types').Data.TJSPositionData>}  source - The source instance to copy from.
     *
     * @param {import('./data/types').Data.TJSPositionData}  [target] - Target TJSPositionData like object; if one is not
     *        provided a new instance is created.
     *
-    * @returns {import('./data/types').Data.TJSPositionData} The target instance.
+    * @returns {import('./data/types').Data.TJSPositionData} The target instance with all TJSPositionData fields.
     */
    static copyData(source, target)
    {
@@ -5735,7 +5776,7 @@ class TJSPosition
       const data = this.#data;
       const transforms = this.#transforms;
 
-      this.#styleCache = new StyleCache();
+      this.#styleCache = new TJSPositionStyleCache();
 
       const updateData = new UpdateElementData();
 
@@ -5822,7 +5863,7 @@ class TJSPosition
 
          if (typeof options.transformOrigin === 'string' || options.transformOrigin === null)
          {
-            data.transformOrigin = transformOrigins.includes(options.transformOrigin) ?
+            data.transformOrigin = TJSTransforms.transformOrigins.includes(options.transformOrigin) ?
              options.transformOrigin : null;
          }
 
@@ -5905,7 +5946,7 @@ class TJSPosition
          }
       });
 
-      this.#stores.transformOrigin.values = transformOrigins;
+      this.#stores.transformOrigin.values = TJSTransforms.transformOrigins;
 
       [this.#validators, this.#validatorData] = AdapterValidators.create();
 
@@ -6260,7 +6301,10 @@ class TJSPosition
     */
    set transformOrigin(transformOrigin)
    {
-      if (transformOrigins.includes(transformOrigin)) { this.#stores.transformOrigin.set(transformOrigin); }
+      if (TJSTransforms.transformOrigins.includes(transformOrigin))
+      {
+         this.#stores.transformOrigin.set(transformOrigin);
+      }
    }
 
    /**
@@ -6535,7 +6579,7 @@ class TJSPosition
          }
       }
 
-      if ((typeof position.transformOrigin === 'string' && transformOrigins.includes(
+      if ((typeof position.transformOrigin === 'string' && TJSTransforms.transformOrigins.includes(
        position.transformOrigin)) || position.transformOrigin === null)
       {
          if (data.transformOrigin !== position.transformOrigin)
@@ -6660,6 +6704,37 @@ class TJSPosition
       this.set(result);
    }
 
+   // Internal Implementation ----------------------------------------------------------------------------------------
+
+   /**
+    * Temporary data storage for `TJSPosition.#updatePosition`.
+    *
+    * @type {TJSPositionData}
+    */
+   static #updateDataCopy = Object.seal(new TJSPositionData());
+
+   /**
+    * Temporary data storage for `TJSPosition.#updatePosition`.
+    *
+    * @type {import('./system/validators/types').ValidatorAPI.ValidationData}
+    */
+   static #validationData = Object.seal({
+      position: void 0,
+      parent: void 0,
+      el: void 0,
+      computed: void 0,
+      transforms: void 0,
+      height: void 0,
+      width: void 0,
+      marginLeft: void 0,
+      marginTop: void 0,
+      maxHeight: void 0,
+      maxWidth: void 0,
+      minHeight: void 0,
+      minWidth: void 0,
+      rest: void 0
+   });
+
    /**
     * @param {import('./').TJSPositionDataExtended} opts -
     *
@@ -6705,7 +6780,7 @@ class TJSPosition
     *
     * @param {HTMLElement} el -
     *
-    * @param {StyleCache} styleCache -
+    * @param {TJSPositionStyleCache} styleCache -
     *
     * @returns {null | import('./data/types').Data.TJSPositionData} Updated position data or null if validation fails.
     */
@@ -6720,7 +6795,7 @@ class TJSPosition
       ...rest
    } = {}, parent, el, styleCache)
    {
-      let currentPosition = TJSPositionDataUtil.copyData(this.#data, s_DATA_UPDATE);
+      let currentPosition = TJSPositionDataUtil.copyData(this.#data, TJSPosition.#updateDataCopy);
 
       // Update width if an explicit value is passed, or if no width value is set on the element.
       if (el.style.width === '' || width !== void 0)
@@ -6841,7 +6916,7 @@ class TJSPosition
 
       if (typeof transformOrigin === 'string' || transformOrigin === null)
       {
-         currentPosition.transformOrigin = transformOrigins.includes(transformOrigin) ? transformOrigin :
+         currentPosition.transformOrigin = TJSTransforms.transformOrigins.includes(transformOrigin) ? transformOrigin :
           null;
       }
 
@@ -6855,41 +6930,43 @@ class TJSPosition
       // If there are any validators allow them to potentially modify position data or reject the update.
       if (this.#validators.enabled && validatorData.length)
       {
-         s_VALIDATION_DATA.parent = parent;
+         const validationData = TJSPosition.#validationData;
 
-         s_VALIDATION_DATA.el = el;
+         validationData.parent = parent;
 
-         s_VALIDATION_DATA.computed = styleCache.computed;
+         validationData.el = el;
 
-         s_VALIDATION_DATA.transforms = this.#transforms;
+         validationData.computed = styleCache.computed;
 
-         s_VALIDATION_DATA.height = height;
+         validationData.transforms = this.#transforms;
 
-         s_VALIDATION_DATA.width = width;
+         validationData.height = height;
 
-         s_VALIDATION_DATA.marginLeft = styleCache.marginLeft;
+         validationData.width = width;
 
-         s_VALIDATION_DATA.marginTop = styleCache.marginTop;
+         validationData.marginLeft = styleCache.marginLeft;
 
-         s_VALIDATION_DATA.maxHeight = styleCache.maxHeight ?? currentPosition.maxHeight;
+         validationData.marginTop = styleCache.marginTop;
 
-         s_VALIDATION_DATA.maxWidth = styleCache.maxWidth ?? currentPosition.maxWidth;
+         validationData.maxHeight = styleCache.maxHeight ?? currentPosition.maxHeight;
+
+         validationData.maxWidth = styleCache.maxWidth ?? currentPosition.maxWidth;
 
          // Given a parent w/ reactive state and is minimized ignore styleCache min-width/height.
          const isMinimized = parent?.reactive?.minimized ?? false;
 
          // Note the use of || for accessing the style cache as the left hand is ignored w/ falsy values such as '0'.
-         s_VALIDATION_DATA.minHeight = isMinimized ? currentPosition.minHeight ?? 0 :
+         validationData.minHeight = isMinimized ? currentPosition.minHeight ?? 0 :
           styleCache.minHeight || (currentPosition.minHeight ?? 0);
 
-         s_VALIDATION_DATA.minWidth = isMinimized ? currentPosition.minWidth ?? 0 :
+         validationData.minWidth = isMinimized ? currentPosition.minWidth ?? 0 :
           styleCache.minWidth || (currentPosition.minWidth ?? 0);
 
          for (let cntr = 0; cntr < validatorData.length; cntr++)
          {
-            s_VALIDATION_DATA.position = currentPosition;
-            s_VALIDATION_DATA.rest = rest;
-            currentPosition = validatorData[cntr].validate(s_VALIDATION_DATA);
+            validationData.position = currentPosition;
+            validationData.rest = rest;
+            currentPosition = validatorData[cntr].validate(validationData);
 
             if (currentPosition === null) { return null; }
          }
@@ -6899,30 +6976,6 @@ class TJSPosition
       return currentPosition;
    }
 }
-
-const s_DATA_UPDATE = Object.seal(new TJSPositionData());
-
-/**
- * @type {import('./system/validators/types').ValidatorAPI.ValidationData}
- */
-const s_VALIDATION_DATA = {
-   position: void 0,
-   parent: void 0,
-   el: void 0,
-   computed: void 0,
-   transforms: void 0,
-   height: void 0,
-   width: void 0,
-   marginLeft: void 0,
-   marginTop: void 0,
-   maxHeight: void 0,
-   maxWidth: void 0,
-   minHeight: void 0,
-   minWidth: void 0,
-   rest: void 0
-};
-
-Object.seal(s_VALIDATION_DATA);
 
 export { TJSPosition, applyPosition, draggable };
 //# sourceMappingURL=index.js.map

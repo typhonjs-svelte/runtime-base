@@ -541,9 +541,9 @@ declare class TJSPosition implements TJSPositionTypes.ITJSPosition {
    */
   static get Data(): Data.TJSPositionDataConstructor;
   /**
-   * @returns {import('./types').TJSPositionTypes.PositionInitial} TJSPosition default initial helpers.
+   * @returns {Readonly<import('./types').TJSPositionTypes.PositionInitial>} TJSPosition default initial helpers.
    */
-  static get Initial(): TJSPositionTypes.PositionInitial;
+  static get Initial(): Readonly<TJSPositionTypes.PositionInitial>;
   /**
    * @returns {import('./system/types').System.SystemBaseConstructor} `SystemBase` constructor.
    */
@@ -560,21 +560,27 @@ declare class TJSPosition implements TJSPositionTypes.ITJSPosition {
    *
    * Note: `basicWindow` and `BasicBounds` will eventually be removed.
    *
-   * @returns {import('./types').TJSPositionTypes.PositionValidators} Available validators.
+   * @returns {Readonly<import('./types').TJSPositionTypes.PositionValidators>} Available validators.
    */
-  static get Validators(): TJSPositionTypes.PositionValidators;
+  static get Validators(): Readonly<TJSPositionTypes.PositionValidators>;
+  /**
+   * Returns a list of supported transform origins.
+   *
+   * @returns {Readonly<import('./types').TransformAPI.TransformOrigin[]>}
+   */
+  static get transformOrigins(): any;
   /**
    * Convenience to copy from source to target of two TJSPositionData like objects. If a target is not supplied a new
    * {@link TJSPositionData} instance is created.
    *
-   * @param {import('./data/types').Data.TJSPositionData}  source - The source instance to copy from.
+   * @param {Partial<import('./data/types').Data.TJSPositionData>}  source - The source instance to copy from.
    *
    * @param {import('./data/types').Data.TJSPositionData}  [target] - Target TJSPositionData like object; if one is not
    *        provided a new instance is created.
    *
-   * @returns {import('./data/types').Data.TJSPositionData} The target instance.
+   * @returns {import('./data/types').Data.TJSPositionData} The target instance with all TJSPositionData fields.
    */
-  static copyData(source: Data.TJSPositionData, target?: Data.TJSPositionData): Data.TJSPositionData;
+  static copyData(source: Partial<Data.TJSPositionData>, target?: Data.TJSPositionData): Data.TJSPositionData;
   /**
    * Returns a duplicate of a given position instance copying any options and validators.
    *
