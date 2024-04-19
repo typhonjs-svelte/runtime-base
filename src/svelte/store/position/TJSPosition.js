@@ -38,7 +38,7 @@ import {
    UpdateElementData,
    UpdateElementManager }        from './update';
 
-import { StyleCache }            from './util';
+import { TJSPositionStyleCache }            from './util';
 
 import * as constants            from './constants.js';
 
@@ -121,7 +121,7 @@ export class TJSPosition
    /**
     * Stores an instance of the computer styles for the target element.
     *
-    * @type {StyleCache}
+    * @type {TJSPositionStyleCache}
     */
    #styleCache;
 
@@ -264,7 +264,7 @@ export class TJSPosition
       const data = this.#data;
       const transforms = this.#transforms;
 
-      this.#styleCache = new StyleCache();
+      this.#styleCache = new TJSPositionStyleCache();
 
       const updateData = new UpdateElementData();
 
@@ -1240,7 +1240,7 @@ export class TJSPosition
     *
     * @param {HTMLElement} el -
     *
-    * @param {StyleCache} styleCache -
+    * @param {TJSPositionStyleCache} styleCache -
     *
     * @returns {null | import('./data/types').Data.TJSPositionData} Updated position data or null if validation fails.
     */

@@ -6,7 +6,10 @@ import {
    A11yHelper,
    StyleParse }            from '#runtime/util/browser';
 
-export class StyleCache
+/**
+ * Caches computed styles of a {@link TJSPosition} target element.
+ */
+export class TJSPositionStyleCache
 {
    constructor()
    {

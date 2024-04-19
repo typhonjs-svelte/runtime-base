@@ -46,7 +46,7 @@ export class UpdateElementData
       this.queued = false;
 
       /**
-       * @type {import('../util').StyleCache}
+       * @type {import('../util').TJSPositionStyleCache}
        */
       this.styleCache = void 0;
 
