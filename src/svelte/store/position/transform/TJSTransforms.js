@@ -1,24 +1,7 @@
 import { degToRad }           from '#runtime/math/util';
 import { Mat4, Vec3 }         from '#runtime/math/gl-matrix';
 
-import * as constants         from '../constants.js';
-
 import { TJSTransformData }   from './TJSTransformData.js';
-
-/** @type {number[]} */
-const s_SCALE_VECTOR = [1, 1, 1];
-
-/** @type {number[]} */
-const s_TRANSLATE_VECTOR = [0, 0, 0];
-
-/** @type {import('#runtime/math/gl-matrix').Mat4} */
-const s_MAT4_RESULT = Mat4.create();
-
-/** @type {import('#runtime/math/gl-matrix').Mat4} */
-const s_MAT4_TEMP = Mat4.create();
-
-/** @type {import('#runtime/math/gl-matrix').Vec3} */
-const s_VEC3_TEMP = Vec3.create();
 
 /**
  * @implements {import('./types').TransformAPI}
@@ -26,15 +9,83 @@ const s_VEC3_TEMP = Vec3.create();
 export class TJSTransforms
 {
    /**
+    * Stores transform data.
+    *
+    * @type {Partial<import('../data/types').Data.TJSPositionData>}
+    */
+   #data = {};
+
+   /**
     * Stores the transform keys in the order added.
     *
     * @type {string[]}
     */
    #orderList = [];
 
-   constructor()
+   /**
+    * Defines the keys of TJSPositionData that are transform keys.
+    *
+    * @type {string[]}
+    */
+   static #transformKeys = Object.freeze([
+    'rotateX', 'rotateY', 'rotateZ', 'scale', 'translateX', 'translateY', 'translateZ'
+   ]);
+
+   /**
+    * Defines bitwise keys for transforms used in {@link TJSTransforms.getMat4}.
+    *
+    * @type {object}
+    */
+   static #transformKeysBitwise = Object.freeze({
+      rotateX: 1,
+      rotateY: 2,
+      rotateZ: 4,
+      scale: 8,
+      translateX: 16,
+      translateY: 32,
+      translateZ: 64
+   });
+
+   /**
+    * Defines the default transform origin.
+    *
+    * @type {Readonly<import('./types').TransformAPI.TransformOrigin>}
+    */
+   static #transformOriginDefault = 'top left';
+
+   /**
+    * Defines the valid transform origins.
+    *
+    * @type {Readonly<import('./types').TransformAPI.TransformOrigin[]>}
+    */
+   static #transformOrigins = Object.freeze(['top left', 'top center', 'top right', 'center left', 'center',
+    'center right', 'bottom left', 'bottom center', 'bottom right']);
+
+   // Temporary variables --------------------------------------------------------------------------------------------
+
+   /** @type {import('#runtime/math/gl-matrix').Mat4} */
+   static #mat4Result = Mat4.create();
+
+   /** @type {import('#runtime/math/gl-matrix').Mat4} */
+   static #mat4Temp = Mat4.create();
+
+   /** @type {import('#runtime/math/gl-matrix').Vec3} */
+   static #vec3Temp = Vec3.create();
+
+   /** @type {number[]} */
+   static #vectorScale = [1, 1, 1];
+
+   /** @type {number[]} */
+   static #vectorTranslate = [0, 0, 0];
+
+   /**
+    * Returns a list of supported transform origins.
+    *
+    * @returns {Readonly<import('./types').TransformAPI.TransformOrigin[]>}
+    */
+   static get transformOrigins()
    {
-      this._data = {};
+      return this.#transformOrigins;
    }
 
    /**
@@ -45,37 +96,37 @@ export class TJSTransforms
    /**
     * @returns {number|undefined} Any local rotateX data.
     */
-   get rotateX() { return this._data.rotateX; }
+   get rotateX() { return this.#data.rotateX; }
 
    /**
     * @returns {number|undefined} Any local rotateY data.
     */
-   get rotateY() { return this._data.rotateY; }
+   get rotateY() { return this.#data.rotateY; }
 
    /**
     * @returns {number|undefined} Any local rotateZ data.
     */
-   get rotateZ() { return this._data.rotateZ; }
+   get rotateZ() { return this.#data.rotateZ; }
 
    /**
     * @returns {number|undefined} Any local rotateZ scale.
     */
-   get scale() { return this._data.scale; }
+   get scale() { return this.#data.scale; }
 
    /**
     * @returns {number|undefined} Any local translateZ data.
     */
-   get translateX() { return this._data.translateX; }
+   get translateX() { return this.#data.translateX; }
 
    /**
     * @returns {number|undefined} Any local translateZ data.
     */
-   get translateY() { return this._data.translateY; }
+   get translateY() { return this.#data.translateY; }
 
    /**
     * @returns {number|undefined} Any local translateZ data.
     */
-   get translateZ() { return this._data.translateZ; }
+   get translateZ() { return this.#data.translateZ; }
 
    /**
     * Sets the local rotateX data if the value is a finite number otherwise removes the local data.
@@ -86,19 +137,19 @@ export class TJSTransforms
    {
       if (Number.isFinite(value))
       {
-         if (this._data.rotateX === void 0) { this.#orderList.push('rotateX'); }
+         if (this.#data.rotateX === void 0) { this.#orderList.push('rotateX'); }
 
-         this._data.rotateX = value;
+         this.#data.rotateX = value;
       }
       else
       {
-         if (this._data.rotateX !== void 0)
+         if (this.#data.rotateX !== void 0)
          {
             const index = this.#orderList.findIndex((entry) => entry === 'rotateX');
             if (index >= 0) { this.#orderList.splice(index, 1); }
          }
 
-         delete this._data.rotateX;
+         delete this.#data.rotateX;
       }
    }
 
@@ -111,19 +162,19 @@ export class TJSTransforms
    {
       if (Number.isFinite(value))
       {
-         if (this._data.rotateY === void 0) { this.#orderList.push('rotateY'); }
+         if (this.#data.rotateY === void 0) { this.#orderList.push('rotateY'); }
 
-         this._data.rotateY = value;
+         this.#data.rotateY = value;
       }
       else
       {
-         if (this._data.rotateY !== void 0)
+         if (this.#data.rotateY !== void 0)
          {
             const index = this.#orderList.findIndex((entry) => entry === 'rotateY');
             if (index >= 0) { this.#orderList.splice(index, 1); }
          }
 
-         delete this._data.rotateY;
+         delete this.#data.rotateY;
       }
    }
 
@@ -136,20 +187,20 @@ export class TJSTransforms
    {
       if (Number.isFinite(value))
       {
-         if (this._data.rotateZ === void 0) { this.#orderList.push('rotateZ'); }
+         if (this.#data.rotateZ === void 0) { this.#orderList.push('rotateZ'); }
 
-         this._data.rotateZ = value;
+         this.#data.rotateZ = value;
       }
 
       else
       {
-         if (this._data.rotateZ !== void 0)
+         if (this.#data.rotateZ !== void 0)
          {
             const index = this.#orderList.findIndex((entry) => entry === 'rotateZ');
             if (index >= 0) { this.#orderList.splice(index, 1); }
          }
 
-         delete this._data.rotateZ;
+         delete this.#data.rotateZ;
       }
    }
 
@@ -162,19 +213,19 @@ export class TJSTransforms
    {
       if (Number.isFinite(value))
       {
-         if (this._data.scale === void 0) { this.#orderList.push('scale'); }
+         if (this.#data.scale === void 0) { this.#orderList.push('scale'); }
 
-         this._data.scale = value;
+         this.#data.scale = value;
       }
       else
       {
-         if (this._data.scale !== void 0)
+         if (this.#data.scale !== void 0)
          {
             const index = this.#orderList.findIndex((entry) => entry === 'scale');
             if (index >= 0) { this.#orderList.splice(index, 1); }
          }
 
-         delete this._data.scale;
+         delete this.#data.scale;
       }
    }
 
@@ -187,20 +238,20 @@ export class TJSTransforms
    {
       if (Number.isFinite(value))
       {
-         if (this._data.translateX === void 0) { this.#orderList.push('translateX'); }
+         if (this.#data.translateX === void 0) { this.#orderList.push('translateX'); }
 
-         this._data.translateX = value;
+         this.#data.translateX = value;
       }
 
       else
       {
-         if (this._data.translateX !== void 0)
+         if (this.#data.translateX !== void 0)
          {
             const index = this.#orderList.findIndex((entry) => entry === 'translateX');
             if (index >= 0) { this.#orderList.splice(index, 1); }
          }
 
-         delete this._data.translateX;
+         delete this.#data.translateX;
       }
    }
 
@@ -213,20 +264,20 @@ export class TJSTransforms
    {
       if (Number.isFinite(value))
       {
-         if (this._data.translateY === void 0) { this.#orderList.push('translateY'); }
+         if (this.#data.translateY === void 0) { this.#orderList.push('translateY'); }
 
-         this._data.translateY = value;
+         this.#data.translateY = value;
       }
 
       else
       {
-         if (this._data.translateY !== void 0)
+         if (this.#data.translateY !== void 0)
          {
             const index = this.#orderList.findIndex((entry) => entry === 'translateY');
             if (index >= 0) { this.#orderList.splice(index, 1); }
          }
 
-         delete this._data.translateY;
+         delete this.#data.translateY;
       }
    }
 
@@ -239,20 +290,20 @@ export class TJSTransforms
    {
       if (Number.isFinite(value))
       {
-         if (this._data.translateZ === void 0) { this.#orderList.push('translateZ'); }
+         if (this.#data.translateZ === void 0) { this.#orderList.push('translateZ'); }
 
-         this._data.translateZ = value;
+         this.#data.translateZ = value;
       }
 
       else
       {
-         if (this._data.translateZ !== void 0)
+         if (this.#data.translateZ !== void 0)
          {
             const index = this.#orderList.findIndex((entry) => entry === 'translateZ');
             if (index >= 0) { this.#orderList.splice(index, 1); }
          }
 
-         delete this._data.translateZ;
+         delete this.#data.translateZ;
       }
    }
 
@@ -263,9 +314,9 @@ export class TJSTransforms
     *
     * @returns {string} The CSS matrix3d string.
     */
-   getCSS(data = this._data)
+   getCSS(data = this.#data)
    {
-      return `matrix3d(${this.getMat4(data, s_MAT4_RESULT).join(',')})`;
+      return `matrix3d(${this.getMat4(data, TJSTransforms.#mat4Result).join(',')})`;
    }
 
    /**
@@ -275,9 +326,9 @@ export class TJSTransforms
     *
     * @returns {string} The CSS matrix3d string.
     */
-   getCSSOrtho(data = this._data)
+   getCSSOrtho(data = this.#data)
    {
-      return `matrix3d(${this.getMat4Ortho(data, s_MAT4_RESULT).join(',')})`;
+      return `matrix3d(${this.getMat4Ortho(data, TJSTransforms.#mat4Result).join(',')})`;
    }
 
    /**
@@ -321,9 +372,9 @@ export class TJSTransforms
 
          const matrix = this.getMat4(position, output.mat4);
 
-         const translate = s_GET_ORIGIN_TRANSLATION(position.transformOrigin, width, height, output.originTranslations);
+         const translate = TJSTransforms.#getOriginTranslation(position.transformOrigin, width, height, output.originTranslations);
 
-         if (constants.transformOriginDefault === position.transformOrigin)
+         if (TJSTransforms.#transformOriginDefault === position.transformOrigin)
          {
             Vec3.transformMat4(rect[0], rect[0], matrix);
             Vec3.transformMat4(rect[1], rect[1], matrix);
@@ -410,7 +461,7 @@ export class TJSTransforms
     *
     * @returns {import('#runtime/math/gl-matrix').Mat4} Transform matrix.
     */
-   getMat4(data = this._data, output = Mat4.create())
+   getMat4(data = this.#data, output = Mat4.create())
    {
       const matrix = Mat4.identity(output);
 
@@ -427,100 +478,100 @@ export class TJSTransforms
          switch (key)
          {
             case 'rotateX':
-               seenKeys |= constants.transformKeysBitwise.rotateX;
-               Mat4.multiply(matrix, matrix, Mat4.fromXRotation(s_MAT4_TEMP, degToRad(data[key])));
+               seenKeys |= TJSTransforms.#transformKeysBitwise.rotateX;
+               Mat4.multiply(matrix, matrix, Mat4.fromXRotation(TJSTransforms.#mat4Temp, degToRad(data[key])));
                break;
 
             case 'rotateY':
-               seenKeys |= constants.transformKeysBitwise.rotateY;
-               Mat4.multiply(matrix, matrix, Mat4.fromYRotation(s_MAT4_TEMP, degToRad(data[key])));
+               seenKeys |= TJSTransforms.#transformKeysBitwise.rotateY;
+               Mat4.multiply(matrix, matrix, Mat4.fromYRotation(TJSTransforms.#mat4Temp, degToRad(data[key])));
                break;
 
             case 'rotateZ':
-               seenKeys |= constants.transformKeysBitwise.rotateZ;
-               Mat4.multiply(matrix, matrix, Mat4.fromZRotation(s_MAT4_TEMP, degToRad(data[key])));
+               seenKeys |= TJSTransforms.#transformKeysBitwise.rotateZ;
+               Mat4.multiply(matrix, matrix, Mat4.fromZRotation(TJSTransforms.#mat4Temp, degToRad(data[key])));
                break;
 
             case 'scale':
-               seenKeys |= constants.transformKeysBitwise.scale;
-               s_SCALE_VECTOR[0] = s_SCALE_VECTOR[1] = data[key];
-               Mat4.multiply(matrix, matrix, Mat4.fromScaling(s_MAT4_TEMP, s_SCALE_VECTOR));
+               seenKeys |= TJSTransforms.#transformKeysBitwise.scale;
+               TJSTransforms.#vectorScale[0] = TJSTransforms.#vectorScale[1] = data[key];
+               Mat4.multiply(matrix, matrix, Mat4.fromScaling(TJSTransforms.#mat4Temp, TJSTransforms.#vectorScale));
                break;
 
             case 'translateX':
-               seenKeys |= constants.transformKeysBitwise.translateX;
-               s_TRANSLATE_VECTOR[0] = data.translateX;
-               s_TRANSLATE_VECTOR[1] = 0;
-               s_TRANSLATE_VECTOR[2] = 0;
-               Mat4.multiply(matrix, matrix, Mat4.fromTranslation(s_MAT4_TEMP, s_TRANSLATE_VECTOR));
+               seenKeys |= TJSTransforms.#transformKeysBitwise.translateX;
+               TJSTransforms.#vectorTranslate[0] = data.translateX;
+               TJSTransforms.#vectorTranslate[1] = 0;
+               TJSTransforms.#vectorTranslate[2] = 0;
+               Mat4.multiply(matrix, matrix, Mat4.fromTranslation(TJSTransforms.#mat4Temp, TJSTransforms.#vectorTranslate));
                break;
 
             case 'translateY':
-               seenKeys |= constants.transformKeysBitwise.translateY;
-               s_TRANSLATE_VECTOR[0] = 0;
-               s_TRANSLATE_VECTOR[1] = data.translateY;
-               s_TRANSLATE_VECTOR[2] = 0;
-               Mat4.multiply(matrix, matrix, Mat4.fromTranslation(s_MAT4_TEMP, s_TRANSLATE_VECTOR));
+               seenKeys |= TJSTransforms.#transformKeysBitwise.translateY;
+               TJSTransforms.#vectorTranslate[0] = 0;
+               TJSTransforms.#vectorTranslate[1] = data.translateY;
+               TJSTransforms.#vectorTranslate[2] = 0;
+               Mat4.multiply(matrix, matrix, Mat4.fromTranslation(TJSTransforms.#mat4Temp, TJSTransforms.#vectorTranslate));
                break;
 
             case 'translateZ':
-               seenKeys |= constants.transformKeysBitwise.translateZ;
-               s_TRANSLATE_VECTOR[0] = 0;
-               s_TRANSLATE_VECTOR[1] = 0;
-               s_TRANSLATE_VECTOR[2] = data.translateZ;
-               Mat4.multiply(matrix, matrix, Mat4.fromTranslation(s_MAT4_TEMP, s_TRANSLATE_VECTOR));
+               seenKeys |= TJSTransforms.#transformKeysBitwise.translateZ;
+               TJSTransforms.#vectorTranslate[0] = 0;
+               TJSTransforms.#vectorTranslate[1] = 0;
+               TJSTransforms.#vectorTranslate[2] = data.translateZ;
+               Mat4.multiply(matrix, matrix, Mat4.fromTranslation(TJSTransforms.#mat4Temp, TJSTransforms.#vectorTranslate));
                break;
          }
       }
 
       // Now apply any new keys not set in local transform data that have not been applied yet.
-      if (data !== this._data)
+      if (data !== this.#data)
       {
-         for (let cntr = 0; cntr < constants.transformKeys.length; cntr++)
+         for (let cntr = 0; cntr < TJSTransforms.#transformKeys.length; cntr++)
          {
-            const key = constants.transformKeys[cntr];
+            const key = TJSTransforms.#transformKeys[cntr];
 
             // Reject bad / no data or if the key has already been applied.
-            if (data[key] === null || (seenKeys & constants.transformKeysBitwise[key]) > 0) { continue; }
+            if (data[key] === null || (seenKeys & TJSTransforms.#transformKeysBitwise[key]) > 0) { continue; }
 
             switch (key)
             {
                case 'rotateX':
-                  Mat4.multiply(matrix, matrix, Mat4.fromXRotation(s_MAT4_TEMP, degToRad(data[key])));
+                  Mat4.multiply(matrix, matrix, Mat4.fromXRotation(TJSTransforms.#mat4Temp, degToRad(data[key])));
                   break;
 
                case 'rotateY':
-                  Mat4.multiply(matrix, matrix, Mat4.fromYRotation(s_MAT4_TEMP, degToRad(data[key])));
+                  Mat4.multiply(matrix, matrix, Mat4.fromYRotation(TJSTransforms.#mat4Temp, degToRad(data[key])));
                   break;
 
                case 'rotateZ':
-                  Mat4.multiply(matrix, matrix, Mat4.fromZRotation(s_MAT4_TEMP, degToRad(data[key])));
+                  Mat4.multiply(matrix, matrix, Mat4.fromZRotation(TJSTransforms.#mat4Temp, degToRad(data[key])));
                   break;
 
                case 'scale':
-                  s_SCALE_VECTOR[0] = s_SCALE_VECTOR[1] = data[key];
-                  Mat4.multiply(matrix, matrix, Mat4.fromScaling(s_MAT4_TEMP, s_SCALE_VECTOR));
+                  TJSTransforms.#vectorScale[0] = TJSTransforms.#vectorScale[1] = data[key];
+                  Mat4.multiply(matrix, matrix, Mat4.fromScaling(TJSTransforms.#mat4Temp, TJSTransforms.#vectorScale));
                   break;
 
                case 'translateX':
-                  s_TRANSLATE_VECTOR[0] = data[key];
-                  s_TRANSLATE_VECTOR[1] = 0;
-                  s_TRANSLATE_VECTOR[2] = 0;
-                  Mat4.multiply(matrix, matrix, Mat4.fromTranslation(s_MAT4_TEMP, s_TRANSLATE_VECTOR));
+                  TJSTransforms.#vectorTranslate[0] = data[key];
+                  TJSTransforms.#vectorTranslate[1] = 0;
+                  TJSTransforms.#vectorTranslate[2] = 0;
+                  Mat4.multiply(matrix, matrix, Mat4.fromTranslation(TJSTransforms.#mat4Temp, TJSTransforms.#vectorTranslate));
                   break;
 
                case 'translateY':
-                  s_TRANSLATE_VECTOR[0] = 0;
-                  s_TRANSLATE_VECTOR[1] = data[key];
-                  s_TRANSLATE_VECTOR[2] = 0;
-                  Mat4.multiply(matrix, matrix, Mat4.fromTranslation(s_MAT4_TEMP, s_TRANSLATE_VECTOR));
+                  TJSTransforms.#vectorTranslate[0] = 0;
+                  TJSTransforms.#vectorTranslate[1] = data[key];
+                  TJSTransforms.#vectorTranslate[2] = 0;
+                  Mat4.multiply(matrix, matrix, Mat4.fromTranslation(TJSTransforms.#mat4Temp, TJSTransforms.#vectorTranslate));
                   break;
 
                case 'translateZ':
-                  s_TRANSLATE_VECTOR[0] = 0;
-                  s_TRANSLATE_VECTOR[1] = 0;
-                  s_TRANSLATE_VECTOR[2] = data[key];
-                  Mat4.multiply(matrix, matrix, Mat4.fromTranslation(s_MAT4_TEMP, s_TRANSLATE_VECTOR));
+                  TJSTransforms.#vectorTranslate[0] = 0;
+                  TJSTransforms.#vectorTranslate[1] = 0;
+                  TJSTransforms.#vectorTranslate[2] = data[key];
+                  Mat4.multiply(matrix, matrix, Mat4.fromTranslation(TJSTransforms.#mat4Temp, TJSTransforms.#vectorTranslate));
                   break;
             }
          }
@@ -539,29 +590,30 @@ export class TJSTransforms
     * then the stored local transform order is applied then all remaining transform keys are applied. This allows the
     * construction of a transform matrix in advance of setting local data and is useful in collision detection.
     *
-    * @param {import('../data/types').Data.TJSPositionData}   [data] - TJSPositionData instance or local transform data.
+    * @param {Partial<import('../data/types').Data.TJSPositionData>}   [data] - TJSPositionData instance or local
+    *        transform data.
     *
     * @param {import('#runtime/math/gl-matrix').Mat4}  [output] - The output mat4 instance.
     *
     * @returns {import('#runtime/math/gl-matrix').Mat4} Transform matrix.
     */
-   getMat4Ortho(data = this._data, output = Mat4.create())
+   getMat4Ortho(data = this.#data, output = Mat4.create())
    {
       const matrix = Mat4.identity(output);
 
       // Attempt to retrieve values from passed in data otherwise default to 0.
       // Always perform the translation last regardless of order added to local transform data.
       // Add data.left to translateX and data.top to translateY.
-      s_TRANSLATE_VECTOR[0] = (data.left ?? 0) + (data.translateX ?? 0);
-      s_TRANSLATE_VECTOR[1] = (data.top ?? 0) + (data.translateY ?? 0);
-      s_TRANSLATE_VECTOR[2] = data.translateZ ?? 0;
-      Mat4.multiply(matrix, matrix, Mat4.fromTranslation(s_MAT4_TEMP, s_TRANSLATE_VECTOR));
+      TJSTransforms.#vectorTranslate[0] = (data.left ?? 0) + (data.translateX ?? 0);
+      TJSTransforms.#vectorTranslate[1] = (data.top ?? 0) + (data.translateY ?? 0);
+      TJSTransforms.#vectorTranslate[2] = data.translateZ ?? 0;
+      Mat4.multiply(matrix, matrix, Mat4.fromTranslation(TJSTransforms.#mat4Temp, TJSTransforms.#vectorTranslate));
 
       // Scale can also be applied out of order.
       if (data.scale !== null)
       {
-         s_SCALE_VECTOR[0] = s_SCALE_VECTOR[1] = data.scale;
-         Mat4.multiply(matrix, matrix, Mat4.fromScaling(s_MAT4_TEMP, s_SCALE_VECTOR));
+         TJSTransforms.#vectorScale[0] = TJSTransforms.#vectorScale[1] = data.scale;
+         Mat4.multiply(matrix, matrix, Mat4.fromScaling(TJSTransforms.#mat4Temp, TJSTransforms.#vectorScale));
       }
 
       // Early out if there is not rotation data.
@@ -582,44 +634,44 @@ export class TJSTransforms
          switch (key)
          {
             case 'rotateX':
-               seenKeys |= constants.transformKeysBitwise.rotateX;
-               Mat4.multiply(matrix, matrix, Mat4.fromXRotation(s_MAT4_TEMP, degToRad(data[key])));
+               seenKeys |= TJSTransforms.#transformKeysBitwise.rotateX;
+               Mat4.multiply(matrix, matrix, Mat4.fromXRotation(TJSTransforms.#mat4Temp, degToRad(data[key])));
                break;
 
             case 'rotateY':
-               seenKeys |= constants.transformKeysBitwise.rotateY;
-               Mat4.multiply(matrix, matrix, Mat4.fromYRotation(s_MAT4_TEMP, degToRad(data[key])));
+               seenKeys |= TJSTransforms.#transformKeysBitwise.rotateY;
+               Mat4.multiply(matrix, matrix, Mat4.fromYRotation(TJSTransforms.#mat4Temp, degToRad(data[key])));
                break;
 
             case 'rotateZ':
-               seenKeys |= constants.transformKeysBitwise.rotateZ;
-               Mat4.multiply(matrix, matrix, Mat4.fromZRotation(s_MAT4_TEMP, degToRad(data[key])));
+               seenKeys |= TJSTransforms.#transformKeysBitwise.rotateZ;
+               Mat4.multiply(matrix, matrix, Mat4.fromZRotation(TJSTransforms.#mat4Temp, degToRad(data[key])));
                break;
          }
       }
 
       // Now apply any new keys not set in local transform data that have not been applied yet.
-      if (data !== this._data)
+      if (data !== this.#data)
       {
-         for (let cntr = 0; cntr < constants.transformKeys.length; cntr++)
+         for (let cntr = 0; cntr < TJSTransforms.#transformKeys.length; cntr++)
          {
-            const key = constants.transformKeys[cntr];
+            const key = TJSTransforms.#transformKeys[cntr];
 
             // Reject bad / no data or if the key has already been applied.
-            if (data[key] === null || (seenKeys & constants.transformKeysBitwise[key]) > 0) { continue; }
+            if (data[key] === null || (seenKeys & TJSTransforms.#transformKeysBitwise[key]) > 0) { continue; }
 
             switch (key)
             {
                case 'rotateX':
-                  Mat4.multiply(matrix, matrix, Mat4.fromXRotation(s_MAT4_TEMP, degToRad(data[key])));
+                  Mat4.multiply(matrix, matrix, Mat4.fromXRotation(TJSTransforms.#mat4Temp, degToRad(data[key])));
                   break;
 
                case 'rotateY':
-                  Mat4.multiply(matrix, matrix, Mat4.fromYRotation(s_MAT4_TEMP, degToRad(data[key])));
+                  Mat4.multiply(matrix, matrix, Mat4.fromYRotation(TJSTransforms.#mat4Temp, degToRad(data[key])));
                   break;
 
                case 'rotateZ':
-                  Mat4.multiply(matrix, matrix, Mat4.fromZRotation(s_MAT4_TEMP, degToRad(data[key])));
+                  Mat4.multiply(matrix, matrix, Mat4.fromZRotation(TJSTransforms.#mat4Temp, degToRad(data[key])));
                   break;
             }
          }
@@ -637,7 +689,7 @@ export class TJSTransforms
     */
    hasTransform(data)
    {
-      for (const key of constants.transformKeys)
+      for (const key of TJSTransforms.#transformKeys)
       {
          if (Number.isFinite(data[key])) { return true; }
       }
@@ -654,130 +706,132 @@ export class TJSTransforms
    {
       for (const key in data)
       {
-         if (constants.transformKeys.includes(key))
+         if (TJSTransforms.#transformKeys.includes(key))
          {
             if (Number.isFinite(data[key]))
             {
-               this._data[key] = data[key];
+               this.#data[key] = data[key];
             }
             else
             {
                const index = this.#orderList.findIndex((entry) => entry === key);
                if (index >= 0) { this.#orderList.splice(index, 1); }
 
-               delete this._data[key];
+               delete this.#data[key];
             }
          }
       }
    }
-}
 
-/**
- * Returns the translations necessary to translate a matrix operation based on the `transformOrigin` parameter of the
- * given position instance. The first entry / index 0 is the pre-translation and last entry / index 1 is the post-
- * translation.
- *
- * This method is used internally, but may be useful if you need the origin translation matrices to transform
- * bespoke points based on any `transformOrigin` set in {@link TJSPositionData}.
- *
- * @param {string}   transformOrigin - The transform origin attribute from TJSPositionData.
- *
- * @param {number}   width - The TJSPositionData width or validation data width when 'auto'.
- *
- * @param {number}   height - The TJSPositionData height or validation data height when 'auto'.
- *
- * @param {import('#runtime/math/gl-matrix').Mat4[]}   output - Output Mat4 array.
- *
- * @returns {import('#runtime/math/gl-matrix').Mat4[]} Output Mat4 array.
- */
-function s_GET_ORIGIN_TRANSLATION(transformOrigin, width, height, output)
-{
-   const vector = s_VEC3_TEMP;
+   // Internal implementation ----------------------------------------------------------------------------------------
 
-   switch (transformOrigin)
+   /**
+    * Returns the translations necessary to translate a matrix operation based on the `transformOrigin` parameter of the
+    * given position instance. The first entry / index 0 is the pre-translation and last entry / index 1 is the post-
+    * translation.
+    *
+    * This method is used internally, but may be useful if you need the origin translation matrices to transform
+    * bespoke points based on any `transformOrigin` set in {@link TJSPositionData}.
+    *
+    * @param {string}   transformOrigin - The transform origin attribute from TJSPositionData.
+    *
+    * @param {number}   width - The TJSPositionData width or validation data width when 'auto'.
+    *
+    * @param {number}   height - The TJSPositionData height or validation data height when 'auto'.
+    *
+    * @param {import('#runtime/math/gl-matrix').Mat4[]}   output - Output Mat4 array.
+    *
+    * @returns {import('#runtime/math/gl-matrix').Mat4[]} Output Mat4 array.
+    */
+   static #getOriginTranslation(transformOrigin, width, height, output)
    {
-      case 'top left':
-         vector[0] = vector[1] = 0;
-         Mat4.fromTranslation(output[0], vector);
-         Mat4.fromTranslation(output[1], vector);
-         break;
+      const vector = TJSTransforms.#vec3Temp;
 
-      case 'top center':
-         vector[0] = -width * 0.5;
-         vector[1] = 0;
-         Mat4.fromTranslation(output[0], vector);
-         vector[0] = width * 0.5;
-         Mat4.fromTranslation(output[1], vector);
-         break;
+      switch (transformOrigin)
+      {
+         case 'top left':
+            vector[0] = vector[1] = 0;
+            Mat4.fromTranslation(output[0], vector);
+            Mat4.fromTranslation(output[1], vector);
+            break;
 
-      case 'top right':
-         vector[0] = -width;
-         vector[1] = 0;
-         Mat4.fromTranslation(output[0], vector);
-         vector[0] = width;
-         Mat4.fromTranslation(output[1], vector);
-         break;
+         case 'top center':
+            vector[0] = -width * 0.5;
+            vector[1] = 0;
+            Mat4.fromTranslation(output[0], vector);
+            vector[0] = width * 0.5;
+            Mat4.fromTranslation(output[1], vector);
+            break;
 
-      case 'center left':
-         vector[0] = 0;
-         vector[1] = -height * 0.5;
-         Mat4.fromTranslation(output[0], vector);
-         vector[1] = height * 0.5;
-         Mat4.fromTranslation(output[1], vector);
-         break;
+         case 'top right':
+            vector[0] = -width;
+            vector[1] = 0;
+            Mat4.fromTranslation(output[0], vector);
+            vector[0] = width;
+            Mat4.fromTranslation(output[1], vector);
+            break;
 
-      // By default, null / no transform is 'center'.
-      case null:
-      case 'center':
-         vector[0] = -width * 0.5;
-         vector[1] = -height * 0.5;
-         Mat4.fromTranslation(output[0], vector);
-         vector[0] = width * 0.5;
-         vector[1] = height * 0.5;
-         Mat4.fromTranslation(output[1], vector);
-         break;
+         case 'center left':
+            vector[0] = 0;
+            vector[1] = -height * 0.5;
+            Mat4.fromTranslation(output[0], vector);
+            vector[1] = height * 0.5;
+            Mat4.fromTranslation(output[1], vector);
+            break;
 
-      case 'center right':
-         vector[0] = -width;
-         vector[1] = -height * 0.5;
-         Mat4.fromTranslation(output[0], vector);
-         vector[0] = width;
-         vector[1] = height * 0.5;
-         Mat4.fromTranslation(output[1], vector);
-         break;
+         // By default, null / no transform is 'center'.
+         case null:
+         case 'center':
+            vector[0] = -width * 0.5;
+            vector[1] = -height * 0.5;
+            Mat4.fromTranslation(output[0], vector);
+            vector[0] = width * 0.5;
+            vector[1] = height * 0.5;
+            Mat4.fromTranslation(output[1], vector);
+            break;
 
-      case 'bottom left':
-         vector[0] = 0;
-         vector[1] = -height;
-         Mat4.fromTranslation(output[0], vector);
-         vector[1] = height;
-         Mat4.fromTranslation(output[1], vector);
-         break;
+         case 'center right':
+            vector[0] = -width;
+            vector[1] = -height * 0.5;
+            Mat4.fromTranslation(output[0], vector);
+            vector[0] = width;
+            vector[1] = height * 0.5;
+            Mat4.fromTranslation(output[1], vector);
+            break;
 
-      case 'bottom center':
-         vector[0] = -width * 0.5;
-         vector[1] = -height;
-         Mat4.fromTranslation(output[0], vector);
-         vector[0] = width * 0.5;
-         vector[1] = height;
-         Mat4.fromTranslation(output[1], vector);
-         break;
+         case 'bottom left':
+            vector[0] = 0;
+            vector[1] = -height;
+            Mat4.fromTranslation(output[0], vector);
+            vector[1] = height;
+            Mat4.fromTranslation(output[1], vector);
+            break;
 
-      case 'bottom right':
-         vector[0] = -width;
-         vector[1] = -height;
-         Mat4.fromTranslation(output[0], vector);
-         vector[0] = width;
-         vector[1] = height;
-         Mat4.fromTranslation(output[1], vector);
-         break;
+         case 'bottom center':
+            vector[0] = -width * 0.5;
+            vector[1] = -height;
+            Mat4.fromTranslation(output[0], vector);
+            vector[0] = width * 0.5;
+            vector[1] = height;
+            Mat4.fromTranslation(output[1], vector);
+            break;
 
-      // No valid transform origin parameter; set identity.
-      default:
-         Mat4.identity(output[0]);
-         Mat4.identity(output[1]);
-         break;
+         case 'bottom right':
+            vector[0] = -width;
+            vector[1] = -height;
+            Mat4.fromTranslation(output[0], vector);
+            vector[0] = width;
+            vector[1] = height;
+            Mat4.fromTranslation(output[1], vector);
+            break;
+
+         // No valid transform origin parameter; set identity.
+         default:
+            Mat4.identity(output[0]);
+            Mat4.identity(output[1]);
+            break;
+      }
+
+      return output;
    }
-
-   return output;
 }
