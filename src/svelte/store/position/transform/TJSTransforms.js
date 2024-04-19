@@ -348,7 +348,7 @@ export class TJSTransforms
       const valWidth = validationData.width ?? 0;
       const valHeight = validationData.height ?? 0;
       const valOffsetTop = validationData.offsetTop ?? validationData.marginTop ?? 0;
-      const valOffsetLeft = validationData.offsetLeft ?? validationData.offsetLeft ?? 0;
+      const valOffsetLeft = validationData.offsetLeft ?? validationData.marginLeft ?? 0;
 
       position.top += valOffsetTop;
       position.left += valOffsetLeft;
