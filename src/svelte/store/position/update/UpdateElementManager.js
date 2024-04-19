@@ -18,8 +18,6 @@ export class UpdateElementManager
 
    static updatePromise;
 
-   static get promise() { return this.updatePromise; }
-
    /**
     * Potentially adds the given element and internal updateData instance to the list.
     *
@@ -82,17 +80,17 @@ export class UpdateElementManager
 
          if (updateData.options.ortho)
          {
-            s_UPDATE_ELEMENT_ORTHO(el, updateData);
+            UpdateElementManager.#updateElementOrtho(el, updateData);
          }
          else
          {
-            s_UPDATE_ELEMENT(el, updateData);
+            UpdateElementManager.#updateElement(el, updateData);
          }
 
          // If calculate transform options is enabled then update the transform data and set the readable store.
          if (updateData.options.calculateTransform || updateData.options.transformSubscribed)
          {
-            s_UPDATE_TRANSFORM(el, updateData);
+            UpdateElementManager.#updateTransform(el, updateData);
          }
 
          // Update all subscribers with changed data.
@@ -119,17 +117,17 @@ export class UpdateElementManager
 
       if (updateData.options.ortho)
       {
-         s_UPDATE_ELEMENT_ORTHO(el, updateData);
+         UpdateElementManager.#updateElementOrtho(el, updateData);
       }
       else
       {
-         s_UPDATE_ELEMENT(el, updateData);
+         UpdateElementManager.#updateElement(el, updateData);
       }
 
       // If calculate transform options is enabled then update the transform data and set the readable store.
       if (updateData.options.calculateTransform || updateData.options.transformSubscribed)
       {
-         s_UPDATE_TRANSFORM(el, updateData);
+         UpdateElementManager.#updateTransform(el, updateData);
       }
 
       // Update all subscribers with changed data.
@@ -167,133 +165,140 @@ export class UpdateElementManager
 
       changeSet.set(false);
    }
+
+   // Internal Implementation ----------------------------------------------------------------------------------------
+
+   /**
+    * Temporary data for
+    * @type {{width, marginTop, height, marginLeft}}
+    */
+   static #validationData = Object.seal({
+      height: void 0,
+      width: void 0,
+      marginLeft: void 0,
+      marginTop: void 0
+   });
+
+   /**
+    * Decouples updates to any parent target HTMLElement inline styles. Invoke {@link TJSPosition.elementUpdated} to
+    * await on the returned promise that is resolved with the current render time via `nextAnimationFrame` /
+    * `requestAnimationFrame`. This allows the underlying data model to be updated immediately while updates to the
+    * element are in sync with the browser and potentially in the future be further throttled.
+    *
+    * @param {HTMLElement} el - The target HTMLElement.
+    *
+    * @param {import('./').UpdateElementData} updateData - Update data.
+    */
+   static #updateElement(el, updateData)
+   {
+      const changeSet = updateData.changeSet;
+      const data = updateData.data;
+
+      if (changeSet.left)
+      {
+         el.style.left = `${data.left}px`;
+      }
+
+      if (changeSet.top)
+      {
+         el.style.top = `${data.top}px`;
+      }
+
+      if (changeSet.zIndex)
+      {
+         el.style.zIndex = typeof data.zIndex === 'number' ? `${data.zIndex}` : null;
+      }
+
+      if (changeSet.width)
+      {
+         el.style.width = typeof data.width === 'number' ? `${data.width}px` : data.width;
+      }
+
+      if (changeSet.height)
+      {
+         el.style.height = typeof data.height === 'number' ? `${data.height}px` : data.height;
+      }
+
+      if (changeSet.transformOrigin)
+      {
+         el.style.transformOrigin = data.transformOrigin;
+      }
+
+      // Update all transforms in order added to transforms object.
+      if (changeSet.transform)
+      {
+         el.style.transform = updateData.transforms.isActive ? updateData.transforms.getCSS() : null;
+      }
+   }
+
+   /**
+    * Decouples updates to any parent target HTMLElement inline styles. Invoke
+    * {@link TJSPosition.elementUpdated} to await on the returned promise that is resolved with the current
+    * render time via `nextAnimationFrame` / `requestAnimationFrame`. This allows the underlying data model to be updated
+    * immediately while updates to the element are in sync with the browser and potentially in the future be further
+    * throttled.
+    *
+    * @param {HTMLElement} el - The target HTMLElement.
+    *
+    * @param {import('./').UpdateElementData} updateData - Update data.
+    */
+   static #updateElementOrtho(el, updateData)
+   {
+      const changeSet = updateData.changeSet;
+      const data = updateData.data;
+
+      if (changeSet.zIndex)
+      {
+         el.style.zIndex = typeof data.zIndex === 'number' ? `${data.zIndex}` : null;
+      }
+
+      if (changeSet.width)
+      {
+         el.style.width = typeof data.width === 'number' ? `${data.width}px` : data.width;
+      }
+
+      if (changeSet.height)
+      {
+         el.style.height = typeof data.height === 'number' ? `${data.height}px` : data.height;
+      }
+
+      if (changeSet.transformOrigin)
+      {
+         el.style.transformOrigin = data.transformOrigin;
+      }
+
+      // Update all transforms in order added to transforms object.
+      if (changeSet.left || changeSet.top || changeSet.transform)
+      {
+         el.style.transform = updateData.transforms.getCSSOrtho(data);
+      }
+   }
+
+   /**
+    * Updates the applied transform data and sets the readble `transform` store.
+    *
+    * @param {HTMLElement} el - The target HTMLElement.
+    *
+    * @param {import('./').UpdateElementData} updateData - Update element data.
+    */
+   static #updateTransform(el, updateData)
+   {
+      const validationData = this.#validationData;
+
+      validationData.height = updateData.data.height !== 'auto' && updateData.data.height !== 'inherit' ?
+       updateData.data.height : updateData.styleCache.offsetHeight;
+
+      validationData.width = updateData.data.width !== 'auto' && updateData.data.height !== 'inherit' ?
+       updateData.data.width : updateData.styleCache.offsetWidth;
+
+      validationData.marginLeft = updateData.styleCache.marginLeft;
+
+      validationData.marginTop = updateData.styleCache.marginTop;
+
+      // Get transform data. First set constraints including any margin top / left as offsets and width / height. Used
+      // when position width / height is 'auto'.
+      updateData.transforms.getData(updateData.data, updateData.transformData, validationData);
+
+      updateData.storeTransform.set(updateData.transformData);
+   }
 }
-
-/**
- * Decouples updates to any parent target HTMLElement inline styles. Invoke
- * {@link TJSPosition.elementUpdated} to await on the returned promise that is resolved with the current
- * render time via `nextAnimationFrame` / `requestAnimationFrame`. This allows the underlying data model to be updated
- * immediately while updates to the element are in sync with the browser and potentially in the future be further
- * throttled.
- *
- * @param {HTMLElement} el - The target HTMLElement.
- *
- * @param {import('./').UpdateElementData} updateData - Update data.
- */
-function s_UPDATE_ELEMENT(el, updateData)
-{
-   const changeSet = updateData.changeSet;
-   const data = updateData.data;
-
-   if (changeSet.left)
-   {
-      el.style.left = `${data.left}px`;
-   }
-
-   if (changeSet.top)
-   {
-      el.style.top = `${data.top}px`;
-   }
-
-   if (changeSet.zIndex)
-   {
-      el.style.zIndex = typeof data.zIndex === 'number' ? `${data.zIndex}` : null;
-   }
-
-   if (changeSet.width)
-   {
-      el.style.width = typeof data.width === 'number' ? `${data.width}px` : data.width;
-   }
-
-   if (changeSet.height)
-   {
-      el.style.height = typeof data.height === 'number' ? `${data.height}px` : data.height;
-   }
-
-   if (changeSet.transformOrigin)
-   {
-      el.style.transformOrigin = data.transformOrigin;
-   }
-
-   // Update all transforms in order added to transforms object.
-   if (changeSet.transform)
-   {
-      el.style.transform = updateData.transforms.isActive ? updateData.transforms.getCSS() : null;
-   }
-}
-
-/**
- * Decouples updates to any parent target HTMLElement inline styles. Invoke
- * {@link TJSPosition.elementUpdated} to await on the returned promise that is resolved with the current
- * render time via `nextAnimationFrame` / `requestAnimationFrame`. This allows the underlying data model to be updated
- * immediately while updates to the element are in sync with the browser and potentially in the future be further
- * throttled.
- *
- * @param {HTMLElement} el - The target HTMLElement.
- *
- * @param {import('./').UpdateElementData} updateData - Update data.
- */
-function s_UPDATE_ELEMENT_ORTHO(el, updateData)
-{
-   const changeSet = updateData.changeSet;
-   const data = updateData.data;
-
-   if (changeSet.zIndex)
-   {
-      el.style.zIndex = typeof data.zIndex === 'number' ? `${data.zIndex}` : null;
-   }
-
-   if (changeSet.width)
-   {
-      el.style.width = typeof data.width === 'number' ? `${data.width}px` : data.width;
-   }
-
-   if (changeSet.height)
-   {
-      el.style.height = typeof data.height === 'number' ? `${data.height}px` : data.height;
-   }
-
-   if (changeSet.transformOrigin)
-   {
-      el.style.transformOrigin = data.transformOrigin;
-   }
-
-   // Update all transforms in order added to transforms object.
-   if (changeSet.left || changeSet.top || changeSet.transform)
-   {
-      el.style.transform = updateData.transforms.getCSSOrtho(data);
-   }
-}
-
-/**
- * Updates the applied transform data and sets the readble `transform` store.
- *
- * @param {HTMLElement} el - The target HTMLElement.
- *
- * @param {import('./').UpdateElementData} updateData - Update element data.
- */
-function s_UPDATE_TRANSFORM(el, updateData)
-{
-   s_VALIDATION_DATA.height = updateData.data.height !== 'auto' ? updateData.data.height :
-    updateData.styleCache.offsetHeight;
-
-   s_VALIDATION_DATA.width = updateData.data.width !== 'auto' ? updateData.data.width :
-    updateData.styleCache.offsetWidth;
-
-   s_VALIDATION_DATA.marginLeft = updateData.styleCache.marginLeft;
-
-   s_VALIDATION_DATA.marginTop = updateData.styleCache.marginTop;
-
-   // Get transform data. First set constraints including any margin top / left as offsets and width / height. Used
-   // when position width / height is 'auto'.
-   updateData.transforms.getData(updateData.data, updateData.transformData, s_VALIDATION_DATA);
-
-   updateData.storeTransform.set(updateData.transformData);
-}
-
-const s_VALIDATION_DATA = {
-   height: void 0,
-   width: void 0,
-   marginLeft: void 0,
-   marginTop: void 0
-};
