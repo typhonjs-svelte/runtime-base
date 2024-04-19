@@ -38,9 +38,7 @@ import {
    UpdateElementData,
    UpdateElementManager }        from './update';
 
-import { TJSPositionStyleCache }            from './util';
-
-import * as constants            from './constants.js';
+import { TJSPositionStyleCache } from './util';
 
 /**
  * Provides a store for position following the subscriber protocol in addition to providing individual writable derived
@@ -51,15 +49,19 @@ import * as constants            from './constants.js';
 export class TJSPosition
 {
    /**
-    * @type {import('./types').TJSPositionTypes.PositionInitial}
+    * Public API for {@link TJSPosition.Initial}.
+    *
+    * @type {Readonly<import('./types').TJSPositionTypes.PositionInitial>}
     */
-   static #positionInitial = {
+   static #positionInitial = Object.freeze({
       browserCentered: new Centered({ lock: true }),
       Centered
-   };
+   });
 
    /**
-    * @type {import('./types').TJSPositionTypes.PositionValidators}
+    * Public API for {@link TJSPosition.Validators}
+    *
+    * @type {Readonly<import('./types').TJSPositionTypes.PositionValidators>}
     */
    static #positionValidators = {
       BasicBounds,
@@ -69,6 +71,37 @@ export class TJSPosition
    };
 
    /**
+    * Temporary data storage for `TJSPosition.#updatePosition`.
+    *
+    * @type {TJSPositionData}
+    */
+   static #updateDataCopy = Object.seal(new TJSPositionData());
+
+   /**
+    * Temporary data storage for `TJSPosition.#updatePosition`.
+    *
+    * @type {import('./system/validators/types').ValidatorAPI.ValidationData}
+    */
+   static #validationData = Object.seal({
+      position: void 0,
+      parent: void 0,
+      el: void 0,
+      computed: void 0,
+      transforms: void 0,
+      height: void 0,
+      width: void 0,
+      marginLeft: void 0,
+      marginTop: void 0,
+      maxHeight: void 0,
+      maxWidth: void 0,
+      minHeight: void 0,
+      minWidth: void 0,
+      rest: void 0
+   });
+
+   /**
+    * Stores all position data / properties.
+    *
     * @type {TJSPositionData}
     */
    #data = Object.seal(new TJSPositionData());
@@ -175,7 +208,7 @@ export class TJSPosition
    static get Data() { return TJSPositionData; }
 
    /**
-    * @returns {import('./types').TJSPositionTypes.PositionInitial} TJSPosition default initial helpers.
+    * @returns {Readonly<import('./types').TJSPositionTypes.PositionInitial>} TJSPosition default initial helpers.
     */
    static get Initial() { return this.#positionInitial; }
 
@@ -197,20 +230,30 @@ export class TJSPosition
     *
     * Note: `basicWindow` and `BasicBounds` will eventually be removed.
     *
-    * @returns {import('./types').TJSPositionTypes.PositionValidators} Available validators.
+    * @returns {Readonly<import('./types').TJSPositionTypes.PositionValidators>} Available validators.
     */
    static get Validators() { return this.#positionValidators; }
+
+   /**
+    * Returns a list of supported transform origins.
+    *
+    * @returns {Readonly<import('./types').TransformAPI.TransformOrigin[]>}
+    */
+   static get transformOrigins()
+   {
+      return TJSTransforms.transformOrigins;
+   }
 
    /**
     * Convenience to copy from source to target of two TJSPositionData like objects. If a target is not supplied a new
     * {@link TJSPositionData} instance is created.
     *
-    * @param {import('./data/types').Data.TJSPositionData}  source - The source instance to copy from.
+    * @param {Partial<import('./data/types').Data.TJSPositionData>}  source - The source instance to copy from.
     *
     * @param {import('./data/types').Data.TJSPositionData}  [target] - Target TJSPositionData like object; if one is not
     *        provided a new instance is created.
     *
-    * @returns {import('./data/types').Data.TJSPositionData} The target instance.
+    * @returns {import('./data/types').Data.TJSPositionData} The target instance with all TJSPositionData fields.
     */
    static copyData(source, target)
    {
@@ -351,7 +394,7 @@ export class TJSPosition
 
          if (typeof options.transformOrigin === 'string' || options.transformOrigin === null)
          {
-            data.transformOrigin = constants.transformOrigins.includes(options.transformOrigin) ?
+            data.transformOrigin = TJSTransforms.transformOrigins.includes(options.transformOrigin) ?
              options.transformOrigin : null;
          }
 
@@ -434,7 +477,7 @@ export class TJSPosition
          }
       });
 
-      this.#stores.transformOrigin.values = constants.transformOrigins;
+      this.#stores.transformOrigin.values = TJSTransforms.transformOrigins;
 
       [this.#validators, this.#validatorData] = AdapterValidators.create();
 
@@ -789,7 +832,10 @@ export class TJSPosition
     */
    set transformOrigin(transformOrigin)
    {
-      if (constants.transformOrigins.includes(transformOrigin)) { this.#stores.transformOrigin.set(transformOrigin); }
+      if (TJSTransforms.transformOrigins.includes(transformOrigin))
+      {
+         this.#stores.transformOrigin.set(transformOrigin);
+      }
    }
 
    /**
@@ -1070,7 +1116,7 @@ export class TJSPosition
          }
       }
 
-      if ((typeof position.transformOrigin === 'string' && constants.transformOrigins.includes(
+      if ((typeof position.transformOrigin === 'string' && TJSTransforms.transformOrigins.includes(
        position.transformOrigin)) || position.transformOrigin === null)
       {
          if (data.transformOrigin !== position.transformOrigin)
@@ -1255,7 +1301,7 @@ export class TJSPosition
       ...rest
    } = {}, parent, el, styleCache)
    {
-      let currentPosition = TJSPositionDataUtil.copyData(this.#data, s_DATA_UPDATE);
+      let currentPosition = TJSPositionDataUtil.copyData(this.#data, TJSPosition.#updateDataCopy);
 
       // Update width if an explicit value is passed, or if no width value is set on the element.
       if (el.style.width === '' || width !== void 0)
@@ -1376,7 +1422,7 @@ export class TJSPosition
 
       if (typeof transformOrigin === 'string' || transformOrigin === null)
       {
-         currentPosition.transformOrigin = constants.transformOrigins.includes(transformOrigin) ? transformOrigin :
+         currentPosition.transformOrigin = TJSTransforms.transformOrigins.includes(transformOrigin) ? transformOrigin :
           null;
       }
 
@@ -1390,41 +1436,43 @@ export class TJSPosition
       // If there are any validators allow them to potentially modify position data or reject the update.
       if (this.#validators.enabled && validatorData.length)
       {
-         s_VALIDATION_DATA.parent = parent;
+         const validationData = TJSPosition.#validationData;
 
-         s_VALIDATION_DATA.el = el;
+         validationData.parent = parent;
 
-         s_VALIDATION_DATA.computed = styleCache.computed;
+         validationData.el = el;
 
-         s_VALIDATION_DATA.transforms = this.#transforms;
+         validationData.computed = styleCache.computed;
 
-         s_VALIDATION_DATA.height = height;
+         validationData.transforms = this.#transforms;
 
-         s_VALIDATION_DATA.width = width;
+         validationData.height = height;
 
-         s_VALIDATION_DATA.marginLeft = styleCache.marginLeft;
+         validationData.width = width;
 
-         s_VALIDATION_DATA.marginTop = styleCache.marginTop;
+         validationData.marginLeft = styleCache.marginLeft;
 
-         s_VALIDATION_DATA.maxHeight = styleCache.maxHeight ?? currentPosition.maxHeight;
+         validationData.marginTop = styleCache.marginTop;
 
-         s_VALIDATION_DATA.maxWidth = styleCache.maxWidth ?? currentPosition.maxWidth;
+         validationData.maxHeight = styleCache.maxHeight ?? currentPosition.maxHeight;
+
+         validationData.maxWidth = styleCache.maxWidth ?? currentPosition.maxWidth;
 
          // Given a parent w/ reactive state and is minimized ignore styleCache min-width/height.
          const isMinimized = parent?.reactive?.minimized ?? false;
 
          // Note the use of || for accessing the style cache as the left hand is ignored w/ falsy values such as '0'.
-         s_VALIDATION_DATA.minHeight = isMinimized ? currentPosition.minHeight ?? 0 :
+         validationData.minHeight = isMinimized ? currentPosition.minHeight ?? 0 :
           styleCache.minHeight || (currentPosition.minHeight ?? 0);
 
-         s_VALIDATION_DATA.minWidth = isMinimized ? currentPosition.minWidth ?? 0 :
+         validationData.minWidth = isMinimized ? currentPosition.minWidth ?? 0 :
           styleCache.minWidth || (currentPosition.minWidth ?? 0);
 
          for (let cntr = 0; cntr < validatorData.length; cntr++)
          {
-            s_VALIDATION_DATA.position = currentPosition;
-            s_VALIDATION_DATA.rest = rest;
-            currentPosition = validatorData[cntr].validate(s_VALIDATION_DATA);
+            validationData.position = currentPosition;
+            validationData.rest = rest;
+            currentPosition = validatorData[cntr].validate(validationData);
 
             if (currentPosition === null) { return null; }
          }
@@ -1434,27 +1482,3 @@ export class TJSPosition
       return currentPosition;
    }
 }
-
-const s_DATA_UPDATE = Object.seal(new TJSPositionData());
-
-/**
- * @type {import('./system/validators/types').ValidatorAPI.ValidationData}
- */
-const s_VALIDATION_DATA = {
-   position: void 0,
-   parent: void 0,
-   el: void 0,
-   computed: void 0,
-   transforms: void 0,
-   height: void 0,
-   width: void 0,
-   marginLeft: void 0,
-   marginTop: void 0,
-   maxHeight: void 0,
-   maxWidth: void 0,
-   minHeight: void 0,
-   minWidth: void 0,
-   rest: void 0
-};
-
-Object.seal(s_VALIDATION_DATA);
