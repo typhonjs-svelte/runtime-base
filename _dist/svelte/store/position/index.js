@@ -884,439 +884,6 @@ class AnimationManager
 AnimationManager.animate();
 
 /**
- * Stores the TJSPositionData properties that can be animated.
- *
- * @type {ReadonlySet<string>}
- */
-const animateKeys = Object.freeze(new Set([
-   // Main keys
-   'left', 'top', 'maxWidth', 'maxHeight', 'minWidth', 'minHeight', 'width', 'height',
-   'rotateX', 'rotateY', 'rotateZ', 'scale', 'translateX', 'translateY', 'translateZ', 'zIndex',
-
-   // Aliases
-   'rotation'
-]));
-
-/**
- * Stores the TJSPositionData property aliases that can be animated.
- *
- * @type {Readonly<Map<string, string>>}
- */
-const animateKeyAliases = Object.freeze(new Map([['rotation', 'rotateZ']]));
-
-/**
- * Defines the keys of TJSPositionData that are transform keys.
- *
- * @type {string[]}
- */
-const transformKeys = Object.freeze([
- 'rotateX', 'rotateY', 'rotateZ', 'scale', 'translateX', 'translateY', 'translateZ'
-]);
-
-/**
- * Parses relative values in addition to other string formats such as percent value. Relative values must start with
- * leading values '+=', '-=', or '*=' followed by a float / numeric value. IE `+=45` or for percentage '+=10%'.
- * Also handles exact percent value such as `10` or `10%`. Percentage values are based on the current value,
- * parent element constraints, or constraints of the type of value like rotation being bound by 360 degrees.
- *
- * TODO: In the future support more specific CSS unit types.
- *
- * @type {RegExp}
- */
-const regexRelative = /^(?<operation>[-+*]=)?(?<value>-?\d*\.?\d+)(?<unit>%|%~|px)?$/;
-
-/**
- * Provides numeric defaults for all parameters. This is used by {@link TJSPosition.get} to optionally
- * provide numeric defaults.
- *
- * @type {{rotation: number, scale: number, minWidth: null, minHeight: null, translateZ: number, top: number, left: number, maxHeight: null, translateY: number, translateX: number, width: number, transformOrigin: null, rotateX: number, rotateY: number, height: number, maxWidth: null, zIndex: null, rotateZ: number}}
- */
-const numericDefaults = Object.freeze({
-   // Other keys
-   height: 0,
-   left: 0,
-   maxHeight: null,
-   maxWidth: null,
-   minHeight: null,
-   minWidth: null,
-   top: 0,
-   transformOrigin: null,
-   width: 0,
-   zIndex: null,
-
-   rotateX: 0,
-   rotateY: 0,
-   rotateZ: 0,
-   scale: 1,
-   translateX: 0,
-   translateY: 0,
-   translateZ: 0,
-
-   rotation: 0
-});
-
-/**
- * Sets numeric defaults for a {@link TJSPositionData} like object.
- *
- * @param {object}   data - A TJSPositionData like object.
- */
-function setNumericDefaults(data)
-{
-   // Transform keys
-   if (data.rotateX === null) { data.rotateX = 0; }
-   if (data.rotateY === null) { data.rotateY = 0; }
-   if (data.rotateZ === null) { data.rotateZ = 0; }
-   if (data.translateX === null) { data.translateX = 0; }
-   if (data.translateY === null) { data.translateY = 0; }
-   if (data.translateZ === null) { data.translateZ = 0; }
-   if (data.scale === null) { data.scale = 1; }
-
-   // Aliases
-   if (data.rotation === null) { data.rotation = 0; }
-}
-
-/**
- * Defines bitwise keys for transforms used in {@link TJSTransforms.getMat4}.
- *
- * @type {object}
- */
-const transformKeysBitwise = Object.freeze({
-   rotateX: 1,
-   rotateY: 2,
-   rotateZ: 4,
-   scale: 8,
-   translateX: 16,
-   translateY: 32,
-   translateZ: 64
-});
-
-/**
- * Defines the default transform origin.
- *
- * @type {string}
- */
-const transformOriginDefault = 'top left';
-
-/**
- * Defines the valid transform origins.
- *
- * @type {string[]}
- */
-const transformOrigins = Object.freeze(['top left', 'top center', 'top right', 'center left', 'center', 'center right',
- 'bottom left', 'bottom center', 'bottom right']);
-
-class ConvertRelative
-{
-   /**
-    * Animation keys for different processing categories.
-    *
-    * @type {{numPx: Readonly<Set<string>>, percentParent: Readonly<Set<string>>}}
-    */
-   static #animKeyTypes = {
-      // Animation keys that can be specified in `px` converted to a number.
-      numPx: Object.freeze(new Set(['left', 'top', 'maxWidth', 'maxHeight', 'minWidth', 'minHeight', 'width', 'height',
-       'translateX', 'translateY', 'translateZ'])),
-
-      // Animation keys that can be specified in percentage of parent element constraint.
-      percentParent: Object.freeze(new Set(['left', 'top', 'maxWidth', 'maxHeight', 'minWidth', 'minHeight', 'width',
-       'height']))
-   };
-
-   /**
-    * Stores the results for match groups from `constants.regexRelative`;
-    *
-    * @type {import('./types').RelativeMatch}
-    */
-   static #relativeMatch = Object.seal({
-      operation: void 0,
-      value: void 0,
-      unit: void 0
-   });
-
-   /**
-    * Converts any relative string values for animatable keys to actual updates performed against current data.
-    *
-    * @param {Partial<import('../data/types').Data.TJSPositionDataRelative>}  data - position data.
-    *
-    * @param {import('../data/types').Data.TJSPositionData}   position - The source position data.
-    *
-    * @param {HTMLElement} el - Target positioned element.
-    */
-   static process(data, position, el)
-   {
-      /** @type {number} */
-      let parentClientHeight = void 0, parentClientWidth = void 0;
-
-      for (const key in data)
-      {
-         // Key is animatable / numeric.
-         if (animateKeys.has(key))
-         {
-            const value = data[key];
-
-            if (typeof value !== 'string') { continue; }
-
-            // Ignore 'auto' and 'inherit' string values.
-            if (value === 'auto' || value === 'inherit') { continue; }
-
-            /** @type {import('../animation/types').AnimationAPI.AnimationKeys} */
-            const animKey = key;
-
-            const regexResults = regexRelative.exec(value);
-
-            // Additional state indicating a particular key is not handled.
-            let notHandledWarning = false;
-
-            if (regexResults)
-            {
-               const results = this.#relativeMatch;
-
-               results.operation = regexResults.groups.operation;
-               results.value = parseFloat(regexResults.groups.value);
-               results.unit = regexResults.groups.unit;
-
-               // Retrieve current value, but if null use the numeric default. Must use non-aliased key for correct
-               // current value;
-               const aliasedKey = animateKeyAliases.get(key) ?? key;
-               const current = position[aliasedKey] ?? numericDefaults[aliasedKey];
-
-               switch (results.unit)
-               {
-                  // Animation keys that support percentage changes including constraints against the parent element.
-                  case '%':
-                  {
-                     // Cache parent client width / height on first parent percent based key.
-                     if (this.#animKeyTypes.percentParent.has(key))
-                     {
-                        if (!Number.isFinite(parentClientHeight) && el?.parentElement?.isConnected)
-                        {
-                           parentClientHeight = el.parentElement.clientHeight;
-                           parentClientWidth = el.parentElement.clientWidth;
-                        }
-
-                        if (parentClientHeight === void 0 || parentClientWidth === void 0)
-                        {
-                           console.warn(
-                            `TJSPosition - ConvertRelative warning: could not determine parent constraints for key '${
-                             key}' with value '${value}'.`);
-                           data[key] = void 0;
-                           continue;
-                        }
-                     }
-
-                     notHandledWarning = this.#handlePercent(animKey, current, data, position, el, results,
-                      parentClientHeight, parentClientWidth);
-
-                     break;
-                  }
-
-                  // Animation keys that support percentage changes from current values.
-                  case '%~':
-                     notHandledWarning = this.#handleRelativePercent(animKey, current, data, position, el, results);
-                     break;
-
-                  // Animation keys that support `px` / treat as raw number.
-                  case 'px':
-                     notHandledWarning = this.#animKeyTypes.numPx.has(key) ?
-                      this.#handleRelativeNum(animKey, current, data, position, el, results) : true;
-                     break;
-
-                  // No units / treat as raw number.
-                  default:
-                     notHandledWarning = this.#handleRelativeNum(animKey, current, data, position, el, results);
-                     break;
-               }
-
-               continue;
-            }
-
-            if (!regexResults || notHandledWarning)
-            {
-               console.warn(
-                `TJSPosition - ConvertRelative warning: malformed key '${key}' with value '${value}'.`);
-               data[key] = void 0;
-            }
-         }
-
-         return data;
-      }
-   }
-
-   /**
-    * Handles the `%` unit type where values are adjusted against the parent element client width / height or in the
-    * case of rotation the percentage of 360 degrees.
-    *
-    * @param {import('../animation/types').AnimationAPI.AnimationKeys} key - Animation key.
-    *
-    * @param {number}   current - Current value
-    *
-    * @param {Partial<import('../data/types').Data.TJSPositionDataRelative>}  data - Source data to convert.
-    *
-    * @param {import('../data/types').Data.TJSPositionData} position - Current position data.
-    *
-    * @param {HTMLElement} el - Positioned element.
-    *
-    * @param {import('./types').RelativeMatch}  results - Relative match results.
-    *
-    * @param {number}  parentClientHeight - Parent element client height.
-    *
-    * @param {number}  parentClientWidth - Parent element client width.
-    *
-    * @returns {boolean} Adjustment successful.
-    */
-   static #handlePercent(key, current, data, position, el, results, parentClientHeight, parentClientWidth)
-   {
-      /** @type {number} */
-      let value = void 0;
-
-      switch (key)
-      {
-         // Calculate value; take into account keys that calculate parent client width.
-         case 'left':
-         case 'maxWidth':
-         case 'minWidth':
-         case 'width':
-         case 'translateX':
-            value = parentClientWidth * (results.value / 100);
-            break;
-
-         // Calculate value; take into account keys that calculate parent client height.
-         case 'top':
-         case 'maxHeight':
-         case 'minHeight':
-         case 'height':
-         case 'translateY':
-            value = parentClientHeight * (results.value / 100);
-            break;
-
-         // Calculate value; convert percentage into degrees
-         case 'rotateX':
-         case 'rotateY':
-         case 'rotateZ':
-         case 'rotation':
-            value = 360 * (results.value / 100);
-            break;
-
-         default:
-            return false;
-      }
-
-      if (!results.operation)
-      {
-         data[key] = value;
-         return true;
-      }
-
-      switch (results.operation)
-      {
-         case '-=':
-            data[key] = current - value;
-            break;
-
-         case '+=':
-            data[key] = current + value;
-            break;
-
-         case '*=':
-            data[key] = current * value;
-            break;
-
-         default:
-            return false;
-      }
-
-      return true;
-   }
-
-   /**
-    * @param {import('../animation/types').AnimationAPI.AnimationKeys} key - Animation key.
-    *
-    * @param {number}   current - Current value
-    *
-    * @param {Partial<import('../data/types').Data.TJSPositionDataRelative>}  data - Source data to convert.
-    *
-    * @param {import('../data/types').Data.TJSPositionData} position - Current position data.
-    *
-    * @param {HTMLElement} el - Positioned element.
-    *
-    * @param {import('./types').RelativeMatch}  results - Relative match results.
-    *
-    * @returns {boolean} Adjustment successful.
-    */
-   static #handleRelativeNum(key, current, data, position, el, results)
-   {
-      switch (results.operation)
-      {
-         case '-=':
-            data[key] = current - results.value;
-            break;
-
-         case '+=':
-            data[key] = current + results.value;
-            break;
-
-         case '*=':
-            data[key] = current * results.value;
-            break;
-
-         default:
-            return false;
-      }
-
-      return true;
-   }
-
-   /**
-    * Handles the `%~` unit type where values are adjusted against the current value for the given key.
-    *
-    * @param {import('../animation/types').AnimationAPI.AnimationKeys} key - Animation key.
-    *
-    * @param {number}   current - Current value
-    *
-    * @param {Partial<import('../data/types').Data.TJSPositionDataRelative>}  data - Source data to convert.
-    *
-    * @param {import('../data/types').Data.TJSPositionData} position - Current position data.
-    *
-    * @param {HTMLElement} el - Positioned element.
-    *
-    * @param {import('./types').RelativeMatch}  results - Relative match results.
-    *
-    * @returns {boolean} Adjustment successful.
-    */
-   static #handleRelativePercent(key, current, data, position, el, results)
-   {
-      // Normalize percentage.
-      results.value = results.value / 100;
-
-      if (!results.operation)
-      {
-         data[key] = current * results.value;
-         return true;
-      }
-
-      switch (results.operation)
-      {
-         case '-=':
-            data[key] = current - (current * results.value);
-            break;
-
-         case '+=':
-            data[key] = current + (current * results.value);
-            break;
-
-         case '*=':
-            data[key] = current * (current * results.value);
-            break;
-
-         default:
-            return false;
-      }
-
-      return true;
-   }
-}
-
-/**
  * Defines stored positional data.
  *
  * @implements {import('./types').Data.TJSPositionData}
@@ -1426,197 +993,480 @@ class TJSPositionData
 }
 
 /**
- * Convenience to copy from source to target of two TJSPositionData like objects. If a target is not supplied a new
- * {@link TJSPositionData} instance is created.
- *
- * @param {import('../data/types').Data.TJSPositionData}  source - The source instance to copy from.
- *
- * @param {import('../data/types').Data.TJSPositionData}  [target] - Target TJSPositionData like object; if one is not
- *        provided a new instance is created.
- *
- * @returns {import('../data/types').Data.TJSPositionData} The target instance.
+ * Various internal utilities to work with {@link TJSPositionData}.
  */
-function copyData(source, target = new TJSPositionData())
+class TJSPositionDataUtil
 {
-   target.height = source.height ?? null;
-   target.left = source.left ?? null;
-   target.maxHeight = source.maxHeight ?? null;
-   target.maxWidth = source.maxWidth ?? null;
-   target.minHeight = source.minHeight ?? null;
-   target.minWidth = source.minWidth ?? null;
-   target.rotateX = source.rotateX ?? null;
-   target.rotateY = source.rotateY ?? null;
-   target.rotateZ = source.rotateZ ?? null;
-   target.scale = source.scale ?? null;
-   target.top = source.top ?? null;
-   target.transformOrigin = source.transformOrigin ?? null;
-   target.translateX = source.translateX ?? null;
-   target.translateY = source.translateY ?? null;
-   target.translateZ = source.translateZ ?? null;
-   target.width = source.width ?? null;
-   target.zIndex = source.zIndex ?? null;
+   /**
+    * Stores the TJSPositionData properties that can be animated.
+    *
+    * @type {ReadonlySet<string>}
+    */
+   static #animateKeys = Object.freeze(new Set([
+      // Main keys
+      'left', 'top', 'maxWidth', 'maxHeight', 'minWidth', 'minHeight', 'width', 'height',
+      'rotateX', 'rotateY', 'rotateZ', 'scale', 'translateX', 'translateY', 'translateZ', 'zIndex',
 
-   return target;
+      // Aliases
+      'rotation'
+   ]));
+
+   /**
+    * Stores the TJSPositionData property aliases that can be animated.
+    *
+    * @type {Readonly<Map<string, string>>}
+    */
+   static #animateKeyAliases = Object.freeze(new Map([['rotation', 'rotateZ']]));
+
+   /**
+    * Provides numeric defaults for all parameters. This is used by {@link TJSPosition.get} to optionally
+    * provide numeric defaults.
+    *
+    * @type {Record<string, number | null>}
+    */
+   static #numericDefaults = Object.freeze({
+      // Other keys
+      height: 0,
+      left: 0,
+      maxHeight: null,
+      maxWidth: null,
+      minHeight: null,
+      minWidth: null,
+      top: 0,
+      transformOrigin: null,
+      width: 0,
+      zIndex: null,
+
+      rotateX: 0,
+      rotateY: 0,
+      rotateZ: 0,
+      scale: 1,
+      translateX: 0,
+      translateY: 0,
+      translateZ: 0,
+
+      rotation: 0
+   });
+
+   /**
+    * Convenience to copy from source to target of two TJSPositionData like objects. If a target is not supplied a new
+    * {@link TJSPositionData} instance is created.
+    *
+    * @param {import('./types').Data.TJSPositionData}  source - The source instance to copy from.
+    *
+    * @param {import('./types').Data.TJSPositionData}  [target] - Target TJSPositionData like object; if one is not
+    *        provided a new instance is created.
+    *
+    * @returns {import('./types').Data.TJSPositionData} The target instance.
+    */
+   static copyData(source, target = new TJSPositionData())
+   {
+      target.height = source.height ?? null;
+      target.left = source.left ?? null;
+      target.maxHeight = source.maxHeight ?? null;
+      target.maxWidth = source.maxWidth ?? null;
+      target.minHeight = source.minHeight ?? null;
+      target.minWidth = source.minWidth ?? null;
+      target.rotateX = source.rotateX ?? null;
+      target.rotateY = source.rotateY ?? null;
+      target.rotateZ = source.rotateZ ?? null;
+      target.scale = source.scale ?? null;
+      target.top = source.top ?? null;
+      target.transformOrigin = source.transformOrigin ?? null;
+      target.translateX = source.translateX ?? null;
+      target.translateY = source.translateY ?? null;
+      target.translateZ = source.translateZ ?? null;
+      target.width = source.width ?? null;
+      target.zIndex = source.zIndex ?? null;
+
+      return target;
+   }
+
+   /**
+    * Returns the non-aliased animation key.
+    *
+    * @param {import('../animation/types').AnimationAPI.AnimationKeys} key - Animation key / possibly aliased key.
+    *
+    * @returns {import('../animation/types').AnimationAPI.AnimationKeys} Actual non-aliased animation key.
+    */
+   static getAnimKey(key)
+   {
+      return this.#animateKeyAliases.get(key) ?? key;
+   }
+
+   /**
+    * Queries an object by the given key or otherwise returns any numeric default.
+    *
+    * @param {object}   data - An object to query for the given animation key.
+    *
+    * @param {import('../animation/types').AnimationAPI.AnimationKeys}   key - Animation key.
+    *
+    * @param {boolean}  [aliased=false] - When use non-aliased key.
+    *
+    * @returns {*|number|null}
+    */
+   static getDataOrDefault(data, key, aliased = false)
+   {
+      if (aliased) { key = this.#animateKeyAliases.get(key) ?? key; }
+
+      return data[key] ?? this.#numericDefaults[key];
+   }
+
+   /**
+    * Tests if the given key is an animation key.
+    *
+    * @param {string}   key - A potential animation key.
+    *
+    * @returns {boolean} Is animation key.
+    */
+   static isAnimKey(key)
+   {
+      return this.#animateKeys.has(key);
+   }
+
+   /**
+    * Sets numeric defaults for a {@link TJSPositionData} like object.
+    *
+    * @param {object}   data - A TJSPositionData like object.
+    */
+   static setNumericDefaults(data)
+   {
+      // Transform keys
+      if (data.rotateX === null) { data.rotateX = 0; }
+      if (data.rotateY === null) { data.rotateY = 0; }
+      if (data.rotateZ === null) { data.rotateZ = 0; }
+      if (data.translateX === null) { data.translateX = 0; }
+      if (data.translateY === null) { data.translateY = 0; }
+      if (data.translateZ === null) { data.translateZ = 0; }
+      if (data.scale === null) { data.scale = 1; }
+
+      // Aliases
+      if (data.rotation === null) { data.rotation = 0; }
+   }
 }
 
-class StyleCache
+/**
+ * Converts {@link TJSPositionData} properties defined as strings to number values. The string values can be defined
+ * as relative adjustments with a leading operator. Various unit formats are supported as well.
+ */
+class ConvertStringData
 {
-   constructor()
+   /**
+    * Animation keys for different processing categories.
+    *
+    * @type {{numPx: Readonly<Set<string>>, percentParent: Readonly<Set<string>>}}
+    */
+   static #animKeyTypes = {
+      // Animation keys that can be specified in `px` converted to a number.
+      numPx: Object.freeze(new Set(['left', 'top', 'maxWidth', 'maxHeight', 'minWidth', 'minHeight', 'width', 'height',
+       'translateX', 'translateY', 'translateZ'])),
+
+      // Animation keys that can be specified in percentage of parent element constraint.
+      percentParent: Object.freeze(new Set(['left', 'top', 'maxWidth', 'maxHeight', 'minWidth', 'minHeight', 'width',
+       'height']))
+   };
+
+   /**
+    * Parses string data values. Relative values must start with leading values '+=', '-=', or '*=' followed by a
+    * float / numeric value. IE `+=45` or for percentage '+=10%'. Also handles exact percent value such as `10` or
+    * `10%`. Percentage values are based on the current value, parent element constraints, or constraints of the type
+    * of value like rotation being bound by 360 degrees.
+    *
+    * TODO: In the future support more specific CSS unit types.
+    *
+    * @type {RegExp}
+    */
+   static #regexStringData = /^(?<operation>[-+*]=)?(?<value>-?\d*\.?\d+)(?<unit>%|%~|px)?$/;
+
+   /**
+    * Stores the results for match groups from `regexStringData`;
+    *
+    * @type {import('./types').StringMatch}
+    */
+   static #matchResults = Object.seal({
+      operation: void 0,
+      value: void 0,
+      unit: void 0
+   });
+
+   /**
+    * Converts any relative string values for animatable keys to actual updates performed against current data.
+    *
+    * @param {Partial<import('../data/types').Data.TJSPositionDataRelative>}  data - position data.
+    *
+    * @param {import('../data/types').Data.TJSPositionData}   position - The source position data.
+    *
+    * @param {HTMLElement} el - Target positioned element.
+    */
+   static process(data, position, el)
    {
-      /** @type {HTMLElement|undefined} */
-      this.el = void 0;
+      /** @type {number} */
+      let parentClientHeight = void 0, parentClientWidth = void 0;
 
-      /** @type {CSSStyleDeclaration} */
-      this.computed = void 0;
+      for (const key in data)
+      {
+         // Key is animatable / numeric.
+         if (TJSPositionDataUtil.isAnimKey(key))
+         {
+            const value = data[key];
 
-      /** @type {number|undefined} */
-      this.marginLeft = void 0;
+            if (typeof value !== 'string') { continue; }
 
-      /** @type {number|undefined} */
-      this.marginTop = void 0;
+            // Ignore 'auto' and 'inherit' string values.
+            if (value === 'auto' || value === 'inherit') { continue; }
 
-      /** @type {number|undefined} */
-      this.maxHeight = void 0;
+            /** @type {import('../animation/types').AnimationAPI.AnimationKeys} */
+            const animKey = key;
 
-      /** @type {number|undefined} */
-      this.maxWidth = void 0;
+            const regexResults = this.#regexStringData.exec(value);
 
-      /** @type {number|undefined} */
-      this.minHeight = void 0;
+            // Additional state indicating a particular key is not handled.
+            let notHandledWarning = false;
 
-      /** @type {number|undefined} */
-      this.minWidth = void 0;
+            if (regexResults)
+            {
+               const results = this.#matchResults;
 
-      /** @type {boolean} */
-      this.hasWillChange = false;
+               results.operation = regexResults.groups.operation;
+               results.value = parseFloat(regexResults.groups.value);
+               results.unit = regexResults.groups.unit;
 
-      /**
-       * @type {import('#runtime/svelte/action/dom').ResizeObserverData.Object}
-       */
-      this.resizeObserved = {
-         contentHeight: void 0,
-         contentWidth: void 0,
-         offsetHeight: void 0,
-         offsetWidth: void 0
-      };
+               // Retrieve current value, but if null use the numeric default.
+               const current = TJSPositionDataUtil.getDataOrDefault(position, key, true);
 
-      /**
-       * Provides a writable store to track offset & content width / height from an associated `resizeObserver` action.
-       *
-       * @type {import('svelte/store').Writable<import('#runtime/svelte/action/dom').ResizeObserverData.Object>}
-       */
-      const storeResizeObserved = writable(this.resizeObserved);
+               switch (results.unit)
+               {
+                  // Animation keys that support percentage changes including constraints against the parent element.
+                  case '%':
+                  {
+                     // Cache parent client width / height on first parent percent based key.
+                     if (this.#animKeyTypes.percentParent.has(key))
+                     {
+                        if (!Number.isFinite(parentClientHeight) && el?.parentElement?.isConnected)
+                        {
+                           parentClientHeight = el.parentElement.clientHeight;
+                           parentClientWidth = el.parentElement.clientWidth;
+                        }
 
-      this.stores = {
-         element: writable(this.el),
-         resizeContentHeight: propertyStore(storeResizeObserved, 'contentHeight'),
-         resizeContentWidth: propertyStore(storeResizeObserved, 'contentWidth'),
-         resizeObserved: storeResizeObserved,
-         resizeOffsetHeight: propertyStore(storeResizeObserved, 'offsetHeight'),
-         resizeOffsetWidth: propertyStore(storeResizeObserved, 'offsetWidth')
-      };
+                        if (parentClientHeight === void 0 || parentClientWidth === void 0)
+                        {
+                           console.warn(
+                            `TJSPosition - ConvertStringData warning: could not determine parent constraints for key '${
+                             key}' with value '${value}'.`);
+                           data[key] = void 0;
+                           continue;
+                        }
+                     }
+
+                     notHandledWarning = this.#handlePercent(animKey, current, data, position, el, results,
+                      parentClientHeight, parentClientWidth);
+
+                     break;
+                  }
+
+                  // Animation keys that support percentage changes from current values.
+                  case '%~':
+                     notHandledWarning = this.#handleRelativePercent(animKey, current, data, position, el, results);
+                     break;
+
+                  // Animation keys that support `px` / treat as raw number.
+                  case 'px':
+                     notHandledWarning = this.#animKeyTypes.numPx.has(key) ?
+                      this.#handleRelativeNum(animKey, current, data, position, el, results) : true;
+                     break;
+
+                  // No units / treat as raw number.
+                  default:
+                     notHandledWarning = this.#handleRelativeNum(animKey, current, data, position, el, results);
+                     break;
+               }
+
+               continue;
+            }
+
+            if (!regexResults || notHandledWarning)
+            {
+               console.warn(
+                `TJSPosition - ConvertStringData warning: malformed key '${key}' with value '${value}'.`);
+               data[key] = void 0;
+            }
+         }
+
+         return data;
+      }
    }
 
    /**
-    * Returns the cached offsetHeight from any attached `resizeObserver` action otherwise gets the offsetHeight from
-    * the element directly. The more optimized path is using `resizeObserver` as getting it from the element
-    * directly is more expensive and alters the execution order of an animation frame.
+    * Handles the `%` unit type where values are adjusted against the parent element client width / height or in the
+    * case of rotation the percentage of 360 degrees.
     *
-    * @returns {number} The element offsetHeight.
+    * @param {import('../animation/types').AnimationAPI.AnimationKeys} key - Animation key.
+    *
+    * @param {number}   current - Current value
+    *
+    * @param {Partial<import('../data/types').Data.TJSPositionDataRelative>}  data - Source data to convert.
+    *
+    * @param {import('../data/types').Data.TJSPositionData} position - Current position data.
+    *
+    * @param {HTMLElement} el - Positioned element.
+    *
+    * @param {import('./types').StringMatch}  results - Match results.
+    *
+    * @param {number}  parentClientHeight - Parent element client height.
+    *
+    * @param {number}  parentClientWidth - Parent element client width.
+    *
+    * @returns {boolean} Adjustment successful.
     */
-   get offsetHeight()
+   static #handlePercent(key, current, data, position, el, results, parentClientHeight, parentClientWidth)
    {
-      if (A11yHelper.isFocusTarget(this.el))
+      /** @type {number} */
+      let value = void 0;
+
+      switch (key)
       {
-         return this.resizeObserved.offsetHeight !== void 0 ? this.resizeObserved.offsetHeight : this.el.offsetHeight;
+         // Calculate value; take into account keys that calculate parent client width.
+         case 'left':
+         case 'maxWidth':
+         case 'minWidth':
+         case 'width':
+         case 'translateX':
+            value = parentClientWidth * (results.value / 100);
+            break;
+
+         // Calculate value; take into account keys that calculate parent client height.
+         case 'top':
+         case 'maxHeight':
+         case 'minHeight':
+         case 'height':
+         case 'translateY':
+            value = parentClientHeight * (results.value / 100);
+            break;
+
+         // Calculate value; convert percentage into degrees
+         case 'rotateX':
+         case 'rotateY':
+         case 'rotateZ':
+         case 'rotation':
+            value = 360 * (results.value / 100);
+            break;
+
+         default:
+            return false;
       }
 
-      throw new Error(`StyleCache - get offsetHeight error: no element assigned.`);
-   }
-
-   /**
-    * Returns the cached offsetWidth from any attached `resizeObserver` action otherwise gets the offsetWidth from
-    * the element directly. The more optimized path is using `resizeObserver` as getting it from the element
-    * directly is more expensive and alters the execution order of an animation frame.
-    *
-    * @returns {number} The element offsetHeight.
-    */
-   get offsetWidth()
-   {
-      if (A11yHelper.isFocusTarget(this.el))
+      if (!results.operation)
       {
-         return this.resizeObserved.offsetWidth !== void 0 ? this.resizeObserved.offsetWidth : this.el.offsetWidth;
+         data[key] = value;
+         return true;
       }
 
-      throw new Error(`StyleCache - get offsetWidth error: no element assigned.`);
-   }
-
-   /**
-    * @param {HTMLElement} el -
-    *
-    * @returns {boolean} Does element match cached element.
-    */
-   hasData(el) { return this.el === el; }
-
-   /**
-    * Resets the style cache.
-    */
-   reset()
-   {
-      // Remove will-change inline style from previous element if it is still connected.
-      if (A11yHelper.isFocusTarget(this.el) && this.el.isConnected && !this.hasWillChange)
+      switch (results.operation)
       {
-         this.el.style.willChange = null;
+         case '-=':
+            data[key] = current - value;
+            break;
+
+         case '+=':
+            data[key] = current + value;
+            break;
+
+         case '*=':
+            data[key] = current * value;
+            break;
+
+         default:
+            return false;
       }
 
-      this.el = void 0;
-      this.computed = void 0;
-      this.marginLeft = void 0;
-      this.marginTop = void 0;
-      this.maxHeight = void 0;
-      this.maxWidth = void 0;
-      this.minHeight = void 0;
-      this.minWidth = void 0;
-
-      this.hasWillChange = false;
-
-      // Silently reset `resizedObserved`; With proper usage the `resizeObserver` action issues an update on removal.
-      this.resizeObserved.contentHeight = void 0;
-      this.resizeObserved.contentWidth = void 0;
-      this.resizeObserved.offsetHeight = void 0;
-      this.resizeObserved.offsetWidth = void 0;
-
-      // Reset the tracked element this TJSPosition instance is modifying.
-      this.stores.element.set(void 0);
+      return true;
    }
 
    /**
-    * Updates the style cache with new data from the given element.
+    * @param {import('../animation/types').AnimationAPI.AnimationKeys} key - Animation key.
     *
-    * @param {HTMLElement} el - An HTML element.
+    * @param {number}   current - Current value
+    *
+    * @param {Partial<import('../data/types').Data.TJSPositionDataRelative>}  data - Source data to convert.
+    *
+    * @param {import('../data/types').Data.TJSPositionData} position - Current position data.
+    *
+    * @param {HTMLElement} el - Positioned element.
+    *
+    * @param {import('./types').StringMatch}  results - Match results.
+    *
+    * @returns {boolean} Adjustment successful.
     */
-   update(el)
+   static #handleRelativeNum(key, current, data, position, el, results)
    {
-      this.el = el;
+      switch (results.operation)
+      {
+         case '-=':
+            data[key] = current - results.value;
+            break;
 
-      this.computed = globalThis.getComputedStyle(el);
+         case '+=':
+            data[key] = current + results.value;
+            break;
 
-      this.marginLeft = StyleParse.pixels(el.style.marginLeft) ?? StyleParse.pixels(this.computed.marginLeft);
-      this.marginTop = StyleParse.pixels(el.style.marginTop) ?? StyleParse.pixels(this.computed.marginTop);
-      this.maxHeight = StyleParse.pixels(el.style.maxHeight) ?? StyleParse.pixels(this.computed.maxHeight);
-      this.maxWidth = StyleParse.pixels(el.style.maxWidth) ?? StyleParse.pixels(this.computed.maxWidth);
+         case '*=':
+            data[key] = current * results.value;
+            break;
 
-      // Note that the computed styles for below will always be 0px / 0 when no style is active.
-      this.minHeight = StyleParse.pixels(el.style.minHeight) ?? StyleParse.pixels(this.computed.minHeight);
-      this.minWidth = StyleParse.pixels(el.style.minWidth) ?? StyleParse.pixels(this.computed.minWidth);
+         default:
+            return false;
+      }
 
-      // Tracks if there already is a will-change property on the inline or computed styles.
-      const willChange = el.style.willChange !== '' ? el.style.willChange : this.computed.willChange;
+      return true;
+   }
 
-      this.hasWillChange = willChange !== '' && willChange !== 'auto';
+   /**
+    * Handles the `%~` unit type where values are adjusted against the current value for the given key.
+    *
+    * @param {import('../animation/types').AnimationAPI.AnimationKeys} key - Animation key.
+    *
+    * @param {number}   current - Current value
+    *
+    * @param {Partial<import('../data/types').Data.TJSPositionDataRelative>}  data - Source data to convert.
+    *
+    * @param {import('../data/types').Data.TJSPositionData} position - Current position data.
+    *
+    * @param {HTMLElement} el - Positioned element.
+    *
+    * @param {import('./types').StringMatch}  results - Match results.
+    *
+    * @returns {boolean} Adjustment successful.
+    */
+   static #handleRelativePercent(key, current, data, position, el, results)
+   {
+      // Normalize percentage.
+      results.value = results.value / 100;
 
-      // Update the tracked element this TJSPosition instance is modifying.
-      this.stores.element.set(el);
+      if (!results.operation)
+      {
+         data[key] = current * results.value;
+         return true;
+      }
+
+      switch (results.operation)
+      {
+         case '-=':
+            data[key] = current - (current * results.value);
+            break;
+
+         case '+=':
+            data[key] = current + (current * results.value);
+            break;
+
+         case '*=':
+            data[key] = current * (current * results.value);
+            break;
+
+         default:
+            return false;
+      }
+
+      return true;
    }
 }
 
@@ -1690,8 +1540,8 @@ class AnimationAPI
    #addAnimation(initial, destination, duration, el, delay, ease, interpolate)
    {
       // Set initial data for transform values that are often null by default.
-      setNumericDefaults(initial);
-      setNumericDefaults(destination);
+      TJSPositionDataUtil.setNumericDefaults(initial);
+      TJSPositionDataUtil.setNumericDefaults(destination);
 
       // Reject all initial data that is not a number.
       for (const key in initial)
@@ -1849,16 +1699,16 @@ class AnimationAPI
       for (const key in fromData)
       {
          // Must use actual key from any aliases.
-         const aliasedKey = animateKeyAliases.get(key) ?? key;
+         const animKey = TJSPositionDataUtil.getAnimKey(key);
 
-         if (data[aliasedKey] !== void 0 && fromData[key] !== data[aliasedKey])
+         if (data[animKey] !== void 0 && fromData[key] !== data[animKey])
          {
             initial[key] = fromData[key];
-            destination[key] = data[aliasedKey];
+            destination[key] = data[animKey];
          }
       }
 
-      ConvertRelative.process(initial, data, el);
+      ConvertStringData.process(initial, data, el);
 
       return this.#addAnimation(initial, destination, duration, el, delay, ease, interpolate);
    }
@@ -1935,17 +1785,17 @@ class AnimationAPI
          }
 
          // Must use actual key from any aliases.
-         const aliasedKey = animateKeyAliases.get(key) ?? key;
+         const animKey = TJSPositionDataUtil.getAnimKey(key);
 
-         if (data[aliasedKey] !== void 0)
+         if (data[animKey] !== void 0)
          {
             initial[key] = fromData[key];
             destination[key] = toData[key];
          }
       }
 
-      ConvertRelative.process(initial, data, el);
-      ConvertRelative.process(destination, data, el);
+      ConvertStringData.process(initial, data, el);
+      ConvertStringData.process(destination, data, el);
 
       return this.#addAnimation(initial, destination, duration, el, delay, ease, interpolate);
    }
@@ -2008,16 +1858,16 @@ class AnimationAPI
       for (const key in toData)
       {
          // Must use actual key from any aliases.
-         const aliasedKey = animateKeyAliases.get(key) ?? key;
+         const animKey = TJSPositionDataUtil.getAnimKey(key);
 
-         if (data[aliasedKey] !== void 0 && toData[key] !== data[aliasedKey])
+         if (data[animKey] !== void 0 && toData[key] !== data[animKey])
          {
             destination[key] = toData[key];
-            initial[key] = data[aliasedKey];
+            initial[key] = data[animKey];
          }
       }
 
-      ConvertRelative.process(destination, data, el);
+      ConvertStringData.process(destination, data, el);
 
       return this.#addAnimation(initial, destination, duration, el, delay, ease, interpolate);
    }
@@ -2074,29 +1924,19 @@ class AnimationAPI
             throw new TypeError(`AnimationAPI.quickTo error: key ('${key}') is not a string.`);
          }
 
-         if (!animateKeys.has(key))
+         if (!TJSPositionDataUtil.isAnimKey(key))
          {
             throw new Error(`AnimationAPI.quickTo error: key ('${key}') is not animatable.`);
          }
 
          // Must use actual key from any aliases.
-         const aliasedKey = animateKeyAliases.get(key) ?? key;
-         const value = data[aliasedKey] ?? numericDefaults[aliasedKey];
+         const value = TJSPositionDataUtil.getDataOrDefault(data, key, true);
 
          if (value !== null)
          {
             destination[key] = value;
             initial[key] = value;
          }
-         // if (data[aliasedKey] !== void 0)
-         // {
-
-            // destination[key] = value;
-            // initial[key] = value;
-
-            // destination[key] = data[aliasedKey];
-            // initial[key] = data[aliasedKey];
-         // }
       }
 
       const keysArray = [...keys];
@@ -2136,9 +1976,9 @@ class AnimationAPI
             const key = keysArray[cntr];
 
             // Must use actual key from any aliases.
-            const aliasedKey = animateKeyAliases.get(key) ?? key;
+            const animKey = TJSPositionDataUtil.getAnimKey(key);
 
-            if (data[aliasedKey] !== void 0) { initial[key] = data[aliasedKey]; }
+            if (data[animKey] !== void 0) { initial[key] = data[animKey]; }
          }
 
          // Handle case where the first arg is an object. Update all quickTo keys from data contained in the object.
@@ -2161,14 +2001,14 @@ class AnimationAPI
          }
 
          // Set initial data for transform values that are often null by default.
-         setNumericDefaults(initial);
-         setNumericDefaults(destination);
+         TJSPositionDataUtil.setNumericDefaults(initial);
+         TJSPositionDataUtil.setNumericDefaults(destination);
 
          // Set target element to animation data to track if it is removed from the DOM hence ending the animation.
          const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
          animationData.el = A11yHelper.isFocusTarget(targetEl) && targetEl.isConnected ? targetEl : void 0;
 
-         ConvertRelative.process(destination, data, animationData.el);
+         ConvertStringData.process(destination, data, animationData.el);
 
          // Reschedule the quickTo animation with AnimationManager as it is finished.
          if (animationData.finished)
@@ -4268,6 +4108,45 @@ class TransformBounds extends SystemBase
    }
 }
 
+/**
+ * Defines the keys of TJSPositionData that are transform keys.
+ *
+ * @type {string[]}
+ */
+const transformKeys = Object.freeze([
+ 'rotateX', 'rotateY', 'rotateZ', 'scale', 'translateX', 'translateY', 'translateZ'
+]);
+
+/**
+ * Defines bitwise keys for transforms used in {@link TJSTransforms.getMat4}.
+ *
+ * @type {object}
+ */
+const transformKeysBitwise = Object.freeze({
+   rotateX: 1,
+   rotateY: 2,
+   rotateZ: 4,
+   scale: 8,
+   translateX: 16,
+   translateY: 32,
+   translateZ: 64
+});
+
+/**
+ * Defines the default transform origin.
+ *
+ * @type {string}
+ */
+const transformOriginDefault = 'top left';
+
+/**
+ * Defines the valid transform origins.
+ *
+ * @type {string[]}
+ */
+const transformOrigins = Object.freeze(['top left', 'top center', 'top right', 'center left', 'center', 'center right',
+ 'bottom left', 'bottom center', 'bottom right']);
+
 /** @type {number[]} */
 const s_SCALE_VECTOR = [1, 1, 1];
 
@@ -5322,7 +5201,7 @@ class UpdateElementManager
       if (!changeSet.hasChange()) { return; }
 
       // Make a copy of the data.
-      const output = copyData(data, updateData.dataSubscribers);
+      const output = TJSPositionDataUtil.copyData(data, updateData.dataSubscribers);
 
       const subscriptions = updateData.subscriptions;
 
@@ -5472,6 +5351,167 @@ const s_VALIDATION_DATA$1 = {
    marginLeft: void 0,
    marginTop: void 0
 };
+
+class StyleCache
+{
+   constructor()
+   {
+      /** @type {HTMLElement|undefined} */
+      this.el = void 0;
+
+      /** @type {CSSStyleDeclaration} */
+      this.computed = void 0;
+
+      /** @type {number|undefined} */
+      this.marginLeft = void 0;
+
+      /** @type {number|undefined} */
+      this.marginTop = void 0;
+
+      /** @type {number|undefined} */
+      this.maxHeight = void 0;
+
+      /** @type {number|undefined} */
+      this.maxWidth = void 0;
+
+      /** @type {number|undefined} */
+      this.minHeight = void 0;
+
+      /** @type {number|undefined} */
+      this.minWidth = void 0;
+
+      /** @type {boolean} */
+      this.hasWillChange = false;
+
+      /**
+       * @type {import('#runtime/svelte/action/dom').ResizeObserverData.Object}
+       */
+      this.resizeObserved = {
+         contentHeight: void 0,
+         contentWidth: void 0,
+         offsetHeight: void 0,
+         offsetWidth: void 0
+      };
+
+      /**
+       * Provides a writable store to track offset & content width / height from an associated `resizeObserver` action.
+       *
+       * @type {import('svelte/store').Writable<import('#runtime/svelte/action/dom').ResizeObserverData.Object>}
+       */
+      const storeResizeObserved = writable(this.resizeObserved);
+
+      this.stores = {
+         element: writable(this.el),
+         resizeContentHeight: propertyStore(storeResizeObserved, 'contentHeight'),
+         resizeContentWidth: propertyStore(storeResizeObserved, 'contentWidth'),
+         resizeObserved: storeResizeObserved,
+         resizeOffsetHeight: propertyStore(storeResizeObserved, 'offsetHeight'),
+         resizeOffsetWidth: propertyStore(storeResizeObserved, 'offsetWidth')
+      };
+   }
+
+   /**
+    * Returns the cached offsetHeight from any attached `resizeObserver` action otherwise gets the offsetHeight from
+    * the element directly. The more optimized path is using `resizeObserver` as getting it from the element
+    * directly is more expensive and alters the execution order of an animation frame.
+    *
+    * @returns {number} The element offsetHeight.
+    */
+   get offsetHeight()
+   {
+      if (A11yHelper.isFocusTarget(this.el))
+      {
+         return this.resizeObserved.offsetHeight !== void 0 ? this.resizeObserved.offsetHeight : this.el.offsetHeight;
+      }
+
+      throw new Error(`StyleCache - get offsetHeight error: no element assigned.`);
+   }
+
+   /**
+    * Returns the cached offsetWidth from any attached `resizeObserver` action otherwise gets the offsetWidth from
+    * the element directly. The more optimized path is using `resizeObserver` as getting it from the element
+    * directly is more expensive and alters the execution order of an animation frame.
+    *
+    * @returns {number} The element offsetHeight.
+    */
+   get offsetWidth()
+   {
+      if (A11yHelper.isFocusTarget(this.el))
+      {
+         return this.resizeObserved.offsetWidth !== void 0 ? this.resizeObserved.offsetWidth : this.el.offsetWidth;
+      }
+
+      throw new Error(`StyleCache - get offsetWidth error: no element assigned.`);
+   }
+
+   /**
+    * @param {HTMLElement} el -
+    *
+    * @returns {boolean} Does element match cached element.
+    */
+   hasData(el) { return this.el === el; }
+
+   /**
+    * Resets the style cache.
+    */
+   reset()
+   {
+      // Remove will-change inline style from previous element if it is still connected.
+      if (A11yHelper.isFocusTarget(this.el) && this.el.isConnected && !this.hasWillChange)
+      {
+         this.el.style.willChange = null;
+      }
+
+      this.el = void 0;
+      this.computed = void 0;
+      this.marginLeft = void 0;
+      this.marginTop = void 0;
+      this.maxHeight = void 0;
+      this.maxWidth = void 0;
+      this.minHeight = void 0;
+      this.minWidth = void 0;
+
+      this.hasWillChange = false;
+
+      // Silently reset `resizedObserved`; With proper usage the `resizeObserver` action issues an update on removal.
+      this.resizeObserved.contentHeight = void 0;
+      this.resizeObserved.contentWidth = void 0;
+      this.resizeObserved.offsetHeight = void 0;
+      this.resizeObserved.offsetWidth = void 0;
+
+      // Reset the tracked element this TJSPosition instance is modifying.
+      this.stores.element.set(void 0);
+   }
+
+   /**
+    * Updates the style cache with new data from the given element.
+    *
+    * @param {HTMLElement} el - An HTML element.
+    */
+   update(el)
+   {
+      this.el = el;
+
+      this.computed = globalThis.getComputedStyle(el);
+
+      this.marginLeft = StyleParse.pixels(el.style.marginLeft) ?? StyleParse.pixels(this.computed.marginLeft);
+      this.marginTop = StyleParse.pixels(el.style.marginTop) ?? StyleParse.pixels(this.computed.marginTop);
+      this.maxHeight = StyleParse.pixels(el.style.maxHeight) ?? StyleParse.pixels(this.computed.maxHeight);
+      this.maxWidth = StyleParse.pixels(el.style.maxWidth) ?? StyleParse.pixels(this.computed.maxWidth);
+
+      // Note that the computed styles for below will always be 0px / 0 when no style is active.
+      this.minHeight = StyleParse.pixels(el.style.minHeight) ?? StyleParse.pixels(this.computed.minHeight);
+      this.minWidth = StyleParse.pixels(el.style.minWidth) ?? StyleParse.pixels(this.computed.minWidth);
+
+      // Tracks if there already is a will-change property on the inline or computed styles.
+      const willChange = el.style.willChange !== '' ? el.style.willChange : this.computed.willChange;
+
+      this.hasWillChange = willChange !== '' && willChange !== 'auto';
+
+      // Update the tracked element this TJSPosition instance is modifying.
+      this.stores.element.set(el);
+   }
+}
 
 /**
  * Provides a store for position following the subscriber protocol in addition to providing individual writable derived
@@ -5645,7 +5685,7 @@ class TJSPosition
     */
    static copyData(source, target)
    {
-      return copyData(source, target);
+      return TJSPositionDataUtil.copyData(source, target);
    }
 
    /**
@@ -6287,7 +6327,7 @@ class TJSPosition
          for (const key of keys)
          {
             // Convert any null values to numeric defaults if `numeric` is true.
-            data[key] = numeric ? this[key] ?? numericDefaults[key] : this[key];
+            data[key] = numeric ? TJSPositionDataUtil.getDataOrDefault(this, key) : this[key];
 
             // Potentially remove null keys.
             if (!nullable && data[key] === null) { delete data[key]; }
@@ -6312,7 +6352,7 @@ class TJSPosition
          }
 
          // Potentially set numeric defaults.
-         if (numeric) { setNumericDefaults(data); }
+         if (numeric) { TJSPositionDataUtil.setNumericDefaults(data); }
 
          if (!nullable)
          {
@@ -6406,8 +6446,8 @@ class TJSPosition
             this.#updateElementData.queued = false;
          }
 
-         // Converts any relative string position data to numeric inputs.
-         ConvertRelative.process(position, this.#data, el);
+         // Converts any string position data to numeric inputs.
+         ConvertStringData.process(position, this.#data, el);
 
          position = this.#updatePosition(position, parent, el, styleCache);
 
@@ -6680,7 +6720,7 @@ class TJSPosition
       ...rest
    } = {}, parent, el, styleCache)
    {
-      let currentPosition = copyData(this.#data, s_DATA_UPDATE);
+      let currentPosition = TJSPositionDataUtil.copyData(this.#data, s_DATA_UPDATE);
 
       // Update width if an explicit value is passed, or if no width value is set on the element.
       if (el.style.width === '' || width !== void 0)
