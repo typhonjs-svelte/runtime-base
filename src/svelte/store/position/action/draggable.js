@@ -75,14 +75,14 @@ function draggable(node, { position, enabled = true, button = 0, storeDragging =
    let quickTo = actualPosition.animate.quickTo(['top', 'left'], tweenOptions);
 
    /**
-    * Remember event handlers associated with this action, so they may be later unregistered.
+    * Event handlers associated with this action, so they may be later unregistered.
     *
-    *  @type {{ [key: string]: [string, Function, boolean] }}
+    *  @type {{ [p: string]: [string, EventListener, boolean] }}
     */
    const handlers = {
-      dragDown: ['pointerdown', onDragPointerDown, false],
-      dragMove: ['pointermove', onDragPointerChange, false],
-      dragUp: ['pointerup', onDragPointerUp, false]
+      dragDown: ['pointerdown', /** @type {EventListener} */ onDragPointerDown, false],
+      dragMove: ['pointermove', /** @type {EventListener} */ onDragPointerChange, false],
+      dragUp: ['pointerup', /** @type {EventListener} */ onDragPointerUp, false]
    };
 
    /**
@@ -469,8 +469,8 @@ class DraggableOptionsStore
    /**
     * Store subscribe method.
     *
-    * @param {import('svelte/store').Subscriber<import('./types').Action.DraggableOptionsStore>} handler - Callback function that
-    *        is invoked on update / changes. Receives the DraggableOptionsStore object / instance.
+    * @param {import('svelte/store').Subscriber<import('./types').Action.DraggableOptionsStore>} handler - Callback
+    *        function that is invoked on update / changes. Receives the DraggableOptionsStore instance.
     *
     * @returns {import('svelte/store').Unsubscriber} Unsubscribe function.
     */
@@ -501,7 +501,7 @@ class DraggableOptionsStore
 }
 
 /**
- * Define a function to get an DraggableOptionsStore instance.
+ * Define a function to get a DraggableOptionsStore instance.
  *
  * @param {({
  *    tween?: boolean,
