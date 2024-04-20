@@ -1643,7 +1643,7 @@ class AnimationAPI
    /**
     * Provides a tween from given position data to the current position.
     *
-    * @param {Partial<import('../data/types').Data.TJSPositionData>} fromData - The starting position.
+    * @param {Partial<import('../data/types').Data.TJSPositionDataRelative>} fromData - The starting position.
     *
     * @param {import('./types').AnimationAPI.TweenOptions} [options] - Optional tween parameters.
     *
@@ -1716,9 +1716,9 @@ class AnimationAPI
    /**
     * Provides a tween from given position data to the current position.
     *
-    * @param {Partial<import('../data/types').Data.TJSPositionData>} fromData - The starting position.
+    * @param {Partial<import('../data/types').Data.TJSPositionDataRelative>} fromData - The starting position.
     *
-    * @param {Partial<import('../data/types').Data.TJSPositionData>} toData - The ending position.
+    * @param {Partial<import('../data/types').Data.TJSPositionDataRelative>} toData - The ending position.
     *
     * @param {import('./types').AnimationAPI.TweenOptions} [options] - Optional tween parameters.
     *
@@ -1803,7 +1803,7 @@ class AnimationAPI
    /**
     * Provides a tween to given position data from the current position.
     *
-    * @param {Partial<import('../data/types').Data.TJSPositionData>} toData - The destination position.
+    * @param {Partial<import('../data/types').Data.TJSPositionDataRelative>} toData - The destination position.
     *
     * @param {import('./types').AnimationAPI.TweenOptions} [options] - Optional tween parameters.
     *
