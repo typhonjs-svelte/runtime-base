@@ -106,11 +106,11 @@ interface AnimationGroupAPI
     *
     * @param {TJSPositionTypes.PositionGroup} positionGroup - A position group.
     *
-    * @returns {{ position: TJSPosition, data: object | undefined, controls: BasicAnimation[]}[]} Results array.
+    * @returns {{ position: TJSPosition, entry: object | undefined, controls: BasicAnimation[]}[]} Results array.
     */
    getScheduled(positionGroup: TJSPositionTypes.PositionGroup): {
       position: TJSPosition,
-      data: object | undefined,
+      entry: object | undefined,
       controls: BasicAnimation[]
    }[];
 
@@ -239,11 +239,11 @@ namespace AnimationAPI {
       /**
        * Sets options of quickTo tween.
        *
-       * @param data - Quick tween options.
+       * @param options - Quick tween options.
        *
        * @returns This quickTo callback function.
        */
-      options: (data: QuickTweenOptions) => QuickToCallback;
+      options: (options: QuickTweenOptions) => QuickToCallback;
    }
 }
 

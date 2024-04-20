@@ -21,15 +21,23 @@ import { AnimationGroupControl } from './AnimationGroupControl.js';
 export class AnimationGroupAPI
 {
    /**
-    * Checks of the given object is a TJSPosition instance by checking for AnimationAPI.
+    * Returns the TJSPosition instance for the possible given positionable by checking the instance by checking for
+    * AnimationAPI.
     *
-    * @param {*}  object - Any data.
+    * @param {import('../').TJSPosition | import('../types').TJSPositionTypes.Positionable} positionable - Possible
+    *        position group entry.
     *
-    * @returns {boolean} Is TJSPosition.
+    * @returns {import('../').TJSPosition | null} Returns actual TJSPosition instance.
     */
-   static #isPosition(object)
+   static #getPosition(positionable)
    {
-      return isObject(object) && object.animate instanceof AnimationAPI;
+      if (!isObject(positionable)) { return null; }
+
+      if (positionable.animate instanceof AnimationAPI) { return positionable; }
+
+      if (positionable.position?.animate instanceof AnimationAPI) { return positionable.position; }
+
+      return null;
    }
 
    /**
@@ -47,9 +55,9 @@ export class AnimationGroupAPI
          {
             index++;
 
-            const actualPosition = this.#isPosition(entry) ? entry : entry.position;
+            const actualPosition = this.#getPosition(entry);
 
-            if (!this.#isPosition(actualPosition))
+            if (!actualPosition)
             {
                console.warn(`AnimationGroupAPI.cancel warning: No TJSPosition instance found at index: ${index}.`);
                continue;
@@ -60,9 +68,9 @@ export class AnimationGroupAPI
       }
       else
       {
-         const actualPosition = this.#isPosition(positionGroup) ? positionGroup : positionGroup.position;
+         const actualPosition = this.#getPosition(positionGroup);
 
-         if (!this.#isPosition(actualPosition))
+         if (!actualPosition)
          {
             console.warn(`AnimationGroupAPI.cancel warning: No TJSPosition instance found.`);
             return;
@@ -84,7 +92,7 @@ export class AnimationGroupAPI
     *
     * @returns {{
     *    position: import('../').TJSPosition,
-    *    data: object | void,
+    *    entry: object | undefined,
     *    controls: import('#runtime/util/animate').BasicAnimation[]
     * }[]} Results array.
     */
@@ -100,26 +108,26 @@ export class AnimationGroupAPI
          {
             index++;
 
-            const isPosition = this.#isPosition(entry);
-            const actualPosition = isPosition ? entry : entry.position;
+            const actualPosition = this.#getPosition(entry);
 
-            if (!this.#isPosition(actualPosition))
+            if (!actualPosition)
             {
-               console.warn(`AnimationGroupAPI.getScheduled warning: No TJSPosition instance found at index: ${index}.`);
+               console.warn(`AnimationGroupAPI.getScheduled warning: No TJSPosition instance found at index: ${
+                index}.`);
+
                continue;
             }
 
             const controls = AnimationManager.getScheduled(actualPosition);
 
-            results.push({ position: actualPosition, data: isPosition ? void 0 : entry, controls });
+            results.push({ position: actualPosition, entry: actualPosition === entry ? void 0 : entry, controls });
          }
       }
       else
       {
-         const isPosition = this.#isPosition(positionGroup);
-         const actualPosition = isPosition ? positionGroup : positionGroup.position;
+         const actualPosition = this.#getPosition(positionGroup);
 
-         if (!this.#isPosition(actualPosition))
+         if (!actualPosition)
          {
             console.warn(`AnimationGroupAPI.getScheduled warning: No TJSPosition instance found.`);
             return results;
@@ -127,7 +135,11 @@ export class AnimationGroupAPI
 
          const controls = AnimationManager.getScheduled(actualPosition);
 
-         results.push({ position: actualPosition, data: isPosition ? void 0 : positionGroup, controls });
+         results.push({
+            position: actualPosition,
+            entry: actualPosition === positionGroup ? void 0 : positionGroup,
+            controls
+         });
       }
 
       return results;
@@ -171,7 +183,7 @@ export class AnimationGroupAPI
       const hasOptionCallback = typeof options === 'function';
       const hasCallback = hasDataCallback || hasOptionCallback;
 
-      if (hasCallback) { callbackOptions = { index, position: void 0, data: void 0 }; }
+      if (hasCallback) { callbackOptions = { index, position: void 0, entry: void 0 }; }
 
       let actualFromData = fromData;
       let actualOptions = options;
@@ -182,11 +194,9 @@ export class AnimationGroupAPI
          {
             index++;
 
-            const isPosition = this.#isPosition(entry);
-            /** @type {import('..').TJSPosition} */
-            const actualPosition = isPosition ? entry : entry.position;
+            const actualPosition = this.#getPosition(entry);
 
-            if (!this.#isPosition(actualPosition))
+            if (!actualPosition)
             {
                console.warn(`AnimationGroupAPI.from warning: No TJSPosition instance found at index: ${index}.`);
                continue;
@@ -195,8 +205,8 @@ export class AnimationGroupAPI
             if (hasCallback)
             {
                callbackOptions.index = index;
-               callbackOptions.position = positionGroup;
-               callbackOptions.data = isPosition ? void 0 : entry;
+               callbackOptions.position = actualPosition;
+               callbackOptions.entry = actualPosition === entry ? void 0 : entry;
             }
 
             if (hasDataCallback)
@@ -227,16 +237,15 @@ export class AnimationGroupAPI
                }
             }
 
-            animationControls.push(actualPosition.animate.from(actualFromData, actualOptions));
+            animationControls.push(/** @type {import('./AnimationControl').AnimationControl} */
+             actualPosition.animate.from(actualFromData, actualOptions));
          }
       }
       else
       {
-         const isPosition = this.#isPosition(positionGroup);
+         const actualPosition = this.#getPosition(positionGroup);
 
-         const actualPosition = isPosition ? positionGroup : positionGroup.position;
-
-         if (!this.#isPosition(actualPosition))
+         if (!actualPosition)
          {
             console.warn(`AnimationGroupAPI.from warning: No TJSPosition instance found.`);
             return AnimationGroupControl.voidControl;
@@ -245,8 +254,8 @@ export class AnimationGroupAPI
          if (hasCallback)
          {
             callbackOptions.index = 0;
-            callbackOptions.position = positionGroup;
-            callbackOptions.data = isPosition ? void 0 : positionGroup;
+            callbackOptions.position = actualPosition;
+            callbackOptions.entry = actualPosition === positionGroup ? void 0 : positionGroup;
          }
 
          if (hasDataCallback)
@@ -271,7 +280,8 @@ export class AnimationGroupAPI
             }
          }
 
-         animationControls.push(actualPosition.animate.from(actualFromData, actualOptions));
+         animationControls.push(/** @type {import('./AnimationControl').AnimationControl} */
+          actualPosition.animate.from(actualFromData, actualOptions));
       }
 
       return new AnimationGroupControl(animationControls);
@@ -320,7 +330,7 @@ export class AnimationGroupAPI
       const hasOptionCallback = typeof options === 'function';
       const hasCallback = hasFromCallback || hasToCallback || hasOptionCallback;
 
-      if (hasCallback) { callbackOptions = { index, position: void 0, data: void 0 }; }
+      if (hasCallback) { callbackOptions = { index, position: void 0, entry: void 0 }; }
 
       let actualFromData = fromData;
       let actualToData = toData;
@@ -332,10 +342,9 @@ export class AnimationGroupAPI
          {
             index++;
 
-            const isPosition = this.#isPosition(entry);
-            const actualPosition = isPosition ? entry : entry.position;
+            const actualPosition = this.#getPosition(entry);
 
-            if (!this.#isPosition(actualPosition))
+            if (!actualPosition)
             {
                console.warn(`AnimationGroupAPI.fromTo warning: No TJSPosition instance found at index: ${index}.`);
                continue;
@@ -344,8 +353,8 @@ export class AnimationGroupAPI
             if (hasCallback)
             {
                callbackOptions.index = index;
-               callbackOptions.position = positionGroup;
-               callbackOptions.data = isPosition ? void 0 : entry;
+               callbackOptions.position = actualPosition;
+               callbackOptions.entry = actualPosition === entry ? void 0 : entry;
             }
 
             if (hasFromCallback)
@@ -390,15 +399,15 @@ export class AnimationGroupAPI
                }
             }
 
-            animationControls.push(actualPosition.animate.fromTo(actualFromData, actualToData, actualOptions));
+            animationControls.push(/** @type {import('./AnimationControl').AnimationControl} */
+             actualPosition.animate.fromTo(actualFromData, actualToData, actualOptions));
          }
       }
       else
       {
-         const isPosition = this.#isPosition(positionGroup);
-         const actualPosition = isPosition ? positionGroup : positionGroup.position;
+         const actualPosition = this.#getPosition(positionGroup);
 
-         if (!this.#isPosition(actualPosition))
+         if (!actualPosition)
          {
             console.warn(`AnimationGroupAPI.fromTo warning: No TJSPosition instance found.`);
             return AnimationGroupControl.voidControl;
@@ -407,8 +416,8 @@ export class AnimationGroupAPI
          if (hasCallback)
          {
             callbackOptions.index = 0;
-            callbackOptions.position = positionGroup;
-            callbackOptions.data = isPosition ? void 0 : positionGroup;
+            callbackOptions.position = actualPosition;
+            callbackOptions.entry = actualPosition === positionGroup ? void 0 : positionGroup;
          }
 
          if (hasFromCallback)
@@ -444,7 +453,8 @@ export class AnimationGroupAPI
             }
          }
 
-         animationControls.push(actualPosition.animate.fromTo(actualFromData, actualToData, actualOptions));
+         animationControls.push(/** @type {import('./AnimationControl').AnimationControl} */
+          actualPosition.animate.fromTo(actualFromData, actualToData, actualOptions));
       }
 
       return new AnimationGroupControl(animationControls);
@@ -485,7 +495,7 @@ export class AnimationGroupAPI
       const hasOptionCallback = typeof options === 'function';
       const hasCallback = hasDataCallback || hasOptionCallback;
 
-      if (hasCallback) { callbackOptions = { index, position: void 0, data: void 0 }; }
+      if (hasCallback) { callbackOptions = { index, position: void 0, entry: void 0 }; }
 
       let actualToData = toData;
       let actualOptions = options;
@@ -496,10 +506,9 @@ export class AnimationGroupAPI
          {
             index++;
 
-            const isPosition = this.#isPosition(entry);
-            const actualPosition = isPosition ? entry : entry.position;
+            const actualPosition = this.#getPosition(entry);
 
-            if (!this.#isPosition(actualPosition))
+            if (!actualPosition)
             {
                console.warn(`AnimationGroupAPI.to warning: No TJSPosition instance found at index: ${index}.`);
                continue;
@@ -508,8 +517,8 @@ export class AnimationGroupAPI
             if (hasCallback)
             {
                callbackOptions.index = index;
-               callbackOptions.position = positionGroup;
-               callbackOptions.data = isPosition ? void 0 : entry;
+               callbackOptions.position = actualPosition;
+               callbackOptions.entry = actualPosition === entry ? void 0 : entry;
             }
 
             if (hasDataCallback)
@@ -540,15 +549,15 @@ export class AnimationGroupAPI
                }
             }
 
-            animationControls.push(actualPosition.animate.to(actualToData, actualOptions));
+            animationControls.push(/** @type {import('./AnimationControl').AnimationControl} */
+             actualPosition.animate.to(actualToData, actualOptions));
          }
       }
       else
       {
-         const isPosition = this.#isPosition(positionGroup);
-         const actualPosition = isPosition ? positionGroup : positionGroup.position;
+         const actualPosition = this.#getPosition(positionGroup);
 
-         if (!this.#isPosition(actualPosition))
+         if (!actualPosition)
          {
             console.warn(`AnimationGroupAPI.to warning: No TJSPosition instance found.`);
             return AnimationGroupControl.voidControl;
@@ -557,8 +566,8 @@ export class AnimationGroupAPI
          if (hasCallback)
          {
             callbackOptions.index = 0;
-            callbackOptions.position = positionGroup;
-            callbackOptions.data = isPosition ? void 0 : positionGroup;
+            callbackOptions.position = actualPosition;
+            callbackOptions.entry = actualPosition === positionGroup ? void 0 : positionGroup;
          }
 
          if (hasDataCallback)
@@ -583,7 +592,8 @@ export class AnimationGroupAPI
             }
          }
 
-         animationControls.push(actualPosition.animate.to(actualToData, actualOptions));
+         animationControls.push(/** @type {import('./AnimationControl').AnimationControl} */
+          actualPosition.animate.to(actualToData, actualOptions));
       }
 
       return new AnimationGroupControl(animationControls);
@@ -624,7 +634,7 @@ export class AnimationGroupAPI
 
       const hasOptionCallback = typeof options === 'function';
 
-      const callbackOptions = { index, position: void 0, data: void 0 };
+      const callbackOptions = { index, position: void 0, entry: void 0 };
 
       let actualOptions = isObject(options) ? options : void 0;
 
@@ -634,18 +644,17 @@ export class AnimationGroupAPI
          {
             index++;
 
-            const isPosition = this.#isPosition(entry);
-            const actualPosition = isPosition ? entry : entry.position;
+            const actualPosition = this.#getPosition(entry);
 
-            if (!this.#isPosition(actualPosition))
+            if (!actualPosition)
             {
                console.warn(`AnimationGroupAPI.quickTo warning: No TJSPosition instance found at index: ${index}.`);
                continue;
             }
 
             callbackOptions.index = index;
-            callbackOptions.position = positionGroup;
-            callbackOptions.data = isPosition ? void 0 : entry;
+            callbackOptions.position = actualPosition;
+            callbackOptions.entry = actualPosition === entry ? void 0 : entry;
 
             if (hasOptionCallback)
             {
@@ -666,18 +675,17 @@ export class AnimationGroupAPI
       }
       else
       {
-         const isPosition = this.#isPosition(positionGroup);
-         const actualPosition = isPosition ? positionGroup : positionGroup.position;
+         const actualPosition = this.#getPosition(positionGroup);
 
-         if (!this.#isPosition(actualPosition))
+         if (!actualPosition)
          {
             console.warn(`AnimationGroupAPI.quickTo warning: No TJSPosition instance found.`);
             return;
          }
 
          callbackOptions.index = 0;
-         callbackOptions.position = positionGroup;
-         callbackOptions.data = isPosition ? void 0 : positionGroup;
+         callbackOptions.position = actualPosition;
+         callbackOptions.entry = actualPosition === positionGroup ? void 0 : positionGroup;
 
          if (hasOptionCallback)
          {
@@ -716,23 +724,20 @@ export class AnimationGroupAPI
                {
                   index++;
 
-                  const isPosition = this.#isPosition(entry);
-                  const actualPosition = isPosition ? entry : entry.position;
+                  const actualPosition = this.#getPosition(entry);
 
-                  if (!this.#isPosition(actualPosition)) { continue; }
+                  if (!actualPosition) { continue; }
 
                   callbackOptions.index = index;
-                  callbackOptions.position = positionGroup;
-                  callbackOptions.data = isPosition ? void 0 : entry;
+                  callbackOptions.position = actualPosition;
+                  callbackOptions.entry = actualPosition === entry ? void 0 : entry;
 
                   const toData = dataCallback(callbackOptions);
 
                   // Returned data from callback is null / undefined, so skip this position instance.
                   if (toData === null || toData === void 0) { continue; }
 
-                  /**
-                   * @type {boolean}
-                   */
+                  /** @type {boolean} */
                   const toDataIterable = isIterable(toData);
 
                   if (!Number.isFinite(toData) && !toDataIterable && !isObject(toData))
@@ -753,14 +758,13 @@ export class AnimationGroupAPI
             }
             else
             {
-               const isPosition = this.#isPosition(positionGroup);
-               const actualPosition = isPosition ? positionGroup : positionGroup.position;
+               const actualPosition = this.#getPosition(positionGroup);
 
-               if (!this.#isPosition(actualPosition)) { return; }
+               if (!actualPosition) { return; }
 
                callbackOptions.index = 0;
-               callbackOptions.position = positionGroup;
-               callbackOptions.data = isPosition ? void 0 : positionGroup;
+               callbackOptions.position = actualPosition;
+               callbackOptions.entry = actualPosition === positionGroup ? void 0 : positionGroup;
 
                const toData = dataCallback(callbackOptions);
 
@@ -832,10 +836,9 @@ export class AnimationGroupAPI
                {
                   index++;
 
-                  const isPosition = this.#isPosition(entry);
-                  const actualPosition = isPosition ? entry : entry.position;
+                  const actualPosition = this.#getPosition(entry);
 
-                  if (!this.#isPosition(actualPosition))
+                  if (!actualPosition)
                   {
                      console.warn(
                       `AnimationGroupAPI.quickTo.options warning: No TJSPosition instance found at index: ${index}.`);
@@ -843,8 +846,8 @@ export class AnimationGroupAPI
                   }
 
                   callbackOptions.index = index;
-                  callbackOptions.position = positionGroup;
-                  callbackOptions.data = isPosition ? void 0 : entry;
+                  callbackOptions.position = actualPosition;
+                  callbackOptions.entry = actualPosition === entry ? void 0 : entry;
 
                   actualOptions = options(callbackOptions);
 
@@ -863,18 +866,17 @@ export class AnimationGroupAPI
             }
             else
             {
-               const isPosition = this.#isPosition(positionGroup);
-               const actualPosition = isPosition ? positionGroup : positionGroup.position;
+               const actualPosition = this.#getPosition(positionGroup);
 
-               if (!this.#isPosition(actualPosition))
+               if (!actualPosition)
                {
                   console.warn(`AnimationGroupAPI.quickTo.options warning: No TJSPosition instance found.`);
                   return quickToCB;
                }
 
                callbackOptions.index = 0;
-               callbackOptions.position = positionGroup;
-               callbackOptions.data = isPosition ? void 0 : positionGroup;
+               callbackOptions.position = actualPosition;
+               callbackOptions.entry = actualPosition === positionGroup ? void 0 : positionGroup;
 
                actualOptions = options(callbackOptions);
 
