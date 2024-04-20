@@ -120,7 +120,7 @@ export class AnimationGroupAPI
 
             const controls = AnimationManager.getScheduled(actualPosition);
 
-            results.push({ position: actualPosition, entry: actualPosition === entry ? void 0 : entry, controls });
+            results.push({ position: actualPosition, entry: actualPosition !== entry ? entry : void 0, controls });
          }
       }
       else
@@ -137,7 +137,7 @@ export class AnimationGroupAPI
 
          results.push({
             position: actualPosition,
-            entry: actualPosition === positionGroup ? void 0 : positionGroup,
+            entry: actualPosition !== positionGroup ? positionGroup : void 0,
             controls
          });
       }
@@ -206,7 +206,7 @@ export class AnimationGroupAPI
             {
                callbackOptions.index = index;
                callbackOptions.position = actualPosition;
-               callbackOptions.entry = actualPosition === entry ? void 0 : entry;
+               callbackOptions.entry = actualPosition !== entry ? entry : void 0;
             }
 
             if (hasDataCallback)
@@ -255,7 +255,7 @@ export class AnimationGroupAPI
          {
             callbackOptions.index = 0;
             callbackOptions.position = actualPosition;
-            callbackOptions.entry = actualPosition === positionGroup ? void 0 : positionGroup;
+            callbackOptions.entry = actualPosition !== positionGroup ? positionGroup : void 0;
          }
 
          if (hasDataCallback)
@@ -354,7 +354,7 @@ export class AnimationGroupAPI
             {
                callbackOptions.index = index;
                callbackOptions.position = actualPosition;
-               callbackOptions.entry = actualPosition === entry ? void 0 : entry;
+               callbackOptions.entry = actualPosition !== entry ? entry : void 0;
             }
 
             if (hasFromCallback)
@@ -417,7 +417,7 @@ export class AnimationGroupAPI
          {
             callbackOptions.index = 0;
             callbackOptions.position = actualPosition;
-            callbackOptions.entry = actualPosition === positionGroup ? void 0 : positionGroup;
+            callbackOptions.entry = actualPosition !== positionGroup ? positionGroup : void 0;
          }
 
          if (hasFromCallback)
@@ -518,7 +518,7 @@ export class AnimationGroupAPI
             {
                callbackOptions.index = index;
                callbackOptions.position = actualPosition;
-               callbackOptions.entry = actualPosition === entry ? void 0 : entry;
+               callbackOptions.entry = actualPosition !== entry ? entry : void 0;
             }
 
             if (hasDataCallback)
@@ -567,7 +567,7 @@ export class AnimationGroupAPI
          {
             callbackOptions.index = 0;
             callbackOptions.position = actualPosition;
-            callbackOptions.entry = actualPosition === positionGroup ? void 0 : positionGroup;
+            callbackOptions.entry = actualPosition !== positionGroup ? positionGroup : void 0;
          }
 
          if (hasDataCallback)
@@ -654,7 +654,7 @@ export class AnimationGroupAPI
 
             callbackOptions.index = index;
             callbackOptions.position = actualPosition;
-            callbackOptions.entry = actualPosition === entry ? void 0 : entry;
+            callbackOptions.entry = actualPosition !== entry ? entry : void 0;
 
             if (hasOptionCallback)
             {
@@ -685,7 +685,7 @@ export class AnimationGroupAPI
 
          callbackOptions.index = 0;
          callbackOptions.position = actualPosition;
-         callbackOptions.entry = actualPosition === positionGroup ? void 0 : positionGroup;
+         callbackOptions.entry = actualPosition !== positionGroup ? positionGroup : void 0;
 
          if (hasOptionCallback)
          {
@@ -730,7 +730,7 @@ export class AnimationGroupAPI
 
                   callbackOptions.index = index;
                   callbackOptions.position = actualPosition;
-                  callbackOptions.entry = actualPosition === entry ? void 0 : entry;
+                  callbackOptions.entry = actualPosition !== entry ? entry : void 0;
 
                   const toData = dataCallback(callbackOptions);
 
@@ -764,7 +764,7 @@ export class AnimationGroupAPI
 
                callbackOptions.index = 0;
                callbackOptions.position = actualPosition;
-               callbackOptions.entry = actualPosition === positionGroup ? void 0 : positionGroup;
+               callbackOptions.entry = actualPosition !== positionGroup ? positionGroup : void 0;
 
                const toData = dataCallback(callbackOptions);
 
@@ -847,7 +847,7 @@ export class AnimationGroupAPI
 
                   callbackOptions.index = index;
                   callbackOptions.position = actualPosition;
-                  callbackOptions.entry = actualPosition === entry ? void 0 : entry;
+                  callbackOptions.entry = actualPosition !== entry ? entry : void 0;
 
                   actualOptions = options(callbackOptions);
 
@@ -876,7 +876,7 @@ export class AnimationGroupAPI
 
                callbackOptions.index = 0;
                callbackOptions.position = actualPosition;
-               callbackOptions.entry = actualPosition === positionGroup ? void 0 : positionGroup;
+               callbackOptions.entry = actualPosition !== positionGroup ? positionGroup : void 0;
 
                actualOptions = options(callbackOptions);
 
