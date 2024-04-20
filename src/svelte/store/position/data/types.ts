@@ -1,4 +1,5 @@
 import type { AnimationAPI } from '../animation/types';
+import type { ValidatorAPI } from '../system/validators/types';
 import type { TransformAPI } from '../transform/types';
 import type { TJSPosition }   from '../TJSPosition';
 
@@ -59,14 +60,43 @@ namespace Data {
 
    /**
     * Defines an extension to {@link Data.TJSPositionData} where each animatable property defined by
-    * {@link AnimationAPI.AnimationKeys} can also be a relative string. This string should be in the form of '+=', '-=',
-    * or '*=' and float / numeric value. IE '+=0.2'. {@link TJSPosition.set} will apply the `addition`, `subtraction`,
-    * or `multiplication` operation specified against the current value of the given property.
+    * {@link AnimationAPI.AnimationKeys} can also be a string. Relative adjustments to animatable properties should be
+    * a string the form of '+=', '-=', or '*=' and float / numeric value. IE '+=0.2'. {@link TJSPosition.set} will
+    * apply the `addition`, `subtraction`, or `multiplication` operation specified against the current value of the
+    * given property. Various unit types are also supported including: `%`, `%~`, `px`, `rad`, `turn`:
+    *
+    * ```
+    * - `no unit type` - The natural value for each property is adjusted which may be `px` for properties like `width`
+    * or degrees for rotation based properties.
+    *
+    * - `%`: Properties such as `width` are calculated against the parent elements client bounds. Other properties such
+    * as rotation are a percentage bound by 360 degrees.
+    *
+    * - `%~`: Relative percentage. Properties are calculated as a percentage of the current value of the property.
+    * IE `width: '150%~` results in `150%` of the current width value.
+    *
+    * - `px`: Only properties that support `px` will be adjusted all other properties like rotation will be rejected
+    * with a warning.
+    *
+    * - `rad`: Only rotation properties may be specified and the rotation is performed in `radians`.
+    *
+    * - `turn`: Only rotation properties may be specified and rotation is performed in respect to the `turn` CSS
+    * specification. `1turn` is 360 degrees. `0.25turn` is 90 degrees.
+    * ```
+    *
+    * Additional properties may be added that are not specified by {@link TJSPositionData} and are forwarded through
+    * {@link ValidatorAPI.ValidationData} as the `rest` property allowing extra data to be sent to any custom validator.
     */
-   export type TJSPositionDataRelative = {
+   export type TJSPositionDataRelative = Partial<{
+      // Map only the keys that are animatable to either their original type or as a string.
       [P in keyof TJSPositionData as P extends AnimationAPI.AnimationKeys ? P : never]: TJSPositionData[P] | string;
    } & {
+      // Include all other keys from TJSPositionData unchanged.
       [P in keyof TJSPositionData as P extends AnimationAPI.AnimationKeys ? never : P]: TJSPositionData[P];
+   }> & {
+      // Allow any additional properties not originally part of TJSPositionData that are forwarded through
+      // validation.
+      [key: string]: any;
    };
 
    /**
