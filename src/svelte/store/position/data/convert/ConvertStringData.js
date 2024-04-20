@@ -47,7 +47,7 @@ export class ConvertStringData
    /**
     * Converts any relative string values for animatable keys to actual updates performed against current data.
     *
-    * @param {Partial<import('../data/types').Data.TJSPositionDataRelative>}  data - position data.
+    * @param {import('../data/types').Data.TJSPositionDataRelative}  data - position data.
     *
     * @param {import('../data/types').Data.TJSPositionData}   position - The source position data.
     *
@@ -159,7 +159,7 @@ export class ConvertStringData
     *
     * @param {number}   current - Current value
     *
-    * @param {Partial<import('../data/types').Data.TJSPositionDataRelative>}  data - Source data to convert.
+    * @param {import('../data/types').Data.TJSPositionDataRelative}  data - Source data to convert.
     *
     * @param {import('../data/types').Data.TJSPositionData} position - Current position data.
     *
@@ -242,7 +242,7 @@ export class ConvertStringData
     *
     * @param {number}   current - Current value
     *
-    * @param {Partial<import('../data/types').Data.TJSPositionDataRelative>}  data - Source data to convert.
+    * @param {import('../data/types').Data.TJSPositionDataRelative}  data - Source data to convert.
     *
     * @param {import('../data/types').Data.TJSPositionData} position - Current position data.
     *
@@ -282,7 +282,7 @@ export class ConvertStringData
     *
     * @param {number}   current - Current value
     *
-    * @param {Partial<import('../data/types').Data.TJSPositionDataRelative>}  data - Source data to convert.
+    * @param {import('../data/types').Data.TJSPositionDataRelative}  data - Source data to convert.
     *
     * @param {import('../data/types').Data.TJSPositionData} position - Current position data.
     *

@@ -34,38 +34,38 @@ interface AnimationAPI
    /**
     * Provides a tween from given position data to the current position.
     *
-    * @param {Partial<Data.TJSPositionDataRelative>} fromData - The starting position.
+    * @param {Data.TJSPositionDataRelative} fromData - The starting position.
     *
     * @param {AnimationAPI.TweenOptions} [options] - Optional tween parameters.
     *
     * @returns {IBasicAnimation}  A control object that can cancel animation and provides a `finished` Promise.
     */
-   from(fromData: Partial<Data.TJSPositionDataRelative>, options?: AnimationAPI.TweenOptions): IBasicAnimation;
+   from(fromData: Data.TJSPositionDataRelative, options?: AnimationAPI.TweenOptions): IBasicAnimation;
 
    /**
     * Provides a tween from given position data to the current position.
     *
-    * @param {Partial<Data.TJSPositionDataRelative>} fromData - The starting position.
+    * @param {Data.TJSPositionDataRelative} fromData - The starting position.
     *
-    * @param {Partial<Data.TJSPositionDataRelative>} toData - The ending position.
+    * @param {Data.TJSPositionDataRelative} toData - The ending position.
     *
     * @param {AnimationAPI.TweenOptions} [options] - Optional tween parameters.
     *
     * @returns {IBasicAnimation}  A control object that can cancel animation and provides a `finished` Promise.
     */
-   fromTo(fromData: Partial<Data.TJSPositionDataRelative>, toData: Partial<Data.TJSPositionDataRelative>,
+   fromTo(fromData: Data.TJSPositionDataRelative, toData: Data.TJSPositionDataRelative,
     options?: AnimationAPI.TweenOptions): IBasicAnimation;
 
    /**
     * Provides a tween to given position data from the current position.
     *
-    * @param {Partial<Data.TJSPositionDataRelative>} toData - The destination position.
+    * @param {Data.TJSPositionDataRelative} toData - The destination position.
     *
     * @param {AnimationAPI.TweenOptions} [options] - Optional tween parameters.
     *
     * @returns {IBasicAnimation}  A control object that can cancel animation and provides a `finished` Promise.
     */
-   to(toData: Partial<Data.TJSPositionDataRelative>, options?: AnimationAPI.TweenOptions): IBasicAnimation;
+   to(toData: Data.TJSPositionDataRelative, options?: AnimationAPI.TweenOptions): IBasicAnimation;
 
    /**
     * Returns a function that provides an optimized way to constantly update a to-tween.
