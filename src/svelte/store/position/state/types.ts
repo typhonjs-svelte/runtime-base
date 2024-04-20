@@ -4,8 +4,6 @@ import type { InterpolateFunction }       from '#runtime/math/interpolate';
 
 import type { Data }                      from '../data/types';
 
-import type { TJSPositionDataExtended }   from '../index.js';
-
 interface PositionStateAPI {
    /**
     * Returns any stored save state by name.
@@ -14,16 +12,16 @@ interface PositionStateAPI {
     *
     * @param {string}   options.name - Saved data set name.
     *
-    * @returns {TJSPositionDataExtended} The saved data set.
+    * @returns {Data.TJSPositionDataExtra} The saved data set.
     */
-   get({ name }: { name: string }): TJSPositionDataExtended;
+   get({ name }: { name: string }): Data.TJSPositionDataExtra;
 
    /**
     * Returns any associated default data.
     *
-    * @returns {TJSPositionDataExtended} Associated default data.
+    * @returns {Data.TJSPositionDataExtra} Associated default data.
     */
-   getDefault(): TJSPositionDataExtended;
+   getDefault(): Data.TJSPositionDataExtra;
 
    /**
     * Removes and returns any position state by name.
@@ -32,9 +30,9 @@ interface PositionStateAPI {
     *
     * @param {string}   options.name - Name to remove and retrieve.
     *
-    * @returns {TJSPositionDataExtended} Saved position data.
+    * @returns {Data.TJSPositionDataExtra} Saved position data.
     */
-   remove({ name }: { name: string }): TJSPositionDataExtended;
+   remove({ name }: { name: string }): Data.TJSPositionDataExtra;
 
    /**
     * Resets data to default values and invokes set.
@@ -77,7 +75,7 @@ interface PositionStateAPI {
     *
     * @param {InterpolateFunction}  [options.interpolate=lerp] - Interpolation function.
     *
-    * @returns {TJSPositionDataExtended | Promise<TJSPositionDataExtended>} Saved position data.
+    * @returns {Data.TJSPositionDataExtra | Promise<Data.TJSPositionDataExtra>} Saved position data.
     */
    restore({ name, remove, properties, silent, async, animateTo, duration, ease, interpolate }: {
       name: string,
@@ -89,7 +87,7 @@ interface PositionStateAPI {
       duration?: number,
       ease?: EasingFunction,
       interpolate?: InterpolateFunction
-   }): TJSPositionDataExtended | Promise<TJSPositionDataExtended>;
+   }): Data.TJSPositionDataExtra | Promise<Data.TJSPositionDataExtra>;
 
    /**
     * Saves current position state with the opportunity to add extra data to the saved state. Simply include

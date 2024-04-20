@@ -14,7 +14,7 @@ export class PositionStateAPI
    #data;
 
    /**
-    * @type {Map<string, import('../').TJSPositionDataExtended>}
+    * @type {Map<string, import('../data/types').Data.TJSPositionDataExtra>}
     */
    #dataSaved = new Map();
 
@@ -38,7 +38,7 @@ export class PositionStateAPI
     *
     * @param {string}   options.name - Saved data set name.
     *
-    * @returns {import('../').TJSPositionDataExtended} The saved data set.
+    * @returns {import('../data/types').Data.TJSPositionDataExtra} The saved data set.
     */
    get({ name })
    {
@@ -50,7 +50,7 @@ export class PositionStateAPI
    /**
     * Returns any associated default data.
     *
-    * @returns {import('../').TJSPositionDataExtended} Associated default data.
+    * @returns {import('../data/types').Data.TJSPositionDataExtra} Associated default data.
     */
    getDefault()
    {
@@ -64,7 +64,7 @@ export class PositionStateAPI
     *
     * @param {string}   options.name - Name to remove and retrieve.
     *
-    * @returns {import('../').TJSPositionDataExtended} Saved position data.
+    * @returns {import('../data/types').Data.TJSPositionDataExtra} Saved position data.
     */
    remove({ name })
    {
@@ -150,8 +150,10 @@ export class PositionStateAPI
     * @param {import('#runtime/math/interpolate').InterpolateFunction}  [options.interpolate=lerp] - Interpolation
     *        function.
     *
-    * @returns {import('../').TJSPositionDataExtended | Promise<import('../').TJSPositionDataExtended>} Saved position
-    *          data.
+    * @returns {(
+    *    import('../data/types').Data.TJSPositionDataExtra |
+    *    Promise<import('../data/types').Data.TJSPositionDataExtra>
+    * )} Saved position data.
     */
    restore({ name, remove = false, properties, silent = false, async = false, animateTo = false, duration = 0.1,
     ease = linear, interpolate = lerp })

@@ -1,13 +1,14 @@
-import type { EasingFunction }      from 'svelte/transition';
+import type { EasingFunction }         from 'svelte/transition';
 
-import type { InterpolateFunction } from '#runtime/math/interpolate';
-import type { IBasicAnimation }   from '#runtime/util/animate';
+import type { InterpolateFunction }    from '#runtime/math/interpolate';
 
-import type { TJSPositionDataExtended }   from '../index.js';
+import type { IBasicAnimation }        from '#runtime/util/animate';
 
-import type { TJSPositionTypes }    from '../types';
+import type { Data }                   from '../data/types';
 
-import type { TJSPosition }         from '../TJSPosition.js';
+import type { TJSPositionTypes }       from '../types';
+
+import type { TJSPosition }            from '../TJSPosition.js';
 
 interface AnimationAPI
 {
@@ -33,38 +34,38 @@ interface AnimationAPI
    /**
     * Provides a tween from given position data to the current position.
     *
-    * @param {TJSPositionDataExtended} fromData - The starting position.
+    * @param {Partial<Data.TJSPositionData>} fromData - The starting position.
     *
     * @param {AnimationAPI.TweenOptions} [options] - Optional tween parameters.
     *
     * @returns {IBasicAnimation}  A control object that can cancel animation and provides a `finished` Promise.
     */
-   from(fromData: TJSPositionDataExtended, options?: AnimationAPI.TweenOptions): IBasicAnimation;
+   from(fromData: Partial<Data.TJSPositionData>, options?: AnimationAPI.TweenOptions): IBasicAnimation;
 
    /**
     * Provides a tween from given position data to the current position.
     *
-    * @param {TJSPositionDataExtended} fromData - The starting position.
+    * @param {Partial<Data.TJSPositionData>} fromData - The starting position.
     *
-    * @param {TJSPositionDataExtended} toData - The ending position.
+    * @param {Partial<Data.TJSPositionData>} toData - The ending position.
     *
     * @param {AnimationAPI.TweenOptions} [options] - Optional tween parameters.
     *
     * @returns {IBasicAnimation}  A control object that can cancel animation and provides a `finished` Promise.
     */
-   fromTo(fromData: TJSPositionDataExtended, toData: TJSPositionDataExtended, options?: AnimationAPI.TweenOptions):
-    IBasicAnimation;
+   fromTo(fromData: Partial<Data.TJSPositionData>, toData: Partial<Data.TJSPositionData>,
+    options?: AnimationAPI.TweenOptions): IBasicAnimation;
 
    /**
     * Provides a tween to given position data from the current position.
     *
-    * @param {TJSPositionDataExtended} toData - The destination position.
+    * @param {Partial<Data.TJSPositionData>} toData - The destination position.
     *
     * @param {AnimationAPI.TweenOptions} [options] - Optional tween parameters.
     *
     * @returns {IBasicAnimation}  A control object that can cancel animation and provides a `finished` Promise.
     */
-   to(toData: TJSPositionDataExtended, options?: AnimationAPI.TweenOptions): IBasicAnimation;
+   to(toData: Partial<Data.TJSPositionData>, options?: AnimationAPI.TweenOptions): IBasicAnimation;
 
    /**
     * Returns a function that provides an optimized way to constantly update a to-tween.
