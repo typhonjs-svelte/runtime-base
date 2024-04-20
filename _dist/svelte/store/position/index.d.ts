@@ -2,9 +2,9 @@ import { Mat4, Vec3 } from '@typhonjs-svelte/runtime-base/math/gl-matrix';
 import { EasingFunction } from 'svelte/transition';
 import { InterpolateFunction } from '@typhonjs-svelte/runtime-base/math/interpolate';
 import { IBasicAnimation } from '@typhonjs-svelte/runtime-base/util/animate';
-import * as _runtime_svelte_action_dom from '@typhonjs-svelte/runtime-base/svelte/action/dom';
 import * as svelte_store from 'svelte/store';
 import { Subscriber, Invalidator, Unsubscriber, Writable, Readable } from 'svelte/store';
+import * as _runtime_svelte_action_dom from '@typhonjs-svelte/runtime-base/svelte/action/dom';
 import * as svelte_action from 'svelte/action';
 
 /**
@@ -188,15 +188,15 @@ interface PositionStateAPI {
    *
    * @param {string}   options.name - Saved data set name.
    *
-   * @returns {TJSPositionDataExtended} The saved data set.
+   * @returns {Data.TJSPositionDataExtra} The saved data set.
    */
-  get({ name }: { name: string }): TJSPositionDataExtended;
+  get({ name }: { name: string }): Data.TJSPositionDataExtra;
   /**
    * Returns any associated default data.
    *
-   * @returns {TJSPositionDataExtended} Associated default data.
+   * @returns {Data.TJSPositionDataExtra} Associated default data.
    */
-  getDefault(): TJSPositionDataExtended;
+  getDefault(): Data.TJSPositionDataExtra;
   /**
    * Removes and returns any position state by name.
    *
@@ -204,9 +204,9 @@ interface PositionStateAPI {
    *
    * @param {string}   options.name - Name to remove and retrieve.
    *
-   * @returns {TJSPositionDataExtended} Saved position data.
+   * @returns {Data.TJSPositionDataExtra} Saved position data.
    */
-  remove({ name }: { name: string }): TJSPositionDataExtended;
+  remove({ name }: { name: string }): Data.TJSPositionDataExtra;
   /**
    * Resets data to default values and invokes set.
    *
@@ -247,7 +247,7 @@ interface PositionStateAPI {
      *
      * @param {InterpolateFunction}  [options.interpolate=lerp] - Interpolation function.
      *
-     * @returns {TJSPositionDataExtended | Promise<TJSPositionDataExtended>} Saved position data.
+     * @returns {Data.TJSPositionDataExtra | Promise<Data.TJSPositionDataExtra>} Saved position data.
      */
   restore({
     name,
@@ -269,7 +269,7 @@ interface PositionStateAPI {
     duration?: number;
     ease?: EasingFunction;
     interpolate?: InterpolateFunction;
-  }): TJSPositionDataExtended | Promise<TJSPositionDataExtended>;
+  }): Data.TJSPositionDataExtra | Promise<Data.TJSPositionDataExtra>;
   /**
    * Saves current position state with the opportunity to add extra data to the saved state. Simply include
    * extra properties in `options` to save extra data.
@@ -1087,39 +1087,39 @@ interface AnimationAPI {
   /**
    * Provides a tween from given position data to the current position.
    *
-   * @param {TJSPositionDataExtended} fromData - The starting position.
+   * @param {Partial<Data.TJSPositionData>} fromData - The starting position.
    *
    * @param {AnimationAPI.TweenOptions} [options] - Optional tween parameters.
    *
    * @returns {IBasicAnimation}  A control object that can cancel animation and provides a `finished` Promise.
    */
-  from(fromData: TJSPositionDataExtended, options?: AnimationAPI.TweenOptions): IBasicAnimation;
+  from(fromData: Partial<Data.TJSPositionData>, options?: AnimationAPI.TweenOptions): IBasicAnimation;
   /**
    * Provides a tween from given position data to the current position.
    *
-   * @param {TJSPositionDataExtended} fromData - The starting position.
+   * @param {Partial<Data.TJSPositionData>} fromData - The starting position.
    *
-   * @param {TJSPositionDataExtended} toData - The ending position.
+   * @param {Partial<Data.TJSPositionData>} toData - The ending position.
    *
    * @param {AnimationAPI.TweenOptions} [options] - Optional tween parameters.
    *
    * @returns {IBasicAnimation}  A control object that can cancel animation and provides a `finished` Promise.
    */
   fromTo(
-    fromData: TJSPositionDataExtended,
-    toData: TJSPositionDataExtended,
+    fromData: Partial<Data.TJSPositionData>,
+    toData: Partial<Data.TJSPositionData>,
     options?: AnimationAPI.TweenOptions,
   ): IBasicAnimation;
   /**
    * Provides a tween to given position data from the current position.
    *
-   * @param {TJSPositionDataExtended} toData - The destination position.
+   * @param {Partial<Data.TJSPositionData>} toData - The destination position.
    *
    * @param {AnimationAPI.TweenOptions} [options] - Optional tween parameters.
    *
    * @returns {IBasicAnimation}  A control object that can cancel animation and provides a `finished` Promise.
    */
-  to(toData: TJSPositionDataExtended, options?: AnimationAPI.TweenOptions): IBasicAnimation;
+  to(toData: Partial<Data.TJSPositionData>, options?: AnimationAPI.TweenOptions): IBasicAnimation;
   /**
    * Returns a function that provides an optimized way to constantly update a to-tween.
    *
@@ -1803,82 +1803,6 @@ type TJSPositionStores = {
    */
   zIndex: svelte_store.Writable<number | null>;
 };
-type TJSPositionDataExtended = {
-  /**
-   * -
-   */
-  height?: number | string | null;
-  /**
-   * -
-   */
-  left?: number | string | null;
-  /**
-   * -
-   */
-  maxHeight?: number | string | null;
-  /**
-   * -
-   */
-  maxWidth?: number | string | null;
-  /**
-   * -
-   */
-  minHeight?: number | string | null;
-  /**
-   * -
-   */
-  minWidth?: number | string | null;
-  /**
-   * -
-   */
-  rotateX?: number | string | null;
-  /**
-   * -
-   */
-  rotateY?: number | string | null;
-  /**
-   * -
-   */
-  rotateZ?: number | string | null;
-  /**
-   * -
-   */
-  scale?: number | string | null;
-  /**
-   * -
-   */
-  top?: number | string | null;
-  /**
-   * -
-   */
-  transformOrigin?: string | null;
-  /**
-   * -
-   */
-  translateX?: number | string | null;
-  /**
-   * -
-   */
-  translateY?: number | string | null;
-  /**
-   * -
-   */
-  translateZ?: number | string | null;
-  /**
-   * -
-   */
-  width?: number | string | null;
-  /**
-   * -
-   *
-   * Extended properties -----------------------------------------------------------------------------------------------
-   */
-  zIndex?: number | string | null;
-  /**
-   * Alias for `rotateZ`.
-   */
-  rotation?: number | null;
-};
 
 export {
   Action,
@@ -1888,7 +1812,6 @@ export {
   type PositionStateAPI,
   System,
   TJSPosition,
-  type TJSPositionDataExtended,
   type TJSPositionOptions,
   type TJSPositionOptionsAll,
   type TJSPositionParent,

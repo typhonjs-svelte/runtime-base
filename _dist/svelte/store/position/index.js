@@ -1643,7 +1643,7 @@ class AnimationAPI
    /**
     * Provides a tween from given position data to the current position.
     *
-    * @param {import('../').TJSPositionDataExtended} fromData - The starting position.
+    * @param {Partial<import('../data/types').Data.TJSPositionData>} fromData - The starting position.
     *
     * @param {import('./types').AnimationAPI.TweenOptions} [options] - Optional tween parameters.
     *
@@ -1716,9 +1716,9 @@ class AnimationAPI
    /**
     * Provides a tween from given position data to the current position.
     *
-    * @param {import('../').TJSPositionDataExtended} fromData - The starting position.
+    * @param {Partial<import('../data/types').Data.TJSPositionData>} fromData - The starting position.
     *
-    * @param {import('../').TJSPositionDataExtended} toData - The ending position.
+    * @param {Partial<import('../data/types').Data.TJSPositionData>} toData - The ending position.
     *
     * @param {import('./types').AnimationAPI.TweenOptions} [options] - Optional tween parameters.
     *
@@ -1803,7 +1803,7 @@ class AnimationAPI
    /**
     * Provides a tween to given position data from the current position.
     *
-    * @param {import('../').TJSPositionDataExtended} toData - The destination position.
+    * @param {Partial<import('../data/types').Data.TJSPositionData>} toData - The destination position.
     *
     * @param {import('./types').AnimationAPI.TweenOptions} [options] - Optional tween parameters.
     *
@@ -3089,7 +3089,7 @@ class PositionStateAPI
    #data;
 
    /**
-    * @type {Map<string, import('../').TJSPositionDataExtended>}
+    * @type {Map<string, import('../data/types').Data.TJSPositionDataExtra>}
     */
    #dataSaved = new Map();
 
@@ -3113,7 +3113,7 @@ class PositionStateAPI
     *
     * @param {string}   options.name - Saved data set name.
     *
-    * @returns {import('../').TJSPositionDataExtended} The saved data set.
+    * @returns {import('../data/types').Data.TJSPositionDataExtra} The saved data set.
     */
    get({ name })
    {
@@ -3125,7 +3125,7 @@ class PositionStateAPI
    /**
     * Returns any associated default data.
     *
-    * @returns {import('../').TJSPositionDataExtended} Associated default data.
+    * @returns {import('../data/types').Data.TJSPositionDataExtra} Associated default data.
     */
    getDefault()
    {
@@ -3139,7 +3139,7 @@ class PositionStateAPI
     *
     * @param {string}   options.name - Name to remove and retrieve.
     *
-    * @returns {import('../').TJSPositionDataExtended} Saved position data.
+    * @returns {import('../data/types').Data.TJSPositionDataExtra} Saved position data.
     */
    remove({ name })
    {
@@ -3225,8 +3225,10 @@ class PositionStateAPI
     * @param {import('#runtime/math/interpolate').InterpolateFunction}  [options.interpolate=lerp] - Interpolation
     *        function.
     *
-    * @returns {import('../').TJSPositionDataExtended | Promise<import('../').TJSPositionDataExtended>} Saved position
-    *          data.
+    * @returns {(
+    *    import('../data/types').Data.TJSPositionDataExtra |
+    *    Promise<import('../data/types').Data.TJSPositionDataExtra>
+    * )} Saved position data.
     */
    restore({ name, remove = false, properties, silent = false, async = false, animateTo = false, duration = 0.1,
     ease = linear, interpolate = lerp })
@@ -6736,45 +6738,7 @@ class TJSPosition
    });
 
    /**
-    * @param {import('./').TJSPositionDataExtended} opts -
-    *
-    * @param {number|null} opts.left -
-    *
-    * @param {number|null} opts.top -
-    *
-    * @param {number|null} opts.maxHeight -
-    *
-    * @param {number|null} opts.maxWidth -
-    *
-    * @param {number|null} opts.minHeight -
-    *
-    * @param {number|null} opts.minWidth -
-    *
-    * @param {number|'auto'|'inherit'|null} opts.width -
-    *
-    * @param {number|'auto'|'inherit'|null} opts.height -
-    *
-    * @param {number|null} opts.rotateX -
-    *
-    * @param {number|null} opts.rotateY -
-    *
-    * @param {number|null} opts.rotateZ -
-    *
-    * @param {number|null} opts.scale -
-    *
-    * @param {string} opts.transformOrigin -
-    *
-    * @param {number|null} opts.translateX -
-    *
-    * @param {number|null} opts.translateY -
-    *
-    * @param {number|null} opts.translateZ -
-    *
-    * @param {number|null} opts.zIndex -
-    *
-    * @param {number|null} opts.rotation - alias for rotateZ
-    *
-    * @param {*} opts.rest -
+    * @param {import('./data/types').Data.TJSPositionData} data -
     *
     * @param {object} parent -
     *
