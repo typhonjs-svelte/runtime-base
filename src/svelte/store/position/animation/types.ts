@@ -92,9 +92,9 @@ interface AnimationGroupAPI
    /**
     * Cancels any animation for given PositionGroup data.
     *
-    * @param {TJSPositionTypes.PositionGroup} position - The position group to cancel.
+    * @param {TJSPositionTypes.PositionGroup} positionGroup - The position group to cancel.
     */
-   cancel(position: TJSPositionTypes.PositionGroup): void;
+   cancel(positionGroup: TJSPositionTypes.PositionGroup): void;
 
    /**
     * Cancels all TJSPosition animation.
@@ -104,11 +104,11 @@ interface AnimationGroupAPI
    /**
     * Gets all animation controls for the given position group data.
     *
-    * @param {TJSPositionTypes.PositionGroup} position - A position group.
+    * @param {TJSPositionTypes.PositionGroup} positionGroup - A position group.
     *
     * @returns {{ position: TJSPosition, data: object | undefined, controls: BasicAnimation[]}[]} Results array.
     */
-   getScheduled(position: TJSPositionTypes.PositionGroup): {
+   getScheduled(positionGroup: TJSPositionTypes.PositionGroup): {
       position: TJSPosition,
       data: object | undefined,
       controls: BasicAnimation[]
@@ -117,7 +117,7 @@ interface AnimationGroupAPI
    /**
     * Provides the `from` animation tween for one or more TJSPosition instances as a group.
     *
-    * @param {TJSPositionTypes.PositionGroup}  position - A position group.
+    * @param {TJSPositionTypes.PositionGroup}  positionGroup - A position group.
     *
     * @param {object | Function} fromData -
     *
@@ -125,13 +125,13 @@ interface AnimationGroupAPI
     *
     * @returns {BasicAnimation} Basic animation control.
     */
-   from(position: TJSPositionTypes.PositionGroup, fromData: object | Function, options?: AnimationAPI.TweenOptions |
-    (() => AnimationAPI.TweenOptions)): BasicAnimation;
+   from(positionGroup: TJSPositionTypes.PositionGroup, fromData: object | Function,
+    options?: AnimationAPI.TweenOptions | (() => AnimationAPI.TweenOptions)): BasicAnimation;
 
    /**
     * Provides the `fromTo` animation tween for one or more TJSPosition instances as a group.
     *
-    * @param {TJSPositionTypes.PositionGroup} position - A position group.
+    * @param {TJSPositionTypes.PositionGroup} positionGroup - A position group.
     *
     * @param {object | Function}   fromData -
     *
@@ -141,13 +141,13 @@ interface AnimationGroupAPI
     *
     * @returns {BasicAnimation} Basic animation control.
     */
-   fromTo(position: TJSPositionTypes.PositionGroup, fromData: object | Function, toData: object | Function,
+   fromTo(positionGroup: TJSPositionTypes.PositionGroup, fromData: object | Function, toData: object | Function,
     options?: object | Function): BasicAnimation;
 
    /**
     * Provides the `to` animation tween for one or more TJSPosition instances as a group.
     *
-    * @param {TJSPositionTypes.PositionGroup} position - A position group.
+    * @param {TJSPositionTypes.PositionGroup} positionGroup - A position group.
     *
     * @param {object | Function}   toData -
     *
@@ -155,21 +155,21 @@ interface AnimationGroupAPI
     *
     * @returns {BasicAnimation} Basic animation control.
     */
-   to(position: TJSPositionTypes.PositionGroup, toData: object | Function, options?: object | Function):
+   to(positionGroup: TJSPositionTypes.PositionGroup, toData: object | Function, options?: object | Function):
     BasicAnimation;
 
    /**
-    * Provides the `to` animation tween for one or more TJSPosition instances as a group.
+    * Provides the `quickTo` animation tweening function for one or more TJSPosition instances as a group.
     *
-    * @param {TJSPositionTypes.PositionGroup} position - A position group.
+    * @param {TJSPositionTypes.PositionGroup} positionGroup - A position group.
     *
     * @param {Iterable<AnimationAPI.AnimationKeys>}  keys -
     *
     * @param {AnimationAPI.QuickTweenOptions | (() => AnimationAPI.QuickTweenOptions)}  [options] -
     *
-    * @returns {AnimationAPI.QuickToCallback} quick-to tween function.
+    * @returns {AnimationAPI.QuickToCallback | undefined} quick-to tween function.
     */
-   quickTo(position: TJSPositionTypes.PositionGroup, keys: Iterable<AnimationAPI.AnimationKeys>,
+   quickTo(positionGroup: TJSPositionTypes.PositionGroup, keys: Iterable<AnimationAPI.AnimationKeys>,
     options?: AnimationAPI.QuickTweenOptions | (() => AnimationAPI.QuickTweenOptions)): AnimationAPI.QuickToCallback;
 }
 

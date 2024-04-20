@@ -35,15 +35,15 @@ export class AnimationGroupAPI
    /**
     * Cancels any animation for given PositionGroup data.
     *
-    * @param {import('../types').TJSPositionTypes.PositionGroup} position - The position group to cancel.
+    * @param {import('../types').TJSPositionTypes.PositionGroup} positionGroup - The position group to cancel.
     */
-   static cancel(position)
+   static cancel(positionGroup)
    {
-      if (isIterable(position))
+      if (isIterable(positionGroup))
       {
          let index = -1;
 
-         for (const entry of position)
+         for (const entry of positionGroup)
          {
             index++;
 
@@ -60,7 +60,7 @@ export class AnimationGroupAPI
       }
       else
       {
-         const actualPosition = this.#isPosition(position) ? position : position.position;
+         const actualPosition = this.#isPosition(positionGroup) ? positionGroup : positionGroup.position;
 
          if (!this.#isPosition(actualPosition))
          {
@@ -80,7 +80,7 @@ export class AnimationGroupAPI
    /**
     * Gets all animation controls for the given position group data.
     *
-    * @param {import('../types').TJSPositionTypes.PositionGroup} position - A position group.
+    * @param {import('../types').TJSPositionTypes.PositionGroup} positionGroup - A position group.
     *
     * @returns {{
     *    position: import('../').TJSPosition,
@@ -88,15 +88,15 @@ export class AnimationGroupAPI
     *    controls: import('#runtime/util/animate').BasicAnimation[]
     * }[]} Results array.
     */
-   static getScheduled(position)
+   static getScheduled(positionGroup)
    {
       const results = [];
 
-      if (isIterable(position))
+      if (isIterable(positionGroup))
       {
          let index = -1;
 
-         for (const entry of position)
+         for (const entry of positionGroup)
          {
             index++;
 
@@ -116,8 +116,8 @@ export class AnimationGroupAPI
       }
       else
       {
-         const isPosition = this.#isPosition(position);
-         const actualPosition = isPosition ? position : position.position;
+         const isPosition = this.#isPosition(positionGroup);
+         const actualPosition = isPosition ? positionGroup : positionGroup.position;
 
          if (!this.#isPosition(actualPosition))
          {
@@ -127,7 +127,7 @@ export class AnimationGroupAPI
 
          const controls = AnimationManager.getScheduled(actualPosition);
 
-         results.push({ position: actualPosition, data: isPosition ? void 0 : position, controls });
+         results.push({ position: actualPosition, data: isPosition ? void 0 : positionGroup, controls });
       }
 
       return results;
@@ -136,7 +136,7 @@ export class AnimationGroupAPI
    /**
     * Provides the `from` animation tween for one or more TJSPosition instances as a group.
     *
-    * @param {import('../types').TJSPositionTypes.PositionGroup} position - A position group.
+    * @param {import('../types').TJSPositionTypes.PositionGroup} positionGroup - A position group.
     *
     * @param {object | Function}   fromData -
     *
@@ -147,7 +147,7 @@ export class AnimationGroupAPI
     *
     * @returns {import('#runtime/util/animate').BasicAnimation} Basic animation control.
     */
-   static from(position, fromData, options)
+   static from(positionGroup, fromData, options)
    {
       if (!isObject(fromData) && typeof fromData !== 'function')
       {
@@ -176,9 +176,9 @@ export class AnimationGroupAPI
       let actualFromData = fromData;
       let actualOptions = options;
 
-      if (isIterable(position))
+      if (isIterable(positionGroup))
       {
-         for (const entry of position)
+         for (const entry of positionGroup)
          {
             index++;
 
@@ -195,7 +195,7 @@ export class AnimationGroupAPI
             if (hasCallback)
             {
                callbackOptions.index = index;
-               callbackOptions.position = position;
+               callbackOptions.position = positionGroup;
                callbackOptions.data = isPosition ? void 0 : entry;
             }
 
@@ -232,9 +232,9 @@ export class AnimationGroupAPI
       }
       else
       {
-         const isPosition = this.#isPosition(position);
+         const isPosition = this.#isPosition(positionGroup);
 
-         const actualPosition = isPosition ? position : position.position;
+         const actualPosition = isPosition ? positionGroup : positionGroup.position;
 
          if (!this.#isPosition(actualPosition))
          {
@@ -245,8 +245,8 @@ export class AnimationGroupAPI
          if (hasCallback)
          {
             callbackOptions.index = 0;
-            callbackOptions.position = position;
-            callbackOptions.data = isPosition ? void 0 : position;
+            callbackOptions.position = positionGroup;
+            callbackOptions.data = isPosition ? void 0 : positionGroup;
          }
 
          if (hasDataCallback)
@@ -280,7 +280,7 @@ export class AnimationGroupAPI
    /**
     * Provides the `fromTo` animation tween for one or more TJSPosition instances as a group.
     *
-    * @param {import('../types').TJSPositionTypes.PositionGroup} position - A position group.
+    * @param {import('../types').TJSPositionTypes.PositionGroup} positionGroup - A position group.
     *
     * @param {object | Function}   fromData -
     *
@@ -290,7 +290,7 @@ export class AnimationGroupAPI
     *
     * @returns {import('#runtime/util/animate').BasicAnimation} Basic animation control.
     */
-   static fromTo(position, fromData, toData, options)
+   static fromTo(positionGroup, fromData, toData, options)
    {
       if (!isObject(fromData) && typeof fromData !== 'function')
       {
@@ -326,9 +326,9 @@ export class AnimationGroupAPI
       let actualToData = toData;
       let actualOptions = options;
 
-      if (isIterable(position))
+      if (isIterable(positionGroup))
       {
-         for (const entry of position)
+         for (const entry of positionGroup)
          {
             index++;
 
@@ -344,7 +344,7 @@ export class AnimationGroupAPI
             if (hasCallback)
             {
                callbackOptions.index = index;
-               callbackOptions.position = position;
+               callbackOptions.position = positionGroup;
                callbackOptions.data = isPosition ? void 0 : entry;
             }
 
@@ -395,8 +395,8 @@ export class AnimationGroupAPI
       }
       else
       {
-         const isPosition = this.#isPosition(position);
-         const actualPosition = isPosition ? position : position.position;
+         const isPosition = this.#isPosition(positionGroup);
+         const actualPosition = isPosition ? positionGroup : positionGroup.position;
 
          if (!this.#isPosition(actualPosition))
          {
@@ -407,8 +407,8 @@ export class AnimationGroupAPI
          if (hasCallback)
          {
             callbackOptions.index = 0;
-            callbackOptions.position = position;
-            callbackOptions.data = isPosition ? void 0 : position;
+            callbackOptions.position = positionGroup;
+            callbackOptions.data = isPosition ? void 0 : positionGroup;
          }
 
          if (hasFromCallback)
@@ -453,7 +453,7 @@ export class AnimationGroupAPI
    /**
     * Provides the `to` animation tween for one or more TJSPosition instances as a group.
     *
-    * @param {import('../types').TJSPositionTypes.PositionGroup} position - A position group.
+    * @param {import('../types').TJSPositionTypes.PositionGroup} positionGroup - A position group.
     *
     * @param {object | Function}   toData -
     *
@@ -461,7 +461,7 @@ export class AnimationGroupAPI
     *
     * @returns {import('#runtime/util/animate').BasicAnimation} Basic animation control.
     */
-   static to(position, toData, options)
+   static to(positionGroup, toData, options)
    {
       if (!isObject(toData) && typeof toData !== 'function')
       {
@@ -490,9 +490,9 @@ export class AnimationGroupAPI
       let actualToData = toData;
       let actualOptions = options;
 
-      if (isIterable(position))
+      if (isIterable(positionGroup))
       {
-         for (const entry of position)
+         for (const entry of positionGroup)
          {
             index++;
 
@@ -508,7 +508,7 @@ export class AnimationGroupAPI
             if (hasCallback)
             {
                callbackOptions.index = index;
-               callbackOptions.position = position;
+               callbackOptions.position = positionGroup;
                callbackOptions.data = isPosition ? void 0 : entry;
             }
 
@@ -545,8 +545,8 @@ export class AnimationGroupAPI
       }
       else
       {
-         const isPosition = this.#isPosition(position);
-         const actualPosition = isPosition ? position : position.position;
+         const isPosition = this.#isPosition(positionGroup);
+         const actualPosition = isPosition ? positionGroup : positionGroup.position;
 
          if (!this.#isPosition(actualPosition))
          {
@@ -557,8 +557,8 @@ export class AnimationGroupAPI
          if (hasCallback)
          {
             callbackOptions.index = 0;
-            callbackOptions.position = position;
-            callbackOptions.data = isPosition ? void 0 : position;
+            callbackOptions.position = positionGroup;
+            callbackOptions.data = isPosition ? void 0 : positionGroup;
          }
 
          if (hasDataCallback)
@@ -590,9 +590,9 @@ export class AnimationGroupAPI
    }
 
    /**
-    * Provides the `to` animation tween for one or more TJSPosition instances as a group.
+    * Provides the `quickTo` animation tweening function for one or more TJSPosition instances as a group.
     *
-    * @param {import('../types').TJSPositionTypes.PositionGroup} position - A position group.
+    * @param {import('../types').TJSPositionTypes.PositionGroup} positionGroup - A position group.
     *
     * @param {Iterable<import('./types').AnimationAPI.AnimationKeys>}  keys -
     *
@@ -601,9 +601,9 @@ export class AnimationGroupAPI
     *    (() => import('./types').AnimationAPI.QuickTweenOptions)
     * )}   [options] - Quick tween options.
     *
-    * @returns {import('./types').AnimationAPI.QuickToCallback} quick-to tween function.
+    * @returns {import('./types').AnimationAPI.QuickToCallback | undefined} quick-to tween function.
     */
-   static quickTo(position, keys, options)
+   static quickTo(positionGroup, keys, options)
    {
       if (!isIterable(keys))
       {
@@ -628,9 +628,9 @@ export class AnimationGroupAPI
 
       let actualOptions = isObject(options) ? options : void 0;
 
-      if (isIterable(position))
+      if (isIterable(positionGroup))
       {
-         for (const entry of position)
+         for (const entry of positionGroup)
          {
             index++;
 
@@ -644,7 +644,7 @@ export class AnimationGroupAPI
             }
 
             callbackOptions.index = index;
-            callbackOptions.position = position;
+            callbackOptions.position = positionGroup;
             callbackOptions.data = isPosition ? void 0 : entry;
 
             if (hasOptionCallback)
@@ -666,18 +666,18 @@ export class AnimationGroupAPI
       }
       else
       {
-         const isPosition = this.#isPosition(position);
-         const actualPosition = isPosition ? position : position.position;
+         const isPosition = this.#isPosition(positionGroup);
+         const actualPosition = isPosition ? positionGroup : positionGroup.position;
 
          if (!this.#isPosition(actualPosition))
          {
             console.warn(`AnimationGroupAPI.quickTo warning: No TJSPosition instance found.`);
-            return () => null;
+            return;
          }
 
          callbackOptions.index = 0;
-         callbackOptions.position = position;
-         callbackOptions.data = isPosition ? void 0 : position;
+         callbackOptions.position = positionGroup;
+         callbackOptions.data = isPosition ? void 0 : positionGroup;
 
          if (hasOptionCallback)
          {
@@ -710,9 +710,9 @@ export class AnimationGroupAPI
             index = -1;
             let cntr = 0;
 
-            if (isIterable(position))
+            if (isIterable(positionGroup))
             {
-               for (const entry of position)
+               for (const entry of positionGroup)
                {
                   index++;
 
@@ -722,7 +722,7 @@ export class AnimationGroupAPI
                   if (!this.#isPosition(actualPosition)) { continue; }
 
                   callbackOptions.index = index;
-                  callbackOptions.position = position;
+                  callbackOptions.position = positionGroup;
                   callbackOptions.data = isPosition ? void 0 : entry;
 
                   const toData = dataCallback(callbackOptions);
@@ -753,14 +753,14 @@ export class AnimationGroupAPI
             }
             else
             {
-               const isPosition = this.#isPosition(position);
-               const actualPosition = isPosition ? position : position.position;
+               const isPosition = this.#isPosition(positionGroup);
+               const actualPosition = isPosition ? positionGroup : positionGroup.position;
 
                if (!this.#isPosition(actualPosition)) { return; }
 
                callbackOptions.index = 0;
-               callbackOptions.position = position;
-               callbackOptions.data = isPosition ? void 0 : position;
+               callbackOptions.position = positionGroup;
+               callbackOptions.data = isPosition ? void 0 : positionGroup;
 
                const toData = dataCallback(callbackOptions);
 
@@ -823,12 +823,12 @@ export class AnimationGroupAPI
          }
          else if (typeof options === 'function')
          {
-            if (isIterable(position))
+            if (isIterable(positionGroup))
             {
                index = -1;
                let cntr = 0;
 
-               for (const entry of position)
+               for (const entry of positionGroup)
                {
                   index++;
 
@@ -843,7 +843,7 @@ export class AnimationGroupAPI
                   }
 
                   callbackOptions.index = index;
-                  callbackOptions.position = position;
+                  callbackOptions.position = positionGroup;
                   callbackOptions.data = isPosition ? void 0 : entry;
 
                   actualOptions = options(callbackOptions);
@@ -863,8 +863,8 @@ export class AnimationGroupAPI
             }
             else
             {
-               const isPosition = this.#isPosition(position);
-               const actualPosition = isPosition ? position : position.position;
+               const isPosition = this.#isPosition(positionGroup);
+               const actualPosition = isPosition ? positionGroup : positionGroup.position;
 
                if (!this.#isPosition(actualPosition))
                {
@@ -873,8 +873,8 @@ export class AnimationGroupAPI
                }
 
                callbackOptions.index = 0;
-               callbackOptions.position = position;
-               callbackOptions.data = isPosition ? void 0 : position;
+               callbackOptions.position = positionGroup;
+               callbackOptions.data = isPosition ? void 0 : positionGroup;
 
                actualOptions = options(callbackOptions);
 
