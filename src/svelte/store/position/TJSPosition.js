@@ -44,7 +44,7 @@ import { TJSPositionStyleCache } from './util';
  * Provides a store for position following the subscriber protocol in addition to providing individual writable derived
  * stores for each independent variable.
  *
- * @implements {import('./types').TJSPositionTypes.ITJSPosition}
+ * @implements {import('./types').TJSPositionTypes.TJSPositionWritable}
  */
 export class TJSPosition
 {
@@ -208,7 +208,7 @@ export class TJSPosition
    /**
     * Returns a list of supported transform origins.
     *
-    * @returns {Readonly<import('./types').TransformAPI.TransformOrigin[]>}
+    * @returns {Readonly<import('./transform/types').TransformAPI.TransformOrigin[]>}
     */
    static get transformOrigins()
    {
@@ -938,9 +938,10 @@ export class TJSPosition
     * Relative updates to any property of {@link TJSPositionData} are possible by specifying properties as strings.
     * This string should be in the form of '+=', '-=', or '*=' and float / numeric value. IE '+=0.2'.
     * {@link TJSPosition.set} will apply the `addition`, `subtraction`, or `multiplication` operation specified against
-    * the current value of the given property.
+    * the current value of the given property. Please see {@link Data.TJSPositionDataRelative} for a detailed
+    * description.
     *
-    * @param {Partial<import('./data/types').Data.TJSPositionDataRelative>} [position] - TJSPosition data to set.
+    * @param {import('./data/types').Data.TJSPositionDataRelative} [position] - TJSPosition data to set.
     *
     * @param {import('./types').TJSPositionTypes.OptionsSet} [options] - Additional options.
     *

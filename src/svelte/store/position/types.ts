@@ -18,7 +18,7 @@ namespace TJSPositionTypes {
    /**
     * Provides an overloaded {@link Writable} store interface for {@link TJSPosition.set}.
     */
-   export interface ITJSPosition extends Writable<Data.TJSPositionDataRelative>
+   export interface TJSPositionWritable extends Writable<Data.TJSPositionDataRelative>
    {
       set(this: void, value: Data.TJSPositionDataRelative, options?: OptionsSet): TJSPosition;
    }
