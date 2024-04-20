@@ -3,7 +3,7 @@ import { basicAnimationState } from './basicAnimationState.js';
 /**
  * Provides a implementation for a TJSPosition animation for a group of TJSPosition instances.
  *
- * @implements {import('#runtime/util/animate').IBasicAnimation}
+ * @implements {import('#runtime/util/animate').BasicAnimation}
  */
 export class AnimationGroupControl
 {

@@ -187,7 +187,7 @@ export class AnimationManager
     *
     * @param {import('../index.js').TJSPosition} position - TJSPosition instance.
     *
-    * @returns {import('#runtime/util/animate').IBasicAnimation[]} All scheduled AnimationControl instances for the
+    * @returns {import('#runtime/util/animate').BasicAnimation[]} All scheduled AnimationControl instances for the
     *          given TJSPosition instance.
     */
    static getScheduled(position)

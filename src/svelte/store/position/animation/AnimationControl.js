@@ -5,7 +5,7 @@ import { basicAnimationState }   from './basicAnimationState.js';
 /**
  * Provides a basic animation implementation for TJSPosition animation.
  *
- * @implements {import('#runtime/util/animate').IBasicAnimation}
+ * @implements {import('#runtime/util/animate').BasicAnimation}
  */
 export class AnimationControl
 {

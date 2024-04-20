@@ -1,5 +1,5 @@
 /**
- * State that is available in the resolution of the {@link Promise} for {@link IBasicAnimation.finished}.
+ * State that is available in the resolution of the {@link Promise} for {@link BasicAnimation.finished}.
  */
 type BasicAnimationState = {
    /**
@@ -11,7 +11,7 @@ type BasicAnimationState = {
 /**
  * Defines the implementation for basic animation control.
  */
-interface IBasicAnimation<State = BasicAnimationState> {
+interface BasicAnimation {
    /**
     * True if animation is active; note: delayed animations are not active until start.
     */
@@ -25,7 +25,7 @@ interface IBasicAnimation<State = BasicAnimationState> {
    /**
     * A Promise that is resolved when animation is finished.
     */
-   readonly finished: Promise<State>;
+   readonly finished: Promise<BasicAnimationState>;
 
    /**
     * Cancels animation when invoked.
@@ -35,5 +35,5 @@ interface IBasicAnimation<State = BasicAnimationState> {
 
 export {
    BasicAnimationState,
-   IBasicAnimation
+   BasicAnimation
 };

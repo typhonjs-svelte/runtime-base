@@ -85,7 +85,7 @@ export class AnimationGroupAPI
     * @returns {{
     *    position: import('../').TJSPosition,
     *    data: object | void,
-    *    controls: import('#runtime/util/animate').IBasicAnimation[]
+    *    controls: import('#runtime/util/animate').BasicAnimation[]
     * }[]} Results array.
     */
    static getScheduled(position)
@@ -145,7 +145,7 @@ export class AnimationGroupAPI
     *    (() => import('./types').AnimationAPI.TweenOptions)
     * )}   [options] -
     *
-    * @returns {import('#runtime/util/animate').IBasicAnimation} Basic animation control.
+    * @returns {import('#runtime/util/animate').BasicAnimation} Basic animation control.
     */
    static from(position, fromData, options)
    {
@@ -288,7 +288,7 @@ export class AnimationGroupAPI
     *
     * @param {object | Function}   [options] -
     *
-    * @returns {import('#runtime/util/animate').IBasicAnimation} Basic animation control.
+    * @returns {import('#runtime/util/animate').BasicAnimation} Basic animation control.
     */
    static fromTo(position, fromData, toData, options)
    {
@@ -459,7 +459,7 @@ export class AnimationGroupAPI
     *
     * @param {object | Function}   [options] -
     *
-    * @returns {import('#runtime/util/animate').IBasicAnimation} Basic animation control.
+    * @returns {import('#runtime/util/animate').BasicAnimation} Basic animation control.
     */
    static to(position, toData, options)
    {

@@ -82,7 +82,7 @@ export class AnimationAPI
     *
     * @param {import('#runtime/svelte/transition').InterpolateFunction}    interpolate -
     *
-    * @returns {import('#runtime/util/animate').IBasicAnimation} The associated animation control.
+    * @returns {import('#runtime/util/animate').BasicAnimation} The associated animation control.
     */
    #addAnimation(initial, destination, duration, el, delay, ease, interpolate)
    {
@@ -179,7 +179,7 @@ export class AnimationAPI
    /**
     * Returns all currently scheduled AnimationControl instances for this TJSPosition instance.
     *
-    * @returns {import('#runtime/util/animate').IBasicAnimation[]} All currently scheduled animation controls for
+    * @returns {import('#runtime/util/animate').BasicAnimation[]} All currently scheduled animation controls for
     *          this TJSPosition instance.
     */
    getScheduled()
@@ -194,7 +194,7 @@ export class AnimationAPI
     *
     * @param {import('./types').AnimationAPI.TweenOptions} [options] - Optional tween parameters.
     *
-    * @returns {import('#runtime/util/animate').IBasicAnimation}  A control object that can cancel animation and
+    * @returns {import('#runtime/util/animate').BasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
     */
    from(fromData, { delay = 0, duration = 1, ease = cubicOut, interpolate = lerp } = {})
@@ -269,7 +269,7 @@ export class AnimationAPI
     *
     * @param {import('./types').AnimationAPI.TweenOptions} [options] - Optional tween parameters.
     *
-    * @returns {import('#runtime/util/animate').IBasicAnimation}  A control object that can cancel animation and
+    * @returns {import('#runtime/util/animate').BasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
     */
    fromTo(fromData, toData, { delay = 0, duration = 1, ease = cubicOut, interpolate = lerp } = {})
@@ -354,7 +354,7 @@ export class AnimationAPI
     *
     * @param {import('./types').AnimationAPI.TweenOptions} [options] - Optional tween parameters.
     *
-    * @returns {import('#runtime/util/animate').IBasicAnimation}  A control object that can cancel animation and
+    * @returns {import('#runtime/util/animate').BasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
     */
    to(toData, { delay = 0, duration = 1, ease = cubicOut, interpolate = lerp } = {})
