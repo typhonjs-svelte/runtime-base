@@ -1077,13 +1077,13 @@ interface AnimationGroupAPI {
    *        options assigned to all positionable instances or a callback function invoked for unique options for each
    *        instance.
    *
-   * @returns {AnimationAPI.QuickToCallback | undefined} quick-to tween function.
+   * @returns {AnimationAPI.GroupQuickToCallback | undefined} quick-to tween function.
    */
   quickTo(
     positionGroup: TJSPositionTypes.PositionGroup,
     keys: Iterable<AnimationAPI.AnimationKeys>,
     options?: AnimationAPI.QuickTweenOptions | AnimationAPI.GroupQuickTweenOptionsCallback,
-  ): AnimationAPI.QuickToCallback;
+  ): AnimationAPI.GroupQuickToCallback;
 }
 interface AnimationAPI {
   /**
@@ -1222,6 +1222,24 @@ declare namespace AnimationAPI {
     (options?: GroupCallbackOptions): TweenOptions | null | undefined;
   }
   /**
+   * The `quickTo` callback function returned from {@link AnimationGroupAPI.quickTo}. Extends `QuickToCallback`
+   * accepting functions for setting each instance of group with new position data and / or options.
+   */
+  interface GroupQuickToCallback extends QuickToCallback {
+    /**
+     * @param arg - A callback function invoked for unique positional data for each instance of the group.
+     */
+    (arg: GroupDataCallback): void;
+    /**
+     * Sets options of quickTo tween.
+     *
+     * @param options - Quick tween options or callback function returning options per instance of the group.
+     *
+     * @returns This quickTo callback function.
+     */
+    options: (options: QuickTweenOptions | GroupQuickTweenOptionsCallback) => GroupQuickToCallback;
+  }
+  /**
    * Defines a callback to process each {@link TJSPosition} / {@link TJSPositionTypes.Positionable} instance allowing
    * different quick tween options to be assigned to each instance in the grouped animation.
    */
@@ -1262,7 +1280,7 @@ declare namespace AnimationAPI {
     delay?: number;
   };
   /**
-   * The `quickTo` callback function returned from {@link AnimationAPI.quickTo} and {@link AnimationGroupAPI.quickTo}.
+   * The `quickTo` callback function returned from {@link AnimationAPI.quickTo}.
    */
   interface QuickToCallback {
     /**

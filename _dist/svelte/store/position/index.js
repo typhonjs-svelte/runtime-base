@@ -2849,7 +2849,7 @@ class AnimationGroupAPI
     * )} [options] - Quick tween options assigned to all positionable instances or a callback function invoked for
     *        unique options for each instance.
     *
-    * @returns {import('./types').AnimationAPI.QuickToCallback | undefined} quick-to tween function.
+    * @returns {import('./types').AnimationAPI.GroupQuickToCallback | undefined} quick-to tween function.
     */
    static quickTo(positionGroup, keys, options)
    {
