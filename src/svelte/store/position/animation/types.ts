@@ -43,7 +43,7 @@ interface AnimationAPI
    from(fromData: Data.TJSPositionDataRelative, options?: AnimationAPI.TweenOptions): BasicAnimation;
 
    /**
-    * Provides a tween from given position data to the current position.
+    * Provides a tween from given position data to the given position.
     *
     * @param {Data.TJSPositionDataRelative} fromData - The starting position.
     *
@@ -106,71 +106,88 @@ interface AnimationGroupAPI
     *
     * @param {TJSPositionTypes.PositionGroup} positionGroup - A position group.
     *
-    * @returns {{ position: TJSPosition, entry: object | undefined, controls: BasicAnimation[]}[]} Results array.
+    * @returns {({
+    *    position: TJSPosition,
+    *    entry: TJSPositionTypes.Positionable | undefined,
+    *    controls: BasicAnimation[]
+    * }[])} Results array.
     */
    getScheduled(positionGroup: TJSPositionTypes.PositionGroup): {
       position: TJSPosition,
-      entry: object | undefined,
+      entry: TJSPositionTypes.Positionable | undefined,
       controls: BasicAnimation[]
    }[];
 
    /**
-    * Provides the `from` animation tween for one or more TJSPosition instances as a group.
+    * Provides the `from` animation tween for one or more positionable instances as a group.
     *
     * @param {TJSPositionTypes.PositionGroup}  positionGroup - A position group.
     *
-    * @param {object | Function} fromData -
+    * @param {Data.TJSPositionDataRelative | AnimationAPI.GroupDataCallback} fromData - A position data object assigned
+    *        to all positionable instances or a callback function invoked for unique data for each instance.
     *
-    * @param {AnimationAPI.TweenOptions | (() => AnimationAPI.TweenOptions)}   [options] -
-    *
-    * @returns {BasicAnimation} Basic animation control.
-    */
-   from(positionGroup: TJSPositionTypes.PositionGroup, fromData: object | Function,
-    options?: AnimationAPI.TweenOptions | (() => AnimationAPI.TweenOptions)): BasicAnimation;
-
-   /**
-    * Provides the `fromTo` animation tween for one or more TJSPosition instances as a group.
-    *
-    * @param {TJSPositionTypes.PositionGroup} positionGroup - A position group.
-    *
-    * @param {object | Function}   fromData -
-    *
-    * @param {object | Function}   toData -
-    *
-    * @param {object | Function}   [options] -
+    * @param {AnimationAPI.TweenOptions | AnimationAPI.GroupTweenOptionsCallback}   [options] - Tween options assigned
+    *        to all positionable instances or a callback function invoked for unique options for each instance.
     *
     * @returns {BasicAnimation} Basic animation control.
     */
-   fromTo(positionGroup: TJSPositionTypes.PositionGroup, fromData: object | Function, toData: object | Function,
-    options?: object | Function): BasicAnimation;
+   from(positionGroup: TJSPositionTypes.PositionGroup, fromData: Data.TJSPositionDataRelative |
+    AnimationAPI.GroupDataCallback, options?: AnimationAPI.TweenOptions | AnimationAPI.GroupTweenOptionsCallback):
+     BasicAnimation;
 
    /**
-    * Provides the `to` animation tween for one or more TJSPosition instances as a group.
+    * Provides the `fromTo` animation tween for one or more positionable instances as a group.
     *
     * @param {TJSPositionTypes.PositionGroup} positionGroup - A position group.
     *
-    * @param {object | Function}   toData -
+    * @param {Data.TJSPositionDataRelative | AnimationAPI.GroupDataCallback}   fromData - A position data object
+    *        assigned to all positionable instances or a callback function invoked for unique data for each instance.
     *
-    * @param {object | Function}   [options] -
+    * @param {Data.TJSPositionDataRelative | AnimationAPI.GroupDataCallback}   toData - A position data object assigned
+    *        to all positionable instances or a callback function invoked for unique data for each instance.
+    *
+    * @param {AnimationAPI.TweenOptions | AnimationAPI.GroupTweenOptionsCallback}   [options] - Tween options assigned
+    *        to all positionable instances or a callback function invoked for unique options for each instance.
     *
     * @returns {BasicAnimation} Basic animation control.
     */
-   to(positionGroup: TJSPositionTypes.PositionGroup, toData: object | Function, options?: object | Function):
-    BasicAnimation;
+   fromTo(positionGroup: TJSPositionTypes.PositionGroup, fromData: Data.TJSPositionDataRelative |
+    AnimationAPI.GroupDataCallback, toData: Data.TJSPositionDataRelative | AnimationAPI.GroupDataCallback,
+     options?: AnimationAPI.TweenOptions | AnimationAPI.GroupTweenOptionsCallback): BasicAnimation;
 
    /**
-    * Provides the `quickTo` animation tweening function for one or more TJSPosition instances as a group.
+    * Provides the `to` animation tween for one or more positionable instances as a group.
     *
     * @param {TJSPositionTypes.PositionGroup} positionGroup - A position group.
     *
-    * @param {Iterable<AnimationAPI.AnimationKeys>}  keys -
+    * @param {Data.TJSPositionDataRelative | AnimationAPI.GroupDataCallback}   toData - A position data object assigned
+    *        to all positionable instances or a callback function invoked for unique data for each instance.
     *
-    * @param {AnimationAPI.QuickTweenOptions | (() => AnimationAPI.QuickTweenOptions)}  [options] -
+    * @param {AnimationAPI.TweenOptions | AnimationAPI.GroupTweenOptionsCallback}   [options] - Tween options assigned
+    *        to all positionable instances or a callback function invoked for unique options for each instance.
+    *
+    * @returns {BasicAnimation} Basic animation control.
+    */
+   to(positionGroup: TJSPositionTypes.PositionGroup, toData: Data.TJSPositionDataRelative |
+    AnimationAPI.GroupDataCallback, options?: AnimationAPI.TweenOptions | AnimationAPI.GroupTweenOptionsCallback):
+     BasicAnimation;
+
+   /**
+    * Provides the `quickTo` animation tweening function for one or more positionable instances as a group.
+    *
+    * @param {TJSPositionTypes.PositionGroup} positionGroup - A position group.
+    *
+    * @param {Iterable<AnimationAPI.AnimationKeys>}  keys - Animation keys to target.
+    *
+    * @param {AnimationAPI.QuickTweenOptions | AnimationAPI.GroupQuickTweenOptionsCallback}  [options] - Quick tween
+    *        options assigned to all positionable instances or a callback function invoked for unique options for each
+    *        instance.
     *
     * @returns {AnimationAPI.QuickToCallback | undefined} quick-to tween function.
     */
    quickTo(positionGroup: TJSPositionTypes.PositionGroup, keys: Iterable<AnimationAPI.AnimationKeys>,
-    options?: AnimationAPI.QuickTweenOptions | (() => AnimationAPI.QuickTweenOptions)): AnimationAPI.QuickToCallback;
+    options?: AnimationAPI.QuickTweenOptions | AnimationAPI.GroupQuickTweenOptionsCallback):
+     AnimationAPI.QuickToCallback;
 }
 
 namespace AnimationAPI {
@@ -184,6 +201,76 @@ namespace AnimationAPI {
 
     // Aliases
     'rotation';
+
+   /**
+    * Options passed to any group animation callbacks for {@link Data.TJSPositionDataRelative} data or
+    * {@link TweenOptions}.
+    */
+   export type GroupCallbackOptions = {
+      /**
+       * The index of the {@link TJSPositionTypes.PositionGroup} being processed.
+       */
+      index?: number;
+
+      /**
+       * The actual TJSPosition instance being processed.
+       */
+      position?: TJSPosition;
+
+      /**
+       * Any associated positionable entry / object.
+       */
+      entry?: TJSPositionTypes.Positionable | undefined;
+   }
+
+   /**
+    * Defines a callback to process each {@link TJSPosition} / {@link TJSPositionTypes.Positionable} instance allowing
+    * different position data to be assigned to each instance in the grouped animation.
+    */
+   export interface GroupDataCallback
+   {
+      /**
+       * @param {GroupCallbackOptions} options - The group callback options defining the order of the current
+       *        position / positionable being processed.
+       *
+       * @returns {Data.TJSPositionDataRelative} - The unique position data target to animate for this position /
+       *          positionable instance.  When null or undefined is returned the current position / positionable is
+       *          removed from the animation.
+       */
+      (options?: GroupCallbackOptions): Data.TJSPositionDataRelative | null | undefined;
+   }
+
+   /**
+    * Defines a callback to process each {@link TJSPosition} / {@link TJSPositionTypes.Positionable} instance allowing
+    * different tween options to be assigned to each instance in the grouped animation.
+    */
+   export interface GroupTweenOptionsCallback
+   {
+      /**
+       * @param {GroupCallbackOptions} options - The group callback options defining the order of the current
+       *        position / positionable being processed.
+       *
+       * @returns {TweenOptions} - The unique tween options to set for this position / positionable instance. When null
+       *          or undefined is returned the current position / positionable is removed from the animation.
+       */
+      (options?: GroupCallbackOptions): TweenOptions | null | undefined;
+   }
+
+   /**
+    * Defines a callback to process each {@link TJSPosition} / {@link TJSPositionTypes.Positionable} instance allowing
+    * different quick tween options to be assigned to each instance in the grouped animation.
+    */
+   export interface GroupQuickTweenOptionsCallback
+   {
+      /**
+       * @param {GroupCallbackOptions} options - The group callback options defining the order of the current
+       *        position / positionable being processed.
+       *
+       * @returns {QuickTweenOptions} - The unique quick tween options to set for this position / positionable instance.
+       *          When null or undefined is returned the current position / positionable is removed from the animation.
+       */
+      (options?: GroupCallbackOptions): QuickTweenOptions | null | undefined;
+   }
 
    /**
     * Defines the quick tweening options.
@@ -218,7 +305,7 @@ namespace AnimationAPI {
    /**
     * The `quickTo` callback function returned from {@link AnimationAPI.quickTo} and {@link AnimationGroupAPI.quickTo}.
     */
-   export interface QuickToCallback extends Function
+   export interface QuickToCallback
    {
       /**
        * @param args - Individual numbers or relative strings corresponding to the order in which animation keys are

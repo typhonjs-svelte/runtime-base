@@ -92,7 +92,7 @@ export class AnimationGroupAPI
     *
     * @returns {{
     *    position: import('../').TJSPosition,
-    *    entry: object | undefined,
+    *    entry: import('../types').TJSPositionTypes.Positionable | undefined,
     *    controls: import('#runtime/util/animate').BasicAnimation[]
     * }[]} Results array.
     */
@@ -146,16 +146,21 @@ export class AnimationGroupAPI
    }
 
    /**
-    * Provides the `from` animation tween for one or more TJSPosition instances as a group.
+    * Provides the `from` animation tween for one or more positionable instances as a group.
     *
     * @param {import('../types').TJSPositionTypes.PositionGroup} positionGroup - A position group.
     *
-    * @param {object | Function}   fromData -
+    * @param {(
+    *    import('../data/types').Data.TJSPositionDataRelative |
+    *    import('./types').AnimationAPI.GroupDataCallback
+    * )} fromData - A position data object assigned to all positionable instances or a callback function invoked for
+    *        unique data for each instance.
     *
     * @param {(
     *    import('./types').AnimationAPI.TweenOptions |
-    *    (() => import('./types').AnimationAPI.TweenOptions)
-    * )}   [options] -
+    *    import('./types').AnimationAPI.GroupTweenOptionsCallback
+    * )} [options] - Tween options assigned to all positionable instances or a callback function invoked for unique
+    *        options for each instance.
     *
     * @returns {import('#runtime/util/animate').BasicAnimation} Basic animation control.
     */
@@ -177,6 +182,8 @@ export class AnimationGroupAPI
       const animationControls = [];
 
       let index = -1;
+
+      /** @type {import('./types').AnimationAPI.GroupCallbackOptions} */
       let callbackOptions;
 
       const hasDataCallback = typeof fromData === 'function';
@@ -262,6 +269,9 @@ export class AnimationGroupAPI
          {
             actualFromData = fromData(callbackOptions);
 
+            // Returned data from callback is null / undefined, so skip this position instance.
+            if (actualFromData === null || actualFromData === void 0) { return AnimationGroupControl.voidControl; }
+
             if (!isObject(actualFromData))
             {
                throw new TypeError(
@@ -272,6 +282,9 @@ export class AnimationGroupAPI
          if (hasOptionCallback)
          {
             actualOptions = options(callbackOptions);
+
+            // Returned data from callback is null / undefined, so skip this position instance.
+            if (actualOptions === null || actualOptions === void 0) { return AnimationGroupControl.voidControl; }
 
             if (!isObject(actualOptions))
             {
@@ -288,15 +301,27 @@ export class AnimationGroupAPI
    }
 
    /**
-    * Provides the `fromTo` animation tween for one or more TJSPosition instances as a group.
+    * Provides the `fromTo` animation tween for one or more positionable instances as a group.
     *
     * @param {import('../types').TJSPositionTypes.PositionGroup} positionGroup - A position group.
     *
-    * @param {object | Function}   fromData -
+    * @param {(
+    *    import('../data/types').Data.TJSPositionDataRelative |
+    *    import('./types').AnimationAPI.GroupDataCallback
+    * )} fromData - A position data object assigned to all positionable instances or a callback function invoked for
+    *        unique data for each instance.
     *
-    * @param {object | Function}   toData -
+    * @param {(
+    *    import('../data/types').Data.TJSPositionDataRelative |
+    *    import('./types').AnimationAPI.GroupDataCallback
+    * )} toData - A position data object assigned to all positionable instances or a callback function invoked for
+    *        unique data for each instance.
     *
-    * @param {object | Function}   [options] -
+    * @param {(
+    *    import('./types').AnimationAPI.TweenOptions |
+    *    import('./types').AnimationAPI.GroupTweenOptionsCallback
+    * )} [options] - Tween options assigned to all positionable instances or a callback function invoked for unique
+    *        options for each instance.
     *
     * @returns {import('#runtime/util/animate').BasicAnimation} Basic animation control.
     */
@@ -323,6 +348,8 @@ export class AnimationGroupAPI
       const animationControls = [];
 
       let index = -1;
+
+      /** @type {import('./types').AnimationAPI.GroupCallbackOptions} */
       let callbackOptions;
 
       const hasFromCallback = typeof fromData === 'function';
@@ -424,6 +451,9 @@ export class AnimationGroupAPI
          {
             actualFromData = fromData(callbackOptions);
 
+            // Returned data from callback is null / undefined, so skip this position instance.
+            if (actualFromData === null || actualFromData === void 0) { return AnimationGroupControl.voidControl; }
+
             if (!isObject(actualFromData))
             {
                throw new TypeError(
@@ -435,6 +465,9 @@ export class AnimationGroupAPI
          {
             actualToData = toData(callbackOptions);
 
+            // Returned data from callback is null / undefined, so skip this position instance.
+            if (actualToData === null || actualToData === void 0) { return AnimationGroupControl.voidControl; }
+
             if (!isObject(actualToData))
             {
                throw new TypeError(
@@ -445,6 +478,9 @@ export class AnimationGroupAPI
          if (hasOptionCallback)
          {
             actualOptions = options(callbackOptions);
+
+            // Returned data from callback is null / undefined, so skip this position instance.
+            if (actualOptions === null || actualOptions === void 0) { return AnimationGroupControl.voidControl; }
 
             if (!isObject(actualOptions))
             {
@@ -461,13 +497,21 @@ export class AnimationGroupAPI
    }
 
    /**
-    * Provides the `to` animation tween for one or more TJSPosition instances as a group.
+    * Provides the `to` animation tween for one or more positionable instances as a group.
     *
     * @param {import('../types').TJSPositionTypes.PositionGroup} positionGroup - A position group.
     *
-    * @param {object | Function}   toData -
+    * @param {(
+    *    import('../data/types').Data.TJSPositionDataRelative |
+    *    import('./types').AnimationAPI.GroupDataCallback
+    * )} toData - A position data object assigned to all positionable instances or a callback function invoked for
+    *        unique data for each instance.
     *
-    * @param {object | Function}   [options] -
+    * @param {(
+    *    import('./types').AnimationAPI.TweenOptions |
+    *    import('./types').AnimationAPI.GroupTweenOptionsCallback
+    * )} [options] - Tween options assigned to all positionable instances or a callback function invoked for unique
+    *        options for each instance.
     *
     * @returns {import('#runtime/util/animate').BasicAnimation} Basic animation control.
     */
@@ -489,6 +533,8 @@ export class AnimationGroupAPI
       const animationControls = [];
 
       let index = -1;
+
+      /** @type {import('./types').AnimationAPI.GroupCallbackOptions} */
       let callbackOptions;
 
       const hasDataCallback = typeof toData === 'function';
@@ -574,6 +620,9 @@ export class AnimationGroupAPI
          {
             actualToData = toData(callbackOptions);
 
+            // Returned data from callback is null / undefined, so skip this position instance.
+            if (actualToData === null || actualToData === void 0) { return AnimationGroupControl.voidControl; }
+
             if (!isObject(actualToData))
             {
                throw new TypeError(
@@ -584,6 +633,9 @@ export class AnimationGroupAPI
          if (hasOptionCallback)
          {
             actualOptions = options(callbackOptions);
+
+            // Returned data from callback is null / undefined, so skip this position instance.
+            if (actualOptions === null || actualOptions === void 0) { return AnimationGroupControl.voidControl; }
 
             if (!isObject(actualOptions))
             {
@@ -600,16 +652,17 @@ export class AnimationGroupAPI
    }
 
    /**
-    * Provides the `quickTo` animation tweening function for one or more TJSPosition instances as a group.
+    * Provides the `quickTo` animation tweening function for one or more positionable instances as a group.
     *
     * @param {import('../types').TJSPositionTypes.PositionGroup} positionGroup - A position group.
     *
-    * @param {Iterable<import('./types').AnimationAPI.AnimationKeys>}  keys -
+    * @param {Iterable<import('./types').AnimationAPI.AnimationKeys>}  keys - Animation keys to target.
     *
     * @param {(
     *    import('./types').AnimationAPI.QuickTweenOptions |
-    *    (() => import('./types').AnimationAPI.QuickTweenOptions)
-    * )}   [options] - Quick tween options.
+    *    import('./types').AnimationAPI.GroupQuickTweenOptionsCallback
+    * )} [options] - Quick tween options assigned to all positionable instances or a callback function invoked for
+    *        unique options for each instance.
     *
     * @returns {import('./types').AnimationAPI.QuickToCallback | undefined} quick-to tween function.
     */
@@ -690,6 +743,9 @@ export class AnimationGroupAPI
          if (hasOptionCallback)
          {
             actualOptions = options(callbackOptions);
+
+            // Returned data from callback is null / undefined, so skip this position instance.
+            if (actualOptions === null || actualOptions === void 0) { return; }
 
             if (!isObject(actualOptions))
             {
@@ -803,91 +859,28 @@ export class AnimationGroupAPI
       /**
        * Sets options of quickTo tween.
        *
-       * @param {object | Function}   [options] - Optional parameters.
+       * @param {import('./types').AnimationAPI.QuickTweenOptions}   [options] - Optional parameters.
        *
        * @param {number}            [options.duration] - Duration in seconds.
        *
-       * @param {Function}          [options.ease] - Easing function.
+       * @param {import('svelte/transition').EasingFunction}   [options.ease] - Easing function.
        *
-       * @param {Function}          [options.interpolate] - Interpolation function.
+       * @param {import('#runtime/math/interpolate').InterpolateFunction}  [options.interpolate] - Interpolation
+       *        function.
        *
        * @returns {import('./types').AnimationAPI.QuickToCallback} The quickTo callback.
        */
       quickToCB.options = (options) => // eslint-disable-line no-shadow
       {
-         if (options !== void 0 && !isObject(options) && typeof options !== 'function')
+         if (options !== void 0 && !isObject(options))
          {
-            throw new TypeError(`AnimationGroupAPI.quickTo error: 'options' is not an object or function.`);
+            throw new TypeError(`AnimationGroupAPI.quickTo error: 'options' is not an object.`);
          }
 
          // Set options object for each quickTo callback.
          if (isObject(options))
          {
             for (let cntr = quickToCallbacks.length; --cntr >= 0;) { quickToCallbacks[cntr].options(options); }
-         }
-         else if (typeof options === 'function')
-         {
-            if (isIterable(positionGroup))
-            {
-               index = -1;
-               let cntr = 0;
-
-               for (const entry of positionGroup)
-               {
-                  index++;
-
-                  const actualPosition = this.#getPosition(entry);
-
-                  if (!actualPosition)
-                  {
-                     console.warn(
-                      `AnimationGroupAPI.quickTo.options warning: No TJSPosition instance found at index: ${index}.`);
-                     continue;
-                  }
-
-                  callbackOptions.index = index;
-                  callbackOptions.position = actualPosition;
-                  callbackOptions.entry = actualPosition !== entry ? entry : void 0;
-
-                  actualOptions = options(callbackOptions);
-
-                  // Returned data from callback is null / undefined, so skip this position instance.
-                  if (actualOptions === null || actualOptions === void 0) { continue; }
-
-                  if (!isObject(actualOptions))
-                  {
-                     throw new TypeError(
-                      `AnimationGroupAPI.quickTo.options error: 'options' callback function iteration(${
-                       index}) failed to return an object.`);
-                  }
-
-                  quickToCallbacks[cntr++].options(actualOptions);
-               }
-            }
-            else
-            {
-               const actualPosition = this.#getPosition(positionGroup);
-
-               if (!actualPosition)
-               {
-                  console.warn(`AnimationGroupAPI.quickTo.options warning: No TJSPosition instance found.`);
-                  return quickToCB;
-               }
-
-               callbackOptions.index = 0;
-               callbackOptions.position = actualPosition;
-               callbackOptions.entry = actualPosition !== positionGroup ? positionGroup : void 0;
-
-               actualOptions = options(callbackOptions);
-
-               if (!isObject(actualOptions))
-               {
-                  throw new TypeError(
-                   `AnimationGroupAPI.quickTo error: 'options' callback function failed to return an object.`);
-               }
-
-               quickToCallbacks[0].options(actualOptions);
-            }
          }
 
          return quickToCB;

@@ -261,7 +261,7 @@ export class AnimationAPI
    }
 
    /**
-    * Provides a tween from given position data to the current position.
+    * Provides a tween from given position data to the given position.
     *
     * @param {import('../data/types').Data.TJSPositionDataRelative} fromData - The starting position.
     *
