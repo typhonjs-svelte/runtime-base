@@ -12,7 +12,7 @@ import { AnimationGroupControl } from './AnimationGroupControl.js';
  *
  * Note: To remove cyclic dependencies as this class provides the TJSPosition static / group Animation API `instanceof`
  * checks are not done against TJSPosition. Instead, a check for the animate property being an instanceof
- * {@link AnimationAPI} is performed in {@link AnimationGroupAPI.#isPosition}.
+ * {@link AnimationAPI} is performed in {@link AnimationGroupAPI.#getPosition}.
  *
  * @see AnimationAPI
  *
@@ -664,7 +664,7 @@ export class AnimationGroupAPI
     * )} [options] - Quick tween options assigned to all positionable instances or a callback function invoked for
     *        unique options for each instance.
     *
-    * @returns {import('./types').AnimationAPI.QuickToCallback | undefined} quick-to tween function.
+    * @returns {import('./types').AnimationAPI.GroupQuickToCallback | undefined} quick-to tween function.
     */
    static quickTo(positionGroup, keys, options)
    {
