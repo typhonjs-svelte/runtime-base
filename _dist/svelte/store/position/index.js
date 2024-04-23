@@ -121,14 +121,14 @@ function draggable(node, { position, enabled = true, button = 0, storeDragging =
    let quickTo = actualPosition.animate.quickTo(['top', 'left'], tweenOptions);
 
    /**
-    * Remember event handlers associated with this action, so they may be later unregistered.
+    * Event handlers associated with this action, so they may be later unregistered.
     *
-    *  @type {{ [key: string]: [string, Function, boolean] }}
+    *  @type {{ [p: string]: [string, EventListener, boolean] }}
     */
    const handlers = {
-      dragDown: ['pointerdown', onDragPointerDown, false],
-      dragMove: ['pointermove', onDragPointerChange, false],
-      dragUp: ['pointerup', onDragPointerUp, false]
+      dragDown: ['pointerdown', /** @type {EventListener} */ onDragPointerDown, false],
+      dragMove: ['pointermove', /** @type {EventListener} */ onDragPointerChange, false],
+      dragUp: ['pointerup', /** @type {EventListener} */ onDragPointerUp, false]
    };
 
    /**
@@ -515,8 +515,8 @@ class DraggableOptionsStore
    /**
     * Store subscribe method.
     *
-    * @param {import('svelte/store').Subscriber<import('./types').Action.DraggableOptionsStore>} handler - Callback function that
-    *        is invoked on update / changes. Receives the DraggableOptionsStore object / instance.
+    * @param {import('svelte/store').Subscriber<import('./types').Action.DraggableOptionsStore>} handler - Callback
+    *        function that is invoked on update / changes. Receives the DraggableOptionsStore instance.
     *
     * @returns {import('svelte/store').Unsubscriber} Unsubscribe function.
     */
@@ -547,7 +547,7 @@ class DraggableOptionsStore
 }
 
 /**
- * Define a function to get an DraggableOptionsStore instance.
+ * Define a function to get a DraggableOptionsStore instance.
  *
  * @param {({
  *    tween?: boolean,
@@ -574,7 +574,7 @@ const basicAnimationState = {
 /**
  * Provides a basic animation implementation for TJSPosition animation.
  *
- * @implements {import('#runtime/util/animate').IBasicAnimation}
+ * @implements {import('#runtime/util/animate').BasicAnimation}
  */
 class AnimationControl
 {
@@ -851,7 +851,7 @@ class AnimationManager
     *
     * @param {import('../index.js').TJSPosition} position - TJSPosition instance.
     *
-    * @returns {import('#runtime/util/animate').IBasicAnimation[]} All scheduled AnimationControl instances for the
+    * @returns {import('#runtime/util/animate').BasicAnimation[]} All scheduled AnimationControl instances for the
     *          given TJSPosition instance.
     */
    static getScheduled(position)
@@ -1192,7 +1192,7 @@ class ConvertStringData
    /**
     * Converts any relative string values for animatable keys to actual updates performed against current data.
     *
-    * @param {Partial<import('../data/types').Data.TJSPositionDataRelative>}  data - position data.
+    * @param {import('../data/types').Data.TJSPositionDataRelative}  data - position data.
     *
     * @param {import('../data/types').Data.TJSPositionData}   position - The source position data.
     *
@@ -1304,7 +1304,7 @@ class ConvertStringData
     *
     * @param {number}   current - Current value
     *
-    * @param {Partial<import('../data/types').Data.TJSPositionDataRelative>}  data - Source data to convert.
+    * @param {import('../data/types').Data.TJSPositionDataRelative}  data - Source data to convert.
     *
     * @param {import('../data/types').Data.TJSPositionData} position - Current position data.
     *
@@ -1387,7 +1387,7 @@ class ConvertStringData
     *
     * @param {number}   current - Current value
     *
-    * @param {Partial<import('../data/types').Data.TJSPositionDataRelative>}  data - Source data to convert.
+    * @param {import('../data/types').Data.TJSPositionDataRelative}  data - Source data to convert.
     *
     * @param {import('../data/types').Data.TJSPositionData} position - Current position data.
     *
@@ -1427,7 +1427,7 @@ class ConvertStringData
     *
     * @param {number}   current - Current value
     *
-    * @param {Partial<import('../data/types').Data.TJSPositionDataRelative>}  data - Source data to convert.
+    * @param {import('../data/types').Data.TJSPositionDataRelative}  data - Source data to convert.
     *
     * @param {import('../data/types').Data.TJSPositionData} position - Current position data.
     *
@@ -1535,7 +1535,7 @@ class AnimationAPI
     *
     * @param {import('#runtime/svelte/transition').InterpolateFunction}    interpolate -
     *
-    * @returns {import('#runtime/util/animate').IBasicAnimation} The associated animation control.
+    * @returns {import('#runtime/util/animate').BasicAnimation} The associated animation control.
     */
    #addAnimation(initial, destination, duration, el, delay, ease, interpolate)
    {
@@ -1632,7 +1632,7 @@ class AnimationAPI
    /**
     * Returns all currently scheduled AnimationControl instances for this TJSPosition instance.
     *
-    * @returns {import('#runtime/util/animate').IBasicAnimation[]} All currently scheduled animation controls for
+    * @returns {import('#runtime/util/animate').BasicAnimation[]} All currently scheduled animation controls for
     *          this TJSPosition instance.
     */
    getScheduled()
@@ -1643,11 +1643,11 @@ class AnimationAPI
    /**
     * Provides a tween from given position data to the current position.
     *
-    * @param {Partial<import('../data/types').Data.TJSPositionDataRelative>} fromData - The starting position.
+    * @param {import('../data/types').Data.TJSPositionDataRelative} fromData - The starting position.
     *
     * @param {import('./types').AnimationAPI.TweenOptions} [options] - Optional tween parameters.
     *
-    * @returns {import('#runtime/util/animate').IBasicAnimation}  A control object that can cancel animation and
+    * @returns {import('#runtime/util/animate').BasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
     */
    from(fromData, { delay = 0, duration = 1, ease = cubicOut, interpolate = lerp } = {})
@@ -1714,15 +1714,15 @@ class AnimationAPI
    }
 
    /**
-    * Provides a tween from given position data to the current position.
+    * Provides a tween from given position data to the given position.
     *
-    * @param {Partial<import('../data/types').Data.TJSPositionDataRelative>} fromData - The starting position.
+    * @param {import('../data/types').Data.TJSPositionDataRelative} fromData - The starting position.
     *
-    * @param {Partial<import('../data/types').Data.TJSPositionDataRelative>} toData - The ending position.
+    * @param {import('../data/types').Data.TJSPositionDataRelative} toData - The ending position.
     *
     * @param {import('./types').AnimationAPI.TweenOptions} [options] - Optional tween parameters.
     *
-    * @returns {import('#runtime/util/animate').IBasicAnimation}  A control object that can cancel animation and
+    * @returns {import('#runtime/util/animate').BasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
     */
    fromTo(fromData, toData, { delay = 0, duration = 1, ease = cubicOut, interpolate = lerp } = {})
@@ -1803,11 +1803,11 @@ class AnimationAPI
    /**
     * Provides a tween to given position data from the current position.
     *
-    * @param {Partial<import('../data/types').Data.TJSPositionDataRelative>} toData - The destination position.
+    * @param {import('../data/types').Data.TJSPositionDataRelative} toData - The destination position.
     *
     * @param {import('./types').AnimationAPI.TweenOptions} [options] - Optional tween parameters.
     *
-    * @returns {import('#runtime/util/animate').IBasicAnimation}  A control object that can cancel animation and
+    * @returns {import('#runtime/util/animate').BasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
     */
    to(toData, { delay = 0, duration = 1, ease = cubicOut, interpolate = lerp } = {})
@@ -2064,7 +2064,7 @@ class AnimationAPI
 /**
  * Provides a implementation for a TJSPosition animation for a group of TJSPosition instances.
  *
- * @implements {import('#runtime/util/animate').IBasicAnimation}
+ * @implements {import('#runtime/util/animate').BasicAnimation}
  */
 class AnimationGroupControl
 {
@@ -2206,35 +2206,43 @@ class AnimationGroupControl
 class AnimationGroupAPI
 {
    /**
-    * Checks of the given object is a TJSPosition instance by checking for AnimationAPI.
+    * Returns the TJSPosition instance for the possible given positionable by checking the instance by checking for
+    * AnimationAPI.
     *
-    * @param {*}  object - Any data.
+    * @param {import('../').TJSPosition | import('../types').TJSPositionTypes.Positionable} positionable - Possible
+    *        position group entry.
     *
-    * @returns {boolean} Is TJSPosition.
+    * @returns {import('../').TJSPosition | null} Returns actual TJSPosition instance.
     */
-   static #isPosition(object)
+   static #getPosition(positionable)
    {
-      return isObject(object) && object.animate instanceof AnimationAPI;
+      if (!isObject(positionable)) { return null; }
+
+      if (positionable.animate instanceof AnimationAPI) { return positionable; }
+
+      if (positionable.position?.animate instanceof AnimationAPI) { return positionable.position; }
+
+      return null;
    }
 
    /**
     * Cancels any animation for given PositionGroup data.
     *
-    * @param {import('../types').TJSPositionTypes.PositionGroup} position - The position group to cancel.
+    * @param {import('../types').TJSPositionTypes.PositionGroup} positionGroup - The position group to cancel.
     */
-   static cancel(position)
+   static cancel(positionGroup)
    {
-      if (isIterable(position))
+      if (isIterable(positionGroup))
       {
          let index = -1;
 
-         for (const entry of position)
+         for (const entry of positionGroup)
          {
             index++;
 
-            const actualPosition = this.#isPosition(entry) ? entry : entry.position;
+            const actualPosition = this.#getPosition(entry);
 
-            if (!this.#isPosition(actualPosition))
+            if (!actualPosition)
             {
                console.warn(`AnimationGroupAPI.cancel warning: No TJSPosition instance found at index: ${index}.`);
                continue;
@@ -2245,9 +2253,9 @@ class AnimationGroupAPI
       }
       else
       {
-         const actualPosition = this.#isPosition(position) ? position : position.position;
+         const actualPosition = this.#getPosition(positionGroup);
 
-         if (!this.#isPosition(actualPosition))
+         if (!actualPosition)
          {
             console.warn(`AnimationGroupAPI.cancel warning: No TJSPosition instance found.`);
             return;
@@ -2265,46 +2273,46 @@ class AnimationGroupAPI
    /**
     * Gets all animation controls for the given position group data.
     *
-    * @param {import('../types').TJSPositionTypes.PositionGroup} position - A position group.
+    * @param {import('../types').TJSPositionTypes.PositionGroup} positionGroup - A position group.
     *
     * @returns {{
     *    position: import('../').TJSPosition,
-    *    data: object | void,
-    *    controls: import('#runtime/util/animate').IBasicAnimation[]
+    *    entry: import('../types').TJSPositionTypes.Positionable | undefined,
+    *    controls: import('#runtime/util/animate').BasicAnimation[]
     * }[]} Results array.
     */
-   static getScheduled(position)
+   static getScheduled(positionGroup)
    {
       const results = [];
 
-      if (isIterable(position))
+      if (isIterable(positionGroup))
       {
          let index = -1;
 
-         for (const entry of position)
+         for (const entry of positionGroup)
          {
             index++;
 
-            const isPosition = this.#isPosition(entry);
-            const actualPosition = isPosition ? entry : entry.position;
+            const actualPosition = this.#getPosition(entry);
 
-            if (!this.#isPosition(actualPosition))
+            if (!actualPosition)
             {
-               console.warn(`AnimationGroupAPI.getScheduled warning: No TJSPosition instance found at index: ${index}.`);
+               console.warn(`AnimationGroupAPI.getScheduled warning: No TJSPosition instance found at index: ${
+                index}.`);
+
                continue;
             }
 
             const controls = AnimationManager.getScheduled(actualPosition);
 
-            results.push({ position: actualPosition, data: isPosition ? void 0 : entry, controls });
+            results.push({ position: actualPosition, entry: actualPosition !== entry ? entry : void 0, controls });
          }
       }
       else
       {
-         const isPosition = this.#isPosition(position);
-         const actualPosition = isPosition ? position : position.position;
+         const actualPosition = this.#getPosition(positionGroup);
 
-         if (!this.#isPosition(actualPosition))
+         if (!actualPosition)
          {
             console.warn(`AnimationGroupAPI.getScheduled warning: No TJSPosition instance found.`);
             return results;
@@ -2312,27 +2320,36 @@ class AnimationGroupAPI
 
          const controls = AnimationManager.getScheduled(actualPosition);
 
-         results.push({ position: actualPosition, data: isPosition ? void 0 : position, controls });
+         results.push({
+            position: actualPosition,
+            entry: actualPosition !== positionGroup ? positionGroup : void 0,
+            controls
+         });
       }
 
       return results;
    }
 
    /**
-    * Provides the `from` animation tween for one or more TJSPosition instances as a group.
+    * Provides the `from` animation tween for one or more positionable instances as a group.
     *
-    * @param {import('../types').TJSPositionTypes.PositionGroup} position - A position group.
+    * @param {import('../types').TJSPositionTypes.PositionGroup} positionGroup - A position group.
     *
-    * @param {object | Function}   fromData -
+    * @param {(
+    *    import('../data/types').Data.TJSPositionDataRelative |
+    *    import('./types').AnimationAPI.GroupDataCallback
+    * )} fromData - A position data object assigned to all positionable instances or a callback function invoked for
+    *        unique data for each instance.
     *
     * @param {(
     *    import('./types').AnimationAPI.TweenOptions |
-    *    (() => import('./types').AnimationAPI.TweenOptions)
-    * )}   [options] -
+    *    import('./types').AnimationAPI.GroupTweenOptionsCallback
+    * )} [options] - Tween options assigned to all positionable instances or a callback function invoked for unique
+    *        options for each instance.
     *
-    * @returns {import('#runtime/util/animate').IBasicAnimation} Basic animation control.
+    * @returns {import('#runtime/util/animate').BasicAnimation} Basic animation control.
     */
-   static from(position, fromData, options)
+   static from(positionGroup, fromData, options)
    {
       if (!isObject(fromData) && typeof fromData !== 'function')
       {
@@ -2350,28 +2367,28 @@ class AnimationGroupAPI
       const animationControls = [];
 
       let index = -1;
+
+      /** @type {import('./types').AnimationAPI.GroupCallbackOptions} */
       let callbackOptions;
 
       const hasDataCallback = typeof fromData === 'function';
       const hasOptionCallback = typeof options === 'function';
       const hasCallback = hasDataCallback || hasOptionCallback;
 
-      if (hasCallback) { callbackOptions = { index, position: void 0, data: void 0 }; }
+      if (hasCallback) { callbackOptions = { index, position: void 0, entry: void 0 }; }
 
       let actualFromData = fromData;
       let actualOptions = options;
 
-      if (isIterable(position))
+      if (isIterable(positionGroup))
       {
-         for (const entry of position)
+         for (const entry of positionGroup)
          {
             index++;
 
-            const isPosition = this.#isPosition(entry);
-            /** @type {import('..').TJSPosition} */
-            const actualPosition = isPosition ? entry : entry.position;
+            const actualPosition = this.#getPosition(entry);
 
-            if (!this.#isPosition(actualPosition))
+            if (!actualPosition)
             {
                console.warn(`AnimationGroupAPI.from warning: No TJSPosition instance found at index: ${index}.`);
                continue;
@@ -2380,8 +2397,8 @@ class AnimationGroupAPI
             if (hasCallback)
             {
                callbackOptions.index = index;
-               callbackOptions.position = position;
-               callbackOptions.data = isPosition ? void 0 : entry;
+               callbackOptions.position = actualPosition;
+               callbackOptions.entry = actualPosition !== entry ? entry : void 0;
             }
 
             if (hasDataCallback)
@@ -2412,16 +2429,15 @@ class AnimationGroupAPI
                }
             }
 
-            animationControls.push(actualPosition.animate.from(actualFromData, actualOptions));
+            animationControls.push(/** @type {import('./AnimationControl').AnimationControl} */
+             actualPosition.animate.from(actualFromData, actualOptions));
          }
       }
       else
       {
-         const isPosition = this.#isPosition(position);
+         const actualPosition = this.#getPosition(positionGroup);
 
-         const actualPosition = isPosition ? position : position.position;
-
-         if (!this.#isPosition(actualPosition))
+         if (!actualPosition)
          {
             console.warn(`AnimationGroupAPI.from warning: No TJSPosition instance found.`);
             return AnimationGroupControl.voidControl;
@@ -2430,13 +2446,16 @@ class AnimationGroupAPI
          if (hasCallback)
          {
             callbackOptions.index = 0;
-            callbackOptions.position = position;
-            callbackOptions.data = isPosition ? void 0 : position;
+            callbackOptions.position = actualPosition;
+            callbackOptions.entry = actualPosition !== positionGroup ? positionGroup : void 0;
          }
 
          if (hasDataCallback)
          {
             actualFromData = fromData(callbackOptions);
+
+            // Returned data from callback is null / undefined, so skip this position instance.
+            if (actualFromData === null || actualFromData === void 0) { return AnimationGroupControl.voidControl; }
 
             if (!isObject(actualFromData))
             {
@@ -2449,6 +2468,9 @@ class AnimationGroupAPI
          {
             actualOptions = options(callbackOptions);
 
+            // Returned data from callback is null / undefined, so skip this position instance.
+            if (actualOptions === null || actualOptions === void 0) { return AnimationGroupControl.voidControl; }
+
             if (!isObject(actualOptions))
             {
                throw new TypeError(
@@ -2456,26 +2478,39 @@ class AnimationGroupAPI
             }
          }
 
-         animationControls.push(actualPosition.animate.from(actualFromData, actualOptions));
+         animationControls.push(/** @type {import('./AnimationControl').AnimationControl} */
+          actualPosition.animate.from(actualFromData, actualOptions));
       }
 
       return new AnimationGroupControl(animationControls);
    }
 
    /**
-    * Provides the `fromTo` animation tween for one or more TJSPosition instances as a group.
+    * Provides the `fromTo` animation tween for one or more positionable instances as a group.
     *
-    * @param {import('../types').TJSPositionTypes.PositionGroup} position - A position group.
+    * @param {import('../types').TJSPositionTypes.PositionGroup} positionGroup - A position group.
     *
-    * @param {object | Function}   fromData -
+    * @param {(
+    *    import('../data/types').Data.TJSPositionDataRelative |
+    *    import('./types').AnimationAPI.GroupDataCallback
+    * )} fromData - A position data object assigned to all positionable instances or a callback function invoked for
+    *        unique data for each instance.
     *
-    * @param {object | Function}   toData -
+    * @param {(
+    *    import('../data/types').Data.TJSPositionDataRelative |
+    *    import('./types').AnimationAPI.GroupDataCallback
+    * )} toData - A position data object assigned to all positionable instances or a callback function invoked for
+    *        unique data for each instance.
     *
-    * @param {object | Function}   [options] -
+    * @param {(
+    *    import('./types').AnimationAPI.TweenOptions |
+    *    import('./types').AnimationAPI.GroupTweenOptionsCallback
+    * )} [options] - Tween options assigned to all positionable instances or a callback function invoked for unique
+    *        options for each instance.
     *
-    * @returns {import('#runtime/util/animate').IBasicAnimation} Basic animation control.
+    * @returns {import('#runtime/util/animate').BasicAnimation} Basic animation control.
     */
-   static fromTo(position, fromData, toData, options)
+   static fromTo(positionGroup, fromData, toData, options)
    {
       if (!isObject(fromData) && typeof fromData !== 'function')
       {
@@ -2498,6 +2533,8 @@ class AnimationGroupAPI
       const animationControls = [];
 
       let index = -1;
+
+      /** @type {import('./types').AnimationAPI.GroupCallbackOptions} */
       let callbackOptions;
 
       const hasFromCallback = typeof fromData === 'function';
@@ -2505,22 +2542,21 @@ class AnimationGroupAPI
       const hasOptionCallback = typeof options === 'function';
       const hasCallback = hasFromCallback || hasToCallback || hasOptionCallback;
 
-      if (hasCallback) { callbackOptions = { index, position: void 0, data: void 0 }; }
+      if (hasCallback) { callbackOptions = { index, position: void 0, entry: void 0 }; }
 
       let actualFromData = fromData;
       let actualToData = toData;
       let actualOptions = options;
 
-      if (isIterable(position))
+      if (isIterable(positionGroup))
       {
-         for (const entry of position)
+         for (const entry of positionGroup)
          {
             index++;
 
-            const isPosition = this.#isPosition(entry);
-            const actualPosition = isPosition ? entry : entry.position;
+            const actualPosition = this.#getPosition(entry);
 
-            if (!this.#isPosition(actualPosition))
+            if (!actualPosition)
             {
                console.warn(`AnimationGroupAPI.fromTo warning: No TJSPosition instance found at index: ${index}.`);
                continue;
@@ -2529,8 +2565,8 @@ class AnimationGroupAPI
             if (hasCallback)
             {
                callbackOptions.index = index;
-               callbackOptions.position = position;
-               callbackOptions.data = isPosition ? void 0 : entry;
+               callbackOptions.position = actualPosition;
+               callbackOptions.entry = actualPosition !== entry ? entry : void 0;
             }
 
             if (hasFromCallback)
@@ -2575,15 +2611,15 @@ class AnimationGroupAPI
                }
             }
 
-            animationControls.push(actualPosition.animate.fromTo(actualFromData, actualToData, actualOptions));
+            animationControls.push(/** @type {import('./AnimationControl').AnimationControl} */
+             actualPosition.animate.fromTo(actualFromData, actualToData, actualOptions));
          }
       }
       else
       {
-         const isPosition = this.#isPosition(position);
-         const actualPosition = isPosition ? position : position.position;
+         const actualPosition = this.#getPosition(positionGroup);
 
-         if (!this.#isPosition(actualPosition))
+         if (!actualPosition)
          {
             console.warn(`AnimationGroupAPI.fromTo warning: No TJSPosition instance found.`);
             return AnimationGroupControl.voidControl;
@@ -2592,13 +2628,16 @@ class AnimationGroupAPI
          if (hasCallback)
          {
             callbackOptions.index = 0;
-            callbackOptions.position = position;
-            callbackOptions.data = isPosition ? void 0 : position;
+            callbackOptions.position = actualPosition;
+            callbackOptions.entry = actualPosition !== positionGroup ? positionGroup : void 0;
          }
 
          if (hasFromCallback)
          {
             actualFromData = fromData(callbackOptions);
+
+            // Returned data from callback is null / undefined, so skip this position instance.
+            if (actualFromData === null || actualFromData === void 0) { return AnimationGroupControl.voidControl; }
 
             if (!isObject(actualFromData))
             {
@@ -2611,6 +2650,9 @@ class AnimationGroupAPI
          {
             actualToData = toData(callbackOptions);
 
+            // Returned data from callback is null / undefined, so skip this position instance.
+            if (actualToData === null || actualToData === void 0) { return AnimationGroupControl.voidControl; }
+
             if (!isObject(actualToData))
             {
                throw new TypeError(
@@ -2622,6 +2664,9 @@ class AnimationGroupAPI
          {
             actualOptions = options(callbackOptions);
 
+            // Returned data from callback is null / undefined, so skip this position instance.
+            if (actualOptions === null || actualOptions === void 0) { return AnimationGroupControl.voidControl; }
+
             if (!isObject(actualOptions))
             {
                throw new TypeError(
@@ -2629,24 +2674,33 @@ class AnimationGroupAPI
             }
          }
 
-         animationControls.push(actualPosition.animate.fromTo(actualFromData, actualToData, actualOptions));
+         animationControls.push(/** @type {import('./AnimationControl').AnimationControl} */
+          actualPosition.animate.fromTo(actualFromData, actualToData, actualOptions));
       }
 
       return new AnimationGroupControl(animationControls);
    }
 
    /**
-    * Provides the `to` animation tween for one or more TJSPosition instances as a group.
+    * Provides the `to` animation tween for one or more positionable instances as a group.
     *
-    * @param {import('../types').TJSPositionTypes.PositionGroup} position - A position group.
+    * @param {import('../types').TJSPositionTypes.PositionGroup} positionGroup - A position group.
     *
-    * @param {object | Function}   toData -
+    * @param {(
+    *    import('../data/types').Data.TJSPositionDataRelative |
+    *    import('./types').AnimationAPI.GroupDataCallback
+    * )} toData - A position data object assigned to all positionable instances or a callback function invoked for
+    *        unique data for each instance.
     *
-    * @param {object | Function}   [options] -
+    * @param {(
+    *    import('./types').AnimationAPI.TweenOptions |
+    *    import('./types').AnimationAPI.GroupTweenOptionsCallback
+    * )} [options] - Tween options assigned to all positionable instances or a callback function invoked for unique
+    *        options for each instance.
     *
-    * @returns {import('#runtime/util/animate').IBasicAnimation} Basic animation control.
+    * @returns {import('#runtime/util/animate').BasicAnimation} Basic animation control.
     */
-   static to(position, toData, options)
+   static to(positionGroup, toData, options)
    {
       if (!isObject(toData) && typeof toData !== 'function')
       {
@@ -2664,27 +2718,28 @@ class AnimationGroupAPI
       const animationControls = [];
 
       let index = -1;
+
+      /** @type {import('./types').AnimationAPI.GroupCallbackOptions} */
       let callbackOptions;
 
       const hasDataCallback = typeof toData === 'function';
       const hasOptionCallback = typeof options === 'function';
       const hasCallback = hasDataCallback || hasOptionCallback;
 
-      if (hasCallback) { callbackOptions = { index, position: void 0, data: void 0 }; }
+      if (hasCallback) { callbackOptions = { index, position: void 0, entry: void 0 }; }
 
       let actualToData = toData;
       let actualOptions = options;
 
-      if (isIterable(position))
+      if (isIterable(positionGroup))
       {
-         for (const entry of position)
+         for (const entry of positionGroup)
          {
             index++;
 
-            const isPosition = this.#isPosition(entry);
-            const actualPosition = isPosition ? entry : entry.position;
+            const actualPosition = this.#getPosition(entry);
 
-            if (!this.#isPosition(actualPosition))
+            if (!actualPosition)
             {
                console.warn(`AnimationGroupAPI.to warning: No TJSPosition instance found at index: ${index}.`);
                continue;
@@ -2693,8 +2748,8 @@ class AnimationGroupAPI
             if (hasCallback)
             {
                callbackOptions.index = index;
-               callbackOptions.position = position;
-               callbackOptions.data = isPosition ? void 0 : entry;
+               callbackOptions.position = actualPosition;
+               callbackOptions.entry = actualPosition !== entry ? entry : void 0;
             }
 
             if (hasDataCallback)
@@ -2725,15 +2780,15 @@ class AnimationGroupAPI
                }
             }
 
-            animationControls.push(actualPosition.animate.to(actualToData, actualOptions));
+            animationControls.push(/** @type {import('./AnimationControl').AnimationControl} */
+             actualPosition.animate.to(actualToData, actualOptions));
          }
       }
       else
       {
-         const isPosition = this.#isPosition(position);
-         const actualPosition = isPosition ? position : position.position;
+         const actualPosition = this.#getPosition(positionGroup);
 
-         if (!this.#isPosition(actualPosition))
+         if (!actualPosition)
          {
             console.warn(`AnimationGroupAPI.to warning: No TJSPosition instance found.`);
             return AnimationGroupControl.voidControl;
@@ -2742,13 +2797,16 @@ class AnimationGroupAPI
          if (hasCallback)
          {
             callbackOptions.index = 0;
-            callbackOptions.position = position;
-            callbackOptions.data = isPosition ? void 0 : position;
+            callbackOptions.position = actualPosition;
+            callbackOptions.entry = actualPosition !== positionGroup ? positionGroup : void 0;
          }
 
          if (hasDataCallback)
          {
             actualToData = toData(callbackOptions);
+
+            // Returned data from callback is null / undefined, so skip this position instance.
+            if (actualToData === null || actualToData === void 0) { return AnimationGroupControl.voidControl; }
 
             if (!isObject(actualToData))
             {
@@ -2761,6 +2819,9 @@ class AnimationGroupAPI
          {
             actualOptions = options(callbackOptions);
 
+            // Returned data from callback is null / undefined, so skip this position instance.
+            if (actualOptions === null || actualOptions === void 0) { return AnimationGroupControl.voidControl; }
+
             if (!isObject(actualOptions))
             {
                throw new TypeError(
@@ -2768,27 +2829,29 @@ class AnimationGroupAPI
             }
          }
 
-         animationControls.push(actualPosition.animate.to(actualToData, actualOptions));
+         animationControls.push(/** @type {import('./AnimationControl').AnimationControl} */
+          actualPosition.animate.to(actualToData, actualOptions));
       }
 
       return new AnimationGroupControl(animationControls);
    }
 
    /**
-    * Provides the `to` animation tween for one or more TJSPosition instances as a group.
+    * Provides the `quickTo` animation tweening function for one or more positionable instances as a group.
     *
-    * @param {import('../types').TJSPositionTypes.PositionGroup} position - A position group.
+    * @param {import('../types').TJSPositionTypes.PositionGroup} positionGroup - A position group.
     *
-    * @param {Iterable<import('./types').AnimationAPI.AnimationKeys>}  keys -
+    * @param {Iterable<import('./types').AnimationAPI.AnimationKeys>}  keys - Animation keys to target.
     *
     * @param {(
     *    import('./types').AnimationAPI.QuickTweenOptions |
-    *    (() => import('./types').AnimationAPI.QuickTweenOptions)
-    * )}   [options] - Quick tween options.
+    *    import('./types').AnimationAPI.GroupQuickTweenOptionsCallback
+    * )} [options] - Quick tween options assigned to all positionable instances or a callback function invoked for
+    *        unique options for each instance.
     *
-    * @returns {import('./types').AnimationAPI.QuickToCallback} quick-to tween function.
+    * @returns {import('./types').AnimationAPI.QuickToCallback | undefined} quick-to tween function.
     */
-   static quickTo(position, keys, options)
+   static quickTo(positionGroup, keys, options)
    {
       if (!isIterable(keys))
       {
@@ -2809,28 +2872,27 @@ class AnimationGroupAPI
 
       const hasOptionCallback = typeof options === 'function';
 
-      const callbackOptions = { index, position: void 0, data: void 0 };
+      const callbackOptions = { index, position: void 0, entry: void 0 };
 
       let actualOptions = isObject(options) ? options : void 0;
 
-      if (isIterable(position))
+      if (isIterable(positionGroup))
       {
-         for (const entry of position)
+         for (const entry of positionGroup)
          {
             index++;
 
-            const isPosition = this.#isPosition(entry);
-            const actualPosition = isPosition ? entry : entry.position;
+            const actualPosition = this.#getPosition(entry);
 
-            if (!this.#isPosition(actualPosition))
+            if (!actualPosition)
             {
                console.warn(`AnimationGroupAPI.quickTo warning: No TJSPosition instance found at index: ${index}.`);
                continue;
             }
 
             callbackOptions.index = index;
-            callbackOptions.position = position;
-            callbackOptions.data = isPosition ? void 0 : entry;
+            callbackOptions.position = actualPosition;
+            callbackOptions.entry = actualPosition !== entry ? entry : void 0;
 
             if (hasOptionCallback)
             {
@@ -2851,22 +2913,24 @@ class AnimationGroupAPI
       }
       else
       {
-         const isPosition = this.#isPosition(position);
-         const actualPosition = isPosition ? position : position.position;
+         const actualPosition = this.#getPosition(positionGroup);
 
-         if (!this.#isPosition(actualPosition))
+         if (!actualPosition)
          {
             console.warn(`AnimationGroupAPI.quickTo warning: No TJSPosition instance found.`);
-            return () => null;
+            return;
          }
 
          callbackOptions.index = 0;
-         callbackOptions.position = position;
-         callbackOptions.data = isPosition ? void 0 : position;
+         callbackOptions.position = actualPosition;
+         callbackOptions.entry = actualPosition !== positionGroup ? positionGroup : void 0;
 
          if (hasOptionCallback)
          {
             actualOptions = options(callbackOptions);
+
+            // Returned data from callback is null / undefined, so skip this position instance.
+            if (actualOptions === null || actualOptions === void 0) { return; }
 
             if (!isObject(actualOptions))
             {
@@ -2895,29 +2959,26 @@ class AnimationGroupAPI
             index = -1;
             let cntr = 0;
 
-            if (isIterable(position))
+            if (isIterable(positionGroup))
             {
-               for (const entry of position)
+               for (const entry of positionGroup)
                {
                   index++;
 
-                  const isPosition = this.#isPosition(entry);
-                  const actualPosition = isPosition ? entry : entry.position;
+                  const actualPosition = this.#getPosition(entry);
 
-                  if (!this.#isPosition(actualPosition)) { continue; }
+                  if (!actualPosition) { continue; }
 
                   callbackOptions.index = index;
-                  callbackOptions.position = position;
-                  callbackOptions.data = isPosition ? void 0 : entry;
+                  callbackOptions.position = actualPosition;
+                  callbackOptions.entry = actualPosition !== entry ? entry : void 0;
 
                   const toData = dataCallback(callbackOptions);
 
                   // Returned data from callback is null / undefined, so skip this position instance.
                   if (toData === null || toData === void 0) { continue; }
 
-                  /**
-                   * @type {boolean}
-                   */
+                  /** @type {boolean} */
                   const toDataIterable = isIterable(toData);
 
                   if (!Number.isFinite(toData) && !toDataIterable && !isObject(toData))
@@ -2938,14 +2999,13 @@ class AnimationGroupAPI
             }
             else
             {
-               const isPosition = this.#isPosition(position);
-               const actualPosition = isPosition ? position : position.position;
+               const actualPosition = this.#getPosition(positionGroup);
 
-               if (!this.#isPosition(actualPosition)) { return; }
+               if (!actualPosition) { return; }
 
                callbackOptions.index = 0;
-               callbackOptions.position = position;
-               callbackOptions.data = isPosition ? void 0 : position;
+               callbackOptions.position = actualPosition;
+               callbackOptions.entry = actualPosition !== positionGroup ? positionGroup : void 0;
 
                const toData = dataCallback(callbackOptions);
 
@@ -2984,93 +3044,28 @@ class AnimationGroupAPI
       /**
        * Sets options of quickTo tween.
        *
-       * @param {object | Function}   [options] - Optional parameters.
+       * @param {import('./types').AnimationAPI.QuickTweenOptions}   [options] - Optional parameters.
        *
        * @param {number}            [options.duration] - Duration in seconds.
        *
-       * @param {Function}          [options.ease] - Easing function.
+       * @param {import('svelte/transition').EasingFunction}   [options.ease] - Easing function.
        *
-       * @param {Function}          [options.interpolate] - Interpolation function.
+       * @param {import('#runtime/math/interpolate').InterpolateFunction}  [options.interpolate] - Interpolation
+       *        function.
        *
        * @returns {import('./types').AnimationAPI.QuickToCallback} The quickTo callback.
        */
       quickToCB.options = (options) => // eslint-disable-line no-shadow
       {
-         if (options !== void 0 && !isObject(options) && typeof options !== 'function')
+         if (options !== void 0 && !isObject(options))
          {
-            throw new TypeError(`AnimationGroupAPI.quickTo error: 'options' is not an object or function.`);
+            throw new TypeError(`AnimationGroupAPI.quickTo error: 'options' is not an object.`);
          }
 
          // Set options object for each quickTo callback.
          if (isObject(options))
          {
             for (let cntr = quickToCallbacks.length; --cntr >= 0;) { quickToCallbacks[cntr].options(options); }
-         }
-         else if (typeof options === 'function')
-         {
-            if (isIterable(position))
-            {
-               index = -1;
-               let cntr = 0;
-
-               for (const entry of position)
-               {
-                  index++;
-
-                  const isPosition = this.#isPosition(entry);
-                  const actualPosition = isPosition ? entry : entry.position;
-
-                  if (!this.#isPosition(actualPosition))
-                  {
-                     console.warn(
-                      `AnimationGroupAPI.quickTo.options warning: No TJSPosition instance found at index: ${index}.`);
-                     continue;
-                  }
-
-                  callbackOptions.index = index;
-                  callbackOptions.position = position;
-                  callbackOptions.data = isPosition ? void 0 : entry;
-
-                  actualOptions = options(callbackOptions);
-
-                  // Returned data from callback is null / undefined, so skip this position instance.
-                  if (actualOptions === null || actualOptions === void 0) { continue; }
-
-                  if (!isObject(actualOptions))
-                  {
-                     throw new TypeError(
-                      `AnimationGroupAPI.quickTo.options error: 'options' callback function iteration(${
-                       index}) failed to return an object.`);
-                  }
-
-                  quickToCallbacks[cntr++].options(actualOptions);
-               }
-            }
-            else
-            {
-               const isPosition = this.#isPosition(position);
-               const actualPosition = isPosition ? position : position.position;
-
-               if (!this.#isPosition(actualPosition))
-               {
-                  console.warn(`AnimationGroupAPI.quickTo.options warning: No TJSPosition instance found.`);
-                  return quickToCB;
-               }
-
-               callbackOptions.index = 0;
-               callbackOptions.position = position;
-               callbackOptions.data = isPosition ? void 0 : position;
-
-               actualOptions = options(callbackOptions);
-
-               if (!isObject(actualOptions))
-               {
-                  throw new TypeError(
-                   `AnimationGroupAPI.quickTo error: 'options' callback function failed to return an object.`);
-               }
-
-               quickToCallbacks[0].options(actualOptions);
-            }
          }
 
          return quickToCB;
@@ -5544,7 +5539,7 @@ class TJSPositionStyleCache
  * Provides a store for position following the subscriber protocol in addition to providing individual writable derived
  * stores for each independent variable.
  *
- * @implements {import('./types').TJSPositionTypes.ITJSPosition}
+ * @implements {import('./types').TJSPositionTypes.TJSPositionWritable}
  */
 class TJSPosition
 {
@@ -5708,7 +5703,7 @@ class TJSPosition
    /**
     * Returns a list of supported transform origins.
     *
-    * @returns {Readonly<import('./types').TransformAPI.TransformOrigin[]>}
+    * @returns {Readonly<import('./transform/types').TransformAPI.TransformOrigin[]>}
     */
    static get transformOrigins()
    {
@@ -6438,9 +6433,10 @@ class TJSPosition
     * Relative updates to any property of {@link TJSPositionData} are possible by specifying properties as strings.
     * This string should be in the form of '+=', '-=', or '*=' and float / numeric value. IE '+=0.2'.
     * {@link TJSPosition.set} will apply the `addition`, `subtraction`, or `multiplication` operation specified against
-    * the current value of the given property.
+    * the current value of the given property. Please see {@link Data.TJSPositionDataRelative} for a detailed
+    * description.
     *
-    * @param {Partial<import('./data/types').Data.TJSPositionDataRelative>} [position] - TJSPosition data to set.
+    * @param {import('./data/types').Data.TJSPositionDataRelative} [position] - TJSPosition data to set.
     *
     * @param {import('./types').TJSPositionTypes.OptionsSet} [options] - Additional options.
     *
