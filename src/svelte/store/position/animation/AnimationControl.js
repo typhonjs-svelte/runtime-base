@@ -1,7 +1,5 @@
 import { isObject }              from '#runtime/util/object';
 
-import { basicAnimationState }   from './basicAnimationState.js';
-
 /**
  * Provides a basic animation implementation for TJSPosition animation.
  *
@@ -56,7 +54,7 @@ export class AnimationControl
       if (!(this.#finishedPromise instanceof Promise))
       {
          this.#finishedPromise = this.#willFinish ? new Promise((resolve) => this.#animationData.resolve = resolve) :
-          Promise.resolve(basicAnimationState.notCancelled);
+          Promise.resolve({ cancelled: false });
       }
 
       return this.#finishedPromise;

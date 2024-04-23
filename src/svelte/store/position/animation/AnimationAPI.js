@@ -11,8 +11,6 @@ import {
 import { AnimationControl }      from './AnimationControl.js';
 import { AnimationManager }      from './AnimationManager.js';
 
-import { basicAnimationState }   from './basicAnimationState.js';
-
 import {
    ConvertStringData,
    TJSPositionDataUtil }         from '../data';
@@ -173,7 +171,7 @@ export class AnimationAPI
 
       if (typeof data.resolve === 'function')
       {
-         data.resolve(data.cancelled ? basicAnimationState.cancelled : basicAnimationState.notCancelled);
+         data.resolve({ cancelled: data.cancelled });
       }
    }
 

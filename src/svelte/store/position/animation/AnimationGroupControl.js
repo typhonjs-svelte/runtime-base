@@ -1,5 +1,3 @@
-import { basicAnimationState } from './basicAnimationState.js';
-
 /**
  * Provides a implementation for a TJSPosition animation for a group of TJSPosition instances.
  *
@@ -50,7 +48,7 @@ export class AnimationGroupControl
          if (animationControls === null || animationControls === void 0)
          {
             this.#finishedPromise = /** @type {Promise<import('#runtime/util/animate').BasicAnimationState>} */
-             Promise.resolve(basicAnimationState.notCancelled);
+             Promise.resolve({ cancelled: false });
          }
          else
          {
@@ -65,7 +63,7 @@ export class AnimationGroupControl
                 (result.status === 'fulfilled' && result.value.cancelled));
 
                // Return a single BasicAnimationState based on the aggregation of individual results.
-               return anyCancelled ? basicAnimationState.cancelled : basicAnimationState.notCancelled;
+               return { cancelled: anyCancelled };
             });
          }
       }
