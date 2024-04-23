@@ -80,7 +80,7 @@ export class AnimationAPI
     *
     * @param {import('svelte/transition').EasingFunction}    ease -
     *
-    * @param {import('#runtime/svelte/transition').InterpolateFunction}    interpolate -
+    * @param {import('#runtime/math/interpolate').InterpolateFunction}    interpolate -
     *
     * @returns {import('#runtime/util/animate').BasicAnimation} The associated animation control.
     */
@@ -102,6 +102,7 @@ export class AnimationAPI
       // Nothing to animate, so return now.
       if (keys.length === 0) { return AnimationControl.voidControl; }
 
+      /** @type {import('./types-local').AnimationData} */
       const animationData = {
          active: true,
          cleanup: this.#cleanup,
@@ -161,7 +162,7 @@ export class AnimationAPI
    /**
     * Cleans up an animation instance.
     *
-    * @param {object}   data - Animation data for an animation instance.
+    * @param {import('./types-local').AnimationData}   data - Animation data for an animation instance.
     */
    #cleanupInstance(data)
    {
@@ -492,6 +493,7 @@ export class AnimationAPI
 
       const newData = Object.assign({}, initial);
 
+      /** @type {import('./types-local').AnimationData} */
       const animationData = {
          active: true,
          cleanup: this.#cleanup,

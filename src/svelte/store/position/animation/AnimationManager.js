@@ -11,12 +11,12 @@ export class AnimationManager
    static #tjsPositionSetOptions = Object.freeze({ immediateElementUpdate: true });
 
    /**
-    * @type {object[]}
+    * @type {import('./types-local').AnimationData[]}
     */
    static activeList = [];
 
    /**
-    * @type {object[]}
+    * @type {import('./types-local').AnimationData[]}
     */
    static newList = [];
 
@@ -28,7 +28,7 @@ export class AnimationManager
    /**
     * Add animation data.
     *
-    * @param {object}   data -
+    * @param {import('./types-local').AnimationData}   data -
     */
    static add(data)
    {

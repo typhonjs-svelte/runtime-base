@@ -9,12 +9,13 @@ import { basicAnimationState }   from './basicAnimationState.js';
  */
 export class AnimationControl
 {
-   /** @type {object} */
+   /** @type {import('./types-local').AnimationData} */
    #animationData;
 
    /** @type {Promise<import('#runtime/util/animate').BasicAnimationState>} */
    #finishedPromise;
 
+   /** @type {boolean} */
    #willFinish;
 
    /**
@@ -32,7 +33,7 @@ export class AnimationControl
    static get voidControl() { return this.#voidControl; }
 
    /**
-    * @param {object | null}  [animationData] - Animation data from {@link AnimationAPI}.
+    * @param {import('./types-local').AnimationData | null}  [animationData] - Animation data from {@link AnimationAPI}.
     *
     * @param {boolean}        [willFinish] - Promise that tracks animation finished state.
     */
