@@ -156,9 +156,9 @@ export class ConvertStringData
                data[key] = void 0;
             }
          }
-
-         return data;
       }
+
+      return data;
    }
 
    // Internal implementation ----------------------------------------------------------------------------------------
