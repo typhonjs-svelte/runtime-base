@@ -1,5 +1,7 @@
 import { TJSPositionDataUtil }   from '../TJSPositionDataUtil.js';
 
+import { radToDeg }              from '#runtime/math/util';
+
 /**
  * Converts {@link TJSPositionData} properties defined as strings to number values. The string values can be defined
  * as relative adjustments with a leading operator. Various unit formats are supported as well.
@@ -18,7 +20,10 @@ export class ConvertStringData
 
       // Animation keys that can be specified in percentage of parent element constraint.
       percentParent: Object.freeze(new Set(['left', 'top', 'maxWidth', 'maxHeight', 'minWidth', 'minHeight', 'width',
-       'height']))
+       'height'])),
+
+      // Only rotation animation keys can be specified in `rad` / `turn` converted to a number.
+      rotationRadTurn: Object.freeze(new Set(['rotateX', 'rotateY', 'rotateZ', 'rotation']))
    };
 
    /**
@@ -31,7 +36,7 @@ export class ConvertStringData
     *
     * @type {RegExp}
     */
-   static #regexStringData = /^(?<operation>[-+*]=)?(?<value>-?\d*\.?\d+)(?<unit>%|%~|px)?$/;
+   static #regexStringData = /^(?<operation>[-+*]=)?(?<value>-?\d*\.?\d+)(?<unit>%|%~|px|rad|turn)?$/;
 
    /**
     * Stores the results for match groups from `regexStringData`;
@@ -128,6 +133,13 @@ export class ConvertStringData
                   case 'px':
                      notHandledWarning = this.#animKeyTypes.numPx.has(key) ?
                       this.#handleRelativeNum(animKey, current, data, position, el, results) : true;
+                     break;
+
+                  // Only rotation animation keys support `rad` / `turn`.
+                  case 'rad':
+                  case 'turn':
+                     notHandledWarning = this.#animKeyTypes.rotationRadTurn.has(key) ?
+                      this.#handleRotationRadTurn(animKey, current, data, position, el, results) : true;
                      break;
 
                   // No units / treat as raw number.
@@ -315,6 +327,64 @@ export class ConvertStringData
 
          case '*=':
             data[key] = current * (current * results.value);
+            break;
+
+         default:
+            return false;
+      }
+
+      return true;
+   }
+
+   /**
+    * Handles the `rad` / `turn` unit types for rotation animation keys.
+    *
+    * @param {import('../animation/types').AnimationAPI.AnimationKeys} key - Animation key.
+    *
+    * @param {number}   current - Current value
+    *
+    * @param {import('../data/types').Data.TJSPositionDataRelative}  data - Source data to convert.
+    *
+    * @param {import('../data/types').Data.TJSPositionData} position - Current position data.
+    *
+    * @param {HTMLElement} el - Positioned element.
+    *
+    * @param {import('./types').StringMatch}  results - Match results.
+    *
+    * @returns {boolean} Adjustment successful.
+    */
+   static #handleRotationRadTurn(key, current, data, position, el, results)
+   {
+      // Convert radians / turn into degrees.
+      switch (results.unit)
+      {
+         case 'rad':
+            results.value = radToDeg(results.value);
+            break;
+
+         case 'turn':
+            results.value = 360 * results.value;
+            break;
+      }
+
+      if (!results.operation)
+      {
+         data[key] = results.value;
+         return true;
+      }
+
+      switch (results.operation)
+      {
+         case '-=':
+            data[key] = current - results.value;
+            break;
+
+         case '+=':
+            data[key] = current + results.value;
+            break;
+
+         case '*=':
+            data[key] = current * results.value;
             break;
 
          default:
