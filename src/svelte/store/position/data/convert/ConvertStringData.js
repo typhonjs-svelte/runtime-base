@@ -41,7 +41,7 @@ export class ConvertStringData
    /**
     * Stores the results for match groups from `regexStringData`;
     *
-    * @type {import('./types').StringMatch}
+    * @type {import('./types-local').StringMatch}
     */
    static #matchResults = Object.seal({
       operation: void 0,
@@ -80,8 +80,8 @@ export class ConvertStringData
 
             const regexResults = this.#regexStringData.exec(value);
 
-            // Additional state indicating a particular key is not handled.
-            let notHandledWarning = false;
+            // Additional state indicating a particular key is handled.
+            let handled = false;
 
             if (regexResults)
             {
@@ -118,7 +118,7 @@ export class ConvertStringData
                         }
                      }
 
-                     notHandledWarning = this.#handlePercent(animKey, current, data, position, el, results,
+                     handled = this.#handlePercent(animKey, current, data, position, el, results,
                       parentClientHeight, parentClientWidth);
 
                      break;
@@ -126,32 +126,30 @@ export class ConvertStringData
 
                   // Animation keys that support percentage changes from current values.
                   case '%~':
-                     notHandledWarning = this.#handleRelativePercent(animKey, current, data, position, el, results);
+                     handled = this.#handleRelativePercent(animKey, current, data, position, el, results);
                      break;
 
                   // Animation keys that support `px` / treat as raw number.
                   case 'px':
-                     notHandledWarning = this.#animKeyTypes.numPx.has(key) ?
-                      this.#handleRelativeNum(animKey, current, data, position, el, results) : true;
+                     handled = this.#animKeyTypes.numPx.has(key) ?
+                      this.#applyResultsValue(animKey, current, data, results) : false;
                      break;
 
                   // Only rotation animation keys support `rad` / `turn`.
                   case 'rad':
                   case 'turn':
-                     notHandledWarning = this.#animKeyTypes.rotationRadTurn.has(key) ?
-                      this.#handleRotationRadTurn(animKey, current, data, position, el, results) : true;
+                     handled = this.#animKeyTypes.rotationRadTurn.has(key) ?
+                      this.#handleRotationRadTurn(animKey, current, data, position, el, results) : false;
                      break;
 
                   // No units / treat as raw number.
                   default:
-                     notHandledWarning = this.#handleRelativeNum(animKey, current, data, position, el, results);
+                     handled = this.#applyResultsValue(animKey, current, data, results);
                      break;
                }
-
-               continue;
             }
 
-            if (!regexResults || notHandledWarning)
+            if (!regexResults || !handled)
             {
                console.warn(
                 `TJSPosition - ConvertStringData warning: malformed key '${key}' with value '${value}'.`);
@@ -163,9 +161,11 @@ export class ConvertStringData
       }
    }
 
+   // Internal implementation ----------------------------------------------------------------------------------------
+
    /**
-    * Handles the `%` unit type where values are adjusted against the parent element client width / height or in the
-    * case of rotation the percentage of 360 degrees.
+    * Provides the common update to source data after `results.value` has been converted to the proper value
+    * respectively.
     *
     * @param {import('../animation/types').AnimationAPI.AnimationKeys} key - Animation key.
     *
@@ -173,99 +173,18 @@ export class ConvertStringData
     *
     * @param {import('../data/types').Data.TJSPositionDataRelative}  data - Source data to convert.
     *
-    * @param {import('../data/types').Data.TJSPositionData} position - Current position data.
-    *
-    * @param {HTMLElement} el - Positioned element.
-    *
-    * @param {import('./types').StringMatch}  results - Match results.
-    *
-    * @param {number}  parentClientHeight - Parent element client height.
-    *
-    * @param {number}  parentClientWidth - Parent element client width.
+    * @param {import('./types-local').StringMatch}  results - Match results.
     *
     * @returns {boolean} Adjustment successful.
     */
-   static #handlePercent(key, current, data, position, el, results, parentClientHeight, parentClientWidth)
+   static #applyResultsValue(key, current, data, results)
    {
-      /** @type {number} */
-      let value = void 0;
-
-      switch (key)
-      {
-         // Calculate value; take into account keys that calculate parent client width.
-         case 'left':
-         case 'maxWidth':
-         case 'minWidth':
-         case 'width':
-         case 'translateX':
-            value = parentClientWidth * (results.value / 100);
-            break;
-
-         // Calculate value; take into account keys that calculate parent client height.
-         case 'top':
-         case 'maxHeight':
-         case 'minHeight':
-         case 'height':
-         case 'translateY':
-            value = parentClientHeight * (results.value / 100);
-            break;
-
-         // Calculate value; convert percentage into degrees
-         case 'rotateX':
-         case 'rotateY':
-         case 'rotateZ':
-         case 'rotation':
-            value = 360 * (results.value / 100);
-            break;
-
-         default:
-            return false;
-      }
-
       if (!results.operation)
       {
-         data[key] = value;
+         data[key] = results.value;
          return true;
       }
 
-      switch (results.operation)
-      {
-         case '-=':
-            data[key] = current - value;
-            break;
-
-         case '+=':
-            data[key] = current + value;
-            break;
-
-         case '*=':
-            data[key] = current * value;
-            break;
-
-         default:
-            return false;
-      }
-
-      return true;
-   }
-
-   /**
-    * @param {import('../animation/types').AnimationAPI.AnimationKeys} key - Animation key.
-    *
-    * @param {number}   current - Current value
-    *
-    * @param {import('../data/types').Data.TJSPositionDataRelative}  data - Source data to convert.
-    *
-    * @param {import('../data/types').Data.TJSPositionData} position - Current position data.
-    *
-    * @param {HTMLElement} el - Positioned element.
-    *
-    * @param {import('./types').StringMatch}  results - Match results.
-    *
-    * @returns {boolean} Adjustment successful.
-    */
-   static #handleRelativeNum(key, current, data, position, el, results)
-   {
       switch (results.operation)
       {
          case '-=':
@@ -288,6 +207,65 @@ export class ConvertStringData
    }
 
    /**
+    * Handles the `%` unit type where values are adjusted against the parent element client width / height or in the
+    * case of rotation the percentage of 360 degrees.
+    *
+    * @param {import('../animation/types').AnimationAPI.AnimationKeys} key - Animation key.
+    *
+    * @param {number}   current - Current value
+    *
+    * @param {import('../data/types').Data.TJSPositionDataRelative}  data - Source data to convert.
+    *
+    * @param {import('../data/types').Data.TJSPositionData} position - Current position data.
+    *
+    * @param {HTMLElement} el - Positioned element.
+    *
+    * @param {import('./types-local').StringMatch}  results - Match results.
+    *
+    * @param {number}  parentClientHeight - Parent element client height.
+    *
+    * @param {number}  parentClientWidth - Parent element client width.
+    *
+    * @returns {boolean} Adjustment successful.
+    */
+   static #handlePercent(key, current, data, position, el, results, parentClientHeight, parentClientWidth)
+   {
+      switch (key)
+      {
+         // Calculate value; take into account keys that calculate parent client width.
+         case 'left':
+         case 'maxWidth':
+         case 'minWidth':
+         case 'width':
+         case 'translateX':
+            results.value = parentClientWidth * (results.value / 100);
+            break;
+
+         // Calculate value; take into account keys that calculate parent client height.
+         case 'top':
+         case 'maxHeight':
+         case 'minHeight':
+         case 'height':
+         case 'translateY':
+            results.value = parentClientHeight * (results.value / 100);
+            break;
+
+         // Calculate value; convert percentage into degrees
+         case 'rotateX':
+         case 'rotateY':
+         case 'rotateZ':
+         case 'rotation':
+            results.value = 360 * (results.value / 100);
+            break;
+
+         default:
+            return false;
+      }
+
+      return this.#applyResultsValue(key, current, data, results);
+   }
+
+   /**
     * Handles the `%~` unit type where values are adjusted against the current value for the given key.
     *
     * @param {import('../animation/types').AnimationAPI.AnimationKeys} key - Animation key.
@@ -300,7 +278,7 @@ export class ConvertStringData
     *
     * @param {HTMLElement} el - Positioned element.
     *
-    * @param {import('./types').StringMatch}  results - Match results.
+    * @param {import('./types-local').StringMatch}  results - Match results.
     *
     * @returns {boolean} Adjustment successful.
     */
@@ -349,7 +327,7 @@ export class ConvertStringData
     *
     * @param {HTMLElement} el - Positioned element.
     *
-    * @param {import('./types').StringMatch}  results - Match results.
+    * @param {import('./types-local').StringMatch}  results - Match results.
     *
     * @returns {boolean} Adjustment successful.
     */
@@ -367,30 +345,6 @@ export class ConvertStringData
             break;
       }
 
-      if (!results.operation)
-      {
-         data[key] = results.value;
-         return true;
-      }
-
-      switch (results.operation)
-      {
-         case '-=':
-            data[key] = current - results.value;
-            break;
-
-         case '+=':
-            data[key] = current + results.value;
-            break;
-
-         case '*=':
-            data[key] = current * results.value;
-            break;
-
-         default:
-            return false;
-      }
-
-      return true;
+      return this.#applyResultsValue(key, current, data, results);
    }
 }
