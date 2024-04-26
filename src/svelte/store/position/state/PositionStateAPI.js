@@ -145,7 +145,7 @@ export class PositionStateAPI
     *
     * @param {number}            [options.duration=0.1] - Duration in seconds.
     *
-    * @param {import('svelte/transition').EasingFunction}   [options.ease=linear] - Easing function.
+    * @param {import('#runtime/svelte/easing').EasingFunction}   [options.ease=linear] - Easing function.
     *
     * @param {import('#runtime/math/interpolate').InterpolateFunction}  [options.interpolate=lerp] - Interpolation
     *        function.

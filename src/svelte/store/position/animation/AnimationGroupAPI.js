@@ -863,7 +863,7 @@ export class AnimationGroupAPI
        *
        * @param {number}            [options.duration] - Duration in seconds.
        *
-       * @param {import('svelte/transition').EasingFunction}   [options.ease] - Easing function.
+       * @param {import('#runtime/svelte/easing').EasingFunction}   [options.ease] - Easing function.
        *
        * @param {import('#runtime/math/interpolate').InterpolateFunction}  [options.interpolate] - Interpolation
        *        function.

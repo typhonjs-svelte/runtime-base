@@ -1,8 +1,7 @@
 // Private internal types not in publicly exposed API.
 
-import type { EasingFunction }      from 'svelte/transition';
-
 import type { InterpolateFunction } from '#runtime/math/interpolate';
+import type { EasingFunction }      from '#runtime/svelte/easing';
 import type { BasicAnimation }      from '#runtime/util/animate';
 
 import type { AnimationAPI }        from './types';

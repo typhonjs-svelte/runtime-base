@@ -18,13 +18,13 @@ import { lerp }   from '#runtime/math/interpolate';
  *
  * @param {number}      [options.duration] - Total transition length in ms.
  *
- * @param {import('svelte/transition').EasingFunction}   [options.easing=linear] - The easing function to apply to both
+ * @param {import('#runtime/svelte/easing').EasingFunction}   [options.easing=linear] - The easing function to apply to both
  *        slide & fade transitions.
  *
- * @param {import('svelte/transition').EasingFunction}   [options.easingFade=linear] - The easing function to apply to
+ * @param {import('#runtime/svelte/easing').EasingFunction}   [options.easingFade=linear] - The easing function to apply to
  *        the fade transition.
  *
- * @param {import('svelte/transition').EasingFunction}   [options.easingRotate=linear] - The easing function to apply
+ * @param {import('#runtime/svelte/easing').EasingFunction}   [options.easingRotate=linear] - The easing function to apply
  *        to the rotate transition.
  *
  * @param {number}      [options.end=0] - End rotation in degrees.

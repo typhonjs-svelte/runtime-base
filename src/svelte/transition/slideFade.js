@@ -15,13 +15,13 @@ import { linear }       from '#svelte/easing';
  *
  * @param {number}      [options.duration] - Total transition length in ms.
  *
- * @param {import('svelte/transition').EasingFunction}   [options.easing=linear] - The easing function to apply to both
+ * @param {import('#runtime/svelte/easing').EasingFunction}   [options.easing=linear] - The easing function to apply to both
  *        slide & fade transitions.
  *
- * @param {import('svelte/transition').EasingFunction}   [options.easingFade=linear] - The easing function to apply to
+ * @param {import('#runtime/svelte/easing').EasingFunction}   [options.easingFade=linear] - The easing function to apply to
  *        the fade transition.
  *
- * @param {import('svelte/transition').EasingFunction}   [options.easingSlide=linear] - The easing function to apply to
+ * @param {import('#runtime/svelte/easing').EasingFunction}   [options.easingSlide=linear] - The easing function to apply to
  *        the slide transition.
  *
  * @returns {import('svelte/transition').TransitionConfig} Transition config.

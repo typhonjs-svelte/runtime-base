@@ -1,5 +1,3 @@
-import { cubicOut }              from '#svelte/easing';
-
 import { lerp }                  from '#runtime/math/interpolate';
 
 import { getEasingFunc }         from '#runtime/svelte/easing';
@@ -22,6 +20,8 @@ import {
  */
 export class AnimationAPI
 {
+   static #getEaseOptions = Object.freeze({ default: false });
+
    /** @type {import('../data/types').Data.TJSPositionData} */
    #data;
 
@@ -78,7 +78,7 @@ export class AnimationAPI
     *
     * @param {number}      delay -
     *
-    * @param {import('svelte/transition').EasingFunction}    ease -
+    * @param {import('#runtime/svelte/easing').EasingFunction}    ease -
     *
     * @param {import('#runtime/math/interpolate').InterpolateFunction}    interpolate -
     *
@@ -228,7 +228,7 @@ export class AnimationAPI
          throw new TypeError(`AnimationAPI.from error: 'duration' is not a positive number.`);
       }
 
-      ease = getEasingFunc(ease, { default: false });
+      ease = getEasingFunc(ease, AnimationAPI.#getEaseOptions);
 
       if (typeof ease !== 'function')
       {
@@ -309,7 +309,7 @@ export class AnimationAPI
          throw new TypeError(`AnimationAPI.fromTo error: 'duration' is not a positive number.`);
       }
 
-      ease = getEasingFunc(ease, { default: false });
+      ease = getEasingFunc(ease, AnimationAPI.#getEaseOptions);
 
       if (typeof ease !== 'function')
       {
@@ -392,7 +392,7 @@ export class AnimationAPI
          throw new TypeError(`AnimationAPI.to error: 'duration' is not a positive number.`);
       }
 
-      ease = getEasingFunc(ease, { default: false });
+      ease = getEasingFunc(ease, AnimationAPI.#getEaseOptions);
 
       if (typeof ease !== 'function')
       {
@@ -456,7 +456,7 @@ export class AnimationAPI
          throw new TypeError(`AnimationAPI.quickTo error: 'duration' is not a positive number.`);
       }
 
-      ease = getEasingFunc(ease, { default: false });
+      ease = getEasingFunc(ease, AnimationAPI.#getEaseOptions);
 
       if (typeof ease !== 'function')
       {
@@ -599,7 +599,7 @@ export class AnimationAPI
             throw new TypeError(`AnimationAPI.quickTo.options error: 'duration' is not a positive number.`);
          }
 
-         ease = getEasingFunc(ease, { default: false });
+         ease = getEasingFunc(ease, AnimationAPI.#getEaseOptions);
 
          if (ease !== void 0 && typeof ease !== 'function')
          {

@@ -1,3 +1,5 @@
+export type { EasingFunction } from 'svelte/transition';
+
 /**
  * Defines all the standard 1-dimensional Svelte easing function names.
  */

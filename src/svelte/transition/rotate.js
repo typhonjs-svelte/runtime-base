@@ -17,7 +17,7 @@ import { lerp }   from '#runtime/math/interpolate';
  *
  * @param {number}      [options.duration] - Total transition length in ms.
  *
- * @param {import('svelte/transition').EasingFunction}   [options.easing=linear] - The easing function to apply to the
+ * @param {import('#runtime/svelte/easing').EasingFunction}   [options.easing=linear] - The easing function to apply to the
  *        rotate transition.
  *
  * @param {number}      [options.end=0] - End rotation in degrees.

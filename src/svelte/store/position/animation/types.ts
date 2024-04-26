@@ -1,8 +1,8 @@
-import type { EasingFunction }         from 'svelte/transition';
-
 import type { InterpolateFunction }    from '#runtime/math/interpolate';
 
-import type { EasingFunctionName }    from '#runtime/svelte/easing';
+import type {
+   EasingFunction,
+   EasingFunctionName }                from '#runtime/svelte/easing';
 
 import type { BasicAnimation }         from '#runtime/util/animate';
 
