@@ -9,7 +9,10 @@
   ],
   "sideEffects": false,
   "imports": {
-    "#runtime/*": "@typhonjs-svelte/runtime-base/*",
+    "#runtime/*": {
+      "types": "./_dist/*/index.d.ts",
+      "default": "@typhonjs-svelte/runtime-base/*"
+    },
     "#svelte": "svelte",
     "#svelte/*": "svelte/*"
   },
@@ -93,6 +96,10 @@
     "./svelte/animate": {
       "types": "./_dist/svelte/animate/index.d.ts",
       "import": "./_dist/svelte/animate/index.js"
+    },
+    "./svelte/easing": {
+      "types": "./_dist/svelte/easing/index.d.ts",
+      "import": "./_dist/svelte/easing/index.js"
     },
     "./svelte/store/dom": {
       "types": "./_dist/svelte/store/dom/index.d.ts",
