@@ -5,7 +5,8 @@
  * @module
  */
 
-import * as svelte_transition from 'svelte/transition';
+import * as _runtime_svelte_easing from '@typhonjs-svelte/runtime-base/svelte/easing';
+export { EasingFunction } from 'svelte/transition';
 
 /**
  * Defines all the standard 1-dimensional Svelte easing function names.
@@ -51,15 +52,15 @@ type EasingFunctionName =
 declare const easingList: Readonly<EasingFunctionName[]>;
 
 /**
- * @type {Readonly<Record<import('./types').EasingFunctionName, import('svelte/transition').EasingFunction>>}
+ * @type {Readonly<Record<import('./types').EasingFunctionName, import('#runtime/svelte/easing').EasingFunction>>}
  */
-declare const easingFunc: Readonly<Record<EasingFunctionName, svelte_transition.EasingFunction>>;
+declare const easingFunc: Readonly<Record<EasingFunctionName, _runtime_svelte_easing.EasingFunction>>;
 
 /**
  * Performs a lookup for standard Svelte easing functions by name. For convenience if passing in a function it is
  * returned verbatim.
  *
- * @param {import('./types').EasingFunctionName | import('svelte/transition').EasingFunction} nameOrFunc - The name of
+ * @param {import('./types').EasingFunctionName | import('#runtime/svelte/easing').EasingFunction} nameOrFunc - The name of
  *        a standard Svelte easing function or an existing supplied easing function.
  *
  * @param {object}   [options] - Optional parameters.
@@ -67,13 +68,13 @@ declare const easingFunc: Readonly<Record<EasingFunctionName, svelte_transition.
  * @param {import('./types').EasingFunctionName | false} [options.default='linear'] - The default easing function name
  *        to apply. When specified as `false` no default fallback easing function is selected.
  *
- * @returns {import('svelte/transition').EasingFunction} The requested easing function.
+ * @returns {import('#runtime/svelte/easing').EasingFunction} The requested easing function.
  */
 declare function getEasingFunc(
-  nameOrFunc: EasingFunctionName | svelte_transition.EasingFunction,
+  nameOrFunc: EasingFunctionName | _runtime_svelte_easing.EasingFunction,
   options?: {
     default?: EasingFunctionName | false;
   },
-): svelte_transition.EasingFunction;
+): _runtime_svelte_easing.EasingFunction;
 
 export { type EasingFunctionName, easingFunc, easingList, getEasingFunc };

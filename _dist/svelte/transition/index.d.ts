@@ -1,4 +1,5 @@
 import * as svelte_transition from 'svelte/transition';
+import * as _runtime_svelte_easing from '@typhonjs-svelte/runtime-base/svelte/easing';
 
 /**
  * Provides a rotate transition. For options `easing` is applied to the rotate transition. The default easing is
@@ -15,7 +16,7 @@ import * as svelte_transition from 'svelte/transition';
  *
  * @param {number}      [options.duration] - Total transition length in ms.
  *
- * @param {import('svelte/transition').EasingFunction}   [options.easing=linear] - The easing function to apply to the
+ * @param {import('#runtime/svelte/easing').EasingFunction}   [options.easing=linear] - The easing function to apply to the
  *        rotate transition.
  *
  * @param {number}      [options.end=0] - End rotation in degrees.
@@ -29,7 +30,7 @@ declare function rotate(
   options?: {
     delay?: number;
     duration?: number;
-    easing?: svelte_transition.EasingFunction;
+    easing?: _runtime_svelte_easing.EasingFunction;
     end?: number;
     initial?: number;
   },
@@ -50,13 +51,13 @@ declare function rotate(
  *
  * @param {number}      [options.duration] - Total transition length in ms.
  *
- * @param {import('svelte/transition').EasingFunction}   [options.easing=linear] - The easing function to apply to both
+ * @param {import('#runtime/svelte/easing').EasingFunction}   [options.easing=linear] - The easing function to apply to both
  *        slide & fade transitions.
  *
- * @param {import('svelte/transition').EasingFunction}   [options.easingFade=linear] - The easing function to apply to
+ * @param {import('#runtime/svelte/easing').EasingFunction}   [options.easingFade=linear] - The easing function to apply to
  *        the fade transition.
  *
- * @param {import('svelte/transition').EasingFunction}   [options.easingRotate=linear] - The easing function to apply
+ * @param {import('#runtime/svelte/easing').EasingFunction}   [options.easingRotate=linear] - The easing function to apply
  *        to the rotate transition.
  *
  * @param {number}      [options.end=0] - End rotation in degrees.
@@ -70,9 +71,9 @@ declare function rotateFade(
   options?: {
     delay?: number;
     duration?: number;
-    easing?: svelte_transition.EasingFunction;
-    easingFade?: svelte_transition.EasingFunction;
-    easingRotate?: svelte_transition.EasingFunction;
+    easing?: _runtime_svelte_easing.EasingFunction;
+    easingFade?: _runtime_svelte_easing.EasingFunction;
+    easingRotate?: _runtime_svelte_easing.EasingFunction;
     end?: number;
     initial?: number;
   },
@@ -92,13 +93,13 @@ declare function rotateFade(
  *
  * @param {number}      [options.duration] - Total transition length in ms.
  *
- * @param {import('svelte/transition').EasingFunction}   [options.easing=linear] - The easing function to apply to both
+ * @param {import('#runtime/svelte/easing').EasingFunction}   [options.easing=linear] - The easing function to apply to both
  *        slide & fade transitions.
  *
- * @param {import('svelte/transition').EasingFunction}   [options.easingFade=linear] - The easing function to apply to
+ * @param {import('#runtime/svelte/easing').EasingFunction}   [options.easingFade=linear] - The easing function to apply to
  *        the fade transition.
  *
- * @param {import('svelte/transition').EasingFunction}   [options.easingSlide=linear] - The easing function to apply to
+ * @param {import('#runtime/svelte/easing').EasingFunction}   [options.easingSlide=linear] - The easing function to apply to
  *        the slide transition.
  *
  * @returns {import('svelte/transition').TransitionConfig} Transition config.
@@ -109,9 +110,9 @@ declare function slideFade(
     axis?: 'x' | 'y';
     delay?: number;
     duration?: number;
-    easing?: svelte_transition.EasingFunction;
-    easingFade?: svelte_transition.EasingFunction;
-    easingSlide?: svelte_transition.EasingFunction;
+    easing?: _runtime_svelte_easing.EasingFunction;
+    easingFade?: _runtime_svelte_easing.EasingFunction;
+    easingSlide?: _runtime_svelte_easing.EasingFunction;
   },
 ): svelte_transition.TransitionConfig;
 

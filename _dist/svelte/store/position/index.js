@@ -4,9 +4,9 @@ import { A11yHelper, StyleParse } from '@typhonjs-svelte/runtime-base/util/brows
 import { hasSetter, isIterable, isObject, isPlainObject } from '@typhonjs-svelte/runtime-base/util/object';
 import { subscribeIgnoreFirst } from '@typhonjs-svelte/runtime-base/util/store';
 import { Vec3, Mat4 } from '@typhonjs-svelte/runtime-base/math/gl-matrix';
-import { linear } from 'svelte/easing';
 import { lerp } from '@typhonjs-svelte/runtime-base/math/interpolate';
 import { getEasingFunc } from '@typhonjs-svelte/runtime-base/svelte/easing';
+import { linear } from 'svelte/easing';
 import { writable } from 'svelte/store';
 import { nextAnimationFrame } from '@typhonjs-svelte/runtime-base/util/animate';
 
@@ -453,7 +453,7 @@ class DraggableOptionsStore
    get tweenDuration() { return this.#tweenOptions.duration; }
 
    /**
-    * @returns {import('#runtime/svelte/easing').EasingFunctionName | import('svelte/transition').EasingFunction} Get
+    * @returns {import('#runtime/svelte/easing').EasingFunctionName | import('#runtime/svelte/easing').EasingFunction} Get
     *          easing function or easing function name.
     */
    get tweenEase() { return this.#tweenOptions.ease; }
@@ -475,7 +475,7 @@ class DraggableOptionsStore
    }
 
    /**
-    * @param {import('#runtime/svelte/easing').EasingFunctionName | import('svelte/transition').EasingFunction} ease -
+    * @param {import('#runtime/svelte/easing').EasingFunctionName | import('#runtime/svelte/easing').EasingFunction} ease -
     *        Set easing function by name or direct function.
     */
    set tweenEase(ease)
@@ -1492,6 +1492,8 @@ class ConvertStringData
  */
 class AnimationAPI
 {
+   static #getEaseOptions = Object.freeze({ default: false });
+
    /** @type {import('../data/types').Data.TJSPositionData} */
    #data;
 
@@ -1548,7 +1550,7 @@ class AnimationAPI
     *
     * @param {number}      delay -
     *
-    * @param {import('svelte/transition').EasingFunction}    ease -
+    * @param {import('#runtime/svelte/easing').EasingFunction}    ease -
     *
     * @param {import('#runtime/math/interpolate').InterpolateFunction}    interpolate -
     *
@@ -1698,7 +1700,7 @@ class AnimationAPI
          throw new TypeError(`AnimationAPI.from error: 'duration' is not a positive number.`);
       }
 
-      ease = getEasingFunc(ease, { default: false });
+      ease = getEasingFunc(ease, AnimationAPI.#getEaseOptions);
 
       if (typeof ease !== 'function')
       {
@@ -1779,7 +1781,7 @@ class AnimationAPI
          throw new TypeError(`AnimationAPI.fromTo error: 'duration' is not a positive number.`);
       }
 
-      ease = getEasingFunc(ease, { default: false });
+      ease = getEasingFunc(ease, AnimationAPI.#getEaseOptions);
 
       if (typeof ease !== 'function')
       {
@@ -1862,7 +1864,7 @@ class AnimationAPI
          throw new TypeError(`AnimationAPI.to error: 'duration' is not a positive number.`);
       }
 
-      ease = getEasingFunc(ease, { default: false });
+      ease = getEasingFunc(ease, AnimationAPI.#getEaseOptions);
 
       if (typeof ease !== 'function')
       {
@@ -1926,7 +1928,7 @@ class AnimationAPI
          throw new TypeError(`AnimationAPI.quickTo error: 'duration' is not a positive number.`);
       }
 
-      ease = getEasingFunc(ease, { default: false });
+      ease = getEasingFunc(ease, AnimationAPI.#getEaseOptions);
 
       if (typeof ease !== 'function')
       {
@@ -2069,7 +2071,7 @@ class AnimationAPI
             throw new TypeError(`AnimationAPI.quickTo.options error: 'duration' is not a positive number.`);
          }
 
-         ease = getEasingFunc(ease, { default: false });
+         ease = getEasingFunc(ease, AnimationAPI.#getEaseOptions);
 
          if (ease !== void 0 && typeof ease !== 'function')
          {
@@ -3080,7 +3082,7 @@ class AnimationGroupAPI
        *
        * @param {number}            [options.duration] - Duration in seconds.
        *
-       * @param {import('svelte/transition').EasingFunction}   [options.ease] - Easing function.
+       * @param {import('#runtime/svelte/easing').EasingFunction}   [options.ease] - Easing function.
        *
        * @param {import('#runtime/math/interpolate').InterpolateFunction}  [options.interpolate] - Interpolation
        *        function.
@@ -3247,7 +3249,7 @@ class PositionStateAPI
     *
     * @param {number}            [options.duration=0.1] - Duration in seconds.
     *
-    * @param {import('svelte/transition').EasingFunction}   [options.ease=linear] - Easing function.
+    * @param {import('#runtime/svelte/easing').EasingFunction}   [options.ease=linear] - Easing function.
     *
     * @param {import('#runtime/math/interpolate').InterpolateFunction}  [options.interpolate=lerp] - Interpolation
     *        function.
