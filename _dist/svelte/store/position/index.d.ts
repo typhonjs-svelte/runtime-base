@@ -1,6 +1,7 @@
 import { Mat4, Vec3 } from '@typhonjs-svelte/runtime-base/math/gl-matrix';
 import { EasingFunction } from 'svelte/transition';
 import { InterpolateFunction } from '@typhonjs-svelte/runtime-base/math/interpolate';
+import { EasingFunctionName } from '@typhonjs-svelte/runtime-base/svelte/easing';
 import { BasicAnimation } from '@typhonjs-svelte/runtime-base/util/animate';
 import * as svelte_store from 'svelte/store';
 import { Subscriber, Invalidator, Unsubscriber, Writable, Readable } from 'svelte/store';
@@ -1262,9 +1263,9 @@ declare namespace AnimationAPI {
      */
     duration?: number;
     /**
-     * Easing function; default: cubicOut
+     * Easing function or easing function name; default: cubicOut
      */
-    ease?: EasingFunction;
+    ease?: EasingFunctionName | EasingFunction;
     /**
      * Interpolation function; default: lerp
      */
@@ -1706,7 +1707,7 @@ declare namespace Action {
      */
     get tweenDuration(): number;
     /**
-     * @returns {EasingFunction} Get easing function.
+     * @returns {EasingFunctionName | EasingFunction} Get easing function or easing function name.
      */
     get tweenEase(): EasingFunction;
     /**
@@ -1714,7 +1715,7 @@ declare namespace Action {
      */
     set tweenDuration(duration: number);
     /**
-     * @param {EasingFunction} ease - Set easing function.
+     * @param {EasingFunctionName | EasingFunction} ease - Set easing function by name or direct function.
      */
     set tweenEase(ease: EasingFunction);
     /**

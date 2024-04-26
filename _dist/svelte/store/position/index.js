@@ -1,11 +1,12 @@
-import { clamp, degToRad } from '@typhonjs-svelte/runtime-base/math/util';
+import { radToDeg, clamp, degToRad } from '@typhonjs-svelte/runtime-base/math/util';
 import { propertyStore } from '@typhonjs-svelte/runtime-base/svelte/store/writable-derived';
 import { A11yHelper, StyleParse } from '@typhonjs-svelte/runtime-base/util/browser';
 import { hasSetter, isIterable, isObject, isPlainObject } from '@typhonjs-svelte/runtime-base/util/object';
 import { subscribeIgnoreFirst } from '@typhonjs-svelte/runtime-base/util/store';
 import { Vec3, Mat4 } from '@typhonjs-svelte/runtime-base/math/gl-matrix';
-import { cubicOut, linear } from 'svelte/easing';
+import { linear } from 'svelte/easing';
 import { lerp } from '@typhonjs-svelte/runtime-base/math/interpolate';
+import { getEasingFunc } from '@typhonjs-svelte/runtime-base/svelte/easing';
 import { writable } from 'svelte/store';
 import { nextAnimationFrame } from '@typhonjs-svelte/runtime-base/util/animate';
 
@@ -65,7 +66,7 @@ function applyPosition(node, position)
  *          functions.
  */
 function draggable(node, { position, enabled = true, button = 0, storeDragging = void 0, tween = false,
- tweenOptions = { duration: 1, ease: cubicOut }, hasTargetClassList, ignoreTargetClassList })
+ tweenOptions = { duration: 1, ease: 'cubicOut' }, hasTargetClassList, ignoreTargetClassList })
 {
    if (hasTargetClassList !== void 0 && !isIterable(hasTargetClassList))
    {
@@ -363,7 +364,7 @@ class DraggableOptionsStore
    /**
     * @type {import('../animation/types').AnimationAPI.QuickTweenOptions}
     */
-   #tweenOptions = { duration: 1, ease: cubicOut };
+   #tweenOptions = { duration: 1, ease: 'cubicOut' };
 
    /**
     * Stores the subscribers.
@@ -423,9 +424,11 @@ class DraggableOptionsStore
 
             if (newTweenOptions.ease !== void 0)
             {
-               if (typeof newTweenOptions.ease !== 'function')
+               const easeFn = getEasingFunc(newTweenOptions.ease);
+
+               if (typeof easeFn !== 'function')
                {
-                  throw new TypeError(`'tweenOptions.ease' is not a function.`);
+                  throw new TypeError(`'tweenOptions.ease' is not a function or Svelte easing function name.`);
                }
 
                this.#tweenOptions.ease = newTweenOptions.ease;
@@ -450,7 +453,8 @@ class DraggableOptionsStore
    get tweenDuration() { return this.#tweenOptions.duration; }
 
    /**
-    * @returns {import('svelte/transition').EasingFunction} Get easing function.
+    * @returns {import('#runtime/svelte/easing').EasingFunctionName | import('svelte/transition').EasingFunction} Get
+    *          easing function or easing function name.
     */
    get tweenEase() { return this.#tweenOptions.ease; }
 
@@ -471,13 +475,16 @@ class DraggableOptionsStore
    }
 
    /**
-    * @param {import('svelte/transition').EasingFunction} ease - Set easing function.
+    * @param {import('#runtime/svelte/easing').EasingFunctionName | import('svelte/transition').EasingFunction} ease -
+    *        Set easing function by name or direct function.
     */
    set tweenEase(ease)
    {
-      if (typeof ease !== 'function')
+      const easeFn = getEasingFunc(ease);
+
+      if (typeof easeFn !== 'function')
       {
-         throw new TypeError(`'ease' is not a function.`);
+         throw new TypeError(`'ease' is not a function or Svelte easing function name.`);
       }
 
       this.#tweenOptions.ease = ease;
@@ -559,31 +566,19 @@ class DraggableOptionsStore
 draggable.options = (options) => new DraggableOptionsStore(options);
 
 /**
- * Defines reusable / frozen implementation of {@link BasicAnimationState}.
- *
- * @type {({
- *    cancelled: import('#runtime/util/animate').BasicAnimationState,
- *    notCancelled: import('#runtime/util/animate').BasicAnimationState
- * })}
- */
-const basicAnimationState = {
-   cancelled: Object.freeze({ cancelled: true }),
-   notCancelled: Object.freeze({ cancelled: false })
-};
-
-/**
  * Provides a basic animation implementation for TJSPosition animation.
  *
  * @implements {import('#runtime/util/animate').BasicAnimation}
  */
 class AnimationControl
 {
-   /** @type {object} */
+   /** @type {import('./types-local').AnimationData} */
    #animationData;
 
    /** @type {Promise<import('#runtime/util/animate').BasicAnimationState>} */
    #finishedPromise;
 
+   /** @type {boolean} */
    #willFinish;
 
    /**
@@ -601,7 +596,7 @@ class AnimationControl
    static get voidControl() { return this.#voidControl; }
 
    /**
-    * @param {object | null}  [animationData] - Animation data from {@link AnimationAPI}.
+    * @param {import('./types-local').AnimationData | null}  [animationData] - Animation data from {@link AnimationAPI}.
     *
     * @param {boolean}        [willFinish] - Promise that tracks animation finished state.
     */
@@ -624,7 +619,7 @@ class AnimationControl
       if (!(this.#finishedPromise instanceof Promise))
       {
          this.#finishedPromise = this.#willFinish ? new Promise((resolve) => this.#animationData.resolve = resolve) :
-          Promise.resolve(basicAnimationState.notCancelled);
+          Promise.resolve({ cancelled: false });
       }
 
       return this.#finishedPromise;
@@ -675,12 +670,12 @@ class AnimationManager
    static #tjsPositionSetOptions = Object.freeze({ immediateElementUpdate: true });
 
    /**
-    * @type {object[]}
+    * @type {import('./types-local').AnimationData[]}
     */
    static activeList = [];
 
    /**
-    * @type {object[]}
+    * @type {import('./types-local').AnimationData[]}
     */
    static newList = [];
 
@@ -692,7 +687,7 @@ class AnimationManager
    /**
     * Add animation data.
     *
-    * @param {object}   data -
+    * @param {import('./types-local').AnimationData}   data -
     */
    static add(data)
    {
@@ -1163,7 +1158,10 @@ class ConvertStringData
 
       // Animation keys that can be specified in percentage of parent element constraint.
       percentParent: Object.freeze(new Set(['left', 'top', 'maxWidth', 'maxHeight', 'minWidth', 'minHeight', 'width',
-       'height']))
+       'height'])),
+
+      // Only rotation animation keys can be specified in `rad` / `turn` converted to a number.
+      rotationRadTurn: Object.freeze(new Set(['rotateX', 'rotateY', 'rotateZ', 'rotation']))
    };
 
    /**
@@ -1176,12 +1174,12 @@ class ConvertStringData
     *
     * @type {RegExp}
     */
-   static #regexStringData = /^(?<operation>[-+*]=)?(?<value>-?\d*\.?\d+)(?<unit>%|%~|px)?$/;
+   static #regexStringData = /^(?<operation>[-+*]=)?(?<value>-?\d*\.?\d+)(?<unit>%|%~|px|rad|turn)?$/;
 
    /**
     * Stores the results for match groups from `regexStringData`;
     *
-    * @type {import('./types').StringMatch}
+    * @type {import('./types-local').StringMatch}
     */
    static #matchResults = Object.seal({
       operation: void 0,
@@ -1220,8 +1218,8 @@ class ConvertStringData
 
             const regexResults = this.#regexStringData.exec(value);
 
-            // Additional state indicating a particular key is not handled.
-            let notHandledWarning = false;
+            // Additional state indicating a particular key is handled.
+            let handled = false;
 
             if (regexResults)
             {
@@ -1258,7 +1256,7 @@ class ConvertStringData
                         }
                      }
 
-                     notHandledWarning = this.#handlePercent(animKey, current, data, position, el, results,
+                     handled = this.#handlePercent(animKey, current, data, position, el, results,
                       parentClientHeight, parentClientWidth);
 
                      break;
@@ -1266,39 +1264,46 @@ class ConvertStringData
 
                   // Animation keys that support percentage changes from current values.
                   case '%~':
-                     notHandledWarning = this.#handleRelativePercent(animKey, current, data, position, el, results);
+                     handled = this.#handleRelativePercent(animKey, current, data, position, el, results);
                      break;
 
                   // Animation keys that support `px` / treat as raw number.
                   case 'px':
-                     notHandledWarning = this.#animKeyTypes.numPx.has(key) ?
-                      this.#handleRelativeNum(animKey, current, data, position, el, results) : true;
+                     handled = this.#animKeyTypes.numPx.has(key) ?
+                      this.#applyResultsValue(animKey, current, data, results) : false;
+                     break;
+
+                  // Only rotation animation keys support `rad` / `turn`.
+                  case 'rad':
+                  case 'turn':
+                     handled = this.#animKeyTypes.rotationRadTurn.has(key) ?
+                      this.#handleRotationRadTurn(animKey, current, data, position, el, results) : false;
                      break;
 
                   // No units / treat as raw number.
                   default:
-                     notHandledWarning = this.#handleRelativeNum(animKey, current, data, position, el, results);
+                     handled = this.#applyResultsValue(animKey, current, data, results);
                      break;
                }
-
-               continue;
             }
 
-            if (!regexResults || notHandledWarning)
+            if (!regexResults || !handled)
             {
                console.warn(
                 `TJSPosition - ConvertStringData warning: malformed key '${key}' with value '${value}'.`);
                data[key] = void 0;
             }
          }
-
-         return data;
       }
+
+      return data;
    }
 
+   // Internal implementation ----------------------------------------------------------------------------------------
+
    /**
-    * Handles the `%` unit type where values are adjusted against the parent element client width / height or in the
-    * case of rotation the percentage of 360 degrees.
+    * Provides the common update to source data after `results.value` has been converted to the proper value
+    * respectively.
     *
     * @param {import('../animation/types').AnimationAPI.AnimationKeys} key - Animation key.
     *
@@ -1306,99 +1311,18 @@ class ConvertStringData
     *
     * @param {import('../data/types').Data.TJSPositionDataRelative}  data - Source data to convert.
     *
-    * @param {import('../data/types').Data.TJSPositionData} position - Current position data.
-    *
-    * @param {HTMLElement} el - Positioned element.
-    *
-    * @param {import('./types').StringMatch}  results - Match results.
-    *
-    * @param {number}  parentClientHeight - Parent element client height.
-    *
-    * @param {number}  parentClientWidth - Parent element client width.
+    * @param {import('./types-local').StringMatch}  results - Match results.
     *
     * @returns {boolean} Adjustment successful.
     */
-   static #handlePercent(key, current, data, position, el, results, parentClientHeight, parentClientWidth)
+   static #applyResultsValue(key, current, data, results)
    {
-      /** @type {number} */
-      let value = void 0;
-
-      switch (key)
-      {
-         // Calculate value; take into account keys that calculate parent client width.
-         case 'left':
-         case 'maxWidth':
-         case 'minWidth':
-         case 'width':
-         case 'translateX':
-            value = parentClientWidth * (results.value / 100);
-            break;
-
-         // Calculate value; take into account keys that calculate parent client height.
-         case 'top':
-         case 'maxHeight':
-         case 'minHeight':
-         case 'height':
-         case 'translateY':
-            value = parentClientHeight * (results.value / 100);
-            break;
-
-         // Calculate value; convert percentage into degrees
-         case 'rotateX':
-         case 'rotateY':
-         case 'rotateZ':
-         case 'rotation':
-            value = 360 * (results.value / 100);
-            break;
-
-         default:
-            return false;
-      }
-
       if (!results.operation)
       {
-         data[key] = value;
+         data[key] = results.value;
          return true;
       }
 
-      switch (results.operation)
-      {
-         case '-=':
-            data[key] = current - value;
-            break;
-
-         case '+=':
-            data[key] = current + value;
-            break;
-
-         case '*=':
-            data[key] = current * value;
-            break;
-
-         default:
-            return false;
-      }
-
-      return true;
-   }
-
-   /**
-    * @param {import('../animation/types').AnimationAPI.AnimationKeys} key - Animation key.
-    *
-    * @param {number}   current - Current value
-    *
-    * @param {import('../data/types').Data.TJSPositionDataRelative}  data - Source data to convert.
-    *
-    * @param {import('../data/types').Data.TJSPositionData} position - Current position data.
-    *
-    * @param {HTMLElement} el - Positioned element.
-    *
-    * @param {import('./types').StringMatch}  results - Match results.
-    *
-    * @returns {boolean} Adjustment successful.
-    */
-   static #handleRelativeNum(key, current, data, position, el, results)
-   {
       switch (results.operation)
       {
          case '-=':
@@ -1421,6 +1345,65 @@ class ConvertStringData
    }
 
    /**
+    * Handles the `%` unit type where values are adjusted against the parent element client width / height or in the
+    * case of rotation the percentage of 360 degrees.
+    *
+    * @param {import('../animation/types').AnimationAPI.AnimationKeys} key - Animation key.
+    *
+    * @param {number}   current - Current value
+    *
+    * @param {import('../data/types').Data.TJSPositionDataRelative}  data - Source data to convert.
+    *
+    * @param {import('../data/types').Data.TJSPositionData} position - Current position data.
+    *
+    * @param {HTMLElement} el - Positioned element.
+    *
+    * @param {import('./types-local').StringMatch}  results - Match results.
+    *
+    * @param {number}  parentClientHeight - Parent element client height.
+    *
+    * @param {number}  parentClientWidth - Parent element client width.
+    *
+    * @returns {boolean} Adjustment successful.
+    */
+   static #handlePercent(key, current, data, position, el, results, parentClientHeight, parentClientWidth)
+   {
+      switch (key)
+      {
+         // Calculate value; take into account keys that calculate parent client width.
+         case 'left':
+         case 'maxWidth':
+         case 'minWidth':
+         case 'width':
+         case 'translateX':
+            results.value = parentClientWidth * (results.value / 100);
+            break;
+
+         // Calculate value; take into account keys that calculate parent client height.
+         case 'top':
+         case 'maxHeight':
+         case 'minHeight':
+         case 'height':
+         case 'translateY':
+            results.value = parentClientHeight * (results.value / 100);
+            break;
+
+         // Calculate value; convert percentage into degrees
+         case 'rotateX':
+         case 'rotateY':
+         case 'rotateZ':
+         case 'rotation':
+            results.value = 360 * (results.value / 100);
+            break;
+
+         default:
+            return false;
+      }
+
+      return this.#applyResultsValue(key, current, data, results);
+   }
+
+   /**
     * Handles the `%~` unit type where values are adjusted against the current value for the given key.
     *
     * @param {import('../animation/types').AnimationAPI.AnimationKeys} key - Animation key.
@@ -1433,7 +1416,7 @@ class ConvertStringData
     *
     * @param {HTMLElement} el - Positioned element.
     *
-    * @param {import('./types').StringMatch}  results - Match results.
+    * @param {import('./types-local').StringMatch}  results - Match results.
     *
     * @returns {boolean} Adjustment successful.
     */
@@ -1467,6 +1450,40 @@ class ConvertStringData
       }
 
       return true;
+   }
+
+   /**
+    * Handles the `rad` / `turn` unit types for rotation animation keys.
+    *
+    * @param {import('../animation/types').AnimationAPI.AnimationKeys} key - Animation key.
+    *
+    * @param {number}   current - Current value
+    *
+    * @param {import('../data/types').Data.TJSPositionDataRelative}  data - Source data to convert.
+    *
+    * @param {import('../data/types').Data.TJSPositionData} position - Current position data.
+    *
+    * @param {HTMLElement} el - Positioned element.
+    *
+    * @param {import('./types-local').StringMatch}  results - Match results.
+    *
+    * @returns {boolean} Adjustment successful.
+    */
+   static #handleRotationRadTurn(key, current, data, position, el, results)
+   {
+      // Convert radians / turn into degrees.
+      switch (results.unit)
+      {
+         case 'rad':
+            results.value = radToDeg(results.value);
+            break;
+
+         case 'turn':
+            results.value = 360 * results.value;
+            break;
+      }
+
+      return this.#applyResultsValue(key, current, data, results);
    }
 }
 
@@ -1533,7 +1550,7 @@ class AnimationAPI
     *
     * @param {import('svelte/transition').EasingFunction}    ease -
     *
-    * @param {import('#runtime/svelte/transition').InterpolateFunction}    interpolate -
+    * @param {import('#runtime/math/interpolate').InterpolateFunction}    interpolate -
     *
     * @returns {import('#runtime/util/animate').BasicAnimation} The associated animation control.
     */
@@ -1555,6 +1572,7 @@ class AnimationAPI
       // Nothing to animate, so return now.
       if (keys.length === 0) { return AnimationControl.voidControl; }
 
+      /** @type {import('./types-local').AnimationData} */
       const animationData = {
          active: true,
          cleanup: this.#cleanup,
@@ -1614,7 +1632,7 @@ class AnimationAPI
    /**
     * Cleans up an animation instance.
     *
-    * @param {object}   data - Animation data for an animation instance.
+    * @param {import('./types-local').AnimationData}   data - Animation data for an animation instance.
     */
    #cleanupInstance(data)
    {
@@ -1625,7 +1643,7 @@ class AnimationAPI
 
       if (typeof data.resolve === 'function')
       {
-         data.resolve(data.cancelled ? basicAnimationState.cancelled : basicAnimationState.notCancelled);
+         data.resolve({ cancelled: data.cancelled });
       }
    }
 
@@ -1650,7 +1668,7 @@ class AnimationAPI
     * @returns {import('#runtime/util/animate').BasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
     */
-   from(fromData, { delay = 0, duration = 1, ease = cubicOut, interpolate = lerp } = {})
+   from(fromData, { delay = 0, duration = 1, ease = 'cubicOut', interpolate = lerp } = {})
    {
       if (!isObject(fromData))
       {
@@ -1680,9 +1698,11 @@ class AnimationAPI
          throw new TypeError(`AnimationAPI.from error: 'duration' is not a positive number.`);
       }
 
+      ease = getEasingFunc(ease, { default: false });
+
       if (typeof ease !== 'function')
       {
-         throw new TypeError(`AnimationAPI.from error: 'ease' is not a function.`);
+         throw new TypeError(`AnimationAPI.from error: 'ease' is not a function or valid Svelte easing function name.`);
       }
 
       if (typeof interpolate !== 'function')
@@ -1725,7 +1745,7 @@ class AnimationAPI
     * @returns {import('#runtime/util/animate').BasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
     */
-   fromTo(fromData, toData, { delay = 0, duration = 1, ease = cubicOut, interpolate = lerp } = {})
+   fromTo(fromData, toData, { delay = 0, duration = 1, ease = 'cubicOut', interpolate = lerp } = {})
    {
       if (!isObject(fromData))
       {
@@ -1759,9 +1779,12 @@ class AnimationAPI
          throw new TypeError(`AnimationAPI.fromTo error: 'duration' is not a positive number.`);
       }
 
+      ease = getEasingFunc(ease, { default: false });
+
       if (typeof ease !== 'function')
       {
-         throw new TypeError(`AnimationAPI.fromTo error: 'ease' is not a function.`);
+         throw new TypeError(
+          `AnimationAPI.fromTo error: 'ease' is not a function or valid Svelte easing function name.`);
       }
 
       if (typeof interpolate !== 'function')
@@ -1810,7 +1833,7 @@ class AnimationAPI
     * @returns {import('#runtime/util/animate').BasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
     */
-   to(toData, { delay = 0, duration = 1, ease = cubicOut, interpolate = lerp } = {})
+   to(toData, { delay = 0, duration = 1, ease = 'cubicOut', interpolate = lerp } = {})
    {
       if (!isObject(toData))
       {
@@ -1839,9 +1862,11 @@ class AnimationAPI
          throw new TypeError(`AnimationAPI.to error: 'duration' is not a positive number.`);
       }
 
+      ease = getEasingFunc(ease, { default: false });
+
       if (typeof ease !== 'function')
       {
-         throw new TypeError(`AnimationAPI.to error: 'ease' is not a function.`);
+         throw new TypeError(`AnimationAPI.to error: 'ease' is not a function or valid Svelte easing function name.`);
       }
 
       if (typeof interpolate !== 'function')
@@ -1881,7 +1906,7 @@ class AnimationAPI
     *
     * @returns {import('./types').AnimationAPI.QuickToCallback} quick-to tween function.
     */
-   quickTo(keys, { duration = 1, ease = cubicOut, interpolate = lerp } = {})
+   quickTo(keys, { duration = 1, ease = 'cubicOut', interpolate = lerp } = {})
    {
       if (!isIterable(keys))
       {
@@ -1901,9 +1926,12 @@ class AnimationAPI
          throw new TypeError(`AnimationAPI.quickTo error: 'duration' is not a positive number.`);
       }
 
+      ease = getEasingFunc(ease, { default: false });
+
       if (typeof ease !== 'function')
       {
-         throw new TypeError(`AnimationAPI.quickTo error: 'ease' is not a function.`);
+         throw new TypeError(
+          `AnimationAPI.quickTo error: 'ease' is not a function or valid Svelte easing function name.`);
       }
 
       if (typeof interpolate !== 'function')
@@ -1945,6 +1973,7 @@ class AnimationAPI
 
       const newData = Object.assign({}, initial);
 
+      /** @type {import('./types-local').AnimationData} */
       const animationData = {
          active: true,
          cleanup: this.#cleanup,
@@ -2040,9 +2069,12 @@ class AnimationAPI
             throw new TypeError(`AnimationAPI.quickTo.options error: 'duration' is not a positive number.`);
          }
 
+         ease = getEasingFunc(ease, { default: false });
+
          if (ease !== void 0 && typeof ease !== 'function')
          {
-            throw new TypeError(`AnimationAPI.quickTo.options error: 'ease' is not a function.`);
+            throw new TypeError(
+             `AnimationAPI.quickTo.options error: 'ease' is not a function or valid Svelte easing function name.`);
          }
 
          if (interpolate !== void 0 && typeof interpolate !== 'function')
@@ -2111,7 +2143,7 @@ class AnimationGroupControl
          if (animationControls === null || animationControls === void 0)
          {
             this.#finishedPromise = /** @type {Promise<import('#runtime/util/animate').BasicAnimationState>} */
-             Promise.resolve(basicAnimationState.notCancelled);
+             Promise.resolve({ cancelled: false });
          }
          else
          {
@@ -2126,7 +2158,7 @@ class AnimationGroupControl
                 (result.status === 'fulfilled' && result.value.cancelled));
 
                // Return a single BasicAnimationState based on the aggregation of individual results.
-               return anyCancelled ? basicAnimationState.cancelled : basicAnimationState.notCancelled;
+               return { cancelled: anyCancelled };
             });
          }
       }
@@ -2197,7 +2229,7 @@ class AnimationGroupControl
  *
  * Note: To remove cyclic dependencies as this class provides the TJSPosition static / group Animation API `instanceof`
  * checks are not done against TJSPosition. Instead, a check for the animate property being an instanceof
- * {@link AnimationAPI} is performed in {@link AnimationGroupAPI.#isPosition}.
+ * {@link AnimationAPI} is performed in {@link AnimationGroupAPI.#getPosition}.
  *
  * @see AnimationAPI
  *
