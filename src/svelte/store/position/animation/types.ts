@@ -2,6 +2,8 @@ import type { EasingFunction }         from 'svelte/transition';
 
 import type { InterpolateFunction }    from '#runtime/math/interpolate';
 
+import type { EasingFunctionName }    from '#runtime/svelte/easing';
+
 import type { BasicAnimation }         from '#runtime/util/animate';
 
 import type { Data }                   from '../data/types';
@@ -303,9 +305,9 @@ namespace AnimationAPI {
       duration?: number;
 
       /**
-       * Easing function; default: cubicOut
+       * Easing function or easing function name; default: cubicOut
        */
-      ease?: EasingFunction;
+      ease?: EasingFunctionName | EasingFunction;
 
       /**
        * Interpolation function; default: lerp

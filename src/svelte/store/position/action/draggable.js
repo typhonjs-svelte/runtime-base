@@ -1,10 +1,10 @@
-import { cubicOut }     from '#svelte/easing';
+import { getEasingFunc }   from '#runtime/svelte/easing';
 
-import { A11yHelper }   from '#runtime/util/browser';
+import { A11yHelper }      from '#runtime/util/browser';
 
 import {
    isIterable,
-   isObject }           from '#runtime/util/object';
+   isObject }              from '#runtime/util/object';
 
 /**
  * Provides an action to enable pointer dragging of an HTMLElement and invoke `position.set` on a given
@@ -19,7 +19,7 @@ import {
  *          functions.
  */
 function draggable(node, { position, enabled = true, button = 0, storeDragging = void 0, tween = false,
- tweenOptions = { duration: 1, ease: cubicOut }, hasTargetClassList, ignoreTargetClassList })
+ tweenOptions = { duration: 1, ease: 'cubicOut' }, hasTargetClassList, ignoreTargetClassList })
 {
    if (hasTargetClassList !== void 0 && !isIterable(hasTargetClassList))
    {
@@ -317,7 +317,7 @@ class DraggableOptionsStore
    /**
     * @type {import('../animation/types').AnimationAPI.QuickTweenOptions}
     */
-   #tweenOptions = { duration: 1, ease: cubicOut };
+   #tweenOptions = { duration: 1, ease: 'cubicOut' };
 
    /**
     * Stores the subscribers.
@@ -377,9 +377,11 @@ class DraggableOptionsStore
 
             if (newTweenOptions.ease !== void 0)
             {
-               if (typeof newTweenOptions.ease !== 'function')
+               const easeFn = getEasingFunc(newTweenOptions.ease);
+
+               if (typeof easeFn !== 'function')
                {
-                  throw new TypeError(`'tweenOptions.ease' is not a function.`);
+                  throw new TypeError(`'tweenOptions.ease' is not a function or Svelte easing function name.`);
                }
 
                this.#tweenOptions.ease = newTweenOptions.ease;
@@ -404,7 +406,8 @@ class DraggableOptionsStore
    get tweenDuration() { return this.#tweenOptions.duration; }
 
    /**
-    * @returns {import('svelte/transition').EasingFunction} Get easing function.
+    * @returns {import('#runtime/svelte/easing').EasingFunctionName | import('svelte/transition').EasingFunction} Get
+    *          easing function or easing function name.
     */
    get tweenEase() { return this.#tweenOptions.ease; }
 
@@ -425,13 +428,16 @@ class DraggableOptionsStore
    }
 
    /**
-    * @param {import('svelte/transition').EasingFunction} ease - Set easing function.
+    * @param {import('#runtime/svelte/easing').EasingFunctionName | import('svelte/transition').EasingFunction} ease -
+    *        Set easing function by name or direct function.
     */
    set tweenEase(ease)
    {
-      if (typeof ease !== 'function')
+      const easeFn = getEasingFunc(ease);
+
+      if (typeof easeFn !== 'function')
       {
-         throw new TypeError(`'ease' is not a function.`);
+         throw new TypeError(`'ease' is not a function or Svelte easing function name.`);
       }
 
       this.#tweenOptions.ease = ease;

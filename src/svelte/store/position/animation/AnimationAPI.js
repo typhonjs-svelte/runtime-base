@@ -2,6 +2,8 @@ import { cubicOut }              from '#svelte/easing';
 
 import { lerp }                  from '#runtime/math/interpolate';
 
+import { getEasingFunc }         from '#runtime/svelte/easing';
+
 import { A11yHelper }            from '#runtime/util/browser';
 
 import {
@@ -196,7 +198,7 @@ export class AnimationAPI
     * @returns {import('#runtime/util/animate').BasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
     */
-   from(fromData, { delay = 0, duration = 1, ease = cubicOut, interpolate = lerp } = {})
+   from(fromData, { delay = 0, duration = 1, ease = 'cubicOut', interpolate = lerp } = {})
    {
       if (!isObject(fromData))
       {
@@ -226,9 +228,11 @@ export class AnimationAPI
          throw new TypeError(`AnimationAPI.from error: 'duration' is not a positive number.`);
       }
 
+      ease = getEasingFunc(ease, { default: false });
+
       if (typeof ease !== 'function')
       {
-         throw new TypeError(`AnimationAPI.from error: 'ease' is not a function.`);
+         throw new TypeError(`AnimationAPI.from error: 'ease' is not a function or valid Svelte easing function name.`);
       }
 
       if (typeof interpolate !== 'function')
@@ -271,7 +275,7 @@ export class AnimationAPI
     * @returns {import('#runtime/util/animate').BasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
     */
-   fromTo(fromData, toData, { delay = 0, duration = 1, ease = cubicOut, interpolate = lerp } = {})
+   fromTo(fromData, toData, { delay = 0, duration = 1, ease = 'cubicOut', interpolate = lerp } = {})
    {
       if (!isObject(fromData))
       {
@@ -305,9 +309,12 @@ export class AnimationAPI
          throw new TypeError(`AnimationAPI.fromTo error: 'duration' is not a positive number.`);
       }
 
+      ease = getEasingFunc(ease, { default: false });
+
       if (typeof ease !== 'function')
       {
-         throw new TypeError(`AnimationAPI.fromTo error: 'ease' is not a function.`);
+         throw new TypeError(
+          `AnimationAPI.fromTo error: 'ease' is not a function or valid Svelte easing function name.`);
       }
 
       if (typeof interpolate !== 'function')
@@ -356,7 +363,7 @@ export class AnimationAPI
     * @returns {import('#runtime/util/animate').BasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
     */
-   to(toData, { delay = 0, duration = 1, ease = cubicOut, interpolate = lerp } = {})
+   to(toData, { delay = 0, duration = 1, ease = 'cubicOut', interpolate = lerp } = {})
    {
       if (!isObject(toData))
       {
@@ -385,9 +392,11 @@ export class AnimationAPI
          throw new TypeError(`AnimationAPI.to error: 'duration' is not a positive number.`);
       }
 
+      ease = getEasingFunc(ease, { default: false });
+
       if (typeof ease !== 'function')
       {
-         throw new TypeError(`AnimationAPI.to error: 'ease' is not a function.`);
+         throw new TypeError(`AnimationAPI.to error: 'ease' is not a function or valid Svelte easing function name.`);
       }
 
       if (typeof interpolate !== 'function')
@@ -427,7 +436,7 @@ export class AnimationAPI
     *
     * @returns {import('./types').AnimationAPI.QuickToCallback} quick-to tween function.
     */
-   quickTo(keys, { duration = 1, ease = cubicOut, interpolate = lerp } = {})
+   quickTo(keys, { duration = 1, ease = 'cubicOut', interpolate = lerp } = {})
    {
       if (!isIterable(keys))
       {
@@ -447,9 +456,12 @@ export class AnimationAPI
          throw new TypeError(`AnimationAPI.quickTo error: 'duration' is not a positive number.`);
       }
 
+      ease = getEasingFunc(ease, { default: false });
+
       if (typeof ease !== 'function')
       {
-         throw new TypeError(`AnimationAPI.quickTo error: 'ease' is not a function.`);
+         throw new TypeError(
+          `AnimationAPI.quickTo error: 'ease' is not a function or valid Svelte easing function name.`);
       }
 
       if (typeof interpolate !== 'function')
@@ -587,9 +599,12 @@ export class AnimationAPI
             throw new TypeError(`AnimationAPI.quickTo.options error: 'duration' is not a positive number.`);
          }
 
+         ease = getEasingFunc(ease, { default: false });
+
          if (ease !== void 0 && typeof ease !== 'function')
          {
-            throw new TypeError(`AnimationAPI.quickTo.options error: 'ease' is not a function.`);
+            throw new TypeError(
+             `AnimationAPI.quickTo.options error: 'ease' is not a function or valid Svelte easing function name.`);
          }
 
          if (interpolate !== void 0 && typeof interpolate !== 'function')
