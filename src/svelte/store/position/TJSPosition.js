@@ -244,7 +244,7 @@ export class TJSPosition
     */
    static duplicate(position, options)
    {
-      if (!(position instanceof TJSPosition)) { throw new TypeError(`'position' is not an instance of Position.`); }
+      if (!(position instanceof TJSPosition)) { throw new TypeError(`'position' is not an instance of TJSPosition.`); }
 
       const newPosition = new TJSPosition(options);
 
@@ -857,7 +857,7 @@ export class TJSPosition
     * @param {object}  [data] - Target to assign current position data.
     *
     * @param {import('./types').TJSPositionTypes.OptionsGet}   [options] - Defines options for specific keys and
-    *        substituting null for numeric default values.
+    *        substituting null for numeric default values. By default, nullable keys are included.
     *
     * @returns {Partial<import('./data/types').Data.TJSPositionData>} Passed in object with current position data.
     */
@@ -865,7 +865,7 @@ export class TJSPosition
    {
       const keys = options?.keys;
       const excludeKeys = options?.exclude;
-      const nullable = options?.nullable ?? false;
+      const nullable = options?.nullable ?? true;
       const numeric = options?.numeric ?? false;
 
       if (isIterable(keys))
@@ -949,7 +949,7 @@ export class TJSPosition
     */
    set(position = {}, options)
    {
-      if (!isObject(position)) { throw new TypeError(`Position - set error: 'position' is not an object.`); }
+      if (!isObject(position)) { throw new TypeError(`TJSPosition - set error: 'position' is not an object.`); }
 
       const parent = this.#parent;
 

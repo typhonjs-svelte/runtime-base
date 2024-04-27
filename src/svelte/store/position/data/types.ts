@@ -54,7 +54,7 @@ namespace Data {
    /**
     * Defines a TJSPositionData instance that has extra properties / attributes.
     */
-   export interface TJSPositionDataExtra extends TJSPositionData {
+   export interface TJSPositionDataExtra extends Partial<TJSPositionData> {
       [key: string]: any;
    }
 

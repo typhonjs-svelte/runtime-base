@@ -1,7 +1,8 @@
-import type { InterpolateFunction }       from '#runtime/math/interpolate';
-import type { EasingFunction }            from '#runtime/svelte/easing';
+import type { InterpolateFunction } from '#runtime/math/interpolate';
+import type { EasingFunction }      from '#runtime/svelte/easing';
 
-import type { Data }                      from '../data/types';
+import type { TJSPositionTypes }    from '../types';
+import type { Data }                from '../data/types';
 
 interface PositionStateAPI {
    /**
@@ -96,12 +97,15 @@ interface PositionStateAPI {
     *
     * @param {string}   options.name - name to index this saved data.
     *
+    * @param {import('../types').TJSPositionTypes.OptionsGet} [optionsGet] - Additional options for
+    *        {@link TJSPosition.get} when serializing position state.
+    *
     * @returns {Data.TJSPositionDataExtra} Current position data
     */
    save({ name, ...extra }: {
       name: string;
       [key: string]: any;
-   }): Data.TJSPositionDataExtra;
+   }, optionsGet: TJSPositionTypes.OptionsGet): Data.TJSPositionDataExtra;
 
    /**
     * Directly sets a position state. Simply include extra properties in `options` to set extra data.

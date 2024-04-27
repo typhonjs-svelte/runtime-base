@@ -42,7 +42,7 @@ export class PositionStateAPI
     */
    get({ name })
    {
-      if (typeof name !== 'string') { throw new TypeError(`Position - getSave error: 'name' is not a string.`); }
+      if (typeof name !== 'string') { throw new TypeError(`TJSPosition - getSave error: 'name' is not a string.`); }
 
       return this.#dataSaved.get(name);
    }
@@ -68,7 +68,7 @@ export class PositionStateAPI
     */
    remove({ name })
    {
-      if (typeof name !== 'string') { throw new TypeError(`Position - remove: 'name' is not a string.`); }
+      if (typeof name !== 'string') { throw new TypeError(`TJSPosition - remove: 'name' is not a string.`); }
 
       const data = this.#dataSaved.get(name);
       this.#dataSaved.delete(name);
@@ -158,7 +158,7 @@ export class PositionStateAPI
    restore({ name, remove = false, properties, silent = false, async = false, animateTo = false, duration = 0.1,
     ease = linear, interpolate = lerp })
    {
-      if (typeof name !== 'string') { throw new TypeError(`Position - restore error: 'name' is not a string.`); }
+      if (typeof name !== 'string') { throw new TypeError(`TJSPosition - restore error: 'name' is not a string.`); }
 
       const dataSaved = this.#dataSaved.get(name);
 
@@ -216,13 +216,16 @@ export class PositionStateAPI
     *
     * @param {string}   options.name - name to index this saved data.
     *
+    * @param {import('../types').TJSPositionTypes.OptionsGet} [optionsGet] - Additional options for
+    *        {@link TJSPosition.get} when serializing position state.
+    *
     * @returns {import('../data/types').Data.TJSPositionDataExtra} Current position data plus any extra data stored.
     */
-   save({ name, ...extra })
+   save({ name, ...extra }, optionsGet)
    {
-      if (typeof name !== 'string') { throw new TypeError(`Position - save error: 'name' is not a string.`); }
+      if (typeof name !== 'string') { throw new TypeError(`TJSPosition - save error: 'name' is not a string.`); }
 
-      const data = this.#position.get(extra);
+      const data = this.#position.get(extra, optionsGet);
 
       this.#dataSaved.set(name, data);
 
@@ -238,7 +241,7 @@ export class PositionStateAPI
     */
    set({ name, ...data })
    {
-      if (typeof name !== 'string') { throw new TypeError(`Position - set error: 'name' is not a string.`); }
+      if (typeof name !== 'string') { throw new TypeError(`TJSPosition - set error: 'name' is not a string.`); }
 
       this.#dataSaved.set(name, data);
    }
