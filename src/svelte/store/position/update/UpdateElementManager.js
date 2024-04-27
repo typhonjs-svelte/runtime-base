@@ -3,17 +3,28 @@ import { nextAnimationFrame }    from '#runtime/util/animate';
 import { TJSPositionDataUtil }   from '../data';
 
 /**
- * Decouples updates to any parent target HTMLElement inline styles. Invoke
- * {@link TJSPosition.elementUpdated} to await on the returned promise that is resolved with the current
- * render time via `nextAnimationFrame` / `requestAnimationFrame`. This allows the underlying data model to be updated
- * immediately while updates to the element are in sync with the browser and potentially in the future be further
- * throttled.
+ * Decouples updates to any parent target HTMLElement inline styles. Invoke {@link TJSPosition.elementUpdated} to await
+ * on the returned promise that is resolved with the current render time via `nextAnimationFrame` /
+ * `requestAnimationFrame`. This allows the underlying data model to be updated immediately while updates to the
+ * element are in sync with the browser and potentially in the future be further throttled.
  *
  * @param {HTMLElement} el - The target HTMLElement.
  */
 export class UpdateElementManager
 {
+   /**
+    * Stores the active list of all TJSPosition instances currently updating. The list entries are recycled between
+    * updates.
+    *
+    * @type {[HTMLElement, import('./').UpdateElementData][]}
+    */
    static list = [];
+
+   /**
+    * Tracks the current position in the list.
+    *
+    * @type {number}
+    */
    static listCntr = 0;
 
    static updatePromise;
