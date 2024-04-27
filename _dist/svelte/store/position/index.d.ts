@@ -993,6 +993,14 @@ interface AnimationGroupAPI {
    */
   cancelAll(): void;
   /**
+   * Provides a type guard to test in the given key is an {@link AnimationAPI.AnimationKey}.
+   *
+   * @param {unknown}  key - A key value to test.
+   *
+   * @returns {boolean} Whether the given key is an animation key.
+   */
+  isAnimationKey(key: unknown): key is AnimationAPI.AnimationKey;
+  /**
    * Gets all animation controls for the given position group data.
    *
    * @param {TJSPositionTypes.PositionGroup} positionGroup - A position group.
@@ -1071,7 +1079,7 @@ interface AnimationGroupAPI {
    *
    * @param {TJSPositionTypes.PositionGroup} positionGroup - A position group.
    *
-   * @param {Iterable<AnimationAPI.AnimationKeys>}  keys - Animation keys to target.
+   * @param {Iterable<AnimationAPI.AnimationKey>}  keys - Animation keys to target.
    *
    * @param {AnimationAPI.QuickTweenOptions | AnimationAPI.GroupQuickTweenOptionsCallback}  [options] - Quick tween
    *        options assigned to all positionable instances or a callback function invoked for unique options for each
@@ -1081,7 +1089,7 @@ interface AnimationGroupAPI {
    */
   quickTo(
     positionGroup: TJSPositionTypes.PositionGroup,
-    keys: Iterable<AnimationAPI.AnimationKeys>,
+    keys: Iterable<AnimationAPI.AnimationKey>,
     options?: AnimationAPI.QuickTweenOptions | AnimationAPI.GroupQuickTweenOptionsCallback,
   ): AnimationAPI.GroupQuickToCallback;
 }
@@ -1141,14 +1149,14 @@ interface AnimationAPI {
   /**
    * Returns a function that provides an optimized way to constantly update a to-tween.
    *
-   * @param {Iterable<AnimationAPI.AnimationKeys>}  keys - The keys for quickTo.
+   * @param {Iterable<AnimationAPI.AnimationKey>}  keys - The keys for quickTo.
    *
    * @param {AnimationAPI.QuickTweenOptions} [options] - Optional quick tween parameters.
    *
    * @returns {AnimationAPI.QuickToCallback} quick-to tween function.
    */
   quickTo(
-    keys: Iterable<AnimationAPI.AnimationKeys>,
+    keys: Iterable<AnimationAPI.AnimationKey>,
     options?: AnimationAPI.QuickTweenOptions,
   ): AnimationAPI.QuickToCallback;
 }
@@ -1156,7 +1164,7 @@ declare namespace AnimationAPI {
   /**
    * The position keys that can be animated.
    */
-  type AnimationKeys =
+  type AnimationKey =
     | 'left'
     | 'top'
     | 'maxWidth'
@@ -1291,11 +1299,11 @@ declare namespace AnimationAPI {
     /**
      * @param arg - A single object with animation keys specified and numerical or relative string values.
      */
-    (arg: Partial<Record<AnimationKeys, string | number>>): void;
+    (arg: Partial<Record<AnimationKey, string | number>>): void;
     /**
      * The keys assigned for this quickTo callback.
      */
-    readonly keys: AnimationKeys[];
+    readonly keys: AnimationKey[];
     /**
      * Sets options of quickTo tween.
      *
@@ -1343,7 +1351,7 @@ declare namespace Data {
   }
   /**
    * Defines an extension to {@link Data.TJSPositionData} where each animatable property defined by
-   * {@link AnimationAPI.AnimationKeys} can also be a string. Relative adjustments to animatable properties should be
+   * {@link AnimationAPI.AnimationKey} can also be a string. Relative adjustments to animatable properties should be
    * a string the form of '+=', '-=', or '*=' and float / numeric value. IE '+=0.2'. {@link TJSPosition.set} will
    * apply the `addition`, `subtraction`, or `multiplication` operation specified against the current value of the
    * given property. Various unit types are also supported including: `%`, `%~`, `px`, `rad`, `turn`:
@@ -1372,9 +1380,9 @@ declare namespace Data {
    */
   type TJSPositionDataRelative = Partial<
     {
-      [P in keyof TJSPositionData as P extends AnimationAPI.AnimationKeys ? P : never]: TJSPositionData[P] | string;
+      [P in keyof TJSPositionData as P extends AnimationAPI.AnimationKey ? P : never]: TJSPositionData[P] | string;
     } & {
-      [P in keyof TJSPositionData as P extends AnimationAPI.AnimationKeys ? never : P]: TJSPositionData[P];
+      [P in keyof TJSPositionData as P extends AnimationAPI.AnimationKey ? never : P]: TJSPositionData[P];
     }
   > & {
     [key: string]: any;

@@ -1080,9 +1080,9 @@ class TJSPositionDataUtil
    /**
     * Returns the non-aliased animation key.
     *
-    * @param {import('../animation/types').AnimationAPI.AnimationKeys} key - Animation key / possibly aliased key.
+    * @param {import('../animation/types').AnimationAPI.AnimationKey} key - Animation key / possibly aliased key.
     *
-    * @returns {import('../animation/types').AnimationAPI.AnimationKeys} Actual non-aliased animation key.
+    * @returns {import('../animation/types').AnimationAPI.AnimationKey} Actual non-aliased animation key.
     */
    static getAnimKey(key)
    {
@@ -1094,7 +1094,7 @@ class TJSPositionDataUtil
     *
     * @param {object}   data - An object to query for the given animation key.
     *
-    * @param {import('../animation/types').AnimationAPI.AnimationKeys}   key - Animation key.
+    * @param {import('../animation/types').AnimationAPI.AnimationKey}   key - Animation key.
     *
     * @param {boolean}  [aliased=false] - When use non-aliased key.
     *
@@ -1213,7 +1213,7 @@ class ConvertStringData
             // Ignore 'auto' and 'inherit' string values.
             if (value === 'auto' || value === 'inherit') { continue; }
 
-            /** @type {import('../animation/types').AnimationAPI.AnimationKeys} */
+            /** @type {import('../animation/types').AnimationAPI.AnimationKey} */
             const animKey = key;
 
             const regexResults = this.#regexStringData.exec(value);
@@ -1305,7 +1305,7 @@ class ConvertStringData
     * Provides the common update to source data after `results.value` has been converted to the proper value
     * respectively.
     *
-    * @param {import('../animation/types').AnimationAPI.AnimationKeys} key - Animation key.
+    * @param {import('../animation/types').AnimationAPI.AnimationKey} key - Animation key.
     *
     * @param {number}   current - Current value
     *
@@ -1348,7 +1348,7 @@ class ConvertStringData
     * Handles the `%` unit type where values are adjusted against the parent element client width / height or in the
     * case of rotation the percentage of 360 degrees.
     *
-    * @param {import('../animation/types').AnimationAPI.AnimationKeys} key - Animation key.
+    * @param {import('../animation/types').AnimationAPI.AnimationKey} key - Animation key.
     *
     * @param {number}   current - Current value
     *
@@ -1406,7 +1406,7 @@ class ConvertStringData
    /**
     * Handles the `%~` unit type where values are adjusted against the current value for the given key.
     *
-    * @param {import('../animation/types').AnimationAPI.AnimationKeys} key - Animation key.
+    * @param {import('../animation/types').AnimationAPI.AnimationKey} key - Animation key.
     *
     * @param {number}   current - Current value
     *
@@ -1455,7 +1455,7 @@ class ConvertStringData
    /**
     * Handles the `rad` / `turn` unit types for rotation animation keys.
     *
-    * @param {import('../animation/types').AnimationAPI.AnimationKeys} key - Animation key.
+    * @param {import('../animation/types').AnimationAPI.AnimationKey} key - Animation key.
     *
     * @param {number}   current - Current value
     *
@@ -1902,7 +1902,7 @@ class AnimationAPI
    /**
     * Returns a function that provides an optimized way to constantly update a to-tween.
     *
-    * @param {Iterable<import('./types').AnimationAPI.AnimationKeys>}  keys - The keys for quickTo.
+    * @param {Iterable<import('./types').AnimationAPI.AnimationKey>}  keys - The keys for quickTo.
     *
     * @param {import('./types').AnimationAPI.QuickTweenOptions} [options] - Optional quick tween parameters.
     *
@@ -2362,6 +2362,18 @@ class AnimationGroupAPI
       }
 
       return results;
+   }
+
+   /**
+    * Provides a type guard to test in the given key is an {@link AnimationAPI.AnimationKey}.
+    *
+    * @param {unknown}  key - A key value to test.
+    *
+    * @returns {boolean} Whether the given key is an animation key.
+    */
+   static isAnimationKey(key)
+   {
+      return TJSPositionDataUtil.isAnimKey(key);
    }
 
    /**
@@ -2875,7 +2887,7 @@ class AnimationGroupAPI
     *
     * @param {import('../types').TJSPositionTypes.PositionGroup} positionGroup - A position group.
     *
-    * @param {Iterable<import('./types').AnimationAPI.AnimationKeys>}  keys - Animation keys to target.
+    * @param {Iterable<import('./types').AnimationAPI.AnimationKey>}  keys - Animation keys to target.
     *
     * @param {(
     *    import('./types').AnimationAPI.QuickTweenOptions |

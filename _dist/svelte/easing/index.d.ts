@@ -1,6 +1,7 @@
 /**
- * Defines utility functions to select Svelte easing functions. Take note that if all Svelte easing functions need to
- * be imported to reduce duplication use {@link easingFunc} instead of `import * as easingFunc from 'svelte/easing';`.
+ * Defines utility functions to select Svelte 1-dimensional easing functions. Take note that if all Svelte easing
+ * functions need to be imported to reduce duplication use {@link easingFunc} instead of
+ * `import * as easingFunc from 'svelte/easing';`.
  *
  * @module
  */
