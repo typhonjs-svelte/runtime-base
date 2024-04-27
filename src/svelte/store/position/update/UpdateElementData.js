@@ -3,6 +3,9 @@ import { writable }           from '#svelte/store';
 import { TJSPositionData }    from '../data';
 import { TJSTransformData }   from '../transform';
 
+/**
+ * Encapsulates internal data from a TJSPosition instance to be manipulated by {@link UpdateElementManager}.
+ */
 export class UpdateElementData
 {
    constructor()
@@ -26,7 +29,7 @@ export class UpdateElementData
        *
        * @type {{width: number | 'auto' | 'inherit', height: number | 'auto' | 'inherit'}}
        */
-      this.dimensionData = { width: 0, height: 0 };
+      this.dimensionData = Object.seal({ width: 0, height: 0 });
 
       /**
        * @type {import('./').PositionChangeSet}
@@ -90,8 +93,5 @@ export class UpdateElementData
        * @type {boolean}
        */
       this.queued = false;
-
-      // Seal data backing readable stores.
-      Object.seal(this.dimensionData);
    }
 }

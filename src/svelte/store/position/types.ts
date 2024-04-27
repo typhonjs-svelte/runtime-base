@@ -218,7 +218,7 @@ namespace TJSPositionTypes {
       /**
        * Readable store for dimension data.
        */
-      dimension: Readable<{width: number, height: number}>;
+      dimension: Readable<{width: number | 'auto' | 'inherit', height: number | 'auto' | 'inherit'}>;
 
       /**
        * Readable store for current element.
