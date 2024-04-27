@@ -60,7 +60,7 @@ namespace Data {
 
    /**
     * Defines an extension to {@link Data.TJSPositionData} where each animatable property defined by
-    * {@link AnimationAPI.AnimationKeys} can also be a string. Relative adjustments to animatable properties should be
+    * {@link AnimationAPI.AnimationKey} can also be a string. Relative adjustments to animatable properties should be
     * a string the form of '+=', '-=', or '*=' and float / numeric value. IE '+=0.2'. {@link TJSPosition.set} will
     * apply the `addition`, `subtraction`, or `multiplication` operation specified against the current value of the
     * given property. Various unit types are also supported including: `%`, `%~`, `px`, `rad`, `turn`:
@@ -89,10 +89,10 @@ namespace Data {
     */
    export type TJSPositionDataRelative = Partial<{
       // Map only the keys that are animatable to either their original type or as a string.
-      [P in keyof TJSPositionData as P extends AnimationAPI.AnimationKeys ? P : never]: TJSPositionData[P] | string;
+      [P in keyof TJSPositionData as P extends AnimationAPI.AnimationKey ? P : never]: TJSPositionData[P] | string;
    } & {
       // Include all other keys from TJSPositionData unchanged.
-      [P in keyof TJSPositionData as P extends AnimationAPI.AnimationKeys ? never : P]: TJSPositionData[P];
+      [P in keyof TJSPositionData as P extends AnimationAPI.AnimationKey ? never : P]: TJSPositionData[P];
    }> & {
       // Allow any additional properties not originally part of TJSPositionData that are forwarded through
       // validation.

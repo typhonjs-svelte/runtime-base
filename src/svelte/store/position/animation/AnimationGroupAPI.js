@@ -5,6 +5,7 @@ import {
 import { AnimationManager }      from './AnimationManager.js';
 import { AnimationAPI }          from './AnimationAPI.js';
 import { AnimationGroupControl } from './AnimationGroupControl.js';
+import {TJSPositionDataUtil} from "../data/index.js";
 
 /**
  * Provides a public API for grouping multiple {@link TJSPosition} animations together with the
@@ -143,6 +144,18 @@ export class AnimationGroupAPI
       }
 
       return results;
+   }
+
+   /**
+    * Provides a type guard to test in the given key is an {@link AnimationAPI.AnimationKey}.
+    *
+    * @param {unknown}  key - A key value to test.
+    *
+    * @returns {boolean} Whether the given key is an animation key.
+    */
+   static isAnimationKey(key)
+   {
+      return TJSPositionDataUtil.isAnimationKey(key);
    }
 
    /**
@@ -656,7 +669,7 @@ export class AnimationGroupAPI
     *
     * @param {import('../types').TJSPositionTypes.PositionGroup} positionGroup - A position group.
     *
-    * @param {Iterable<import('./types').AnimationAPI.AnimationKeys>}  keys - Animation keys to target.
+    * @param {Iterable<import('./types').AnimationAPI.AnimationKey>}  keys - Animation keys to target.
     *
     * @param {(
     *    import('./types').AnimationAPI.QuickTweenOptions |

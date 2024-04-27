@@ -40,7 +40,7 @@ export type AnimationData = {
    /**
     * Target destination for animation.
     */
-   destination: Record<AnimationAPI.AnimationKeys, number> | undefined;
+   destination: Record<AnimationAPI.AnimationKey, number> | undefined;
 
    /**
     * Duration of animation in milliseconds.
@@ -65,7 +65,7 @@ export type AnimationData = {
    /**
     * Initial position data.
     */
-   initial: Record<AnimationAPI.AnimationKeys, number>;
+   initial: Record<AnimationAPI.AnimationKey, number>;
 
    /**
     * Interpolation function; default lerp.
@@ -80,7 +80,7 @@ export type AnimationData = {
    /**
     * Copy of initial data. Used as temporary storage.
     */
-   newData: Record<AnimationAPI.AnimationKeys, number>;
+   newData: Record<AnimationAPI.AnimationKey, number>;
 
    /**
     * Associated TJSPosition instance.

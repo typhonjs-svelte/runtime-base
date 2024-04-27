@@ -66,7 +66,7 @@ export class ConvertStringData
       for (const key in data)
       {
          // Key is animatable / numeric.
-         if (TJSPositionDataUtil.isAnimKey(key))
+         if (TJSPositionDataUtil.isAnimationKey(key))
          {
             const value = data[key];
 
@@ -75,7 +75,7 @@ export class ConvertStringData
             // Ignore 'auto' and 'inherit' string values.
             if (value === 'auto' || value === 'inherit') { continue; }
 
-            /** @type {import('../animation/types').AnimationAPI.AnimationKeys} */
+            /** @type {import('../animation/types').AnimationAPI.AnimationKey} */
             const animKey = key;
 
             const regexResults = this.#regexStringData.exec(value);
@@ -167,7 +167,7 @@ export class ConvertStringData
     * Provides the common update to source data after `results.value` has been converted to the proper value
     * respectively.
     *
-    * @param {import('../animation/types').AnimationAPI.AnimationKeys} key - Animation key.
+    * @param {import('../animation/types').AnimationAPI.AnimationKey} key - Animation key.
     *
     * @param {number}   current - Current value
     *
@@ -210,7 +210,7 @@ export class ConvertStringData
     * Handles the `%` unit type where values are adjusted against the parent element client width / height or in the
     * case of rotation the percentage of 360 degrees.
     *
-    * @param {import('../animation/types').AnimationAPI.AnimationKeys} key - Animation key.
+    * @param {import('../animation/types').AnimationAPI.AnimationKey} key - Animation key.
     *
     * @param {number}   current - Current value
     *
@@ -268,7 +268,7 @@ export class ConvertStringData
    /**
     * Handles the `%~` unit type where values are adjusted against the current value for the given key.
     *
-    * @param {import('../animation/types').AnimationAPI.AnimationKeys} key - Animation key.
+    * @param {import('../animation/types').AnimationAPI.AnimationKey} key - Animation key.
     *
     * @param {number}   current - Current value
     *
@@ -317,7 +317,7 @@ export class ConvertStringData
    /**
     * Handles the `rad` / `turn` unit types for rotation animation keys.
     *
-    * @param {import('../animation/types').AnimationAPI.AnimationKeys} key - Animation key.
+    * @param {import('../animation/types').AnimationAPI.AnimationKey} key - Animation key.
     *
     * @param {number}   current - Current value
     *

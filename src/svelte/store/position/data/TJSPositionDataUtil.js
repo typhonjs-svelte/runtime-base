@@ -93,11 +93,11 @@ export class TJSPositionDataUtil
    /**
     * Returns the non-aliased animation key.
     *
-    * @param {import('../animation/types').AnimationAPI.AnimationKeys} key - Animation key / possibly aliased key.
+    * @param {import('../animation/types').AnimationAPI.AnimationKey} key - Animation key / possibly aliased key.
     *
-    * @returns {import('../animation/types').AnimationAPI.AnimationKeys} Actual non-aliased animation key.
+    * @returns {import('../animation/types').AnimationAPI.AnimationKey} Actual non-aliased animation key.
     */
-   static getAnimKey(key)
+   static getAnimationKey(key)
    {
       return this.#animateKeyAliases.get(key) ?? key;
    }
@@ -107,7 +107,7 @@ export class TJSPositionDataUtil
     *
     * @param {object}   data - An object to query for the given animation key.
     *
-    * @param {import('../animation/types').AnimationAPI.AnimationKeys}   key - Animation key.
+    * @param {import('../animation/types').AnimationAPI.AnimationKey}   key - Animation key.
     *
     * @param {boolean}  [aliased=false] - When use non-aliased key.
     *
@@ -123,11 +123,11 @@ export class TJSPositionDataUtil
    /**
     * Tests if the given key is an animation key.
     *
-    * @param {string}   key - A potential animation key.
+    * @param {unknown}   key - A potential animation key.
     *
     * @returns {boolean} Is animation key.
     */
-   static isAnimKey(key)
+   static isAnimationKey(key)
    {
       return this.#animateKeys.has(key);
    }

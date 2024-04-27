@@ -249,7 +249,7 @@ export class AnimationAPI
       for (const key in fromData)
       {
          // Must use actual key from any aliases.
-         const animKey = TJSPositionDataUtil.getAnimKey(key);
+         const animKey = TJSPositionDataUtil.getAnimationKey(key);
 
          if (data[animKey] !== void 0 && fromData[key] !== data[animKey])
          {
@@ -338,7 +338,7 @@ export class AnimationAPI
          }
 
          // Must use actual key from any aliases.
-         const animKey = TJSPositionDataUtil.getAnimKey(key);
+         const animKey = TJSPositionDataUtil.getAnimationKey(key);
 
          if (data[animKey] !== void 0)
          {
@@ -413,7 +413,7 @@ export class AnimationAPI
       for (const key in toData)
       {
          // Must use actual key from any aliases.
-         const animKey = TJSPositionDataUtil.getAnimKey(key);
+         const animKey = TJSPositionDataUtil.getAnimationKey(key);
 
          if (data[animKey] !== void 0 && toData[key] !== data[animKey])
          {
@@ -430,7 +430,7 @@ export class AnimationAPI
    /**
     * Returns a function that provides an optimized way to constantly update a to-tween.
     *
-    * @param {Iterable<import('./types').AnimationAPI.AnimationKeys>}  keys - The keys for quickTo.
+    * @param {Iterable<import('./types').AnimationAPI.AnimationKey>}  keys - The keys for quickTo.
     *
     * @param {import('./types').AnimationAPI.QuickTweenOptions} [options] - Optional quick tween parameters.
     *
@@ -482,7 +482,7 @@ export class AnimationAPI
             throw new TypeError(`AnimationAPI.quickTo error: key ('${key}') is not a string.`);
          }
 
-         if (!TJSPositionDataUtil.isAnimKey(key))
+         if (!TJSPositionDataUtil.isAnimationKey(key))
          {
             throw new Error(`AnimationAPI.quickTo error: key ('${key}') is not animatable.`);
          }
@@ -535,7 +535,7 @@ export class AnimationAPI
             const key = keysArray[cntr];
 
             // Must use actual key from any aliases.
-            const animKey = TJSPositionDataUtil.getAnimKey(key);
+            const animKey = TJSPositionDataUtil.getAnimationKey(key);
 
             if (data[animKey] !== void 0) { initial[key] = data[animKey]; }
          }

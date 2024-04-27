@@ -72,13 +72,13 @@ interface AnimationAPI
    /**
     * Returns a function that provides an optimized way to constantly update a to-tween.
     *
-    * @param {Iterable<AnimationAPI.AnimationKeys>}  keys - The keys for quickTo.
+    * @param {Iterable<AnimationAPI.AnimationKey>}  keys - The keys for quickTo.
     *
     * @param {AnimationAPI.QuickTweenOptions} [options] - Optional quick tween parameters.
     *
     * @returns {AnimationAPI.QuickToCallback} quick-to tween function.
     */
-   quickTo(keys: Iterable<AnimationAPI.AnimationKeys>, options?: AnimationAPI.QuickTweenOptions):
+   quickTo(keys: Iterable<AnimationAPI.AnimationKey>, options?: AnimationAPI.QuickTweenOptions):
     AnimationAPI.QuickToCallback;
 }
 
@@ -102,6 +102,15 @@ interface AnimationGroupAPI
     * Cancels all TJSPosition animation.
     */
    cancelAll(): void;
+
+   /**
+    * Provides a type guard to test in the given key is an {@link AnimationAPI.AnimationKey}.
+    *
+    * @param {unknown}  key - A key value to test.
+    *
+    * @returns {boolean} Whether the given key is an animation key.
+    */
+   isAnimationKey(key: unknown): key is AnimationAPI.AnimationKey;
 
    /**
     * Gets all animation controls for the given position group data.
@@ -179,7 +188,7 @@ interface AnimationGroupAPI
     *
     * @param {TJSPositionTypes.PositionGroup} positionGroup - A position group.
     *
-    * @param {Iterable<AnimationAPI.AnimationKeys>}  keys - Animation keys to target.
+    * @param {Iterable<AnimationAPI.AnimationKey>}  keys - Animation keys to target.
     *
     * @param {AnimationAPI.QuickTweenOptions | AnimationAPI.GroupQuickTweenOptionsCallback}  [options] - Quick tween
     *        options assigned to all positionable instances or a callback function invoked for unique options for each
@@ -187,7 +196,7 @@ interface AnimationGroupAPI
     *
     * @returns {AnimationAPI.GroupQuickToCallback | undefined} quick-to tween function.
     */
-   quickTo(positionGroup: TJSPositionTypes.PositionGroup, keys: Iterable<AnimationAPI.AnimationKeys>,
+   quickTo(positionGroup: TJSPositionTypes.PositionGroup, keys: Iterable<AnimationAPI.AnimationKey>,
     options?: AnimationAPI.QuickTweenOptions | AnimationAPI.GroupQuickTweenOptionsCallback):
      AnimationAPI.GroupQuickToCallback;
 }
@@ -196,7 +205,7 @@ namespace AnimationAPI {
    /**
     * The position keys that can be animated.
     */
-   export type AnimationKeys =
+   export type AnimationKey =
     // Main keys
     'left' | 'top' | 'maxWidth' | 'maxHeight' | 'minWidth' | 'minHeight' | 'width' | 'height' |
     'rotateX' | 'rotateY' | 'rotateZ' | 'scale' | 'translateX' | 'translateY' | 'translateZ' | 'zIndex' |
@@ -339,12 +348,12 @@ namespace AnimationAPI {
       /**
        * @param arg - A single object with animation keys specified and numerical or relative string values.
        */
-      (arg: Partial<Record<AnimationKeys, string | number>>): void;
+      (arg: Partial<Record<AnimationKey, string | number>>): void;
 
       /**
        * The keys assigned for this quickTo callback.
        */
-      readonly keys: AnimationKeys[];
+      readonly keys: AnimationKey[];
 
       /**
        * Sets options of quickTo tween.
