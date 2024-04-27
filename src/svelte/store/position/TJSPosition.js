@@ -118,7 +118,7 @@ export class TJSPosition
    #positionChangeSet = new PositionChangeSet();
 
    /**
-    * @type {import('./').TJSPositionStores}
+    * @type {import('./types').TJSPositionTypes.Stores}
     */
    #stores;
 
@@ -552,7 +552,7 @@ export class TJSPosition
    /**
     * Returns the derived writable stores for individual data variables.
     *
-    * @returns {import('./').TJSPositionStores} Derived / writable stores.
+    * @returns {import('./types').TJSPositionTypes.Stores} Derived / writable stores.
     */
    get stores() { return this.#stores; }
 

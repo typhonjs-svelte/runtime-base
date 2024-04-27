@@ -1,8 +1,13 @@
-import type { Writable }      from 'svelte/store';
+import type {
+   Readable,
+   Writable }                       from 'svelte/store';
 
-import type { TJSPosition }   from './TJSPosition';
-import type { Data }          from './data/types';
-import type { System }        from './system/types';
+import type { ResizeObserverData }  from '#runtime/svelte/action/dom';
+
+import type { TJSPosition }         from './TJSPosition';
+import type { Data }                from './data/types';
+import type { System }              from './system/types';
+import type { TransformAPI }        from './transform/types';
 
 /**
  * Provides all interfaces and type aliases used by {@link TJSPosition}.
@@ -107,6 +112,143 @@ namespace TJSPositionTypes {
        */
       transformWindow: System.Validator.ValidatorSystem
    };
+
+   /**
+    * Defines all derived stores for positional properties. These property stores can be used to update the position
+    * state.
+    *
+    * There are several readable stores for additional derived data.
+    */
+   export type Stores = {
+      // Writable stores for main position properties ----------------------------------------------------------------
+
+      /**
+       * Derived store for `left` updates.
+       */
+      left: Writable<number | null>;
+
+      /**
+       * Derived store for `top` updates.
+       */
+      top: Writable<number | null>;
+
+      /**
+       * Derived store for `width` updates.
+       */
+      width: Writable<number | 'auto' | 'inherit' | null>;
+
+      /**
+       * Derived store for `height` updates.
+       */
+      height: Writable<number | 'auto' | 'inherit' | null>;
+
+      /**
+       * Derived store for `maxHeight` updates.
+       */
+      maxHeight: Writable<number | null>;
+
+      /**
+       * Derived store for `maxWidth` updates.
+       */
+      maxWidth: Writable<number | null>;
+
+      /**
+       * Derived store for `minHeight` updates.
+       */
+      minHeight: Writable<number | null>;
+
+      /**
+       * Derived store for `minWidth` updates.
+       */
+      minWidth: Writable<number | null>;
+
+      /**
+       * Derived store for `rotateX` updates.
+       */
+      rotateX: Writable<number | null>;
+
+      /**
+       * Derived store for `rotateY` updates.
+       */
+      rotateY: Writable<number | null>;
+
+      /**
+       * Derived store for `rotateZ` updates.
+       */
+      rotateZ: Writable<number | null>;
+
+      /**
+       * Derived store for `scale` updates.
+       */
+      scale: Writable<number | null>;
+
+      /**
+       * Derived store for `transformOrigin` updates.
+       */
+      transformOrigin: Writable<TransformAPI.TransformOrigin>;
+
+      /**
+       * Derived store for `translateX` updates.
+       */
+      translateX: Writable<number | null>;
+
+      /**
+       * Derived store for `translateY` updates.
+       */
+      translateY: Writable<number | null>;
+
+      /**
+       * Derived store for `translateZ` updates.
+       */
+      translateZ: Writable<number | null>;
+
+      /**
+       * Derived store for `zIndex` updates.
+       */
+      zIndex: Writable<number | null>;
+
+      // Readable stores for derived data ----------------------------------------------------------------------------
+
+      /**
+       * Readable store for dimension data.
+       */
+      dimension: Readable<{width: number, height: number}>;
+
+      /**
+       * Readable store for current element.
+       */
+      element: Readable<HTMLElement>;
+
+      /**
+       * Readable store for `contentHeight`.
+       */
+      resizeContentHeight: Readable<number | undefined>;
+
+      /**
+       * Readable store for `contentWidth`.
+       */
+      resizeContentWidth: Readable<number | undefined>;
+
+      /**
+       * Readable store for `offsetHeight`.
+       */
+      resizeOffsetHeight: Readable<number | undefined>;
+
+      /**
+       * Readable store for `offsetWidth`.
+       */
+      resizeOffsetWidth: Readable<number | undefined>;
+
+      /**
+       * Protected store for resize observer updates.
+       */
+      resizeObserved: Writable<ResizeObserverData.Object>;
+
+      /**
+       * Readable store for transform data.
+       */
+      transform: Readable<TransformAPI.TransformData>;
+   }
 }
 
 export { TJSPositionTypes }
