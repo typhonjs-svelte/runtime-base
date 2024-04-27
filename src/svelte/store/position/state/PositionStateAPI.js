@@ -1,9 +1,6 @@
-import { linear }       from '#svelte/easing';
-
-import { lerp }         from '#runtime/math/interpolate';
 import {
    isIterable,
-   isObject }           from '#runtime/util/object';
+   isObject }     from '#runtime/util/object';
 
 /**
  * @implements {import('./types').PositionStateAPI}
@@ -122,11 +119,10 @@ export class PositionStateAPI
    }
 
    /**
-    * Restores a saved positional state returning the data. Several optional parameters are available
-    * to control whether the restore action occurs silently (no store / inline styles updates), animates
--   * to the stored data, or simply sets the stored data. Restoring via {@link AnimationAPI.to}
-    * allows specification of the duration, easing, and interpolate functions along with configuring a Promise to be
-    * returned if awaiting the end of the animation.
+    * Restores a saved positional state returning the data. Several optional parameters are available to control
+    * whether the restore action occurs silently (no store / inline styles updates), animates to the stored data, or
+    * simply sets the stored data. Restoring via {@link AnimationAPI.to} allows specification of the duration and
+    * easing along with configuring a Promise to be returned if awaiting the end of the animation.
     *
     * @param {object}            options - Parameters
     *
@@ -145,10 +141,10 @@ export class PositionStateAPI
     *
     * @param {number}            [options.duration=0.1] - Duration in seconds.
     *
-    * @param {import('#runtime/svelte/easing').EasingFunction}   [options.ease=linear] - Easing function.
-    *
-    * @param {import('#runtime/math/interpolate').InterpolateFunction}  [options.interpolate=lerp] - Interpolation
-    *        function.
+    * @param {(
+    *    import('#runtime/svelte/easing').EasingFunctionName |
+    *    import('#runtime/svelte/easing').EasingFunction
+    * )} [options.ease='linear'] - Easing function name or function.
     *
     * @returns {(
     *    import('../data/types').Data.TJSPositionDataExtra |
@@ -156,7 +152,7 @@ export class PositionStateAPI
     * )} Saved position data.
     */
    restore({ name, remove = false, properties, silent = false, async = false, animateTo = false, duration = 0.1,
-    ease = linear, interpolate = lerp })
+    ease = 'linear' })
    {
       if (typeof name !== 'string') { throw new TypeError(`TJSPosition - restore error: 'name' is not a string.`); }
 
@@ -191,11 +187,11 @@ export class PositionStateAPI
             // Return a Promise with saved data that resolves after animation ends.
             if (async)
             {
-               return this.#position.animate.to(data, { duration, ease, interpolate }).finished.then(() => dataSaved);
+               return this.#position.animate.to(data, { duration, ease }).finished.then(() => dataSaved);
             }
             else  // Animate synchronously.
             {
-               this.#position.animate.to(data, { duration, ease, interpolate });
+               this.#position.animate.to(data, { duration, ease });
             }
          }
          else
@@ -217,7 +213,7 @@ export class PositionStateAPI
     * @param {string}   options.name - name to index this saved data.
     *
     * @param {import('../types').TJSPositionTypes.OptionsGet} [optionsGet] - Additional options for
-    *        {@link TJSPosition.get} when serializing position state.
+    *        {@link TJSPosition.get} when serializing position state. By default, `nullable` values are included.
     *
     * @returns {import('../data/types').Data.TJSPositionDataExtra} Current position data plus any extra data stored.
     */
