@@ -278,9 +278,21 @@ interface PositionStateAPI {
    *
    * @param {string}   options.name - name to index this saved data.
    *
+   * @param {import('../types').TJSPositionTypes.OptionsGet} [optionsGet] - Additional options for
+   *        {@link TJSPosition.get} when serializing position state.
+   *
    * @returns {Data.TJSPositionDataExtra} Current position data
    */
-  save({ name, ...extra }: { name: string; [key: string]: any }): Data.TJSPositionDataExtra;
+  save(
+    {
+      name,
+      ...extra
+    }: {
+      name: string;
+      [key: string]: any;
+    },
+    optionsGet: TJSPositionTypes.OptionsGet,
+  ): Data.TJSPositionDataExtra;
   /**
    * Directly sets a position state. Simply include extra properties in `options` to set extra data.
    *
@@ -828,7 +840,7 @@ declare class TJSPosition implements TJSPositionTypes.TJSPositionWritable {
    * @param {object}  [data] - Target to assign current position data.
    *
    * @param {import('./types').TJSPositionTypes.OptionsGet}   [options] - Defines options for specific keys and
-   *        substituting null for numeric default values.
+   *        substituting null for numeric default values. By default, nullable keys are included.
    *
    * @returns {Partial<import('./data/types').Data.TJSPositionData>} Passed in object with current position data.
    */
@@ -1346,7 +1358,7 @@ declare namespace Data {
   /**
    * Defines a TJSPositionData instance that has extra properties / attributes.
    */
-  interface TJSPositionDataExtra extends TJSPositionData {
+  interface TJSPositionDataExtra extends Partial<TJSPositionData> {
     [key: string]: any;
   }
   /**

@@ -1084,7 +1084,7 @@ class TJSPositionDataUtil
     *
     * @returns {import('../animation/types').AnimationAPI.AnimationKey} Actual non-aliased animation key.
     */
-   static getAnimKey(key)
+   static getAnimationKey(key)
    {
       return this.#animateKeyAliases.get(key) ?? key;
    }
@@ -1110,11 +1110,11 @@ class TJSPositionDataUtil
    /**
     * Tests if the given key is an animation key.
     *
-    * @param {string}   key - A potential animation key.
+    * @param {unknown}   key - A potential animation key.
     *
     * @returns {boolean} Is animation key.
     */
-   static isAnimKey(key)
+   static isAnimationKey(key)
    {
       return this.#animateKeys.has(key);
    }
@@ -1204,7 +1204,7 @@ class ConvertStringData
       for (const key in data)
       {
          // Key is animatable / numeric.
-         if (TJSPositionDataUtil.isAnimKey(key))
+         if (TJSPositionDataUtil.isAnimationKey(key))
          {
             const value = data[key];
 
@@ -1721,7 +1721,7 @@ class AnimationAPI
       for (const key in fromData)
       {
          // Must use actual key from any aliases.
-         const animKey = TJSPositionDataUtil.getAnimKey(key);
+         const animKey = TJSPositionDataUtil.getAnimationKey(key);
 
          if (data[animKey] !== void 0 && fromData[key] !== data[animKey])
          {
@@ -1810,7 +1810,7 @@ class AnimationAPI
          }
 
          // Must use actual key from any aliases.
-         const animKey = TJSPositionDataUtil.getAnimKey(key);
+         const animKey = TJSPositionDataUtil.getAnimationKey(key);
 
          if (data[animKey] !== void 0)
          {
@@ -1885,7 +1885,7 @@ class AnimationAPI
       for (const key in toData)
       {
          // Must use actual key from any aliases.
-         const animKey = TJSPositionDataUtil.getAnimKey(key);
+         const animKey = TJSPositionDataUtil.getAnimationKey(key);
 
          if (data[animKey] !== void 0 && toData[key] !== data[animKey])
          {
@@ -1954,7 +1954,7 @@ class AnimationAPI
             throw new TypeError(`AnimationAPI.quickTo error: key ('${key}') is not a string.`);
          }
 
-         if (!TJSPositionDataUtil.isAnimKey(key))
+         if (!TJSPositionDataUtil.isAnimationKey(key))
          {
             throw new Error(`AnimationAPI.quickTo error: key ('${key}') is not animatable.`);
          }
@@ -2007,7 +2007,7 @@ class AnimationAPI
             const key = keysArray[cntr];
 
             // Must use actual key from any aliases.
-            const animKey = TJSPositionDataUtil.getAnimKey(key);
+            const animKey = TJSPositionDataUtil.getAnimationKey(key);
 
             if (data[animKey] !== void 0) { initial[key] = data[animKey]; }
          }
@@ -2373,7 +2373,7 @@ class AnimationGroupAPI
     */
    static isAnimationKey(key)
    {
-      return TJSPositionDataUtil.isAnimKey(key);
+      return TJSPositionDataUtil.isAnimationKey(key);
    }
 
    /**
@@ -3158,7 +3158,7 @@ class PositionStateAPI
     */
    get({ name })
    {
-      if (typeof name !== 'string') { throw new TypeError(`Position - getSave error: 'name' is not a string.`); }
+      if (typeof name !== 'string') { throw new TypeError(`TJSPosition - getSave error: 'name' is not a string.`); }
 
       return this.#dataSaved.get(name);
    }
@@ -3184,7 +3184,7 @@ class PositionStateAPI
     */
    remove({ name })
    {
-      if (typeof name !== 'string') { throw new TypeError(`Position - remove: 'name' is not a string.`); }
+      if (typeof name !== 'string') { throw new TypeError(`TJSPosition - remove: 'name' is not a string.`); }
 
       const data = this.#dataSaved.get(name);
       this.#dataSaved.delete(name);
@@ -3274,7 +3274,7 @@ class PositionStateAPI
    restore({ name, remove = false, properties, silent = false, async = false, animateTo = false, duration = 0.1,
     ease = linear, interpolate = lerp })
    {
-      if (typeof name !== 'string') { throw new TypeError(`Position - restore error: 'name' is not a string.`); }
+      if (typeof name !== 'string') { throw new TypeError(`TJSPosition - restore error: 'name' is not a string.`); }
 
       const dataSaved = this.#dataSaved.get(name);
 
@@ -3332,13 +3332,16 @@ class PositionStateAPI
     *
     * @param {string}   options.name - name to index this saved data.
     *
+    * @param {import('../types').TJSPositionTypes.OptionsGet} [optionsGet] - Additional options for
+    *        {@link TJSPosition.get} when serializing position state.
+    *
     * @returns {import('../data/types').Data.TJSPositionDataExtra} Current position data plus any extra data stored.
     */
-   save({ name, ...extra })
+   save({ name, ...extra }, optionsGet)
    {
-      if (typeof name !== 'string') { throw new TypeError(`Position - save error: 'name' is not a string.`); }
+      if (typeof name !== 'string') { throw new TypeError(`TJSPosition - save error: 'name' is not a string.`); }
 
-      const data = this.#position.get(extra);
+      const data = this.#position.get(extra, optionsGet);
 
       this.#dataSaved.set(name, data);
 
@@ -3354,7 +3357,7 @@ class PositionStateAPI
     */
    set({ name, ...data })
    {
-      if (typeof name !== 'string') { throw new TypeError(`Position - set error: 'name' is not a string.`); }
+      if (typeof name !== 'string') { throw new TypeError(`TJSPosition - set error: 'name' is not a string.`); }
 
       this.#dataSaved.set(name, data);
    }
@@ -5785,7 +5788,7 @@ class TJSPosition
     */
    static duplicate(position, options)
    {
-      if (!(position instanceof TJSPosition)) { throw new TypeError(`'position' is not an instance of Position.`); }
+      if (!(position instanceof TJSPosition)) { throw new TypeError(`'position' is not an instance of TJSPosition.`); }
 
       const newPosition = new TJSPosition(options);
 
@@ -6398,7 +6401,7 @@ class TJSPosition
     * @param {object}  [data] - Target to assign current position data.
     *
     * @param {import('./types').TJSPositionTypes.OptionsGet}   [options] - Defines options for specific keys and
-    *        substituting null for numeric default values.
+    *        substituting null for numeric default values. By default, nullable keys are included.
     *
     * @returns {Partial<import('./data/types').Data.TJSPositionData>} Passed in object with current position data.
     */
@@ -6406,7 +6409,7 @@ class TJSPosition
    {
       const keys = options?.keys;
       const excludeKeys = options?.exclude;
-      const nullable = options?.nullable ?? false;
+      const nullable = options?.nullable ?? true;
       const numeric = options?.numeric ?? false;
 
       if (isIterable(keys))
@@ -6490,7 +6493,7 @@ class TJSPosition
     */
    set(position = {}, options)
    {
-      if (!isObject(position)) { throw new TypeError(`Position - set error: 'position' is not an object.`); }
+      if (!isObject(position)) { throw new TypeError(`TJSPosition - set error: 'position' is not an object.`); }
 
       const parent = this.#parent;
 
