@@ -81,7 +81,7 @@ export class TJSPositionStyleCache
          return this.resizeObserved.offsetHeight !== void 0 ? this.resizeObserved.offsetHeight : this.el.offsetHeight;
       }
 
-      throw new Error(`StyleCache - get offsetHeight error: no element assigned.`);
+      throw new Error(`TJSPositionStyleCache - get offsetHeight error: no element assigned.`);
    }
 
    /**
@@ -98,7 +98,7 @@ export class TJSPositionStyleCache
          return this.resizeObserved.offsetWidth !== void 0 ? this.resizeObserved.offsetWidth : this.el.offsetWidth;
       }
 
-      throw new Error(`StyleCache - get offsetWidth error: no element assigned.`);
+      throw new Error(`TJSPositionStyleCache - get offsetWidth error: no element assigned.`);
    }
 
    /**
