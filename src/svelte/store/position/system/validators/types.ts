@@ -3,8 +3,8 @@ import type {
    Subscriber,
    Unsubscriber }                   from 'svelte/store';
 
-import type { TJSPositionParent }   from '../../index';
 import type { TJSPosition }         from '../../TJSPosition.js';
+import type { TJSPositionTypes }   from '../../types';
 import type { Data }                from '../../data/types';
 import type { TransformAPI }        from '../../transform/types';
 
@@ -88,9 +88,9 @@ namespace ValidatorAPI {
       position: Data.TJSPositionData;
 
       /**
-       * Associated parent element / container.
+       * Associated position parent instance.
        */
-      parent: TJSPositionParent;
+      parent: TJSPositionTypes.PositionParent;
 
       /**
        * Associated element being positioned.
@@ -148,7 +148,8 @@ namespace ValidatorAPI {
       minWidth: number | undefined;
 
       /**
-       * The rest of any data submitted to {@link TJSPosition.set}.
+       * The rest of any data submitted to {@link TJSPosition.set}. This may be used to provide directives to
+       * validators.
        */
       rest: Record<string, any> | undefined;
    }

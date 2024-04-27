@@ -106,7 +106,7 @@ export class TJSPosition
    /**
     * The associated parent for positional data tracking. Used in validators.
     *
-    * @type {import('./').TJSPositionParent}
+    * @type {import('./types').TJSPositionTypes.PositionParent}
     */
    #parent;
 
@@ -257,7 +257,7 @@ export class TJSPosition
    }
 
    /**
-    * @param {import('./').TJSPositionParent | import('./').TJSPositionOptionsAll}   [parent] - A
+    * @param {import('./types').TJSPositionTypes.PositionParent | import('./').TJSPositionOptionsAll}   [parent] - A
     *        potential parent element or object w/ `elementTarget` getter. May also be the TJSPositionOptions object
     *        w/ 1 argument.
     *
@@ -536,9 +536,9 @@ export class TJSPosition
    }
 
    /**
-    * Returns the associated {@link TJSPositionParent} instance.
+    * Returns the associated {@link TJSPositionTypes.PositionParent} instance.
     *
-    * @returns {import('./').TJSPositionParent} The TJSPositionParent instance.
+    * @returns {import('./types').TJSPositionTypes.PositionParent} The current position parent instance.
     */
    get parent() { return this.#parent; }
 
@@ -589,9 +589,10 @@ export class TJSPosition
    }
 
    /**
-    * Sets the associated {@link TJSPositionParent} instance. Resets the style cache and default data.
+    * Sets the associated {@link TJSPositionTypes.PositionParent} instance. Resets the style cache and default data.
     *
-    * @param {import('./').TJSPositionParent} parent - A TJSPositionParent instance.
+    * @param {import('./types').TJSPositionTypes.PositionParent | undefined} parent - A PositionParent instance or
+    *        undefined to disassociate
     */
    set parent(parent)
    {

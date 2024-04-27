@@ -87,6 +87,12 @@ namespace TJSPositionTypes {
    }
 
    /**
+    * Defines the TJSPosition parent element. Provide either an HTMLElement directly or an object with an
+    * `elementTarget` property / accessor defining the parent HTMLElement.
+    */
+   export type PositionParent = HTMLElement | { elementTarget?: HTMLElement };
+
+   /**
     * Provides the default {@link System.Initial.ValidatorSystem} implementations available.
     */
    export type PositionValidators = {

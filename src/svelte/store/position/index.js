@@ -26,9 +26,3 @@ export *                   from './TJSPosition.js';
 /**
  * @typedef {TJSPositionOptions & Partial<import('./data/types').Data.TJSPositionData>} TJSPositionOptionsAll
  */
-
-/**
- * @typedef {HTMLElement | { elementTarget?: HTMLElement }} TJSPositionParent Defines the TJSPosition parent
- * element. Provide either an HTMLElement directly or an object with an `elementTarget` property / accessor defining
- * the parent HTMLElement.
- */
