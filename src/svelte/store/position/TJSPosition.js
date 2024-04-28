@@ -94,7 +94,7 @@ export class TJSPosition
    /**
     * Stores ongoing options that are set in the constructor or by transform store subscription.
     *
-    * @type {Partial<import('./').TJSPositionOptions>}
+    * @type {import('./types-local').OptionsInternal}
     */
    #options = {
       calculateTransform: false,
@@ -238,11 +238,11 @@ export class TJSPosition
     *
     * @param {TJSPosition}          position - A position instance.
     *
-    * @param {import('./').TJSPositionOptionsAll}   options - TJSPosition options.
+    * @param {import('./types').TJSPositionTypes.OptionsCtorAll}   [options] - Unique new options to set.
     *
     * @returns {TJSPosition} A duplicate position instance.
     */
-   static duplicate(position, options)
+   static duplicate(position, options = {})
    {
       if (!(position instanceof TJSPosition)) { throw new TypeError(`'position' is not an instance of TJSPosition.`); }
 
@@ -257,22 +257,24 @@ export class TJSPosition
    }
 
    /**
-    * @param {import('./types').TJSPositionTypes.PositionParent | import('./').TJSPositionOptionsAll}   [parent] - A
-    *        potential parent element or object w/ `elementTarget` getter. May also be the TJSPositionOptions object
-    *        w/ 1 argument.
+    * @param {(
+    *    import('./types').TJSPositionTypes.PositionParent |
+    *    import('./types').TJSPositionTypes.OptionsCtorAll
+    * )} [parentOrOptions] - A  potential parent element or object w/ `elementTarget` accessor. You may also forego
+    *    setting the parent and pass in the options object.
     *
-    * @param {import('./').TJSPositionOptionsAll}   [options] - Default values.
+    * @param {import('./types').TJSPositionTypes.OptionsCtorAll}  [options] - The options object.
     */
-   constructor(parent, options)
+   constructor(parentOrOptions, options)
    {
       // Test if `parent` is a plain object; if so treat as options object.
-      if (isPlainObject(parent))
+      if (isPlainObject(parentOrOptions))
       {
-         options = parent;
+         options = parentOrOptions;
       }
       else
       {
-         this.#parent = parent;
+         this.#parent = /** @type {import('./types').TJSPositionTypes.PositionParent} */ parentOrOptions;
       }
 
       const data = this.#data;
@@ -498,7 +500,7 @@ export class TJSPosition
    /**
     * Returns the dimension data for the readable store.
     *
-    * @returns {{width: number | 'auto' | 'inherit', height: number | 'auto' | 'inherit'}} Dimension data.
+    * @returns {Readonly<{width: number | 'auto' | 'inherit', height: number | 'auto' | 'inherit'}>} Dimension data.
     */
    get dimension()
    {

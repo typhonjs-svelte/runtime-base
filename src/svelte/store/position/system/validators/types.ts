@@ -183,9 +183,9 @@ namespace ValidatorAPI {
    };
 
    /**
-    * Defines the {@link TJSPosition} validator options.
+    * Defines the {@link TJSPosition} validator option.
     */
-   export type Options = ValidatorFn | ValidatorData | Iterable<ValidatorFn | ValidatorData>;
+   export type ValidatorOption = ValidatorFn | ValidatorData | Iterable<ValidatorFn | ValidatorData>;
 
    /**
     * Callback function to evaluate each validator entry. Return true to remove.

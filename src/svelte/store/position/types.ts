@@ -7,6 +7,7 @@ import type { ResizeObserverData }  from '#runtime/svelte/action/dom';
 import type { TJSPosition }         from './TJSPosition';
 import type { Data }                from './data/types';
 import type { System }              from './system/types';
+import type { ValidatorAPI }        from './system/validators/types';
 import type { TransformAPI }        from './transform/types';
 
 /**
@@ -27,6 +28,37 @@ namespace TJSPositionTypes {
    {
       set(this: void, value: Data.TJSPositionDataRelative, options?: OptionsSet): TJSPosition;
    }
+
+   /**
+    * Defines the unique options available for setting in the constructor of {@link TJSPosition}.
+    */
+   export type OptionsCtor = {
+      /**
+       * When true always calculate transform data.
+       */
+      calculateTransform: boolean;
+
+      /**
+       * Provides a helper for setting initial position location.
+       */
+      initial: System.Initial.InitialSystem;
+
+      /**
+       * Sets TJSPosition to orthographic mode using just `transform` / `matrix3d` CSS for positioning.
+       */
+      ortho: boolean;
+
+      /**
+       * Provides an initial validator or list of validators.
+       */
+      validator: ValidatorAPI.ValidatorOption;
+   }
+
+   /**
+    * Provides the complete options object including unique {@link TJSPosition} options in addition to positional
+    * data that is available to set in the constructor.
+    */
+   export type OptionsCtorAll = Partial<OptionsCtor & Data.TJSPositionDataExtra>;
 
    /**
     * Options for {@link TJSPosition.get}.

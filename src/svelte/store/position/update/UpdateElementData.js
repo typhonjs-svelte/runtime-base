@@ -37,7 +37,7 @@ export class UpdateElementData
       this.changeSet = void 0;
 
       /**
-       * @type {import('../').TJSPositionOptions}
+       * @type {import('../types-local').OptionsInternal}
        */
       this.options = void 0;
 
@@ -67,7 +67,7 @@ export class UpdateElementData
       this.transformData = new TJSTransformData();
 
       /**
-       * @type {import('svelte/store').Subscriber<import('../data/types').Data.TJSPositionData>}
+       * @type {import('svelte/store').Subscriber<import('../data/types').Data.TJSPositionData>[]}
        */
       this.subscriptions = void 0;
 
