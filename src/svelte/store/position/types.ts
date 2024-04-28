@@ -223,7 +223,7 @@ namespace TJSPositionTypes {
       /**
        * Derived store for `transformOrigin` updates.
        */
-      transformOrigin: Writable<TransformAPI.TransformOrigin>;
+      transformOrigin: TransformAPI.TransformOriginWritable;
 
       /**
        * Derived store for `translateX` updates.

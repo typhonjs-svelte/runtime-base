@@ -41,8 +41,9 @@ import {
 import { TJSPositionStyleCache } from './util';
 
 /**
- * Provides a store for position following the subscriber protocol in addition to providing individual writable derived
- * stores for each independent variable.
+ * Provides an advanced compound store for positioning elements dynamically including an optimized pipeline for updating
+ * an associated element. Essential tweening / animation is supported in addition to a validation API to constrain
+ * positional updates.
  *
  * @implements {import('./types').TJSPositionTypes.TJSPositionWritable}
  */
@@ -232,11 +233,10 @@ export class TJSPosition
    }
 
    /**
-    * Returns a duplicate of a given position instance copying any options and validators.
+    * Returns a duplicate of a given position instance copying any options and validators. The position parent is not
+    * copied and a new one must be set manually via the {@link TJSPosition.parent} setter.
     *
-    * // TODO: Consider more safety over options processing.
-    *
-    * @param {TJSPosition}          position - A position instance.
+    * @param {TJSPosition} position - A position instance.
     *
     * @param {import('./types').TJSPositionTypes.OptionsCtorAll}   [options] - Unique new options to set.
     *
@@ -451,6 +451,13 @@ export class TJSPosition
       });
 
       this.#stores.transformOrigin.values = TJSTransforms.transformOrigins;
+
+      /**
+       * Define 'values' getter to retrieve static transform origins.
+       */
+      Object.defineProperty(this.#stores.transformOrigin, 'values', {
+         get: () => TJSPosition.transformOrigins
+      });
 
       [this.#validators, this.#validatorData] = AdapterValidators.create();
 
