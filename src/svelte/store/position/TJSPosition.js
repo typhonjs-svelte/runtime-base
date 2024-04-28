@@ -26,7 +26,6 @@ import { Centered }              from './system/initial';
 
 import {
    AdapterValidators,
-   BasicBounds,
    TransformBounds }             from './system/validators';
 
 import {
@@ -65,8 +64,6 @@ export class TJSPosition
     * @type {Readonly<import('./types').TJSPositionTypes.PositionValidators>}
     */
    static #positionValidators = Object.freeze({
-      BasicBounds,
-      basicWindow: new BasicBounds({ lock: true }),
       TransformBounds,
       transformWindow: new TransformBounds({ lock: true })
    });
@@ -199,8 +196,6 @@ export class TJSPosition
 
    /**
     * Returns default validators.
-    *
-    * Note: `basicWindow` and `BasicBounds` will eventually be removed.
     *
     * @returns {Readonly<import('./types').TJSPositionTypes.PositionValidators>} Available validators.
     */

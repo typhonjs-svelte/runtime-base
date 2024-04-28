@@ -129,17 +129,6 @@ namespace TJSPositionTypes {
     */
    export type PositionValidators = {
       /**
-       * The `BasicBounds` class constructor to instantiate a new instance.
-       */
-      BasicBounds: System.Validator.ValidatorSystemConstructor,
-
-      /**
-       * A locked instance of the `BasicBounds` validator suitable for non-transformed bounds checking against the
-       * browser window.
-       */
-      basicWindow: System.Validator.ValidatorSystem,
-
-      /**
        * The `TransformBounds` class constructor to instantiate a new instance.
        */
       TransformBounds: System.Validator.ValidatorSystemConstructor,
