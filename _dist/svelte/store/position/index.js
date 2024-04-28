@@ -6,7 +6,6 @@ import { subscribeIgnoreFirst } from '@typhonjs-svelte/runtime-base/util/store';
 import { Vec3, Mat4 } from '@typhonjs-svelte/runtime-base/math/gl-matrix';
 import { lerp } from '@typhonjs-svelte/runtime-base/math/interpolate';
 import { getEasingFunc } from '@typhonjs-svelte/runtime-base/svelte/easing';
-import { linear } from 'svelte/easing';
 import { writable } from 'svelte/store';
 import { nextAnimationFrame } from '@typhonjs-svelte/runtime-base/util/animate';
 
@@ -3238,11 +3237,10 @@ class PositionStateAPI
    }
 
    /**
-    * Restores a saved positional state returning the data. Several optional parameters are available
-    * to control whether the restore action occurs silently (no store / inline styles updates), animates
--   * to the stored data, or simply sets the stored data. Restoring via {@link AnimationAPI.to}
-    * allows specification of the duration, easing, and interpolate functions along with configuring a Promise to be
-    * returned if awaiting the end of the animation.
+    * Restores a saved positional state returning the data. Several optional parameters are available to control
+    * whether the restore action occurs silently (no store / inline styles updates), animates to the stored data, or
+    * simply sets the stored data. Restoring via {@link AnimationAPI.to} allows specification of the duration and
+    * easing along with configuring a Promise to be returned if awaiting the end of the animation.
     *
     * @param {object}            options - Parameters
     *
@@ -3261,10 +3259,10 @@ class PositionStateAPI
     *
     * @param {number}            [options.duration=0.1] - Duration in seconds.
     *
-    * @param {import('#runtime/svelte/easing').EasingFunction}   [options.ease=linear] - Easing function.
-    *
-    * @param {import('#runtime/math/interpolate').InterpolateFunction}  [options.interpolate=lerp] - Interpolation
-    *        function.
+    * @param {(
+    *    import('#runtime/svelte/easing').EasingFunctionName |
+    *    import('#runtime/svelte/easing').EasingFunction
+    * )} [options.ease='linear'] - Easing function name or function.
     *
     * @returns {(
     *    import('../data/types').Data.TJSPositionDataExtra |
@@ -3272,7 +3270,7 @@ class PositionStateAPI
     * )} Saved position data.
     */
    restore({ name, remove = false, properties, silent = false, async = false, animateTo = false, duration = 0.1,
-    ease = linear, interpolate = lerp })
+    ease = 'linear' })
    {
       if (typeof name !== 'string') { throw new TypeError(`TJSPosition - restore error: 'name' is not a string.`); }
 
@@ -3307,11 +3305,11 @@ class PositionStateAPI
             // Return a Promise with saved data that resolves after animation ends.
             if (async)
             {
-               return this.#position.animate.to(data, { duration, ease, interpolate }).finished.then(() => dataSaved);
+               return this.#position.animate.to(data, { duration, ease }).finished.then(() => dataSaved);
             }
             else  // Animate synchronously.
             {
-               this.#position.animate.to(data, { duration, ease, interpolate });
+               this.#position.animate.to(data, { duration, ease });
             }
          }
          else
@@ -3333,7 +3331,7 @@ class PositionStateAPI
     * @param {string}   options.name - name to index this saved data.
     *
     * @param {import('../types').TJSPositionTypes.OptionsGet} [optionsGet] - Additional options for
-    *        {@link TJSPosition.get} when serializing position state.
+    *        {@link TJSPosition.get} when serializing position state. By default, `nullable` values are included.
     *
     * @returns {import('../data/types').Data.TJSPositionDataExtra} Current position data plus any extra data stored.
     */
@@ -3956,58 +3954,6 @@ class AdapterValidators
 
       // TODO: handle validator updates.
       // if (length !== this.#validatorData.length) { this.#indexUpdate(); }
-   }
-}
-
-class BasicBounds extends SystemBase
-{
-   /**
-    * Provides a validator that respects transforms in positional data constraining the position to within the target
-    * elements bounds.
-    *
-    * @param {import('./types').ValidatorAPI.ValidationData}   valData - The associated validation data for position
-    *        updates.
-    *
-    * @returns {import('../../data/types').Data.TJSPositionData} Potentially adjusted position data.
-    */
-   validate(valData)
-   {
-      // Early out if element is undefined or local enabled state is false.
-      if (!this.enabled) { return valData.position; }
-
-      // Determine containing bounds from manual values; or any element; lastly the browser width / height.
-      const boundsWidth = this.width ?? this.element?.offsetWidth ?? globalThis.innerWidth;
-      const boundsHeight = this.height ?? this.element?.offsetHeight ?? globalThis.innerHeight;
-
-      if (typeof valData.position.width === 'number')
-      {
-         const maxW = valData.maxWidth ?? (this.constrain ? boundsWidth : Number.MAX_SAFE_INTEGER);
-         valData.position.width = valData.width = clamp(valData.position.width, valData.minWidth, maxW);
-
-         if ((valData.width + valData.position.left + valData.marginLeft) > boundsWidth)
-         {
-            valData.position.left = boundsWidth - valData.width - valData.marginLeft;
-         }
-      }
-
-      if (typeof valData.position.height === 'number')
-      {
-         const maxH = valData.maxHeight ?? (this.constrain ? boundsHeight : Number.MAX_SAFE_INTEGER);
-         valData.position.height = valData.height = clamp(valData.position.height, valData.minHeight, maxH);
-
-         if ((valData.height + valData.position.top + valData.marginTop) > boundsHeight)
-         {
-            valData.position.top = boundsHeight - valData.height - valData.marginTop;
-         }
-      }
-
-      const maxL = Math.max(boundsWidth - valData.width - valData.marginLeft, 0);
-      valData.position.left = Math.round(clamp(valData.position.left, 0, maxL));
-
-      const maxT = Math.max(boundsHeight - valData.height - valData.marginTop, 0);
-      valData.position.top = Math.round(clamp(valData.position.top, 0, maxT));
-
-      return valData.position;
    }
 }
 
@@ -4987,6 +4933,10 @@ class TJSTransforms
    }
 }
 
+/**
+ * Tracks changes to positional data during {@link TJSPosition.set} updates to minimize changes to the element
+ * style in {@link UpdateElementManager}.
+ */
 class PositionChangeSet
 {
    constructor()
@@ -5026,6 +4976,9 @@ class PositionChangeSet
    }
 }
 
+/**
+ * Encapsulates internal data from a TJSPosition instance to be manipulated by {@link UpdateElementManager}.
+ */
 class UpdateElementData
 {
    constructor()
@@ -5049,7 +5002,7 @@ class UpdateElementData
        *
        * @type {{width: number | 'auto' | 'inherit', height: number | 'auto' | 'inherit'}}
        */
-      this.dimensionData = { width: 0, height: 0 };
+      this.dimensionData = Object.seal({ width: 0, height: 0 });
 
       /**
        * @type {import('./').PositionChangeSet}
@@ -5057,7 +5010,7 @@ class UpdateElementData
       this.changeSet = void 0;
 
       /**
-       * @type {import('../').TJSPositionOptions}
+       * @type {import('../types-local').OptionsInternal}
        */
       this.options = void 0;
 
@@ -5087,7 +5040,7 @@ class UpdateElementData
       this.transformData = new TJSTransformData();
 
       /**
-       * @type {import('svelte/store').Subscriber<import('../data/types').Data.TJSPositionData>}
+       * @type {import('svelte/store').Subscriber<import('../data/types').Data.TJSPositionData>[]}
        */
       this.subscriptions = void 0;
 
@@ -5113,24 +5066,32 @@ class UpdateElementData
        * @type {boolean}
        */
       this.queued = false;
-
-      // Seal data backing readable stores.
-      Object.seal(this.dimensionData);
    }
 }
 
 /**
- * Decouples updates to any parent target HTMLElement inline styles. Invoke
- * {@link TJSPosition.elementUpdated} to await on the returned promise that is resolved with the current
- * render time via `nextAnimationFrame` / `requestAnimationFrame`. This allows the underlying data model to be updated
- * immediately while updates to the element are in sync with the browser and potentially in the future be further
- * throttled.
+ * Decouples updates to any parent target HTMLElement inline styles. Invoke {@link TJSPosition.elementUpdated} to await
+ * on the returned promise that is resolved with the current render time via `nextAnimationFrame` /
+ * `requestAnimationFrame`. This allows the underlying data model to be updated immediately while updates to the
+ * element are in sync with the browser and potentially in the future be further throttled.
  *
  * @param {HTMLElement} el - The target HTMLElement.
  */
 class UpdateElementManager
 {
+   /**
+    * Stores the active list of all TJSPosition instances currently updating. The list entries are recycled between
+    * updates.
+    *
+    * @type {[HTMLElement, import('./').UpdateElementData][]}
+    */
    static list = [];
+
+   /**
+    * Tracks the current position in the list.
+    *
+    * @type {number}
+    */
    static listCntr = 0;
 
    static updatePromise;
@@ -5495,7 +5456,7 @@ class TJSPositionStyleCache
          return this.resizeObserved.offsetHeight !== void 0 ? this.resizeObserved.offsetHeight : this.el.offsetHeight;
       }
 
-      throw new Error(`StyleCache - get offsetHeight error: no element assigned.`);
+      throw new Error(`TJSPositionStyleCache - get offsetHeight error: no element assigned.`);
    }
 
    /**
@@ -5512,7 +5473,7 @@ class TJSPositionStyleCache
          return this.resizeObserved.offsetWidth !== void 0 ? this.resizeObserved.offsetWidth : this.el.offsetWidth;
       }
 
-      throw new Error(`StyleCache - get offsetWidth error: no element assigned.`);
+      throw new Error(`TJSPositionStyleCache - get offsetWidth error: no element assigned.`);
    }
 
    /**
@@ -5585,8 +5546,9 @@ class TJSPositionStyleCache
 }
 
 /**
- * Provides a store for position following the subscriber protocol in addition to providing individual writable derived
- * stores for each independent variable.
+ * Provides an advanced compound store for positioning elements dynamically including an optimized pipeline for updating
+ * an associated element. Essential tweening / animation is supported in addition to a validation API to constrain
+ * positional updates.
  *
  * @implements {import('./types').TJSPositionTypes.TJSPositionWritable}
  */
@@ -5608,8 +5570,6 @@ class TJSPosition
     * @type {Readonly<import('./types').TJSPositionTypes.PositionValidators>}
     */
    static #positionValidators = Object.freeze({
-      BasicBounds,
-      basicWindow: new BasicBounds({ lock: true }),
       TransformBounds,
       transformWindow: new TransformBounds({ lock: true })
    });
@@ -5638,7 +5598,7 @@ class TJSPosition
    /**
     * Stores ongoing options that are set in the constructor or by transform store subscription.
     *
-    * @type {Partial<import('./').TJSPositionOptions>}
+    * @type {import('./types-local').OptionsInternal}
     */
    #options = {
       calculateTransform: false,
@@ -5650,7 +5610,7 @@ class TJSPosition
    /**
     * The associated parent for positional data tracking. Used in validators.
     *
-    * @type {import('./').TJSPositionParent}
+    * @type {import('./types').TJSPositionTypes.PositionParent}
     */
    #parent;
 
@@ -5662,7 +5622,7 @@ class TJSPosition
    #positionChangeSet = new PositionChangeSet();
 
    /**
-    * @type {import('./').TJSPositionStores}
+    * @type {import('./types').TJSPositionTypes.Stores}
     */
    #stores;
 
@@ -5743,8 +5703,6 @@ class TJSPosition
    /**
     * Returns default validators.
     *
-    * Note: `basicWindow` and `BasicBounds` will eventually be removed.
-    *
     * @returns {Readonly<import('./types').TJSPositionTypes.PositionValidators>} Available validators.
     */
    static get Validators() { return this.#positionValidators; }
@@ -5776,17 +5734,16 @@ class TJSPosition
    }
 
    /**
-    * Returns a duplicate of a given position instance copying any options and validators.
+    * Returns a duplicate of a given position instance copying any options and validators. The position parent is not
+    * copied and a new one must be set manually via the {@link TJSPosition.parent} setter.
     *
-    * // TODO: Consider more safety over options processing.
+    * @param {TJSPosition} position - A position instance.
     *
-    * @param {TJSPosition}          position - A position instance.
-    *
-    * @param {import('./').TJSPositionOptionsAll}   options - TJSPosition options.
+    * @param {import('./types').TJSPositionTypes.OptionsCtorAll}   [options] - Unique new options to set.
     *
     * @returns {TJSPosition} A duplicate position instance.
     */
-   static duplicate(position, options)
+   static duplicate(position, options = {})
    {
       if (!(position instanceof TJSPosition)) { throw new TypeError(`'position' is not an instance of TJSPosition.`); }
 
@@ -5801,22 +5758,24 @@ class TJSPosition
    }
 
    /**
-    * @param {import('./').TJSPositionParent | import('./').TJSPositionOptionsAll}   [parent] - A
-    *        potential parent element or object w/ `elementTarget` getter. May also be the TJSPositionOptions object
-    *        w/ 1 argument.
+    * @param {(
+    *    import('./types').TJSPositionTypes.PositionParent |
+    *    import('./types').TJSPositionTypes.OptionsCtorAll
+    * )} [parentOrOptions] - A  potential parent element or object w/ `elementTarget` accessor. You may also forego
+    *    setting the parent and pass in the options object.
     *
-    * @param {import('./').TJSPositionOptionsAll}   [options] - Default values.
+    * @param {import('./types').TJSPositionTypes.OptionsCtorAll}  [options] - The options object.
     */
-   constructor(parent, options)
+   constructor(parentOrOptions, options)
    {
       // Test if `parent` is a plain object; if so treat as options object.
-      if (isPlainObject(parent))
+      if (isPlainObject(parentOrOptions))
       {
-         options = parent;
+         options = parentOrOptions;
       }
       else
       {
-         this.#parent = parent;
+         this.#parent = /** @type {import('./types').TJSPositionTypes.PositionParent} */ parentOrOptions;
       }
 
       const data = this.#data;
@@ -5994,6 +5953,13 @@ class TJSPosition
 
       this.#stores.transformOrigin.values = TJSTransforms.transformOrigins;
 
+      /**
+       * Define 'values' getter to retrieve static transform origins.
+       */
+      Object.defineProperty(this.#stores.transformOrigin, 'values', {
+         get: () => TJSPosition.transformOrigins
+      });
+
       [this.#validators, this.#validatorData] = AdapterValidators.create();
 
       if (options?.initial)
@@ -6042,7 +6008,7 @@ class TJSPosition
    /**
     * Returns the dimension data for the readable store.
     *
-    * @returns {{width: number | 'auto' | 'inherit', height: number | 'auto' | 'inherit'}} Dimension data.
+    * @returns {Readonly<{width: number | 'auto' | 'inherit', height: number | 'auto' | 'inherit'}>} Dimension data.
     */
    get dimension()
    {
@@ -6080,9 +6046,9 @@ class TJSPosition
    }
 
    /**
-    * Returns the associated {@link TJSPositionParent} instance.
+    * Returns the associated {@link TJSPositionTypes.PositionParent} instance.
     *
-    * @returns {import('./').TJSPositionParent} The TJSPositionParent instance.
+    * @returns {import('./types').TJSPositionTypes.PositionParent} The current position parent instance.
     */
    get parent() { return this.#parent; }
 
@@ -6096,7 +6062,7 @@ class TJSPosition
    /**
     * Returns the derived writable stores for individual data variables.
     *
-    * @returns {import('./').TJSPositionStores} Derived / writable stores.
+    * @returns {import('./types').TJSPositionTypes.Stores} Derived / writable stores.
     */
    get stores() { return this.#stores; }
 
@@ -6133,9 +6099,10 @@ class TJSPosition
    }
 
    /**
-    * Sets the associated {@link TJSPositionParent} instance. Resets the style cache and default data.
+    * Sets the associated {@link TJSPositionTypes.PositionParent} instance. Resets the style cache and default data.
     *
-    * @param {import('./').TJSPositionParent} parent - A TJSPositionParent instance.
+    * @param {import('./types').TJSPositionTypes.PositionParent | undefined} parent - A PositionParent instance or
+    *        undefined to disassociate
     */
    set parent(parent)
    {
