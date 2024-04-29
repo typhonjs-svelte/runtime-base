@@ -132,7 +132,7 @@ export class TJSPosition
     *
     * @type {import('svelte/store').Subscriber<import('./data/types').Data.TJSPositionData>[]}
     */
-   #subscriptions = [];
+   #subscribers = [];
 
    /**
     * @type {TJSTransforms}
@@ -283,7 +283,7 @@ export class TJSPosition
       updateData.data = this.#data;
       updateData.options = this.#options;
       updateData.styleCache = this.#styleCache;
-      updateData.subscriptions = this.#subscriptions;
+      updateData.subscribers = this.#subscribers;
       updateData.transforms = this.#transforms;
 
       this.#updateElementData = updateData;
@@ -454,7 +454,7 @@ export class TJSPosition
          get: () => TJSPosition.transformOrigins
       });
 
-      [this.#validators, this.#validatorData] = AdapterValidators.create();
+      [this.#validators, this.#validatorData] = AdapterValidators.create(() => this.set());
 
       if (options?.initial)
       {
@@ -1190,15 +1190,15 @@ export class TJSPosition
     */
    subscribe(handler)
    {
-      this.#subscriptions.push(handler); // add handler to the array of subscribers
+      this.#subscribers.push(handler); // add handler to the array of subscribers
 
       handler(Object.assign({}, this.#data));                     // call handler with current value
 
       // Return unsubscribe function.
       return () =>
       {
-         const index = this.#subscriptions.findIndex((sub) => sub === handler);
-         if (index >= 0) { this.#subscriptions.splice(index, 1); }
+         const index = this.#subscribers.findIndex((sub) => sub === handler);
+         if (index >= 0) { this.#subscribers.splice(index, 1); }
       };
    }
 

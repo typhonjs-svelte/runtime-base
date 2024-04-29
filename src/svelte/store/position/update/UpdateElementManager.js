@@ -158,12 +158,12 @@ export class UpdateElementManager
       // Make a copy of the data.
       const output = TJSPositionDataUtil.copyData(data, updateData.dataSubscribers);
 
-      const subscriptions = updateData.subscriptions;
+      const subscribers = updateData.subscribers;
 
       // Early out if there are no subscribers.
-      if (subscriptions.length > 0)
+      if (subscribers.length > 0)
       {
-         for (let cntr = 0; cntr < subscriptions.length; cntr++) { subscriptions[cntr](output); }
+         for (let cntr = 0; cntr < subscribers.length; cntr++) { subscribers[cntr](output); }
       }
 
       // Update dimension data if width / height has changed.

@@ -69,7 +69,7 @@ export class UpdateElementData
       /**
        * @type {import('svelte/store').Subscriber<import('../data/types').Data.TJSPositionData>[]}
        */
-      this.subscriptions = void 0;
+      this.subscribers = void 0;
 
       /**
        * @type {import('svelte/store').Writable<{width: (number|'auto'), height: (number|'auto')}>}
