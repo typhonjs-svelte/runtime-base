@@ -42,13 +42,17 @@ export class AdapterValidators
     */
    #mapUnsubscribe = new Map();
 
+   #updateFn;
+
    /**
     * @returns {[AdapterValidators, import('./types').ValidatorAPI.ValidatorData[]]} Returns this and internal storage
     * for validator adapter.
     */
-   static create()
+   static create(updateFn)
    {
       const validatorAPI = new AdapterValidators();
+
+      validatorAPI.#updateFn = updateFn;
 
       return [validatorAPI, validatorAPI.#validatorData];
    }
@@ -113,7 +117,7 @@ export class AdapterValidators
        *
        * @type {number}
        */
-      // let subscribeCount = 0;  // TODO: Currently unused
+      let subscribeCount = 0;
 
       for (const validator of validators)
       {
@@ -129,6 +133,8 @@ export class AdapterValidators
 
          /** @type {(...args: any[]) => import('svelte/store').Unsubscriber} */
          let subscribeFn = void 0;
+
+         let subscribeTarget = void 0;
 
          switch (validatorType)
          {
@@ -183,8 +189,7 @@ export class AdapterValidators
 
          if (typeof subscribeFn === 'function')
          {
-            // TODO: consider how to handle validator updates.
-            const unsubscribe = subscribeFn();
+            const unsubscribe = subscribeFn.call(validator, this.#updateFn);
 
             // Ensure that unsubscribe is a function.
             if (typeof unsubscribe !== 'function')
@@ -201,15 +206,13 @@ export class AdapterValidators
             }
 
             this.#mapUnsubscribe.set(data.validate, unsubscribe);
-            // subscribeCount++;  // TODO: Currently unused
+            subscribeCount++;
          }
       }
 
       // Validators with subscriber functionality are assumed to immediately invoke the `subscribe` callback. If the
-      // subscriber count is less than the amount of validators added then automatically trigger an index update
-      // manually.
-      // TODO: handle validator updates.
-      // if (subscribeCount < validators.length) { this.#indexUpdate(); }
+      // subscriber count is less than the amount of validators added then automatically trigger an update manually.
+      if (subscribeCount < validators.length) { this.#updateFn(); }
    }
 
    /**
@@ -227,8 +230,7 @@ export class AdapterValidators
 
       this.#mapUnsubscribe.clear();
 
-      // TODO: handle validator updates.
-      // this.#indexUpdate();
+      this.#updateFn();
    }
 
    /**
@@ -269,9 +271,8 @@ export class AdapterValidators
          }
       }
 
-      // Update the index a validator was removed.
-      // TODO: handle validator updates.
-      // if (length !== this.#validatorData.length) { this.#indexUpdate(); }
+      // Invoke update as a validator was removed.
+      if (length !== this.#validatorData.length) { this.#updateFn(); }
    }
 
    /**
@@ -310,8 +311,7 @@ export class AdapterValidators
          return !remove;
       });
 
-      // TODO: handle validator updates.
-      // if (length !== this.#validatorData.length) { this.#indexUpdate(); }
+      if (length !== this.#validatorData.length) { this.#updateFn(); }
    }
 
    /**
@@ -345,7 +345,6 @@ export class AdapterValidators
          return !remove; // Swap here to actually remove the item via array validator method.
       });
 
-      // TODO: handle validator updates.
-      // if (length !== this.#validatorData.length) { this.#indexUpdate(); }
+      if (length !== this.#validatorData.length) { this.#updateFn(); }
    }
 }
