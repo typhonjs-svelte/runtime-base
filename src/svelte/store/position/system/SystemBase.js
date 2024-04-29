@@ -3,6 +3,7 @@ import { A11yHelper } from '#runtime/util/browser';
 /**
  * Provides a base {@link System.SystemBase} implementation.
  *
+ * @implements {import('svelte/store').Readable}
  * @implements {import('./types').System.SystemBase}
  */
 export class SystemBase
@@ -38,6 +39,13 @@ export class SystemBase
     * Set from an optional value in the constructor to lock accessors preventing modification.
     */
    #lock;
+
+   /**
+    * Stores the subscribers.
+    *
+    * @type {import('svelte/store').Subscriber<SystemBase>[]}
+    */
+   #subscribers = [];
 
    /**
     * Provides a manual setting of the element width. As things go `offsetWidth` causes a browser layout and is not
@@ -113,6 +121,8 @@ export class SystemBase
       if (typeof constrain !== 'boolean') { throw new TypeError(`'constrain' is not a boolean.`); }
 
       this.#constrain = constrain;
+
+      this.#updateSubscribers();
    }
 
    /**
@@ -130,6 +140,8 @@ export class SystemBase
       {
          throw new TypeError(`'element' is not a HTMLElement, undefined, or null.`);
       }
+
+      this.#updateSubscribers();
    }
 
    /**
@@ -142,6 +154,8 @@ export class SystemBase
       if (typeof enabled !== 'boolean') { throw new TypeError(`'enabled' is not a boolean.`); }
 
       this.#enabled = enabled;
+
+      this.#updateSubscribers();
    }
 
    /**
@@ -159,6 +173,8 @@ export class SystemBase
       {
          throw new TypeError(`'height' is not a finite number or undefined.`);
       }
+
+      this.#updateSubscribers();
    }
 
    /**
@@ -176,6 +192,8 @@ export class SystemBase
       {
          throw new TypeError(`'width' is not a finite number or undefined.`);
       }
+
+      this.#updateSubscribers();
    }
 
    /**
@@ -206,5 +224,35 @@ export class SystemBase
       {
          throw new TypeError(`'height' is not a finite number or undefined.`);
       }
+
+      this.#updateSubscribers();
+   }
+
+   /**
+    * @param {import('svelte/store').Subscriber<SystemBase>} handler - Callback
+    *        function that is invoked on update / changes. Receives a copy of the TJSPositionData.
+    *
+    * @returns {import('svelte/store').Unsubscriber} Unsubscribe function.
+    */
+   subscribe(handler)
+   {
+      this.#subscribers.push(handler); // add handler to the array of subscribers
+
+      handler(this);                   // call handler with current value
+
+      // Return unsubscribe function.
+      return () =>
+      {
+         const index = this.#subscribers.findIndex((sub) => sub === handler);
+         if (index >= 0) { this.#subscribers.splice(index, 1); }
+      };
+   }
+
+   /**
+    * Updates subscribers on changes.
+    */
+   #updateSubscribers()
+   {
+      for (let cntr = 0; cntr < this.#subscribers.length; cntr++) { this.#subscribers[cntr](this); }
    }
 }
