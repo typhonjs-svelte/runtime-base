@@ -134,8 +134,6 @@ export class AdapterValidators
          /** @type {(...args: any[]) => import('svelte/store').Unsubscriber} */
          let subscribeFn = void 0;
 
-         let subscribeTarget = void 0;
-
          switch (validatorType)
          {
             case 'function':
