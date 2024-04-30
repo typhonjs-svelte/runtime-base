@@ -29,20 +29,6 @@ export class AnimationAPI
    #position;
 
    /**
-    * Tracks the number of animation control instances that are active.
-    *
-    * @type {number}
-    */
-   #instanceCount = 0;
-
-   /**
-    * Provides a bound function to pass as data to AnimationManager to invoke `AnimationAPI.#cleanupInstance`.
-    *
-    * @type {Function}
-    */
-   #cleanup;
-
-   /**
     * @param {import('../').TJSPosition}       position -
     *
     * @param {import('../data/types').Data.TJSPositionData}   data -
@@ -51,18 +37,16 @@ export class AnimationAPI
    {
       this.#position = position;
       this.#data = data;
-
-      this.#cleanup = this.#cleanupInstance.bind(this);
    }
 
    /**
-    * Returns whether there are scheduled animations whether active or delayed for this TJSPosition.
+    * Returns whether there are scheduled animations whether active or pending for this {@link TJSPosition}.
     *
-    * @returns {boolean} Are there active animation instances.
+    * @returns {boolean} True if scheduled / false if not.
     */
    get isScheduled()
    {
-      return this.#instanceCount > 0;
+      return AnimationManager.isScheduled(this.#position);
    }
 
    /**
@@ -105,7 +89,6 @@ export class AnimationAPI
       /** @type {import('./types-local').AnimationData} */
       const animationData = {
          active: true,
-         cleanup: this.#cleanup,
          cancelled: false,
          control: void 0,
          current: 0,
@@ -144,7 +127,6 @@ export class AnimationAPI
       }
 
       // Schedule immediately w/ AnimationManager
-      this.#instanceCount++;
       AnimationManager.add(animationData);
 
       // Create animation control
@@ -157,24 +139,6 @@ export class AnimationAPI
    cancel()
    {
       AnimationManager.cancel(this.#position);
-   }
-
-   /**
-    * Cleans up an animation instance.
-    *
-    * @param {import('./types-local').AnimationData}   data - Animation data for an animation instance.
-    */
-   #cleanupInstance(data)
-   {
-      this.#instanceCount--;
-
-      data.active = false;
-      data.finished = true;
-
-      if (typeof data.resolve === 'function')
-      {
-         data.resolve({ cancelled: data.cancelled });
-      }
    }
 
    /**
@@ -506,7 +470,6 @@ export class AnimationAPI
       /** @type {import('./types-local').AnimationData} */
       const animationData = {
          active: true,
-         cleanup: this.#cleanup,
          cancelled: false,
          control: void 0,
          current: 0,
@@ -576,7 +539,6 @@ export class AnimationAPI
             animationData.active = true;
             animationData.current = 0;
 
-            this.#instanceCount++;
             AnimationManager.add(animationData);
          }
          else // QuickTo animation is currently scheduled w/ AnimationManager so reset start and current time.

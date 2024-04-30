@@ -5,7 +5,7 @@ import {
 import { AnimationManager }      from './AnimationManager.js';
 import { AnimationAPI }          from './AnimationAPI.js';
 import { AnimationGroupControl } from './AnimationGroupControl.js';
-import {TJSPositionDataUtil} from "../data/index.js";
+import { TJSPositionDataUtil }   from '../data/index.js';
 
 /**
  * Provides a public API for grouping multiple {@link TJSPosition} animations together with the

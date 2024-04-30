@@ -16,6 +16,13 @@ export class AnimationManager
    static activeList = [];
 
    /**
+    * Provides the `this` context for {@link AnimationManager.animate} to be scheduled on rAF.
+    *
+    * @type {Function}
+    */
+   static #animateBound = () => this.animate();
+
+   /**
     * @type {import('./types-local').AnimationData[]}
     */
    static newList = [];
@@ -52,7 +59,7 @@ export class AnimationManager
       // Early out of the rAF callback when there are no current animations.
       if (AnimationManager.activeList.length === 0 && AnimationManager.newList.length === 0)
       {
-         globalThis.requestAnimationFrame(AnimationManager.animate);
+         globalThis.requestAnimationFrame(this.#animateBound);
          return;
       }
 
@@ -67,7 +74,7 @@ export class AnimationManager
             if (data.cancelled)
             {
                AnimationManager.newList.splice(cntr, 1);
-               data.cleanup(data);
+               this.#cleanupData(data);
             }
 
             // If data is active then process it now. Delayed animations start with `active` false.
@@ -86,11 +93,10 @@ export class AnimationManager
          const data = AnimationManager.activeList[cntr];
 
          // Remove any animations that have been canceled.
-         // Ensure that the element is still connected otherwise remove it from active list and continue.
-         if (data.cancelled || (data.el !== void 0 && !data.el.isConnected))
+         if (data.cancelled)
          {
             AnimationManager.activeList.splice(cntr, 1);
-            data.cleanup(data);
+            this.#cleanupData(data);
             continue;
          }
 
@@ -109,7 +115,7 @@ export class AnimationManager
             data.position.set(data.newData, AnimationManager.#tjsPositionSetOptions);
 
             AnimationManager.activeList.splice(cntr, 1);
-            data.cleanup(data);
+            this.#cleanupData(data);
 
             continue;
          }
@@ -126,7 +132,7 @@ export class AnimationManager
          data.position.set(data.newData, AnimationManager.#tjsPositionSetOptions);
       }
 
-      globalThis.requestAnimationFrame(AnimationManager.animate);
+      globalThis.requestAnimationFrame(this.#animateBound);
    }
 
    /**
@@ -143,7 +149,7 @@ export class AnimationManager
          {
             AnimationManager.activeList.splice(cntr, 1);
             data.cancelled = true;
-            data.cleanup(data);
+            this.#cleanupData(data);
          }
       }
 
@@ -154,7 +160,7 @@ export class AnimationManager
          {
             AnimationManager.newList.splice(cntr, 1);
             data.cancelled = true;
-            data.cleanup(data);
+            this.#cleanupData(data);
          }
       }
    }
@@ -168,18 +174,31 @@ export class AnimationManager
       {
          const data = AnimationManager.activeList[cntr];
          data.cancelled = true;
-         data.cleanup(data);
+         this.#cleanupData(data);
       }
 
       for (let cntr = AnimationManager.newList.length; --cntr >= 0;)
       {
          const data = AnimationManager.newList[cntr];
          data.cancelled = true;
-         data.cleanup(data);
+         this.#cleanupData(data);
       }
 
       AnimationManager.activeList.length = 0;
       AnimationManager.newList.length = 0;
+   }
+
+   /**
+    * @param {import('./types-local').AnimationData}  data - Animation data to cleanup.
+    */
+   static #cleanupData(data)
+   {
+      data.active = false;
+      data.finished = true;
+
+      if (typeof data.cleanup === 'function') { data.cleanup(data); }
+
+      if (typeof data.resolve === 'function') { data.resolve({ cancelled: data.cancelled }); }
    }
 
    /**
@@ -197,22 +216,38 @@ export class AnimationManager
       for (let cntr = AnimationManager.activeList.length; --cntr >= 0;)
       {
          const data = AnimationManager.activeList[cntr];
-         if (data.position === position)
-         {
-            results.push(data.control);
-         }
+         if (data.position === position) { results.push(data.control); }
       }
 
       for (let cntr = AnimationManager.newList.length; --cntr >= 0;)
       {
          const data = AnimationManager.newList[cntr];
-         if (data.position === position)
-         {
-            results.push(data.control);
-         }
+         if (data.position === position) { results.push(data.control); }
       }
 
       return results;
+   }
+
+   /**
+    * Returns the status of any scheduled or pending animations for the given {@link TJSPosition} instance.
+    *
+    * @param {import('../index.js').TJSPosition} position - TJSPosition instance.
+    *
+    * @returns {boolean} True if scheduled / false if not.
+    */
+   static isScheduled(position)
+   {
+      for (let cntr = AnimationManager.activeList.length; --cntr >= 0;)
+      {
+         if (AnimationManager.activeList[cntr].position === position) { return true; }
+      }
+
+      for (let cntr = AnimationManager.newList.length; --cntr >= 0;)
+      {
+         if (AnimationManager.newList[cntr].position === position) { return true; }
+      }
+
+      return false;
    }
 }
 

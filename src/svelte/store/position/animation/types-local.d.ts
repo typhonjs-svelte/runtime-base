@@ -2,10 +2,10 @@
 
 import type { InterpolateFunction } from '#runtime/math/interpolate';
 import type { EasingFunction }      from '#runtime/svelte/easing';
-import type { BasicAnimation }      from '#runtime/util/animate';
 
 import type { AnimationAPI }        from './types';
 
+import type { AnimationControl }    from './AnimationControl';
 import type { TJSPosition }         from '../TJSPosition.js';
 
 /**
@@ -20,7 +20,7 @@ export type AnimationData = {
    /**
     * Associated cleanup function.
     */
-   cleanup: Function;
+   cleanup: AnimationCleanupFunction;
 
    /**
     * Animation cancelled state.
@@ -28,9 +28,9 @@ export type AnimationData = {
    cancelled: boolean;
 
    /**
-    * Associated AnimationControl / AnimationGroupControl.
+    * Associated AnimationControl.
     */
-   control: BasicAnimation | undefined;
+   control: AnimationControl | undefined;
 
    /**
     * Current time.
@@ -97,3 +97,8 @@ export type AnimationData = {
     */
    start: number;
 }
+
+/**
+ * A cleanup function to run when the animation is finished / cancelled.
+ */
+export type AnimationCleanupFunction = (data: AnimationData) => void;
