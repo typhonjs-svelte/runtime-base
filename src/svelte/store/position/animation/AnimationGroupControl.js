@@ -5,7 +5,7 @@
  */
 export class AnimationGroupControl
 {
-   /** @type {import('./AnimationControl').AnimationControl[]} */
+   /** @type {Set<import('./AnimationControl').AnimationControl>} */
    #animationControls;
 
    /** @type {Promise<import('#runtime/util/animate').BasicAnimationState>} */
@@ -26,7 +26,7 @@ export class AnimationGroupControl
    static get voidControl() { return this.#voidControl; }
 
    /**
-    * @param {import('./AnimationControl').AnimationControl[]} animationControls - An array of AnimationControl
+    * @param {Set<import('./AnimationControl').AnimationControl>} animationControls - An array of AnimationControl
     *        instances.
     */
    constructor(animationControls)
@@ -45,7 +45,7 @@ export class AnimationGroupControl
 
       if (!(this.#finishedPromise instanceof Promise))
       {
-         if (animationControls === null || animationControls === void 0)
+         if (animationControls === null || animationControls === void 0 || animationControls.size === 0)
          {
             this.#finishedPromise = /** @type {Promise<import('#runtime/util/animate').BasicAnimationState>} */
              Promise.resolve({ cancelled: false });
@@ -55,7 +55,7 @@ export class AnimationGroupControl
             /** @type {Promise<import('#runtime/util/animate').BasicAnimationState>[]} */
             const promises = [];
 
-            for (let cntr = animationControls.length; --cntr >= 0;) { promises.push(animationControls[cntr].finished); }
+            for (const animationControl of animationControls) { promises.push(animationControl.finished); }
 
             this.#finishedPromise = Promise.allSettled(promises).then((results) => {
                // Check if any promises were rejected or resolved with `cancelled: true`.
@@ -83,11 +83,11 @@ export class AnimationGroupControl
    {
       const animationControls = this.#animationControls;
 
-      if (animationControls === null || animationControls === void 0) { return false; }
+      if (animationControls === null || animationControls === void 0 || animationControls.size === 0) { return false; }
 
-      for (let cntr = animationControls.length; --cntr >= 0;)
+      for (const animationControl of animationControls)
       {
-         if (animationControls[cntr].isActive) { return true; }
+         if (animationControl.isActive) { return true; }
       }
 
       return false;
@@ -102,11 +102,11 @@ export class AnimationGroupControl
    {
       const animationControls = this.#animationControls;
 
-      if (animationControls === null || animationControls === void 0) { return true; }
+      if (animationControls === null || animationControls === void 0 || animationControls.size === 0) { return true; }
 
-      for (let cntr = animationControls.length; --cntr >= 0;)
+      for (const animationControl of animationControls)
       {
-         if (!animationControls[cntr].isFinished) { return false; }
+         if (!animationControl.isFinished) { return false; }
       }
 
       return true;
@@ -119,11 +119,8 @@ export class AnimationGroupControl
    {
       const animationControls = this.#animationControls;
 
-      if (animationControls === null || animationControls === void 0) { return; }
+      if (animationControls === null || animationControls === void 0 || animationControls.size === 0) { return; }
 
-      for (let cntr = this.#animationControls.length; --cntr >= 0;)
-      {
-         this.#animationControls[cntr].cancel();
-      }
+      for (const animationControl of animationControls) { animationControl.cancel(); }
    }
 }

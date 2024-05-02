@@ -190,9 +190,9 @@ export class AnimationGroupAPI
       }
 
       /**
-       * @type {import('./AnimationControl').AnimationControl[]}
+       * @type {Set<import('./AnimationControl').AnimationControl>}
        */
-      const animationControls = [];
+      const animationControls = new Set();
 
       let index = -1;
 
@@ -257,7 +257,7 @@ export class AnimationGroupAPI
                }
             }
 
-            animationControls.push(/** @type {import('./AnimationControl').AnimationControl} */
+            animationControls.add(/** @type {import('./AnimationControl').AnimationControl} */
              actualPosition.animate.from(actualFromData, actualOptions));
          }
       }
@@ -306,7 +306,7 @@ export class AnimationGroupAPI
             }
          }
 
-         animationControls.push(/** @type {import('./AnimationControl').AnimationControl} */
+         animationControls.add(/** @type {import('./AnimationControl').AnimationControl} */
           actualPosition.animate.from(actualFromData, actualOptions));
       }
 
@@ -356,9 +356,9 @@ export class AnimationGroupAPI
       }
 
       /**
-       * @type {import('./AnimationControl').AnimationControl[]}
+       * @type {Set<import('./AnimationControl').AnimationControl>}
        */
-      const animationControls = [];
+      const animationControls = new Set();
 
       let index = -1;
 
@@ -439,7 +439,7 @@ export class AnimationGroupAPI
                }
             }
 
-            animationControls.push(/** @type {import('./AnimationControl').AnimationControl} */
+            animationControls.add(/** @type {import('./AnimationControl').AnimationControl} */
              actualPosition.animate.fromTo(actualFromData, actualToData, actualOptions));
          }
       }
@@ -502,7 +502,7 @@ export class AnimationGroupAPI
             }
          }
 
-         animationControls.push(/** @type {import('./AnimationControl').AnimationControl} */
+         animationControls.add(/** @type {import('./AnimationControl').AnimationControl} */
           actualPosition.animate.fromTo(actualFromData, actualToData, actualOptions));
       }
 
@@ -541,9 +541,9 @@ export class AnimationGroupAPI
       }
 
       /**
-       * @type {import('./AnimationControl').AnimationControl[]}
+       * @type {Set<import('./AnimationControl').AnimationControl>}
        */
-      const animationControls = [];
+      const animationControls = new Set();
 
       let index = -1;
 
@@ -608,7 +608,7 @@ export class AnimationGroupAPI
                }
             }
 
-            animationControls.push(/** @type {import('./AnimationControl').AnimationControl} */
+            animationControls.add(/** @type {import('./AnimationControl').AnimationControl} */
              actualPosition.animate.to(actualToData, actualOptions));
          }
       }
@@ -657,7 +657,7 @@ export class AnimationGroupAPI
             }
          }
 
-         animationControls.push(/** @type {import('./AnimationControl').AnimationControl} */
+         animationControls.add(/** @type {import('./AnimationControl').AnimationControl} */
           actualPosition.animate.to(actualToData, actualOptions));
       }
 
