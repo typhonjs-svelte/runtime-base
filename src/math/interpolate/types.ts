@@ -1,7 +1,7 @@
 /**
  * Defines the shape of an interpolation function.
  */
-export interface InterpolateFunction<T>
+interface InterpolateFunction<T>
 {
    /**
     * @param start - Start value.
@@ -14,3 +14,13 @@ export interface InterpolateFunction<T>
     */
    (start: T, end: T, amount: number): T;
 }
+
+/**
+ * Defines the supported interpolation function names.
+ */
+type InterpolateFunctionName = 'lerp';
+
+export {
+   InterpolateFunction,
+   InterpolateFunctionName
+};
