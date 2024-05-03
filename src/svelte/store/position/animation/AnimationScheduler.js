@@ -41,14 +41,14 @@ export class AnimationScheduler
     *
     * @param {import('#runtime/svelte/easing').EasingFunction}    ease -
     *
-    * @param {import('#runtime/math/interpolate').InterpolateFunction}    interpolate -
+    * @param {import('#runtime/math/interpolate').InterpolateFunction}    [interpolate=lerp] -
     *
     * @param {import('./types-local').AnimationCleanupFunction} [cleanup] -
     *
     * @returns {import('./AnimationControl').AnimationControl | null} An AnimationControl instance or null if none
     *          created.
     */
-   static addAnimation(position, initial, destination, duration, el, delay, ease, interpolate, cleanup)
+   static addAnimation(position, initial, destination, duration, el, delay, ease, interpolate = lerp, cleanup)
    {
       // Set initial data for transform values that are often null by default.
       TJSPositionDataUtil.setNumericDefaults(initial);
@@ -130,7 +130,7 @@ export class AnimationScheduler
     * @returns {import('./AnimationControl').AnimationControl | null} An AnimationControl instance or null if none
     *          created.
     */
-   static from(position, fromData, { delay = 0, duration = 1, ease = 'cubicOut', interpolate = lerp }, cleanup)
+   static from(position, fromData, options = {}, cleanup)
    {
       if (!isObject(fromData))
       {
@@ -144,6 +144,8 @@ export class AnimationScheduler
       {
          return null;
       }
+
+      let { delay = 0, duration = 1, ease = 'cubicOut' } = options;
 
       // Cache any target element allowing AnimationManager to stop animation if it becomes disconnected from DOM.
       const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
@@ -167,10 +169,7 @@ export class AnimationScheduler
           `AnimationScheduler.from error: 'ease' is not a function or valid Svelte easing function name.`);
       }
 
-      if (typeof interpolate !== 'function')
-      {
-         throw new TypeError(`AnimationScheduler.from error: 'interpolate' is not a function.`);
-      }
+      // TODO: In the future potentially support more interpolation functions besides `lerp`.
 
       const initial = {};
       const destination = {};
@@ -192,7 +191,7 @@ export class AnimationScheduler
 
       ConvertStringData.process(initial, this.#data, el);
 
-      return this.addAnimation(position, initial, destination, duration, el, delay, ease, interpolate, cleanup);
+      return this.addAnimation(position, initial, destination, duration, el, delay, ease, lerp, cleanup);
    }
 
    /**
@@ -211,8 +210,7 @@ export class AnimationScheduler
     * @returns {import('./AnimationControl').AnimationControl | null} An AnimationControl instance or null if none
     *          created.
     */
-   static fromTo(position, fromData, toData, { delay = 0, duration = 1, ease = 'cubicOut', interpolate = lerp },
-    cleanup)
+   static fromTo(position, fromData, toData, options = {}, cleanup)
    {
       if (!isObject(fromData))
       {
@@ -231,6 +229,8 @@ export class AnimationScheduler
       {
          return null;
       }
+
+      let { delay = 0, duration = 1, ease = 'cubicOut' } = options;
 
       // Cache any target element allowing AnimationManager to stop animation if it becomes disconnected from DOM.
       const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
@@ -254,10 +254,7 @@ export class AnimationScheduler
           `AnimationScheduler.fromTo error: 'ease' is not a function or valid Svelte easing function name.`);
       }
 
-      if (typeof interpolate !== 'function')
-      {
-         throw new TypeError(`AnimationScheduler.fromTo error: 'interpolate' is not a function.`);
-      }
+      // TODO: In the future potentially support more interpolation functions besides `lerp`.
 
       const initial = {};
       const destination = {};
@@ -288,7 +285,7 @@ export class AnimationScheduler
       ConvertStringData.process(initial, this.#data, el);
       ConvertStringData.process(destination, this.#data, el);
 
-      return this.addAnimation(position, initial, destination, duration, el, delay, ease, interpolate, cleanup);
+      return this.addAnimation(position, initial, destination, duration, el, delay, ease, lerp, cleanup);
    }
 
    /**
@@ -305,7 +302,7 @@ export class AnimationScheduler
     * @returns {import('./AnimationControl').AnimationControl | null} An AnimationControl instance or null if none
     *          created.
     */
-   static to(position, toData, { delay = 0, duration = 1, ease = 'cubicOut', interpolate = lerp }, cleanup)
+   static to(position, toData, options = {}, cleanup)
    {
       if (!isObject(toData))
       {
@@ -319,6 +316,8 @@ export class AnimationScheduler
       {
          return null;
       }
+
+      let { delay = 0, duration = 1, ease = 'cubicOut' } = options;
 
       // Cache any target element allowing AnimationManager to stop animation if it becomes disconnected from DOM.
       const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
@@ -342,10 +341,7 @@ export class AnimationScheduler
           `AnimationScheduler.to error: 'ease' is not a function or valid Svelte easing function name.`);
       }
 
-      if (typeof interpolate !== 'function')
-      {
-         throw new TypeError(`AnimationScheduler.to error: 'interpolate' is not a function.`);
-      }
+      // TODO: In the future potentially support more interpolation functions besides `lerp`.
 
       const initial = {};
       const destination = {};
@@ -367,6 +363,6 @@ export class AnimationScheduler
 
       ConvertStringData.process(destination, this.#data, el);
 
-      return this.addAnimation(position, initial, destination, duration, el, delay, ease, interpolate, cleanup);
+      return this.addAnimation(position, initial, destination, duration, el, delay, ease, lerp, cleanup);
    }
 }

@@ -128,7 +128,7 @@ export class AnimationAPI
     *
     * @returns {import('./types').AnimationAPI.QuickToCallback} quick-to tween function.
     */
-   quickTo(keys, { duration = 1, ease = 'cubicOut', interpolate = lerp } = {})
+   quickTo(keys, options = {})
    {
       if (!isIterable(keys))
       {
@@ -143,6 +143,8 @@ export class AnimationAPI
          throw new Error(`AnimationAPI.quickTo error: 'parent' is not positionable.`);
       }
 
+      let { duration = 1, ease = 'cubicOut' } = options;
+
       if (!Number.isFinite(duration) || duration < 0)
       {
          throw new TypeError(`AnimationAPI.quickTo error: 'duration' is not a positive number.`);
@@ -156,10 +158,7 @@ export class AnimationAPI
           `AnimationAPI.quickTo error: 'ease' is not a function or valid Svelte easing function name.`);
       }
 
-      if (typeof interpolate !== 'function')
-      {
-         throw new TypeError(`AnimationAPI.quickTo error: 'interpolate' is not a function.`);
-      }
+      // TODO: In the future potentially support more interpolation functions besides `lerp`.
 
       const initial = {};
       const destination = {};
@@ -207,7 +206,7 @@ export class AnimationAPI
          el: void 0,
          finished: true, // Note: start in finished state to add to AnimationManager on first callback.
          initial,
-         interpolate,
+         interpolate: lerp,
          keys,
          newData,
          position: this.#position,
@@ -283,8 +282,10 @@ export class AnimationAPI
 
       quickToCB.keys = keysArray;
 
-      quickToCB.options = ({ duration, ease, interpolate } = {}) => // eslint-disable-line no-shadow
+      quickToCB.options = (optionsCB) => // eslint-disable-line no-shadow
       {
+         let { duration, ease } = optionsCB;
+
          if (duration !== void 0 && (!Number.isFinite(duration) || duration < 0))
          {
             throw new TypeError(`AnimationAPI.quickTo.options error: 'duration' is not a positive number.`);
@@ -298,14 +299,10 @@ export class AnimationAPI
              `AnimationAPI.quickTo.options error: 'ease' is not a function or valid Svelte easing function name.`);
          }
 
-         if (interpolate !== void 0 && typeof interpolate !== 'function')
-         {
-            throw new TypeError(`AnimationAPI.quickTo.options error: 'interpolate' is not a function.`);
-         }
+         // TODO: In the future potentially support more interpolation functions besides `lerp`.
 
          if (duration >= 0) { animationData.duration = duration * 1000; }
          if (ease) { animationData.ease = ease; }
-         if (interpolate) { animationData.interpolate = interpolate; }
 
          return quickToCB;
       };

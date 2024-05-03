@@ -70,7 +70,7 @@ export type AnimationData = {
    /**
     * Interpolation function; default lerp.
     */
-   interpolate: InterpolateFunction;
+   interpolate: InterpolateFunction<any>;
 
    /**
     * Animation keys.

@@ -1,16 +1,16 @@
-import type { InterpolateFunction }    from '#runtime/math/interpolate';
+import type { InterpolateFunctionName }   from '#runtime/math/interpolate';
 
 import type {
    EasingFunction,
-   EasingFunctionName }                from '#runtime/svelte/easing';
+   EasingFunctionName }                   from '#runtime/svelte/easing';
 
-import type { BasicAnimation }         from '#runtime/util/animate';
+import type { BasicAnimation }            from '#runtime/util/animate';
 
-import type { Data }                   from '../data/types';
+import type { Data }                      from '../data/types';
 
-import type { TJSPositionTypes }       from '../types';
+import type { TJSPositionTypes }          from '../types';
 
-import type { TJSPosition }            from '../TJSPosition.js';
+import type { TJSPosition }               from '../TJSPosition.js';
 
 interface AnimationAPI
 {
@@ -319,9 +319,9 @@ namespace AnimationAPI {
       ease?: EasingFunctionName | EasingFunction;
 
       /**
-       * Interpolation function; default: lerp
+       * Interpolation function name. Currently, only `lerp` is supported.
        */
-      interpolate?: InterpolateFunction;
+      interpolate?: InterpolateFunctionName;
    };
 
    /**
