@@ -75,7 +75,7 @@ export type AnimationData = {
    /**
     * Animation keys.
     */
-   keys: Iterable<string>;
+   keys: string[];
 
    /**
     * Copy of initial data. Used as temporary storage.
