@@ -78,6 +78,7 @@ export class AnimationScheduler
          destination,
          duration: duration * 1000, // Internally the AnimationManager works in ms.
          ease,
+         el,
          finished: false,
          initial,
          interpolate,
@@ -104,7 +105,7 @@ export class AnimationScheduler
 
                // Offset start time by delta between last rAF time. This allows a delayed tween to start from the
                // precise delayed time.
-               animationData.start = now + (AnimationManager.current - now);
+               animationData.start = now + (AnimationManager.timeNow - now);
             }
          }, delay * 1000);
       }

@@ -275,7 +275,7 @@ export class AnimationAPI
 
             // Offset start time by delta between last rAF time. This allows a delayed tween to start from the
             // precise delayed time.
-            animationData.start = now + (AnimationManager.current - now);
+            animationData.start = now + (AnimationManager.timeNow - now);
             animationData.current = 0;
          }
       };

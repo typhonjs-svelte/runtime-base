@@ -13,24 +13,49 @@ export class AnimationManager
    /**
     * @type {import('./types-local').AnimationData[]}
     */
-   static activeList = [];
+   static #activeList = [];
 
    /**
     * Provides the `this` context for {@link AnimationManager.animate} to be scheduled on rAF.
     *
     * @type {Function}
     */
-   static animateBound = (time) => this.animate(time);
+   static #animateBound = (timeFrame) => this.animate(timeFrame);
 
    /**
     * @type {import('./types-local').AnimationData[]}
     */
-   static newList = [];
+   static #pendingList = [];
 
    /**
+    * Time of last `rAF` callback.
+    *
     * @type {number}
     */
-   static current;
+   static #timeFrame;
+
+   /**
+    * Time of `performance.now()` at last `rAF` callback.
+    *
+    * @type {number}
+    */
+   static #timeNow;
+
+   /**
+    * @returns {number} Time of last `rAF` callback.
+    */
+   static get timeFrame()
+   {
+      return this.#timeFrame;
+   }
+
+   /**
+    * @returns {number} Time of `performance.now()` at last `rAF` callback.
+    */
+   static get timeNow()
+   {
+      return this.#timeNow;
+   }
 
    /**
     * Add animation data.
@@ -44,7 +69,7 @@ export class AnimationManager
       // Offset start time by delta between last rAF time. This allows continuous tween cycles to appear naturally as
       // starting from the instant they are added to the AnimationManager. This is what makes `draggable` smooth when
       // easing is enabled.
-      data.start = now + (AnimationManager.current - now);
+      data.start = now + (AnimationManager.#timeNow - now);
 
       if (data.cancelled)
       {
@@ -54,39 +79,40 @@ export class AnimationManager
 
       if (data.active)
       {
-         AnimationManager.activeList.push(data);
+         AnimationManager.#activeList.push(data);
       }
       else
       {
-         AnimationManager.newList.push(data);
+         AnimationManager.#pendingList.push(data);
       }
    }
 
    /**
     * Manage all animation
     */
-   static animate()
+   static animate(timeFrame)
    {
-      const current = AnimationManager.current = performance.now();
+      AnimationManager.#timeNow = performance.now();
+      AnimationManager.#timeFrame = timeFrame;
 
       // Early out of the rAF callback when there are no current animations.
-      if (AnimationManager.activeList.length === 0 && AnimationManager.newList.length === 0)
+      if (AnimationManager.#activeList.length === 0 && AnimationManager.#pendingList.length === 0)
       {
-         globalThis.requestAnimationFrame(this.animateBound);
+         globalThis.requestAnimationFrame(this.#animateBound);
          return;
       }
 
-      if (AnimationManager.newList.length)
+      if (AnimationManager.#pendingList.length)
       {
          // Process new data
-         for (let cntr = AnimationManager.newList.length; --cntr >= 0;)
+         for (let cntr = AnimationManager.#pendingList.length; --cntr >= 0;)
          {
-            const data = AnimationManager.newList[cntr];
+            const data = AnimationManager.#pendingList[cntr];
 
             // If animation instance has been cancelled before start then remove it from new list and cleanup.
-            if (data.cancelled)
+            if (data.cancelled || (data.el !== void 0 && !data.el.isConnected))
             {
-               AnimationManager.newList.splice(cntr, 1);
+               AnimationManager.#pendingList.splice(cntr, 1);
                this.#cleanupData(data);
             }
 
@@ -94,26 +120,26 @@ export class AnimationManager
             if (data.active)
             {
                // Remove from new list and add to active list.
-               AnimationManager.newList.splice(cntr, 1);
-               AnimationManager.activeList.push(data);
+               AnimationManager.#pendingList.splice(cntr, 1);
+               AnimationManager.#activeList.push(data);
             }
          }
       }
 
       // Process active animations.
-      for (let cntr = AnimationManager.activeList.length; --cntr >= 0;)
+      for (let cntr = AnimationManager.#activeList.length; --cntr >= 0;)
       {
-         const data = AnimationManager.activeList[cntr];
+         const data = AnimationManager.#activeList[cntr];
 
          // Remove any animations that have been canceled.
-         if (data.cancelled)
+         if (data.cancelled || (data.el !== void 0 && !data.el.isConnected))
          {
-            AnimationManager.activeList.splice(cntr, 1);
+            AnimationManager.#activeList.splice(cntr, 1);
             this.#cleanupData(data);
             continue;
          }
 
-         data.current = current - data.start;
+         data.current = timeFrame - data.start;
 
          // Remove this animation instance if current animating time exceeds duration.
          if (data.current >= data.duration)
@@ -127,7 +153,7 @@ export class AnimationManager
 
             data.position.set(data.newData, AnimationManager.#tjsPositionSetOptions);
 
-            AnimationManager.activeList.splice(cntr, 1);
+            AnimationManager.#activeList.splice(cntr, 1);
             this.#cleanupData(data);
 
             continue;
@@ -145,7 +171,7 @@ export class AnimationManager
          data.position.set(data.newData, AnimationManager.#tjsPositionSetOptions);
       }
 
-      globalThis.requestAnimationFrame(this.animateBound);
+      globalThis.requestAnimationFrame(this.#animateBound);
    }
 
    /**
@@ -155,23 +181,23 @@ export class AnimationManager
     */
    static cancel(position)
    {
-      for (let cntr = AnimationManager.activeList.length; --cntr >= 0;)
+      for (let cntr = AnimationManager.#activeList.length; --cntr >= 0;)
       {
-         const data = AnimationManager.activeList[cntr];
+         const data = AnimationManager.#activeList[cntr];
          if (data.position === position)
          {
-            AnimationManager.activeList.splice(cntr, 1);
+            AnimationManager.#activeList.splice(cntr, 1);
             data.cancelled = true;
             this.#cleanupData(data);
          }
       }
 
-      for (let cntr = AnimationManager.newList.length; --cntr >= 0;)
+      for (let cntr = AnimationManager.#pendingList.length; --cntr >= 0;)
       {
-         const data = AnimationManager.newList[cntr];
+         const data = AnimationManager.#pendingList[cntr];
          if (data.position === position)
          {
-            AnimationManager.newList.splice(cntr, 1);
+            AnimationManager.#pendingList.splice(cntr, 1);
             data.cancelled = true;
             this.#cleanupData(data);
          }
@@ -183,22 +209,22 @@ export class AnimationManager
     */
    static cancelAll()
    {
-      for (let cntr = AnimationManager.activeList.length; --cntr >= 0;)
+      for (let cntr = AnimationManager.#activeList.length; --cntr >= 0;)
       {
-         const data = AnimationManager.activeList[cntr];
+         const data = AnimationManager.#activeList[cntr];
          data.cancelled = true;
          this.#cleanupData(data);
       }
 
-      for (let cntr = AnimationManager.newList.length; --cntr >= 0;)
+      for (let cntr = AnimationManager.#pendingList.length; --cntr >= 0;)
       {
-         const data = AnimationManager.newList[cntr];
+         const data = AnimationManager.#pendingList[cntr];
          data.cancelled = true;
          this.#cleanupData(data);
       }
 
-      AnimationManager.activeList.length = 0;
-      AnimationManager.newList.length = 0;
+      AnimationManager.#activeList.length = 0;
+      AnimationManager.#pendingList.length = 0;
    }
 
    /**
@@ -243,15 +269,15 @@ export class AnimationManager
    {
       const results = [];
 
-      for (let cntr = AnimationManager.activeList.length; --cntr >= 0;)
+      for (let cntr = AnimationManager.#activeList.length; --cntr >= 0;)
       {
-         const data = AnimationManager.activeList[cntr];
+         const data = AnimationManager.#activeList[cntr];
          if (data.position === position) { results.push(data.control); }
       }
 
-      for (let cntr = AnimationManager.newList.length; --cntr >= 0;)
+      for (let cntr = AnimationManager.#pendingList.length; --cntr >= 0;)
       {
-         const data = AnimationManager.newList[cntr];
+         const data = AnimationManager.#pendingList[cntr];
          if (data.position === position) { results.push(data.control); }
       }
 
@@ -267,14 +293,14 @@ export class AnimationManager
     */
    static isScheduled(position)
    {
-      for (let cntr = AnimationManager.activeList.length; --cntr >= 0;)
+      for (let cntr = AnimationManager.#activeList.length; --cntr >= 0;)
       {
-         if (AnimationManager.activeList[cntr].position === position) { return true; }
+         if (AnimationManager.#activeList[cntr].position === position) { return true; }
       }
 
-      for (let cntr = AnimationManager.newList.length; --cntr >= 0;)
+      for (let cntr = AnimationManager.#pendingList.length; --cntr >= 0;)
       {
-         if (AnimationManager.newList[cntr].position === position) { return true; }
+         if (AnimationManager.#pendingList[cntr].position === position) { return true; }
       }
 
       return false;
