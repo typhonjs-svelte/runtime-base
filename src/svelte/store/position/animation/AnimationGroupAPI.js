@@ -5,6 +5,8 @@ import {
 import { AnimationManager }      from './AnimationManager.js';
 import { AnimationAPI }          from './AnimationAPI.js';
 import { AnimationGroupControl } from './AnimationGroupControl.js';
+import { AnimationScheduler }    from './AnimationScheduler.js';
+
 import { TJSPositionDataUtil }   from '../data/index.js';
 
 /**
@@ -189,10 +191,11 @@ export class AnimationGroupAPI
          throw new TypeError(`AnimationGroupAPI.from error: 'options' is not an object or function.`);
       }
 
-      /**
-       * @type {Set<import('./AnimationControl').AnimationControl>}
-       */
+      /** @type {Set<import('./AnimationControl').AnimationControl>} */
       const animationControls = new Set();
+
+      /** @type {import('./types-local').AnimationCleanupFunction} */
+      const cleanupFn = (data) => animationControls.delete(data.control);
 
       let index = -1;
 
@@ -257,8 +260,8 @@ export class AnimationGroupAPI
                }
             }
 
-            animationControls.add(/** @type {import('./AnimationControl').AnimationControl} */
-             actualPosition.animate.from(actualFromData, actualOptions));
+            const animationControl = AnimationScheduler.from(actualPosition, actualFromData, actualOptions, cleanupFn);
+            if (animationControl) { animationControls.add(animationControl); }
          }
       }
       else
@@ -306,8 +309,8 @@ export class AnimationGroupAPI
             }
          }
 
-         animationControls.add(/** @type {import('./AnimationControl').AnimationControl} */
-          actualPosition.animate.from(actualFromData, actualOptions));
+         const animationControl = AnimationScheduler.from(actualPosition, actualFromData, actualOptions, cleanupFn);
+         if (animationControl) { animationControls.add(animationControl); }
       }
 
       return new AnimationGroupControl(animationControls);
@@ -355,10 +358,11 @@ export class AnimationGroupAPI
          throw new TypeError(`AnimationGroupAPI.fromTo error: 'options' is not an object or function.`);
       }
 
-      /**
-       * @type {Set<import('./AnimationControl').AnimationControl>}
-       */
+      /** @type {Set<import('./AnimationControl').AnimationControl>} */
       const animationControls = new Set();
+
+      /** @type {import('./types-local').AnimationCleanupFunction} */
+      const cleanupFn = (data) => animationControls.delete(data.control);
 
       let index = -1;
 
@@ -439,8 +443,10 @@ export class AnimationGroupAPI
                }
             }
 
-            animationControls.add(/** @type {import('./AnimationControl').AnimationControl} */
-             actualPosition.animate.fromTo(actualFromData, actualToData, actualOptions));
+            const animationControl = AnimationScheduler.fromTo(actualPosition, actualFromData, actualToData,
+             actualOptions, cleanupFn);
+
+            if (animationControl) { animationControls.add(animationControl); }
          }
       }
       else
@@ -502,8 +508,10 @@ export class AnimationGroupAPI
             }
          }
 
-         animationControls.add(/** @type {import('./AnimationControl').AnimationControl} */
-          actualPosition.animate.fromTo(actualFromData, actualToData, actualOptions));
+         const animationControl = AnimationScheduler.fromTo(actualPosition, actualFromData, actualToData,
+          actualOptions, cleanupFn);
+
+         if (animationControl) { animationControls.add(animationControl); }
       }
 
       return new AnimationGroupControl(animationControls);
@@ -540,10 +548,11 @@ export class AnimationGroupAPI
          throw new TypeError(`AnimationGroupAPI.to error: 'options' is not an object or function.`);
       }
 
-      /**
-       * @type {Set<import('./AnimationControl').AnimationControl>}
-       */
+      /** @type {Set<import('./AnimationControl').AnimationControl>} */
       const animationControls = new Set();
+
+      /** @type {import('./types-local').AnimationCleanupFunction} */
+      const cleanupFn = (data) => animationControls.delete(data.control);
 
       let index = -1;
 
@@ -608,8 +617,8 @@ export class AnimationGroupAPI
                }
             }
 
-            animationControls.add(/** @type {import('./AnimationControl').AnimationControl} */
-             actualPosition.animate.to(actualToData, actualOptions));
+            const animationControl = AnimationScheduler.to(actualPosition, actualToData, actualOptions, cleanupFn);
+            if (animationControl) { animationControls.add(animationControl); }
          }
       }
       else
@@ -657,8 +666,8 @@ export class AnimationGroupAPI
             }
          }
 
-         animationControls.add(/** @type {import('./AnimationControl').AnimationControl} */
-          actualPosition.animate.to(actualToData, actualOptions));
+         const animationControl = AnimationScheduler.to(actualPosition, actualToData, actualOptions, cleanupFn);
+         if (animationControl) { animationControls.add(animationControl); }
       }
 
       return new AnimationGroupControl(animationControls);

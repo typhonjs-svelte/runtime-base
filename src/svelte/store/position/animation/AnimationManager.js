@@ -20,7 +20,7 @@ export class AnimationManager
     *
     * @type {Function}
     */
-   static #animateBound = () => this.animate();
+   static animateBound = () => this.animate();
 
    /**
     * @type {import('./types-local').AnimationData[]}
@@ -59,7 +59,7 @@ export class AnimationManager
       // Early out of the rAF callback when there are no current animations.
       if (AnimationManager.activeList.length === 0 && AnimationManager.newList.length === 0)
       {
-         globalThis.requestAnimationFrame(this.#animateBound);
+         globalThis.requestAnimationFrame(this.animateBound);
          return;
       }
 
@@ -132,7 +132,7 @@ export class AnimationManager
          data.position.set(data.newData, AnimationManager.#tjsPositionSetOptions);
       }
 
-      globalThis.requestAnimationFrame(this.#animateBound);
+      globalThis.requestAnimationFrame(this.animateBound);
    }
 
    /**
@@ -193,12 +193,26 @@ export class AnimationManager
     */
    static #cleanupData(data)
    {
+      // Update state.
       data.active = false;
       data.finished = true;
 
       if (typeof data.cleanup === 'function') { data.cleanup(data); }
 
       if (typeof data.resolve === 'function') { data.resolve({ cancelled: data.cancelled }); }
+
+      // Remove retained data.
+      data.cleanup = void 0;
+      data.control = void 0;
+      data.destination = void 0;
+      data.el = void 0;
+      data.ease = void 0;
+      data.initial = void 0;
+      data.interpolate = void 0;
+      data.keys = void 0;
+      data.newData = void 0;
+      data.position = void 0;
+      data.resolve = void 0;
    }
 
    /**

@@ -10,6 +10,7 @@ import {
 
 import { AnimationControl }      from './AnimationControl.js';
 import { AnimationManager }      from './AnimationManager.js';
+import { AnimationScheduler }    from './AnimationScheduler.js';
 
 import {
    ConvertStringData,
@@ -50,90 +51,6 @@ export class AnimationAPI
    }
 
    /**
-    * Adds / schedules an animation w/ the AnimationManager. This contains the final steps common to all tweens.
-    *
-    * @param {object}      initial -
-    *
-    * @param {object}      destination -
-    *
-    * @param {number}      duration -
-    *
-    * @param {HTMLElement} el -
-    *
-    * @param {number}      delay -
-    *
-    * @param {import('#runtime/svelte/easing').EasingFunction}    ease -
-    *
-    * @param {import('#runtime/math/interpolate').InterpolateFunction}    interpolate -
-    *
-    * @returns {import('#runtime/util/animate').BasicAnimation} The associated animation control.
-    */
-   #addAnimation(initial, destination, duration, el, delay, ease, interpolate)
-   {
-      // Set initial data for transform values that are often null by default.
-      TJSPositionDataUtil.setNumericDefaults(initial);
-      TJSPositionDataUtil.setNumericDefaults(destination);
-
-      // Reject all initial data that is not a number.
-      for (const key in initial)
-      {
-         if (!Number.isFinite(initial[key])) { delete initial[key]; }
-      }
-
-      const keys = Object.keys(initial);
-      const newData = Object.assign({}, initial);
-
-      // Nothing to animate, so return now.
-      if (keys.length === 0) { return AnimationControl.voidControl; }
-
-      /** @type {import('./types-local').AnimationData} */
-      const animationData = {
-         active: true,
-         cancelled: false,
-         control: void 0,
-         current: 0,
-         destination,
-         duration: duration * 1000, // Internally the AnimationManager works in ms.
-         ease,
-         el,
-         finished: false,
-         initial,
-         interpolate,
-         keys,
-         newData,
-         position: this.#position,
-         resolve: void 0,
-         start: void 0
-      };
-
-      if (delay > 0)
-      {
-         animationData.active = false;
-
-         // Delay w/ setTimeout and schedule w/ AnimationManager if not already canceled
-         setTimeout(() =>
-         {
-            if (!animationData.cancelled)
-            {
-               animationData.active = true;
-
-               const now = performance.now();
-
-               // Offset start time by delta between last rAF time. This allows a delayed tween to start from the
-               // precise delayed time.
-               animationData.start = now + (AnimationManager.current - now);
-            }
-         }, delay * 1000);
-      }
-
-      // Schedule immediately w/ AnimationManager
-      AnimationManager.add(animationData);
-
-      // Create animation control
-      return new AnimationControl(animationData, true);
-   }
-
-   /**
     * Cancels all animation instances for this TJSPosition instance.
     */
    cancel()
@@ -162,69 +79,10 @@ export class AnimationAPI
     * @returns {import('#runtime/util/animate').BasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
     */
-   from(fromData, { delay = 0, duration = 1, ease = 'cubicOut', interpolate = lerp } = {})
+   from(fromData, options)
    {
-      if (!isObject(fromData))
-      {
-         throw new TypeError(`AnimationAPI.from error: 'fromData' is not an object.`);
-      }
-
-      const position = this.#position;
-      const parent = position.parent;
-
-      // Early out if the application is not positionable.
-      if (parent !== void 0 && typeof parent?.options?.positionable === 'boolean' && !parent?.options?.positionable)
-      {
-         return AnimationControl.voidControl;
-      }
-
-      // Cache any target element allowing AnimationManager to stop animation if it becomes disconnected from DOM.
-      const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
-      const el = A11yHelper.isFocusTarget(targetEl) && targetEl.isConnected ? targetEl : void 0;
-
-      if (!Number.isFinite(delay) || delay < 0)
-      {
-         throw new TypeError(`AnimationAPI.from error: 'delay' is not a positive number.`);
-      }
-
-      if (!Number.isFinite(duration) || duration < 0)
-      {
-         throw new TypeError(`AnimationAPI.from error: 'duration' is not a positive number.`);
-      }
-
-      ease = getEasingFunc(ease, AnimationAPI.#getEaseOptions);
-
-      if (typeof ease !== 'function')
-      {
-         throw new TypeError(`AnimationAPI.from error: 'ease' is not a function or valid Svelte easing function name.`);
-      }
-
-      if (typeof interpolate !== 'function')
-      {
-         throw new TypeError(`AnimationAPI.from error: 'interpolate' is not a function.`);
-      }
-
-      const initial = {};
-      const destination = {};
-
-      const data = this.#data;
-
-      // Set initial data if the key / data is defined and the end position is not equal to current data.
-      for (const key in fromData)
-      {
-         // Must use actual key from any aliases.
-         const animKey = TJSPositionDataUtil.getAnimationKey(key);
-
-         if (data[animKey] !== void 0 && fromData[key] !== data[animKey])
-         {
-            initial[key] = fromData[key];
-            destination[key] = data[animKey];
-         }
-      }
-
-      ConvertStringData.process(initial, data, el);
-
-      return this.#addAnimation(initial, destination, duration, el, delay, ease, interpolate);
+      const animationControl = AnimationScheduler.from(this.#position, fromData, options);
+      return animationControl ? animationControl : AnimationControl.voidControl;
    }
 
    /**
@@ -239,82 +97,10 @@ export class AnimationAPI
     * @returns {import('#runtime/util/animate').BasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
     */
-   fromTo(fromData, toData, { delay = 0, duration = 1, ease = 'cubicOut', interpolate = lerp } = {})
+   fromTo(fromData, toData, options)
    {
-      if (!isObject(fromData))
-      {
-         throw new TypeError(`AnimationAPI.fromTo error: 'fromData' is not an object.`);
-      }
-
-      if (!isObject(toData))
-      {
-         throw new TypeError(`AnimationAPI.fromTo error: 'toData' is not an object.`);
-      }
-
-      const parent = this.#position.parent;
-
-      // Early out if the application is not positionable.
-      if (parent !== void 0 && typeof parent?.options?.positionable === 'boolean' && !parent?.options?.positionable)
-      {
-         return AnimationControl.voidControl;
-      }
-
-      // Cache any target element allowing AnimationManager to stop animation if it becomes disconnected from DOM.
-      const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
-      const el = A11yHelper.isFocusTarget(targetEl) && targetEl.isConnected ? targetEl : void 0;
-
-      if (!Number.isFinite(delay) || delay < 0)
-      {
-         throw new TypeError(`AnimationAPI.fromTo error: 'delay' is not a positive number.`);
-      }
-
-      if (!Number.isFinite(duration) || duration < 0)
-      {
-         throw new TypeError(`AnimationAPI.fromTo error: 'duration' is not a positive number.`);
-      }
-
-      ease = getEasingFunc(ease, AnimationAPI.#getEaseOptions);
-
-      if (typeof ease !== 'function')
-      {
-         throw new TypeError(
-          `AnimationAPI.fromTo error: 'ease' is not a function or valid Svelte easing function name.`);
-      }
-
-      if (typeof interpolate !== 'function')
-      {
-         throw new TypeError(`AnimationAPI.fromTo error: 'interpolate' is not a function.`);
-      }
-
-      const initial = {};
-      const destination = {};
-
-      const data = this.#data;
-
-      // Set initial data if the key / data is defined and the end position is not equal to current data.
-      for (const key in fromData)
-      {
-         if (toData[key] === void 0)
-         {
-            console.warn(
-             `AnimationAPI.fromTo warning: key ('${key}') from 'fromData' missing in 'toData'; skipping this key.`);
-            continue;
-         }
-
-         // Must use actual key from any aliases.
-         const animKey = TJSPositionDataUtil.getAnimationKey(key);
-
-         if (data[animKey] !== void 0)
-         {
-            initial[key] = fromData[key];
-            destination[key] = toData[key];
-         }
-      }
-
-      ConvertStringData.process(initial, data, el);
-      ConvertStringData.process(destination, data, el);
-
-      return this.#addAnimation(initial, destination, duration, el, delay, ease, interpolate);
+      const animationControl = AnimationScheduler.fromTo(this.#position, fromData, toData, options);
+      return animationControl ? animationControl : AnimationControl.voidControl;
    }
 
    /**
@@ -327,68 +113,10 @@ export class AnimationAPI
     * @returns {import('#runtime/util/animate').BasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
     */
-   to(toData, { delay = 0, duration = 1, ease = 'cubicOut', interpolate = lerp } = {})
+   to(toData, options)
    {
-      if (!isObject(toData))
-      {
-         throw new TypeError(`AnimationAPI.to error: 'toData' is not an object.`);
-      }
-
-      const parent = this.#position.parent;
-
-      // Early out if the application is not positionable.
-      if (parent !== void 0 && typeof parent?.options?.positionable === 'boolean' && !parent?.options?.positionable)
-      {
-         return AnimationControl.voidControl;
-      }
-
-      // Cache any target element allowing AnimationManager to stop animation if it becomes disconnected from DOM.
-      const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
-      const el = A11yHelper.isFocusTarget(targetEl) && targetEl.isConnected ? targetEl : void 0;
-
-      if (!Number.isFinite(delay) || delay < 0)
-      {
-         throw new TypeError(`AnimationAPI.to error: 'delay' is not a positive number.`);
-      }
-
-      if (!Number.isFinite(duration) || duration < 0)
-      {
-         throw new TypeError(`AnimationAPI.to error: 'duration' is not a positive number.`);
-      }
-
-      ease = getEasingFunc(ease, AnimationAPI.#getEaseOptions);
-
-      if (typeof ease !== 'function')
-      {
-         throw new TypeError(`AnimationAPI.to error: 'ease' is not a function or valid Svelte easing function name.`);
-      }
-
-      if (typeof interpolate !== 'function')
-      {
-         throw new TypeError(`AnimationAPI.to error: 'interpolate' is not a function.`);
-      }
-
-      const initial = {};
-      const destination = {};
-
-      const data = this.#data;
-
-      // Set initial data if the key / data is defined and the end position is not equal to current data.
-      for (const key in toData)
-      {
-         // Must use actual key from any aliases.
-         const animKey = TJSPositionDataUtil.getAnimationKey(key);
-
-         if (data[animKey] !== void 0 && toData[key] !== data[animKey])
-         {
-            destination[key] = toData[key];
-            initial[key] = data[animKey];
-         }
-      }
-
-      ConvertStringData.process(destination, data, el);
-
-      return this.#addAnimation(initial, destination, duration, el, delay, ease, interpolate);
+      const animationControl = AnimationScheduler.to(this.#position, toData, options);
+      return animationControl ? animationControl : AnimationControl.voidControl;
    }
 
    /**
