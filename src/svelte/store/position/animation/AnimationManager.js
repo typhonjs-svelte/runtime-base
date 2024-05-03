@@ -20,7 +20,7 @@ export class AnimationManager
     *
     * @type {Function}
     */
-   static animateBound = () => this.animate();
+   static animateBound = (time) => this.animate(time);
 
    /**
     * @type {import('./types-local').AnimationData[]}
@@ -46,7 +46,20 @@ export class AnimationManager
       // easing is enabled.
       data.start = now + (AnimationManager.current - now);
 
-      AnimationManager.newList.push(data);
+      if (data.cancelled)
+      {
+         this.#cleanupData(data);
+         return;
+      }
+
+      if (data.active)
+      {
+         AnimationManager.activeList.push(data);
+      }
+      else
+      {
+         AnimationManager.newList.push(data);
+      }
    }
 
    /**
@@ -201,18 +214,21 @@ export class AnimationManager
 
       if (typeof data.resolve === 'function') { data.resolve({ cancelled: data.cancelled }); }
 
-      // Remove retained data.
-      data.cleanup = void 0;
-      data.control = void 0;
-      data.destination = void 0;
-      data.el = void 0;
-      data.ease = void 0;
-      data.initial = void 0;
-      data.interpolate = void 0;
-      data.keys = void 0;
-      data.newData = void 0;
-      data.position = void 0;
-      data.resolve = void 0;
+      // Remove retained data if not a `quickTo` animation.
+      if (!data.quickTo)
+      {
+         data.cleanup = void 0;
+         data.control = void 0;
+         data.destination = void 0;
+         data.el = void 0;
+         data.ease = void 0;
+         data.initial = void 0;
+         data.interpolate = void 0;
+         data.keys = void 0;
+         data.newData = void 0;
+         data.position = void 0;
+         data.resolve = void 0;
+      }
    }
 
    /**

@@ -212,7 +212,8 @@ export class AnimationAPI
          newData,
          position: this.#position,
          resolve: void 0,
-         start: void 0
+         start: void 0,
+         quickTo: true
       };
 
       const quickToCB = /** @type {import('./types').AnimationAPI.QuickToCallback} */ (...args) =>

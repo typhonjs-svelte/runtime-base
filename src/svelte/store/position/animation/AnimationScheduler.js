@@ -78,7 +78,6 @@ export class AnimationScheduler
          destination,
          duration: duration * 1000, // Internally the AnimationManager works in ms.
          ease,
-         el,
          finished: false,
          initial,
          interpolate,
@@ -86,7 +85,8 @@ export class AnimationScheduler
          newData,
          position,
          resolve: void 0,
-         start: void 0
+         start: void 0,
+         quickTo: false
       };
 
       if (delay > 0)

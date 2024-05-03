@@ -88,6 +88,11 @@ export type AnimationData = {
    position: TJSPosition;
 
    /**
+    * When true cleanup of retained data does not occur in AnimationManager.
+    */
+   quickTo: boolean;
+
+   /**
     * Any Promise resolve function; added when `finished` is accessed on AnimationControl.
     */
    resolve: Function;
