@@ -883,13 +883,6 @@ export class AnimationGroupAPI
        *
        * @param {import('./types').AnimationAPI.QuickTweenOptions}   [options] - Optional parameters.
        *
-       * @param {number}            [options.duration] - Duration in seconds.
-       *
-       * @param {import('#runtime/svelte/easing').EasingFunction}   [options.ease] - Easing function.
-       *
-       * @param {import('#runtime/math/interpolate').InterpolateFunction}  [options.interpolate] - Interpolation
-       *        function.
-       *
        * @returns {import('./types').AnimationAPI.QuickToCallback} The quickTo callback.
        */
       quickToCB.options = (options) => // eslint-disable-line no-shadow
