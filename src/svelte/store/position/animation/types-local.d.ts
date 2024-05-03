@@ -101,4 +101,4 @@ export type AnimationData = {
 /**
  * A cleanup function to run when the animation is finished / cancelled.
  */
-export type AnimationCleanupFunction = (data: AnimationData) => void;
+export type AnimationCleanupFunction = (data: AnimationData) => any;
