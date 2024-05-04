@@ -1165,7 +1165,7 @@ export class TJSPosition
          if (immediateElementUpdate)
          {
             UpdateElementManager.immediate(el, this.#updateElementData);
-            this.#updateElementPromise = Promise.resolve(performance.now());
+            this.#updateElementPromise = Promise.resolve(globalThis.performance.now());
          }
          // Else if not queued then queue an update for the next rAF callback.
          else if (!this.#updateElementData.queued)

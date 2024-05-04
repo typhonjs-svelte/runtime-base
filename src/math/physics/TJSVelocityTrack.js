@@ -131,7 +131,7 @@ export class TJSVelocityTrack
     *
     * @param {number}   [sampleTime=performance.now()] - A sample time in milliseconds resolution.
     */
-   reset(x = 0, y = 0, z = 0, sampleTime = performance.now())
+   reset(x = 0, y = 0, z = 0, sampleTime = globalThis.performance.now())
    {
       if (!Number.isFinite(x)) { throw new TypeError(`'x' is not a finite number.`); }
       if (!Number.isFinite(y)) { throw new TypeError(`'y' is not a finite number.`); }
@@ -163,7 +163,7 @@ export class TJSVelocityTrack
     *
     * @returns {{x: number, y: number, z: number}} current velocity.
     */
-   update(x = void 0, y = void 0, z = void 0, sampleTime = performance.now())
+   update(x = void 0, y = void 0, z = void 0, sampleTime = globalThis.performance.now())
    {
       if (!Number.isFinite(sampleTime)) { throw new TypeError(`'sampleTime' is not a finite number.`); }
 

@@ -271,7 +271,7 @@ export class AnimationAPI
          }
          else // QuickTo animation is currently scheduled w/ AnimationManager so reset start and current time.
          {
-            const now = performance.now();
+            const now = globalThis.performance.now();
 
             // Offset start time by delta between last rAF time. This allows a delayed tween to start from the
             // precise delayed time.

@@ -64,7 +64,7 @@ export class AnimationManager
     */
    static add(data)
    {
-      const now = performance.now();
+      const now = globalThis.performance.now();
 
       // Offset start time by delta between last rAF time. This allows continuous tween cycles to appear naturally as
       // starting from the instant they are added to the AnimationManager. This is what makes `draggable` smooth when
@@ -92,7 +92,7 @@ export class AnimationManager
     */
    static animate(timeFrame)
    {
-      AnimationManager.#timeNow = performance.now();
+      AnimationManager.#timeNow = globalThis.performance.now();
       AnimationManager.#timeFrame = timeFrame;
 
       // Early out of the rAF callback when there are no current animations.

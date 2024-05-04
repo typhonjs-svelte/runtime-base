@@ -101,7 +101,7 @@ export class AnimationScheduler
             {
                animationData.active = true;
 
-               const now = performance.now();
+               const now = globalThis.performance.now();
 
                // Offset start time by delta between last rAF time. This allows a delayed tween to start from the
                // precise delayed time.
