@@ -671,17 +671,49 @@ class AnimationManager
    /**
     * @type {import('./types-local').AnimationData[]}
     */
-   static activeList = [];
+   static #activeList = [];
+
+   /**
+    * Provides the `this` context for {@link AnimationManager.animate} to be scheduled on rAF.
+    *
+    * @type {Function}
+    */
+   static #animateBound = (timeFrame) => this.animate(timeFrame);
 
    /**
     * @type {import('./types-local').AnimationData[]}
     */
-   static newList = [];
+   static #pendingList = [];
 
    /**
+    * Time of last `rAF` callback.
+    *
     * @type {number}
     */
-   static current;
+   static #timeFrame;
+
+   /**
+    * Time of `performance.now()` at last `rAF` callback.
+    *
+    * @type {number}
+    */
+   static #timeNow;
+
+   /**
+    * @returns {number} Time of last `rAF` callback.
+    */
+   static get timeFrame()
+   {
+      return this.#timeFrame;
+   }
+
+   /**
+    * @returns {number} Time of `performance.now()` at last `rAF` callback.
+    */
+   static get timeNow()
+   {
+      return this.#timeNow;
+   }
 
    /**
     * Add animation data.
@@ -690,69 +722,82 @@ class AnimationManager
     */
    static add(data)
    {
-      const now = performance.now();
+      const now = globalThis.performance.now();
 
       // Offset start time by delta between last rAF time. This allows continuous tween cycles to appear naturally as
       // starting from the instant they are added to the AnimationManager. This is what makes `draggable` smooth when
       // easing is enabled.
-      data.start = now + (AnimationManager.current - now);
+      data.start = now + (AnimationManager.#timeNow - now);
 
-      AnimationManager.newList.push(data);
+      if (data.cancelled)
+      {
+         this.#cleanupData(data);
+         return;
+      }
+
+      if (data.active)
+      {
+         AnimationManager.#activeList.push(data);
+      }
+      else
+      {
+         AnimationManager.#pendingList.push(data);
+      }
    }
 
    /**
     * Manage all animation
     */
-   static animate()
+   static animate(timeFrame)
    {
-      const current = AnimationManager.current = performance.now();
+      AnimationManager.#timeNow = globalThis.performance.now();
+      AnimationManager.#timeFrame = timeFrame;
 
       // Early out of the rAF callback when there are no current animations.
-      if (AnimationManager.activeList.length === 0 && AnimationManager.newList.length === 0)
+      if (AnimationManager.#activeList.length === 0 && AnimationManager.#pendingList.length === 0)
       {
-         globalThis.requestAnimationFrame(AnimationManager.animate);
+         globalThis.requestAnimationFrame(this.#animateBound);
          return;
       }
 
-      if (AnimationManager.newList.length)
+      if (AnimationManager.#pendingList.length)
       {
          // Process new data
-         for (let cntr = AnimationManager.newList.length; --cntr >= 0;)
+         for (let cntr = AnimationManager.#pendingList.length; --cntr >= 0;)
          {
-            const data = AnimationManager.newList[cntr];
+            const data = AnimationManager.#pendingList[cntr];
 
             // If animation instance has been cancelled before start then remove it from new list and cleanup.
-            if (data.cancelled)
+            if (data.cancelled || (data.el !== void 0 && !data.el.isConnected))
             {
-               AnimationManager.newList.splice(cntr, 1);
-               data.cleanup(data);
+               AnimationManager.#pendingList.splice(cntr, 1);
+               this.#cleanupData(data);
             }
 
             // If data is active then process it now. Delayed animations start with `active` false.
             if (data.active)
             {
                // Remove from new list and add to active list.
-               AnimationManager.newList.splice(cntr, 1);
-               AnimationManager.activeList.push(data);
+               AnimationManager.#pendingList.splice(cntr, 1);
+               AnimationManager.#activeList.push(data);
             }
          }
       }
 
       // Process active animations.
-      for (let cntr = AnimationManager.activeList.length; --cntr >= 0;)
+      for (let cntr = AnimationManager.#activeList.length; --cntr >= 0;)
       {
-         const data = AnimationManager.activeList[cntr];
+         const data = AnimationManager.#activeList[cntr];
 
          // Remove any animations that have been canceled.
-         // Ensure that the element is still connected otherwise remove it from active list and continue.
          if (data.cancelled || (data.el !== void 0 && !data.el.isConnected))
          {
-            AnimationManager.activeList.splice(cntr, 1);
-            data.cleanup(data);
+            AnimationManager.#activeList.splice(cntr, 1);
+            this.#cleanupData(data);
             continue;
          }
 
-         data.current = current - data.start;
+         data.current = timeFrame - data.start;
 
          // Remove this animation instance if current animating time exceeds duration.
          if (data.current >= data.duration)
@@ -766,8 +811,8 @@ class AnimationManager
 
             data.position.set(data.newData, AnimationManager.#tjsPositionSetOptions);
 
-            AnimationManager.activeList.splice(cntr, 1);
-            data.cleanup(data);
+            AnimationManager.#activeList.splice(cntr, 1);
+            this.#cleanupData(data);
 
             continue;
          }
@@ -784,7 +829,7 @@ class AnimationManager
          data.position.set(data.newData, AnimationManager.#tjsPositionSetOptions);
       }
 
-      globalThis.requestAnimationFrame(AnimationManager.animate);
+      globalThis.requestAnimationFrame(this.#animateBound);
    }
 
    /**
@@ -794,25 +839,25 @@ class AnimationManager
     */
    static cancel(position)
    {
-      for (let cntr = AnimationManager.activeList.length; --cntr >= 0;)
+      for (let cntr = AnimationManager.#activeList.length; --cntr >= 0;)
       {
-         const data = AnimationManager.activeList[cntr];
+         const data = AnimationManager.#activeList[cntr];
          if (data.position === position)
          {
-            AnimationManager.activeList.splice(cntr, 1);
+            AnimationManager.#activeList.splice(cntr, 1);
             data.cancelled = true;
-            data.cleanup(data);
+            this.#cleanupData(data);
          }
       }
 
-      for (let cntr = AnimationManager.newList.length; --cntr >= 0;)
+      for (let cntr = AnimationManager.#pendingList.length; --cntr >= 0;)
       {
-         const data = AnimationManager.newList[cntr];
+         const data = AnimationManager.#pendingList[cntr];
          if (data.position === position)
          {
-            AnimationManager.newList.splice(cntr, 1);
+            AnimationManager.#pendingList.splice(cntr, 1);
             data.cancelled = true;
-            data.cleanup(data);
+            this.#cleanupData(data);
          }
       }
    }
@@ -822,22 +867,52 @@ class AnimationManager
     */
    static cancelAll()
    {
-      for (let cntr = AnimationManager.activeList.length; --cntr >= 0;)
+      for (let cntr = AnimationManager.#activeList.length; --cntr >= 0;)
       {
-         const data = AnimationManager.activeList[cntr];
+         const data = AnimationManager.#activeList[cntr];
          data.cancelled = true;
-         data.cleanup(data);
+         this.#cleanupData(data);
       }
 
-      for (let cntr = AnimationManager.newList.length; --cntr >= 0;)
+      for (let cntr = AnimationManager.#pendingList.length; --cntr >= 0;)
       {
-         const data = AnimationManager.newList[cntr];
+         const data = AnimationManager.#pendingList[cntr];
          data.cancelled = true;
-         data.cleanup(data);
+         this.#cleanupData(data);
       }
 
-      AnimationManager.activeList.length = 0;
-      AnimationManager.newList.length = 0;
+      AnimationManager.#activeList.length = 0;
+      AnimationManager.#pendingList.length = 0;
+   }
+
+   /**
+    * @param {import('./types-local').AnimationData}  data - Animation data to cleanup.
+    */
+   static #cleanupData(data)
+   {
+      // Update state.
+      data.active = false;
+      data.finished = true;
+
+      if (typeof data.cleanup === 'function') { data.cleanup(data); }
+
+      if (typeof data.resolve === 'function') { data.resolve({ cancelled: data.cancelled }); }
+
+      // Remove retained data if not a `quickTo` animation.
+      if (!data.quickTo)
+      {
+         data.cleanup = void 0;
+         data.control = void 0;
+         data.destination = void 0;
+         data.el = void 0;
+         data.ease = void 0;
+         data.initial = void 0;
+         data.interpolate = void 0;
+         data.keys = void 0;
+         data.newData = void 0;
+         data.position = void 0;
+         data.resolve = void 0;
+      }
    }
 
    /**
@@ -852,25 +927,41 @@ class AnimationManager
    {
       const results = [];
 
-      for (let cntr = AnimationManager.activeList.length; --cntr >= 0;)
+      for (let cntr = AnimationManager.#activeList.length; --cntr >= 0;)
       {
-         const data = AnimationManager.activeList[cntr];
-         if (data.position === position)
-         {
-            results.push(data.control);
-         }
+         const data = AnimationManager.#activeList[cntr];
+         if (data.position === position) { results.push(data.control); }
       }
 
-      for (let cntr = AnimationManager.newList.length; --cntr >= 0;)
+      for (let cntr = AnimationManager.#pendingList.length; --cntr >= 0;)
       {
-         const data = AnimationManager.newList[cntr];
-         if (data.position === position)
-         {
-            results.push(data.control);
-         }
+         const data = AnimationManager.#pendingList[cntr];
+         if (data.position === position) { results.push(data.control); }
       }
 
       return results;
+   }
+
+   /**
+    * Returns the status of any scheduled or pending animations for the given {@link TJSPosition} instance.
+    *
+    * @param {import('../index.js').TJSPosition} position - TJSPosition instance.
+    *
+    * @returns {boolean} True if scheduled / false if not.
+    */
+   static isScheduled(position)
+   {
+      for (let cntr = AnimationManager.#activeList.length; --cntr >= 0;)
+      {
+         if (AnimationManager.#activeList[cntr].position === position) { return true; }
+      }
+
+      for (let cntr = AnimationManager.#pendingList.length; --cntr >= 0;)
+      {
+         if (AnimationManager.#pendingList[cntr].position === position) { return true; }
+      }
+
+      return false;
    }
 }
 
@@ -1486,58 +1577,21 @@ class ConvertStringData
    }
 }
 
-/**
- * @implements {import('./types').AnimationAPI}
- */
-class AnimationAPI
+class AnimationScheduler
 {
+   /**
+    * Used to copy data from a TJSPosition instance.
+    *
+    * @type {import('../data/types').Data.TJSPositionData}
+    */
+   static #data = {};
+
    static #getEaseOptions = Object.freeze({ default: false });
-
-   /** @type {import('../data/types').Data.TJSPositionData} */
-   #data;
-
-   /** @type {import('../').TJSPosition} */
-   #position;
-
-   /**
-    * Tracks the number of animation control instances that are active.
-    *
-    * @type {number}
-    */
-   #instanceCount = 0;
-
-   /**
-    * Provides a bound function to pass as data to AnimationManager to invoke `AnimationAPI.#cleanupInstance`.
-    *
-    * @type {Function}
-    */
-   #cleanup;
-
-   /**
-    * @param {import('../').TJSPosition}       position -
-    *
-    * @param {import('../data/types').Data.TJSPositionData}   data -
-    */
-   constructor(position, data)
-   {
-      this.#position = position;
-      this.#data = data;
-
-      this.#cleanup = this.#cleanupInstance.bind(this);
-   }
-
-   /**
-    * Returns whether there are scheduled animations whether active or delayed for this TJSPosition.
-    *
-    * @returns {boolean} Are there active animation instances.
-    */
-   get isScheduled()
-   {
-      return this.#instanceCount > 0;
-   }
 
    /**
     * Adds / schedules an animation w/ the AnimationManager. This contains the final steps common to all tweens.
+    *
+    * @param {import('../').TJSPosition} position -
     *
     * @param {object}      initial -
     *
@@ -1551,11 +1605,14 @@ class AnimationAPI
     *
     * @param {import('#runtime/svelte/easing').EasingFunction}    ease -
     *
-    * @param {import('#runtime/math/interpolate').InterpolateFunction}    interpolate -
+    * @param {import('#runtime/math/interpolate').InterpolateFunction}    [interpolate=lerp] -
     *
-    * @returns {import('#runtime/util/animate').BasicAnimation} The associated animation control.
+    * @param {import('./types-local').AnimationCleanupFunction} [cleanup] -
+    *
+    * @returns {import('./AnimationControl').AnimationControl | null} An AnimationControl instance or null if none
+    *          created.
     */
-   #addAnimation(initial, destination, duration, el, delay, ease, interpolate)
+   static addAnimation(position, initial, destination, duration, el, delay, ease, interpolate = lerp, cleanup)
    {
       // Set initial data for transform values that are often null by default.
       TJSPositionDataUtil.setNumericDefaults(initial);
@@ -1571,12 +1628,14 @@ class AnimationAPI
       const newData = Object.assign({}, initial);
 
       // Nothing to animate, so return now.
-      if (keys.length === 0) { return AnimationControl.voidControl; }
+      // TODO handle in respective animation controls.
+
+      if (keys.length === 0) { return null; }
 
       /** @type {import('./types-local').AnimationData} */
       const animationData = {
          active: true,
-         cleanup: this.#cleanup,
+         cleanup,
          cancelled: false,
          control: void 0,
          current: 0,
@@ -1589,9 +1648,10 @@ class AnimationAPI
          interpolate,
          keys,
          newData,
-         position: this.#position,
+         position,
          resolve: void 0,
-         start: void 0
+         start: void 0,
+         quickTo: false
       };
 
       if (delay > 0)
@@ -1605,21 +1665,305 @@ class AnimationAPI
             {
                animationData.active = true;
 
-               const now = performance.now();
+               const now = globalThis.performance.now();
 
                // Offset start time by delta between last rAF time. This allows a delayed tween to start from the
                // precise delayed time.
-               animationData.start = now + (AnimationManager.current - now);
+               animationData.start = now + (AnimationManager.timeNow - now);
             }
          }, delay * 1000);
       }
 
       // Schedule immediately w/ AnimationManager
-      this.#instanceCount++;
       AnimationManager.add(animationData);
 
       // Create animation control
       return new AnimationControl(animationData, true);
+   }
+
+   /**
+    * Provides a tween from given position data to the current position.
+    *
+    * @param {import('../').TJSPosition} position - The target position instance.
+    *
+    * @param {import('../data/types').Data.TJSPositionDataRelative} fromData - The starting position.
+    *
+    * @param {import('./types').AnimationAPI.TweenOptions} options - Tween options.
+    *
+    * @param {import('./types-local').AnimationCleanupFunction} [cleanup] - Custom animation cleanup function.
+    *
+    * @returns {import('./AnimationControl').AnimationControl | null} An AnimationControl instance or null if none
+    *          created.
+    */
+   static from(position, fromData, options = {}, cleanup)
+   {
+      if (!isObject(fromData))
+      {
+         throw new TypeError(`AnimationAPI.from error: 'fromData' is not an object.`);
+      }
+
+      const parent = position.parent;
+
+      // Early out if the application is not positionable.
+      if (parent !== void 0 && typeof parent?.options?.positionable === 'boolean' && !parent?.options?.positionable)
+      {
+         return null;
+      }
+
+      let { delay = 0, duration = 1, ease = 'cubicOut' } = options;
+
+      // Cache any target element allowing AnimationManager to stop animation if it becomes disconnected from DOM.
+      const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
+      const el = A11yHelper.isFocusTarget(targetEl) && targetEl.isConnected ? targetEl : void 0;
+
+      if (!Number.isFinite(delay) || delay < 0)
+      {
+         throw new TypeError(`AnimationScheduler.from error: 'delay' is not a positive number.`);
+      }
+
+      if (!Number.isFinite(duration) || duration < 0)
+      {
+         throw new TypeError(`AnimationScheduler.from error: 'duration' is not a positive number.`);
+      }
+
+      ease = getEasingFunc(ease, this.#getEaseOptions);
+
+      if (typeof ease !== 'function')
+      {
+         throw new TypeError(
+          `AnimationScheduler.from error: 'ease' is not a function or valid Svelte easing function name.`);
+      }
+
+      // TODO: In the future potentially support more interpolation functions besides `lerp`.
+
+      const initial = {};
+      const destination = {};
+
+      position.get(this.#data);
+
+      // Set initial data if the key / data is defined and the end position is not equal to current data.
+      for (const key in fromData)
+      {
+         // Must use actual key from any aliases.
+         const animKey = TJSPositionDataUtil.getAnimationKey(key);
+
+         if (this.#data[animKey] !== void 0 && fromData[key] !== this.#data[animKey])
+         {
+            initial[key] = fromData[key];
+            destination[key] = this.#data[animKey];
+         }
+      }
+
+      ConvertStringData.process(initial, this.#data, el);
+
+      return this.addAnimation(position, initial, destination, duration, el, delay, ease, lerp, cleanup);
+   }
+
+   /**
+    * Provides a tween from given position data to the given position.
+    *
+    * @param {import('../').TJSPosition} position - The target position instance.
+    *
+    * @param {import('../data/types').Data.TJSPositionDataRelative} fromData - The starting position.
+    *
+    * @param {import('../data/types').Data.TJSPositionDataRelative} toData - The ending position.
+    *
+    * @param {import('./types').AnimationAPI.TweenOptions} options - Tween options.
+    *
+    * @param {import('./types-local').AnimationCleanupFunction} [cleanup] - Custom animation cleanup function.
+    *
+    * @returns {import('./AnimationControl').AnimationControl | null} An AnimationControl instance or null if none
+    *          created.
+    */
+   static fromTo(position, fromData, toData, options = {}, cleanup)
+   {
+      if (!isObject(fromData))
+      {
+         throw new TypeError(`AnimationScheduler.fromTo error: 'fromData' is not an object.`);
+      }
+
+      if (!isObject(toData))
+      {
+         throw new TypeError(`AnimationScheduler.fromTo error: 'toData' is not an object.`);
+      }
+
+      const parent = position.parent;
+
+      // Early out if the application is not positionable.
+      if (parent !== void 0 && typeof parent?.options?.positionable === 'boolean' && !parent?.options?.positionable)
+      {
+         return null;
+      }
+
+      let { delay = 0, duration = 1, ease = 'cubicOut' } = options;
+
+      // Cache any target element allowing AnimationManager to stop animation if it becomes disconnected from DOM.
+      const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
+      const el = A11yHelper.isFocusTarget(targetEl) && targetEl.isConnected ? targetEl : void 0;
+
+      if (!Number.isFinite(delay) || delay < 0)
+      {
+         throw new TypeError(`AnimationScheduler.fromTo error: 'delay' is not a positive number.`);
+      }
+
+      if (!Number.isFinite(duration) || duration < 0)
+      {
+         throw new TypeError(`AnimationScheduler.fromTo error: 'duration' is not a positive number.`);
+      }
+
+      ease = getEasingFunc(ease, this.#getEaseOptions);
+
+      if (typeof ease !== 'function')
+      {
+         throw new TypeError(
+          `AnimationScheduler.fromTo error: 'ease' is not a function or valid Svelte easing function name.`);
+      }
+
+      // TODO: In the future potentially support more interpolation functions besides `lerp`.
+
+      const initial = {};
+      const destination = {};
+
+      position.get(this.#data);
+
+      // Set initial data if the key / data is defined and the end position is not equal to current data.
+      for (const key in fromData)
+      {
+         if (toData[key] === void 0)
+         {
+            console.warn(`AnimationScheduler.fromTo warning: skipping key ('${
+             key}') from 'fromData' as it is missing in 'toData'.`);
+
+            continue;
+         }
+
+         // Must use actual key from any aliases.
+         const animKey = TJSPositionDataUtil.getAnimationKey(key);
+
+         if (this.#data[animKey] !== void 0)
+         {
+            initial[key] = fromData[key];
+            destination[key] = toData[key];
+         }
+      }
+
+      ConvertStringData.process(initial, this.#data, el);
+      ConvertStringData.process(destination, this.#data, el);
+
+      return this.addAnimation(position, initial, destination, duration, el, delay, ease, lerp, cleanup);
+   }
+
+   /**
+    * Provides a tween to given position data from the current position.
+    *
+    * @param {import('../').TJSPosition} position - The target position instance.
+    *
+    * @param {import('../data/types').Data.TJSPositionDataRelative} toData - The destination position.
+    *
+    * @param {import('./types').AnimationAPI.TweenOptions} options - Tween options.
+    *
+    * @param {import('./types-local').AnimationCleanupFunction} [cleanup] - Custom animation cleanup function.
+    *
+    * @returns {import('./AnimationControl').AnimationControl | null} An AnimationControl instance or null if none
+    *          created.
+    */
+   static to(position, toData, options = {}, cleanup)
+   {
+      if (!isObject(toData))
+      {
+         throw new TypeError(`AnimationScheduler.to error: 'toData' is not an object.`);
+      }
+
+      const parent = position.parent;
+
+      // Early out if the application is not positionable.
+      if (parent !== void 0 && typeof parent?.options?.positionable === 'boolean' && !parent?.options?.positionable)
+      {
+         return null;
+      }
+
+      let { delay = 0, duration = 1, ease = 'cubicOut' } = options;
+
+      // Cache any target element allowing AnimationManager to stop animation if it becomes disconnected from DOM.
+      const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
+      const el = A11yHelper.isFocusTarget(targetEl) && targetEl.isConnected ? targetEl : void 0;
+
+      if (!Number.isFinite(delay) || delay < 0)
+      {
+         throw new TypeError(`AnimationScheduler.to error: 'delay' is not a positive number.`);
+      }
+
+      if (!Number.isFinite(duration) || duration < 0)
+      {
+         throw new TypeError(`AnimationScheduler.to error: 'duration' is not a positive number.`);
+      }
+
+      ease = getEasingFunc(ease, this.#getEaseOptions);
+
+      if (typeof ease !== 'function')
+      {
+         throw new TypeError(
+          `AnimationScheduler.to error: 'ease' is not a function or valid Svelte easing function name.`);
+      }
+
+      // TODO: In the future potentially support more interpolation functions besides `lerp`.
+
+      const initial = {};
+      const destination = {};
+
+      position.get(this.#data);
+
+      // Set initial data if the key / data is defined and the end position is not equal to current data.
+      for (const key in toData)
+      {
+         // Must use actual key from any aliases.
+         const animKey = TJSPositionDataUtil.getAnimationKey(key);
+
+         if (this.#data[animKey] !== void 0 && toData[key] !== this.#data[animKey])
+         {
+            destination[key] = toData[key];
+            initial[key] = this.#data[animKey];
+         }
+      }
+
+      ConvertStringData.process(destination, this.#data, el);
+
+      return this.addAnimation(position, initial, destination, duration, el, delay, ease, lerp, cleanup);
+   }
+}
+
+/**
+ * @implements {import('./types').AnimationAPI}
+ */
+class AnimationAPI
+{
+   static #getEaseOptions = Object.freeze({ default: false });
+
+   /** @type {import('../data/types').Data.TJSPositionData} */
+   #data;
+
+   /** @type {import('../').TJSPosition} */
+   #position;
+
+   /**
+    * @param {import('../').TJSPosition}       position -
+    *
+    * @param {import('../data/types').Data.TJSPositionData}   data -
+    */
+   constructor(position, data)
+   {
+      this.#position = position;
+      this.#data = data;
+   }
+
+   /**
+    * Returns whether there are scheduled animations whether active or pending for this {@link TJSPosition}.
+    *
+    * @returns {boolean} True if scheduled / false if not.
+    */
+   get isScheduled()
+   {
+      return AnimationManager.isScheduled(this.#position);
    }
 
    /**
@@ -1628,24 +1972,6 @@ class AnimationAPI
    cancel()
    {
       AnimationManager.cancel(this.#position);
-   }
-
-   /**
-    * Cleans up an animation instance.
-    *
-    * @param {import('./types-local').AnimationData}   data - Animation data for an animation instance.
-    */
-   #cleanupInstance(data)
-   {
-      this.#instanceCount--;
-
-      data.active = false;
-      data.finished = true;
-
-      if (typeof data.resolve === 'function')
-      {
-         data.resolve({ cancelled: data.cancelled });
-      }
    }
 
    /**
@@ -1669,69 +1995,10 @@ class AnimationAPI
     * @returns {import('#runtime/util/animate').BasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
     */
-   from(fromData, { delay = 0, duration = 1, ease = 'cubicOut', interpolate = lerp } = {})
+   from(fromData, options)
    {
-      if (!isObject(fromData))
-      {
-         throw new TypeError(`AnimationAPI.from error: 'fromData' is not an object.`);
-      }
-
-      const position = this.#position;
-      const parent = position.parent;
-
-      // Early out if the application is not positionable.
-      if (parent !== void 0 && typeof parent?.options?.positionable === 'boolean' && !parent?.options?.positionable)
-      {
-         return AnimationControl.voidControl;
-      }
-
-      // Cache any target element allowing AnimationManager to stop animation if it becomes disconnected from DOM.
-      const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
-      const el = A11yHelper.isFocusTarget(targetEl) && targetEl.isConnected ? targetEl : void 0;
-
-      if (!Number.isFinite(delay) || delay < 0)
-      {
-         throw new TypeError(`AnimationAPI.from error: 'delay' is not a positive number.`);
-      }
-
-      if (!Number.isFinite(duration) || duration < 0)
-      {
-         throw new TypeError(`AnimationAPI.from error: 'duration' is not a positive number.`);
-      }
-
-      ease = getEasingFunc(ease, AnimationAPI.#getEaseOptions);
-
-      if (typeof ease !== 'function')
-      {
-         throw new TypeError(`AnimationAPI.from error: 'ease' is not a function or valid Svelte easing function name.`);
-      }
-
-      if (typeof interpolate !== 'function')
-      {
-         throw new TypeError(`AnimationAPI.from error: 'interpolate' is not a function.`);
-      }
-
-      const initial = {};
-      const destination = {};
-
-      const data = this.#data;
-
-      // Set initial data if the key / data is defined and the end position is not equal to current data.
-      for (const key in fromData)
-      {
-         // Must use actual key from any aliases.
-         const animKey = TJSPositionDataUtil.getAnimationKey(key);
-
-         if (data[animKey] !== void 0 && fromData[key] !== data[animKey])
-         {
-            initial[key] = fromData[key];
-            destination[key] = data[animKey];
-         }
-      }
-
-      ConvertStringData.process(initial, data, el);
-
-      return this.#addAnimation(initial, destination, duration, el, delay, ease, interpolate);
+      const animationControl = AnimationScheduler.from(this.#position, fromData, options);
+      return animationControl ? animationControl : AnimationControl.voidControl;
    }
 
    /**
@@ -1746,82 +2013,10 @@ class AnimationAPI
     * @returns {import('#runtime/util/animate').BasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
     */
-   fromTo(fromData, toData, { delay = 0, duration = 1, ease = 'cubicOut', interpolate = lerp } = {})
+   fromTo(fromData, toData, options)
    {
-      if (!isObject(fromData))
-      {
-         throw new TypeError(`AnimationAPI.fromTo error: 'fromData' is not an object.`);
-      }
-
-      if (!isObject(toData))
-      {
-         throw new TypeError(`AnimationAPI.fromTo error: 'toData' is not an object.`);
-      }
-
-      const parent = this.#position.parent;
-
-      // Early out if the application is not positionable.
-      if (parent !== void 0 && typeof parent?.options?.positionable === 'boolean' && !parent?.options?.positionable)
-      {
-         return AnimationControl.voidControl;
-      }
-
-      // Cache any target element allowing AnimationManager to stop animation if it becomes disconnected from DOM.
-      const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
-      const el = A11yHelper.isFocusTarget(targetEl) && targetEl.isConnected ? targetEl : void 0;
-
-      if (!Number.isFinite(delay) || delay < 0)
-      {
-         throw new TypeError(`AnimationAPI.fromTo error: 'delay' is not a positive number.`);
-      }
-
-      if (!Number.isFinite(duration) || duration < 0)
-      {
-         throw new TypeError(`AnimationAPI.fromTo error: 'duration' is not a positive number.`);
-      }
-
-      ease = getEasingFunc(ease, AnimationAPI.#getEaseOptions);
-
-      if (typeof ease !== 'function')
-      {
-         throw new TypeError(
-          `AnimationAPI.fromTo error: 'ease' is not a function or valid Svelte easing function name.`);
-      }
-
-      if (typeof interpolate !== 'function')
-      {
-         throw new TypeError(`AnimationAPI.fromTo error: 'interpolate' is not a function.`);
-      }
-
-      const initial = {};
-      const destination = {};
-
-      const data = this.#data;
-
-      // Set initial data if the key / data is defined and the end position is not equal to current data.
-      for (const key in fromData)
-      {
-         if (toData[key] === void 0)
-         {
-            console.warn(
-             `AnimationAPI.fromTo warning: key ('${key}') from 'fromData' missing in 'toData'; skipping this key.`);
-            continue;
-         }
-
-         // Must use actual key from any aliases.
-         const animKey = TJSPositionDataUtil.getAnimationKey(key);
-
-         if (data[animKey] !== void 0)
-         {
-            initial[key] = fromData[key];
-            destination[key] = toData[key];
-         }
-      }
-
-      ConvertStringData.process(initial, data, el);
-      ConvertStringData.process(destination, data, el);
-
-      return this.#addAnimation(initial, destination, duration, el, delay, ease, interpolate);
+      const animationControl = AnimationScheduler.fromTo(this.#position, fromData, toData, options);
+      return animationControl ? animationControl : AnimationControl.voidControl;
    }
 
    /**
@@ -1834,68 +2029,10 @@ class AnimationAPI
     * @returns {import('#runtime/util/animate').BasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
     */
-   to(toData, { delay = 0, duration = 1, ease = 'cubicOut', interpolate = lerp } = {})
+   to(toData, options)
    {
-      if (!isObject(toData))
-      {
-         throw new TypeError(`AnimationAPI.to error: 'toData' is not an object.`);
-      }
-
-      const parent = this.#position.parent;
-
-      // Early out if the application is not positionable.
-      if (parent !== void 0 && typeof parent?.options?.positionable === 'boolean' && !parent?.options?.positionable)
-      {
-         return AnimationControl.voidControl;
-      }
-
-      // Cache any target element allowing AnimationManager to stop animation if it becomes disconnected from DOM.
-      const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
-      const el = A11yHelper.isFocusTarget(targetEl) && targetEl.isConnected ? targetEl : void 0;
-
-      if (!Number.isFinite(delay) || delay < 0)
-      {
-         throw new TypeError(`AnimationAPI.to error: 'delay' is not a positive number.`);
-      }
-
-      if (!Number.isFinite(duration) || duration < 0)
-      {
-         throw new TypeError(`AnimationAPI.to error: 'duration' is not a positive number.`);
-      }
-
-      ease = getEasingFunc(ease, AnimationAPI.#getEaseOptions);
-
-      if (typeof ease !== 'function')
-      {
-         throw new TypeError(`AnimationAPI.to error: 'ease' is not a function or valid Svelte easing function name.`);
-      }
-
-      if (typeof interpolate !== 'function')
-      {
-         throw new TypeError(`AnimationAPI.to error: 'interpolate' is not a function.`);
-      }
-
-      const initial = {};
-      const destination = {};
-
-      const data = this.#data;
-
-      // Set initial data if the key / data is defined and the end position is not equal to current data.
-      for (const key in toData)
-      {
-         // Must use actual key from any aliases.
-         const animKey = TJSPositionDataUtil.getAnimationKey(key);
-
-         if (data[animKey] !== void 0 && toData[key] !== data[animKey])
-         {
-            destination[key] = toData[key];
-            initial[key] = data[animKey];
-         }
-      }
-
-      ConvertStringData.process(destination, data, el);
-
-      return this.#addAnimation(initial, destination, duration, el, delay, ease, interpolate);
+      const animationControl = AnimationScheduler.to(this.#position, toData, options);
+      return animationControl ? animationControl : AnimationControl.voidControl;
    }
 
    /**
@@ -1907,7 +2044,7 @@ class AnimationAPI
     *
     * @returns {import('./types').AnimationAPI.QuickToCallback} quick-to tween function.
     */
-   quickTo(keys, { duration = 1, ease = 'cubicOut', interpolate = lerp } = {})
+   quickTo(keys, options = {})
    {
       if (!isIterable(keys))
       {
@@ -1922,6 +2059,8 @@ class AnimationAPI
          throw new Error(`AnimationAPI.quickTo error: 'parent' is not positionable.`);
       }
 
+      let { duration = 1, ease = 'cubicOut' } = options;
+
       if (!Number.isFinite(duration) || duration < 0)
       {
          throw new TypeError(`AnimationAPI.quickTo error: 'duration' is not a positive number.`);
@@ -1935,10 +2074,7 @@ class AnimationAPI
           `AnimationAPI.quickTo error: 'ease' is not a function or valid Svelte easing function name.`);
       }
 
-      if (typeof interpolate !== 'function')
-      {
-         throw new TypeError(`AnimationAPI.quickTo error: 'interpolate' is not a function.`);
-      }
+      // TODO: In the future potentially support more interpolation functions besides `lerp`.
 
       const initial = {};
       const destination = {};
@@ -1977,7 +2113,6 @@ class AnimationAPI
       /** @type {import('./types-local').AnimationData} */
       const animationData = {
          active: true,
-         cleanup: this.#cleanup,
          cancelled: false,
          control: void 0,
          current: 0,
@@ -1987,12 +2122,13 @@ class AnimationAPI
          el: void 0,
          finished: true, // Note: start in finished state to add to AnimationManager on first callback.
          initial,
-         interpolate,
+         interpolate: lerp,
          keys,
          newData,
          position: this.#position,
          resolve: void 0,
-         start: void 0
+         start: void 0,
+         quickTo: true
       };
 
       const quickToCB = /** @type {import('./types').AnimationAPI.QuickToCallback} */ (...args) =>
@@ -2047,24 +2183,25 @@ class AnimationAPI
             animationData.active = true;
             animationData.current = 0;
 
-            this.#instanceCount++;
             AnimationManager.add(animationData);
          }
          else // QuickTo animation is currently scheduled w/ AnimationManager so reset start and current time.
          {
-            const now = performance.now();
+            const now = globalThis.performance.now();
 
             // Offset start time by delta between last rAF time. This allows a delayed tween to start from the
             // precise delayed time.
-            animationData.start = now + (AnimationManager.current - now);
+            animationData.start = now + (AnimationManager.timeNow - now);
             animationData.current = 0;
          }
       };
 
       quickToCB.keys = keysArray;
 
-      quickToCB.options = ({ duration, ease, interpolate } = {}) => // eslint-disable-line no-shadow
+      quickToCB.options = (optionsCB) => // eslint-disable-line no-shadow
       {
+         let { duration, ease } = optionsCB;
+
          if (duration !== void 0 && (!Number.isFinite(duration) || duration < 0))
          {
             throw new TypeError(`AnimationAPI.quickTo.options error: 'duration' is not a positive number.`);
@@ -2078,14 +2215,10 @@ class AnimationAPI
              `AnimationAPI.quickTo.options error: 'ease' is not a function or valid Svelte easing function name.`);
          }
 
-         if (interpolate !== void 0 && typeof interpolate !== 'function')
-         {
-            throw new TypeError(`AnimationAPI.quickTo.options error: 'interpolate' is not a function.`);
-         }
+         // TODO: In the future potentially support more interpolation functions besides `lerp`.
 
          if (duration >= 0) { animationData.duration = duration * 1000; }
          if (ease) { animationData.ease = ease; }
-         if (interpolate) { animationData.interpolate = interpolate; }
 
          return quickToCB;
       };
@@ -2101,7 +2234,7 @@ class AnimationAPI
  */
 class AnimationGroupControl
 {
-   /** @type {import('./AnimationControl').AnimationControl[]} */
+   /** @type {Set<import('./AnimationControl').AnimationControl>} */
    #animationControls;
 
    /** @type {Promise<import('#runtime/util/animate').BasicAnimationState>} */
@@ -2122,7 +2255,7 @@ class AnimationGroupControl
    static get voidControl() { return this.#voidControl; }
 
    /**
-    * @param {import('./AnimationControl').AnimationControl[]} animationControls - An array of AnimationControl
+    * @param {Set<import('./AnimationControl').AnimationControl>} animationControls - An array of AnimationControl
     *        instances.
     */
    constructor(animationControls)
@@ -2141,7 +2274,7 @@ class AnimationGroupControl
 
       if (!(this.#finishedPromise instanceof Promise))
       {
-         if (animationControls === null || animationControls === void 0)
+         if (animationControls === null || animationControls === void 0 || animationControls.size === 0)
          {
             this.#finishedPromise = /** @type {Promise<import('#runtime/util/animate').BasicAnimationState>} */
              Promise.resolve({ cancelled: false });
@@ -2151,7 +2284,7 @@ class AnimationGroupControl
             /** @type {Promise<import('#runtime/util/animate').BasicAnimationState>[]} */
             const promises = [];
 
-            for (let cntr = animationControls.length; --cntr >= 0;) { promises.push(animationControls[cntr].finished); }
+            for (const animationControl of animationControls) { promises.push(animationControl.finished); }
 
             this.#finishedPromise = Promise.allSettled(promises).then((results) => {
                // Check if any promises were rejected or resolved with `cancelled: true`.
@@ -2179,11 +2312,11 @@ class AnimationGroupControl
    {
       const animationControls = this.#animationControls;
 
-      if (animationControls === null || animationControls === void 0) { return false; }
+      if (animationControls === null || animationControls === void 0 || animationControls.size === 0) { return false; }
 
-      for (let cntr = animationControls.length; --cntr >= 0;)
+      for (const animationControl of animationControls)
       {
-         if (animationControls[cntr].isActive) { return true; }
+         if (animationControl.isActive) { return true; }
       }
 
       return false;
@@ -2198,11 +2331,11 @@ class AnimationGroupControl
    {
       const animationControls = this.#animationControls;
 
-      if (animationControls === null || animationControls === void 0) { return true; }
+      if (animationControls === null || animationControls === void 0 || animationControls.size === 0) { return true; }
 
-      for (let cntr = animationControls.length; --cntr >= 0;)
+      for (const animationControl of animationControls)
       {
-         if (!animationControls[cntr].isFinished) { return false; }
+         if (!animationControl.isFinished) { return false; }
       }
 
       return true;
@@ -2215,12 +2348,9 @@ class AnimationGroupControl
    {
       const animationControls = this.#animationControls;
 
-      if (animationControls === null || animationControls === void 0) { return; }
+      if (animationControls === null || animationControls === void 0 || animationControls.size === 0) { return; }
 
-      for (let cntr = this.#animationControls.length; --cntr >= 0;)
-      {
-         this.#animationControls[cntr].cancel();
-      }
+      for (const animationControl of animationControls) { animationControl.cancel(); }
    }
 }
 
@@ -2406,10 +2536,11 @@ class AnimationGroupAPI
          throw new TypeError(`AnimationGroupAPI.from error: 'options' is not an object or function.`);
       }
 
-      /**
-       * @type {import('./AnimationControl').AnimationControl[]}
-       */
-      const animationControls = [];
+      /** @type {Set<import('./AnimationControl').AnimationControl>} */
+      const animationControls = new Set();
+
+      /** @type {import('./types-local').AnimationCleanupFunction} */
+      const cleanupFn = (data) => animationControls.delete(data.control);
 
       let index = -1;
 
@@ -2474,8 +2605,8 @@ class AnimationGroupAPI
                }
             }
 
-            animationControls.push(/** @type {import('./AnimationControl').AnimationControl} */
-             actualPosition.animate.from(actualFromData, actualOptions));
+            const animationControl = AnimationScheduler.from(actualPosition, actualFromData, actualOptions, cleanupFn);
+            if (animationControl) { animationControls.add(animationControl); }
          }
       }
       else
@@ -2523,8 +2654,8 @@ class AnimationGroupAPI
             }
          }
 
-         animationControls.push(/** @type {import('./AnimationControl').AnimationControl} */
-          actualPosition.animate.from(actualFromData, actualOptions));
+         const animationControl = AnimationScheduler.from(actualPosition, actualFromData, actualOptions, cleanupFn);
+         if (animationControl) { animationControls.add(animationControl); }
       }
 
       return new AnimationGroupControl(animationControls);
@@ -2572,10 +2703,11 @@ class AnimationGroupAPI
          throw new TypeError(`AnimationGroupAPI.fromTo error: 'options' is not an object or function.`);
       }
 
-      /**
-       * @type {import('./AnimationControl').AnimationControl[]}
-       */
-      const animationControls = [];
+      /** @type {Set<import('./AnimationControl').AnimationControl>} */
+      const animationControls = new Set();
+
+      /** @type {import('./types-local').AnimationCleanupFunction} */
+      const cleanupFn = (data) => animationControls.delete(data.control);
 
       let index = -1;
 
@@ -2656,8 +2788,10 @@ class AnimationGroupAPI
                }
             }
 
-            animationControls.push(/** @type {import('./AnimationControl').AnimationControl} */
-             actualPosition.animate.fromTo(actualFromData, actualToData, actualOptions));
+            const animationControl = AnimationScheduler.fromTo(actualPosition, actualFromData, actualToData,
+             actualOptions, cleanupFn);
+
+            if (animationControl) { animationControls.add(animationControl); }
          }
       }
       else
@@ -2719,8 +2853,10 @@ class AnimationGroupAPI
             }
          }
 
-         animationControls.push(/** @type {import('./AnimationControl').AnimationControl} */
-          actualPosition.animate.fromTo(actualFromData, actualToData, actualOptions));
+         const animationControl = AnimationScheduler.fromTo(actualPosition, actualFromData, actualToData,
+          actualOptions, cleanupFn);
+
+         if (animationControl) { animationControls.add(animationControl); }
       }
 
       return new AnimationGroupControl(animationControls);
@@ -2757,10 +2893,11 @@ class AnimationGroupAPI
          throw new TypeError(`AnimationGroupAPI.to error: 'options' is not an object or function.`);
       }
 
-      /**
-       * @type {import('./AnimationControl').AnimationControl[]}
-       */
-      const animationControls = [];
+      /** @type {Set<import('./AnimationControl').AnimationControl>} */
+      const animationControls = new Set();
+
+      /** @type {import('./types-local').AnimationCleanupFunction} */
+      const cleanupFn = (data) => animationControls.delete(data.control);
 
       let index = -1;
 
@@ -2825,8 +2962,8 @@ class AnimationGroupAPI
                }
             }
 
-            animationControls.push(/** @type {import('./AnimationControl').AnimationControl} */
-             actualPosition.animate.to(actualToData, actualOptions));
+            const animationControl = AnimationScheduler.to(actualPosition, actualToData, actualOptions, cleanupFn);
+            if (animationControl) { animationControls.add(animationControl); }
          }
       }
       else
@@ -2874,8 +3011,8 @@ class AnimationGroupAPI
             }
          }
 
-         animationControls.push(/** @type {import('./AnimationControl').AnimationControl} */
-          actualPosition.animate.to(actualToData, actualOptions));
+         const animationControl = AnimationScheduler.to(actualPosition, actualToData, actualOptions, cleanupFn);
+         if (animationControl) { animationControls.add(animationControl); }
       }
 
       return new AnimationGroupControl(animationControls);
@@ -3090,13 +3227,6 @@ class AnimationGroupAPI
        * Sets options of quickTo tween.
        *
        * @param {import('./types').AnimationAPI.QuickTweenOptions}   [options] - Optional parameters.
-       *
-       * @param {number}            [options.duration] - Duration in seconds.
-       *
-       * @param {import('#runtime/svelte/easing').EasingFunction}   [options.ease] - Easing function.
-       *
-       * @param {import('#runtime/math/interpolate').InterpolateFunction}  [options.interpolate] - Interpolation
-       *        function.
        *
        * @returns {import('./types').AnimationAPI.QuickToCallback} The quickTo callback.
        */
@@ -3319,7 +3449,8 @@ class PositionStateAPI
          }
       }
 
-      return dataSaved;
+      // Saved data potentially not found, but must still return a Promise when async is true.
+      return async ? Promise.resolve(dataSaved) : dataSaved;
    }
 
    /**
@@ -3364,6 +3495,7 @@ class PositionStateAPI
 /**
  * Provides a base {@link System.SystemBase} implementation.
  *
+ * @implements {import('svelte/store').Readable}
  * @implements {import('./types').System.SystemBase}
  */
 class SystemBase
@@ -3399,6 +3531,13 @@ class SystemBase
     * Set from an optional value in the constructor to lock accessors preventing modification.
     */
    #lock;
+
+   /**
+    * Stores the subscribers.
+    *
+    * @type {import('svelte/store').Subscriber<SystemBase>[]}
+    */
+   #subscribers = [];
 
    /**
     * Provides a manual setting of the element width. As things go `offsetWidth` causes a browser layout and is not
@@ -3474,6 +3613,8 @@ class SystemBase
       if (typeof constrain !== 'boolean') { throw new TypeError(`'constrain' is not a boolean.`); }
 
       this.#constrain = constrain;
+
+      this.#updateSubscribers();
    }
 
    /**
@@ -3491,6 +3632,8 @@ class SystemBase
       {
          throw new TypeError(`'element' is not a HTMLElement, undefined, or null.`);
       }
+
+      this.#updateSubscribers();
    }
 
    /**
@@ -3503,6 +3646,8 @@ class SystemBase
       if (typeof enabled !== 'boolean') { throw new TypeError(`'enabled' is not a boolean.`); }
 
       this.#enabled = enabled;
+
+      this.#updateSubscribers();
    }
 
    /**
@@ -3520,6 +3665,8 @@ class SystemBase
       {
          throw new TypeError(`'height' is not a finite number or undefined.`);
       }
+
+      this.#updateSubscribers();
    }
 
    /**
@@ -3537,6 +3684,8 @@ class SystemBase
       {
          throw new TypeError(`'width' is not a finite number or undefined.`);
       }
+
+      this.#updateSubscribers();
    }
 
    /**
@@ -3567,6 +3716,36 @@ class SystemBase
       {
          throw new TypeError(`'height' is not a finite number or undefined.`);
       }
+
+      this.#updateSubscribers();
+   }
+
+   /**
+    * @param {import('svelte/store').Subscriber<SystemBase>} handler - Callback
+    *        function that is invoked on update / changes. Receives a copy of the TJSPositionData.
+    *
+    * @returns {import('svelte/store').Unsubscriber} Unsubscribe function.
+    */
+   subscribe(handler)
+   {
+      this.#subscribers.push(handler); // add handler to the array of subscribers
+
+      handler(this);                   // call handler with current value
+
+      // Return unsubscribe function.
+      return () =>
+      {
+         const index = this.#subscribers.findIndex((sub) => sub === handler);
+         if (index >= 0) { this.#subscribers.splice(index, 1); }
+      };
+   }
+
+   /**
+    * Updates subscribers on changes.
+    */
+   #updateSubscribers()
+   {
+      for (let cntr = 0; cntr < this.#subscribers.length; cntr++) { this.#subscribers[cntr](this); }
    }
 }
 
@@ -3649,13 +3828,17 @@ class AdapterValidators
     */
    #mapUnsubscribe = new Map();
 
+   #updateFn;
+
    /**
     * @returns {[AdapterValidators, import('./types').ValidatorAPI.ValidatorData[]]} Returns this and internal storage
     * for validator adapter.
     */
-   static create()
+   static create(updateFn)
    {
       const validatorAPI = new AdapterValidators();
+
+      validatorAPI.#updateFn = updateFn;
 
       return [validatorAPI, validatorAPI.#validatorData];
    }
@@ -3720,7 +3903,7 @@ class AdapterValidators
        *
        * @type {number}
        */
-      // let subscribeCount = 0;  // TODO: Currently unused
+      let subscribeCount = 0;
 
       for (const validator of validators)
       {
@@ -3790,8 +3973,7 @@ class AdapterValidators
 
          if (typeof subscribeFn === 'function')
          {
-            // TODO: consider how to handle validator updates.
-            const unsubscribe = subscribeFn();
+            const unsubscribe = subscribeFn.call(validator, this.#updateFn);
 
             // Ensure that unsubscribe is a function.
             if (typeof unsubscribe !== 'function')
@@ -3808,15 +3990,13 @@ class AdapterValidators
             }
 
             this.#mapUnsubscribe.set(data.validate, unsubscribe);
-            // subscribeCount++;  // TODO: Currently unused
+            subscribeCount++;
          }
       }
 
       // Validators with subscriber functionality are assumed to immediately invoke the `subscribe` callback. If the
-      // subscriber count is less than the amount of validators added then automatically trigger an index update
-      // manually.
-      // TODO: handle validator updates.
-      // if (subscribeCount < validators.length) { this.#indexUpdate(); }
+      // subscriber count is less than the amount of validators added then automatically trigger an update manually.
+      if (subscribeCount < validators.length) { this.#updateFn(); }
    }
 
    /**
@@ -3834,8 +4014,7 @@ class AdapterValidators
 
       this.#mapUnsubscribe.clear();
 
-      // TODO: handle validator updates.
-      // this.#indexUpdate();
+      this.#updateFn();
    }
 
    /**
@@ -3876,9 +4055,8 @@ class AdapterValidators
          }
       }
 
-      // Update the index a validator was removed.
-      // TODO: handle validator updates.
-      // if (length !== this.#validatorData.length) { this.#indexUpdate(); }
+      // Invoke update as a validator was removed.
+      if (length !== this.#validatorData.length) { this.#updateFn(); }
    }
 
    /**
@@ -3917,8 +4095,7 @@ class AdapterValidators
          return !remove;
       });
 
-      // TODO: handle validator updates.
-      // if (length !== this.#validatorData.length) { this.#indexUpdate(); }
+      if (length !== this.#validatorData.length) { this.#updateFn(); }
    }
 
    /**
@@ -3952,8 +4129,7 @@ class AdapterValidators
          return !remove; // Swap here to actually remove the item via array validator method.
       });
 
-      // TODO: handle validator updates.
-      // if (length !== this.#validatorData.length) { this.#indexUpdate(); }
+      if (length !== this.#validatorData.length) { this.#updateFn(); }
    }
 }
 
@@ -5042,7 +5218,7 @@ class UpdateElementData
       /**
        * @type {import('svelte/store').Subscriber<import('../data/types').Data.TJSPositionData>[]}
        */
-      this.subscriptions = void 0;
+      this.subscribers = void 0;
 
       /**
        * @type {import('svelte/store').Writable<{width: (number|'auto'), height: (number|'auto')}>}
@@ -5225,12 +5401,12 @@ class UpdateElementManager
       // Make a copy of the data.
       const output = TJSPositionDataUtil.copyData(data, updateData.dataSubscribers);
 
-      const subscriptions = updateData.subscriptions;
+      const subscribers = updateData.subscribers;
 
       // Early out if there are no subscribers.
-      if (subscriptions.length > 0)
+      if (subscribers.length > 0)
       {
-         for (let cntr = 0; cntr < subscriptions.length; cntr++) { subscriptions[cntr](output); }
+         for (let cntr = 0; cntr < subscribers.length; cntr++) { subscribers[cntr](output); }
       }
 
       // Update dimension data if width / height has changed.
@@ -5638,7 +5814,7 @@ class TJSPosition
     *
     * @type {import('svelte/store').Subscriber<import('./data/types').Data.TJSPositionData>[]}
     */
-   #subscriptions = [];
+   #subscribers = [];
 
    /**
     * @type {TJSTransforms}
@@ -5789,7 +5965,7 @@ class TJSPosition
       updateData.data = this.#data;
       updateData.options = this.#options;
       updateData.styleCache = this.#styleCache;
-      updateData.subscriptions = this.#subscriptions;
+      updateData.subscribers = this.#subscribers;
       updateData.transforms = this.#transforms;
 
       this.#updateElementData = updateData;
@@ -5960,7 +6136,7 @@ class TJSPosition
          get: () => TJSPosition.transformOrigins
       });
 
-      [this.#validators, this.#validatorData] = AdapterValidators.create();
+      [this.#validators, this.#validatorData] = AdapterValidators.create(() => this.set());
 
       if (options?.initial)
       {
@@ -6665,7 +6841,7 @@ class TJSPosition
          if (immediateElementUpdate)
          {
             UpdateElementManager.immediate(el, this.#updateElementData);
-            this.#updateElementPromise = Promise.resolve(performance.now());
+            this.#updateElementPromise = Promise.resolve(globalThis.performance.now());
          }
          // Else if not queued then queue an update for the next rAF callback.
          else if (!this.#updateElementData.queued)
@@ -6690,15 +6866,15 @@ class TJSPosition
     */
    subscribe(handler)
    {
-      this.#subscriptions.push(handler); // add handler to the array of subscribers
+      this.#subscribers.push(handler); // add handler to the array of subscribers
 
       handler(Object.assign({}, this.#data));                     // call handler with current value
 
       // Return unsubscribe function.
       return () =>
       {
-         const index = this.#subscriptions.findIndex((sub) => sub === handler);
-         if (index >= 0) { this.#subscriptions.splice(index, 1); }
+         const index = this.#subscribers.findIndex((sub) => sub === handler);
+         if (index >= 0) { this.#subscribers.splice(index, 1); }
       };
    }
 

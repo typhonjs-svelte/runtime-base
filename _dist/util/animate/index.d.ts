@@ -4,7 +4,7 @@
  *
  * @param {number}   [cntr=1] - A positive integer greater than 0 for amount of requestAnimationFrames to wait.
  *
- * @returns {Promise<number>} Returns current time equivalent to `performance.now()`.
+ * @returns {Promise<number>} Returns time of last `requestAnimationFrame` callback.
  */
 declare function nextAnimationFrame(cntr?: number): Promise<number>;
 

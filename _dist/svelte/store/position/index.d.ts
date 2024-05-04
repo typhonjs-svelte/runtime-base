@@ -2,7 +2,7 @@ import * as svelte_action from 'svelte/action';
 import * as svelte_store from 'svelte/store';
 import { Writable, Subscriber, Invalidator, Unsubscriber, Readable } from 'svelte/store';
 import { ResizeObserverData } from '@typhonjs-svelte/runtime-base/svelte/action/dom';
-import { InterpolateFunction } from '@typhonjs-svelte/runtime-base/math/interpolate';
+import { InterpolateFunctionName } from '@typhonjs-svelte/runtime-base/math/interpolate';
 import { EasingFunctionName, EasingFunction } from '@typhonjs-svelte/runtime-base/svelte/easing';
 import { BasicAnimation } from '@typhonjs-svelte/runtime-base/util/animate';
 import { Mat4, Vec3 } from '@typhonjs-svelte/runtime-base/math/gl-matrix';
@@ -307,9 +307,9 @@ declare namespace AnimationAPI {
      */
     ease?: EasingFunctionName | EasingFunction;
     /**
-     * Interpolation function; default: lerp
+     * Interpolation function name. Currently, only `lerp` is supported.
      */
-    interpolate?: InterpolateFunction;
+    interpolate?: InterpolateFunctionName;
   };
   /**
    * Defines the tweening options.
