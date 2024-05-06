@@ -314,12 +314,12 @@ namespace AnimationAPI {
       duration?: number;
 
       /**
-       * Easing function or easing function name; default: cubicOut
+       * Easing function or easing function name; controls the time variable for interpolation. Default: `cubicOut`
        */
       ease?: EasingFunctionName | EasingFunction;
 
       /**
-       * Interpolation function name. Currently, only `lerp` is supported.
+       * Interpolation function name. Currently, only `lerp` is supported and doesn't need to be specified.
        */
       interpolate?: InterpolateFunctionName;
    };
