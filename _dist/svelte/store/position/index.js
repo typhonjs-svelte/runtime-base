@@ -6859,8 +6859,8 @@ class TJSPosition
    }
 
    /**
-    * @param {import('svelte/store').Subscriber<import('./data/types').Data.TJSPositionData>} handler - Callback
-    *        function that is invoked on update / changes. Receives a copy of the TJSPositionData.
+    * @param {import('svelte/store').Subscriber<Readonly<import('./data/types').Data.TJSPositionData>>} handler -
+    *        Callback function that is invoked on update / changes. Receives a readonly copy of the TJSPositionData.
     *
     * @returns {import('svelte/store').Unsubscriber} Unsubscribe function.
     */

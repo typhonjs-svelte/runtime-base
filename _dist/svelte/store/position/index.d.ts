@@ -1,3 +1,12 @@
+/**
+ * Provides a reactive compound store and related actions for advanced and optimized positioning of elements including
+ * essential animation / tweening and validation of positional changes. {@link TJSPosition} is the main reactive store
+ * along with the {@link applyPosition} and {@link draggable} actions to respectively attach a `TJSPosition` instance
+ * to an element in a Svelte template and make it draggable.
+ *
+ * @packageDocumentation
+ */
+
 import * as svelte_action from 'svelte/action';
 import * as svelte_store from 'svelte/store';
 import { Writable, Subscriber, Invalidator, Unsubscriber, Readable } from 'svelte/store';
@@ -303,11 +312,11 @@ declare namespace AnimationAPI {
      */
     duration?: number;
     /**
-     * Easing function or easing function name; default: cubicOut
+     * Easing function or easing function name; controls the time variable for interpolation. Default: `cubicOut`
      */
     ease?: EasingFunctionName | EasingFunction;
     /**
-     * Interpolation function name. Currently, only `lerp` is supported.
+     * Interpolation function name. Currently, only `lerp` is supported and doesn't need to be specified.
      */
     interpolate?: InterpolateFunctionName;
   };
@@ -889,7 +898,7 @@ interface PositionStateAPI {
    *
    * @returns {boolean} Operation successful.
    */
-  reset({ keepZIndex, invokeSet }: { keepZIndex: boolean; invokeSet: boolean }): boolean;
+  reset({ keepZIndex, invokeSet }?: { keepZIndex?: boolean; invokeSet?: boolean }): boolean;
   /**
    * Restores a saved positional state returning the data. Several optional parameters are available to control
    * whether the restore action occurs silently (no store / inline styles updates), animates to the stored data, or
@@ -1548,12 +1557,12 @@ declare class TJSPosition implements TJSPositionTypes.TJSPositionWritable {
    */
   set(position?: Data.TJSPositionDataRelative, options?: TJSPositionTypes.OptionsSet): TJSPosition;
   /**
-   * @param {import('svelte/store').Subscriber<import('./data/types').Data.TJSPositionData>} handler - Callback
-   *        function that is invoked on update / changes. Receives a copy of the TJSPositionData.
+   * @param {import('svelte/store').Subscriber<Readonly<import('./data/types').Data.TJSPositionData>>} handler -
+   *        Callback function that is invoked on update / changes. Receives a readonly copy of the TJSPositionData.
    *
    * @returns {import('svelte/store').Unsubscriber} Unsubscribe function.
    */
-  subscribe(handler: svelte_store.Subscriber<Data.TJSPositionData>): svelte_store.Unsubscriber;
+  subscribe(handler: svelte_store.Subscriber<Readonly<Data.TJSPositionData>>): svelte_store.Unsubscriber;
   /**
    * Provides the {@link Writable} store `update` method. Receive and return a {@link TJSPositionData} instance to
    * update the position state. You may manipulate numeric properties by providing relative adjustments described in
