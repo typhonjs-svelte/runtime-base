@@ -46,7 +46,7 @@ interface PositionStateAPI {
     *
     * @returns {boolean} Operation successful.
     */
-   reset({ keepZIndex, invokeSet }: { keepZIndex: boolean, invokeSet: boolean }): boolean;
+   reset({ keepZIndex, invokeSet }?: { keepZIndex?: boolean, invokeSet?: boolean }): boolean;
 
    /**
     * Restores a saved positional state returning the data. Several optional parameters are available to control
