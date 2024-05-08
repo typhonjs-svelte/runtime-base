@@ -48,7 +48,7 @@ export class AnimationScheduler
     * @returns {import('./AnimationControl').AnimationControl | null} An AnimationControl instance or null if none
     *          created.
     */
-   static addAnimation(position, initial, destination, duration, el, delay, ease, interpolate = lerp, cleanup)
+   static #addAnimation(position, initial, destination, duration, el, delay, ease, interpolate = lerp, cleanup)
    {
       // Set initial data for transform values that are often null by default.
       TJSPositionDataUtil.setNumericDefaults(initial);
@@ -192,7 +192,7 @@ export class AnimationScheduler
 
       ConvertStringData.process(initial, this.#data, el);
 
-      return this.addAnimation(position, initial, destination, duration, el, delay, ease, lerp, cleanup);
+      return this.#addAnimation(position, initial, destination, duration, el, delay, ease, lerp, cleanup);
    }
 
    /**
@@ -286,7 +286,7 @@ export class AnimationScheduler
       ConvertStringData.process(initial, this.#data, el);
       ConvertStringData.process(destination, this.#data, el);
 
-      return this.addAnimation(position, initial, destination, duration, el, delay, ease, lerp, cleanup);
+      return this.#addAnimation(position, initial, destination, duration, el, delay, ease, lerp, cleanup);
    }
 
    /**
@@ -364,6 +364,6 @@ export class AnimationScheduler
 
       ConvertStringData.process(destination, this.#data, el);
 
-      return this.addAnimation(position, initial, destination, duration, el, delay, ease, lerp, cleanup);
+      return this.#addAnimation(position, initial, destination, duration, el, delay, ease, lerp, cleanup);
    }
 }
