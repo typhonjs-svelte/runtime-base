@@ -6,6 +6,8 @@ import type { EasingFunction }      from '#runtime/svelte/easing';
 import type { AnimationAPI }        from './types';
 
 import type { AnimationControl }    from './AnimationControl';
+
+import type { TransformAPI }        from '../transform/types';
 import type { TJSPosition }         from '../TJSPosition.js';
 
 /**
@@ -101,6 +103,16 @@ export type AnimationData = {
     * Starting time of animation.
     */
    start: number;
+
+   /**
+    * A transform origin for the animation.
+    */
+   transformOrigin: TransformAPI.TransformOrigin | undefined;
+
+   /**
+    * The initial transform origin to set after the animation finishes.
+    */
+   transformOriginInitial: TransformAPI.TransformOrigin | undefined;
 }
 
 /**

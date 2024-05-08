@@ -79,6 +79,9 @@ export class AnimationManager
 
       if (data.active)
       {
+         // Set any transform origin for the animation.
+         if (data.transformOrigin) { data.position.set({ transformOrigin: data.transformOrigin }); }
+
          AnimationManager.#activeList.push(data);
       }
       else
@@ -119,6 +122,9 @@ export class AnimationManager
             // If data is active then process it now. Delayed animations start with `active` false.
             if (data.active)
             {
+               // Set any transform origin for the animation.
+               if (data.transformOrigin) { data.position.set({ transformOrigin: data.transformOrigin }); }
+
                // Remove from new list and add to active list.
                AnimationManager.#pendingList.splice(cntr, 1);
                AnimationManager.#activeList.push(data);
@@ -235,6 +241,9 @@ export class AnimationManager
       // Update state.
       data.active = false;
       data.finished = true;
+
+      // Reset any transform origin for the animation to initial value.
+      if (data.transformOriginInitial) { data.position.set({ transformOrigin: data.transformOriginInitial }); }
 
       if (typeof data.cleanup === 'function') { data.cleanup(data); }
 

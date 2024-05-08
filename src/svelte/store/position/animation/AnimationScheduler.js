@@ -13,6 +13,8 @@ import {
    ConvertStringData,
    TJSPositionDataUtil }         from '../data';
 
+import { TJSTransforms }         from '../transform/TJSTransforms.js';
+
 export class AnimationScheduler
 {
    /**
@@ -43,12 +45,17 @@ export class AnimationScheduler
     *
     * @param {import('#runtime/math/interpolate').InterpolateFunction}    [interpolate=lerp] -
     *
+    * @param {import('../transform/types').TransformAPI.TransformOrigin}  [transformOrigin] -
+    *
+    * @param {import('../transform/types').TransformAPI.TransformOrigin}  [transformOriginInitial] -
+    *
     * @param {import('./types-local').AnimationCleanupFunction} [cleanup] -
     *
     * @returns {import('./AnimationControl').AnimationControl | null} An AnimationControl instance or null if none
     *          created.
     */
-   static #addAnimation(position, initial, destination, duration, el, delay, ease, interpolate = lerp, cleanup)
+   static #addAnimation(position, initial, destination, duration, el, delay, ease, interpolate = lerp, transformOrigin,
+    transformOriginInitial, cleanup)
    {
       // Set initial data for transform values that are often null by default.
       TJSPositionDataUtil.setNumericDefaults(initial);
@@ -87,6 +94,8 @@ export class AnimationScheduler
          position,
          resolve: void 0,
          start: void 0,
+         transformOrigin,
+         transformOriginInitial,
          quickTo: false
       };
 
@@ -146,7 +155,7 @@ export class AnimationScheduler
          return null;
       }
 
-      let { delay = 0, duration = 1, ease = 'cubicOut' } = options;
+      let { delay = 0, duration = 1, ease = 'cubicOut', transformOrigin } = options;
 
       // Cache any target element allowing AnimationManager to stop animation if it becomes disconnected from DOM.
       const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
@@ -177,6 +186,12 @@ export class AnimationScheduler
 
       position.get(this.#data);
 
+      // Determine if any transform origin for the animation is valid.
+      transformOrigin = TJSTransforms.isTransformOrigin(transformOrigin) ? transformOrigin : void 0;
+
+      // Given a valid transform origin store the initial transform origin to be restored.
+      const transformOriginInitial = transformOrigin !== void 0 ? this.#data.transformOrigin : void 0;
+
       // Set initial data if the key / data is defined and the end position is not equal to current data.
       for (const key in fromData)
       {
@@ -192,7 +207,8 @@ export class AnimationScheduler
 
       ConvertStringData.process(initial, this.#data, el);
 
-      return this.#addAnimation(position, initial, destination, duration, el, delay, ease, lerp, cleanup);
+      return this.#addAnimation(position, initial, destination, duration, el, delay, ease, lerp, transformOrigin,
+       transformOriginInitial, cleanup);
    }
 
    /**
@@ -231,7 +247,7 @@ export class AnimationScheduler
          return null;
       }
 
-      let { delay = 0, duration = 1, ease = 'cubicOut' } = options;
+      let { delay = 0, duration = 1, ease = 'cubicOut', transformOrigin } = options;
 
       // Cache any target element allowing AnimationManager to stop animation if it becomes disconnected from DOM.
       const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
@@ -262,6 +278,12 @@ export class AnimationScheduler
 
       position.get(this.#data);
 
+      // Determine if any transform origin for the animation is valid.
+      transformOrigin = TJSTransforms.isTransformOrigin(transformOrigin) ? transformOrigin : void 0;
+
+      // Given a valid transform origin store the initial transform origin to be restored.
+      const transformOriginInitial = transformOrigin !== void 0 ? this.#data.transformOrigin : void 0;
+
       // Set initial data if the key / data is defined and the end position is not equal to current data.
       for (const key in fromData)
       {
@@ -286,7 +308,8 @@ export class AnimationScheduler
       ConvertStringData.process(initial, this.#data, el);
       ConvertStringData.process(destination, this.#data, el);
 
-      return this.#addAnimation(position, initial, destination, duration, el, delay, ease, lerp, cleanup);
+      return this.#addAnimation(position, initial, destination, duration, el, delay, ease, lerp, transformOrigin,
+       transformOriginInitial, cleanup);
    }
 
    /**
@@ -318,7 +341,7 @@ export class AnimationScheduler
          return null;
       }
 
-      let { delay = 0, duration = 1, ease = 'cubicOut' } = options;
+      let { delay = 0, duration = 1, ease = 'cubicOut', transformOrigin } = options;
 
       // Cache any target element allowing AnimationManager to stop animation if it becomes disconnected from DOM.
       const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
@@ -349,6 +372,12 @@ export class AnimationScheduler
 
       position.get(this.#data);
 
+      // Determine if any transform origin for the animation is valid.
+      transformOrigin = TJSTransforms.isTransformOrigin(transformOrigin) ? transformOrigin : void 0;
+
+      // Given a valid transform origin store the initial transform origin to be restored.
+      const transformOriginInitial = transformOrigin !== void 0 ? this.#data.transformOrigin : void 0;
+
       // Set initial data if the key / data is defined and the end position is not equal to current data.
       for (const key in toData)
       {
@@ -364,6 +393,7 @@ export class AnimationScheduler
 
       ConvertStringData.process(destination, this.#data, el);
 
-      return this.#addAnimation(position, initial, destination, duration, el, delay, ease, lerp, cleanup);
+      return this.#addAnimation(position, initial, destination, duration, el, delay, ease, lerp, transformOrigin,
+       transformOriginInitial, cleanup);
    }
 }

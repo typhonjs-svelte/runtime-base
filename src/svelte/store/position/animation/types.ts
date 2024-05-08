@@ -7,7 +7,7 @@ import type {
 import type { BasicAnimation }            from '#runtime/util/animate';
 
 import type { Data }                      from '../data/types';
-
+import type { TransformAPI }              from '../transform/types';
 import type { TJSPositionTypes }          from '../types';
 
 import type { TJSPosition }               from '../TJSPosition.js';
@@ -108,7 +108,7 @@ interface AnimationGroupAPI
     *
     * @param {unknown}  key - A key value to test.
     *
-    * @returns {boolean} Whether the given key is an animation key.
+    * @returns {key is AnimationAPI.AnimationKey} Whether the given key is an animation key.
     */
    isAnimationKey(key: unknown): key is AnimationAPI.AnimationKey;
 
@@ -332,6 +332,12 @@ namespace AnimationAPI {
        * Delay in seconds before animation starts; default: 0
        */
       delay?: number;
+
+      /**
+       * A transform origin to apply for the animation. The initial transform origin is reset when the animation
+       * finishes.
+       */
+      transformOrigin?: TransformAPI.TransformOrigin;
    };
 
    /**
