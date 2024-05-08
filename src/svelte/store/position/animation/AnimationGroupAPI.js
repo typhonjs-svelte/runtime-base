@@ -153,7 +153,7 @@ export class AnimationGroupAPI
     *
     * @param {unknown}  key - A key value to test.
     *
-    * @returns {boolean} Whether the given key is an animation key.
+    * @returns {key is import('./types').AnimationAPI.AnimationKey} Whether the given key is an animation key.
     */
    static isAnimationKey(key)
    {

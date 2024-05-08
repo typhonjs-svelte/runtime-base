@@ -61,6 +61,13 @@ export class TJSTransforms
    static #transformOrigins = Object.freeze(['top left', 'top center', 'top right', 'center left', 'center',
     'center right', 'bottom left', 'bottom center', 'bottom right']);
 
+   /**
+    * Defines a valid Set of transform origins.
+    *
+    * @type {ReadonlySet<import('./types').TransformAPI.TransformOrigin>}
+    */
+   static #transformOriginsSet = Object.freeze(new Set(this.#transformOrigins));
+
    // Temporary variables --------------------------------------------------------------------------------------------
 
    /** @type {import('#runtime/math/gl-matrix').Mat4} */
@@ -86,6 +93,18 @@ export class TJSTransforms
    static get transformOrigins()
    {
       return this.#transformOrigins;
+   }
+
+   /**
+    * Returns whether the given string is a {@link TransformAPI.TransformOrigin}.
+    *
+    * @param {unknown}  origin - A potential transform origin string.
+    *
+    * @returns {origin is import('./types').TransformAPI.TransformOrigin}
+    */
+   static isTransformOrigin(origin)
+   {
+      return this.#transformOriginsSet.has(origin);
    }
 
    /**

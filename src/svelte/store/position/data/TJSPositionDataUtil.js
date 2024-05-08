@@ -125,7 +125,7 @@ export class TJSPositionDataUtil
     *
     * @param {unknown}   key - A potential animation key.
     *
-    * @returns {boolean} Is animation key.
+    * @returns {key is import('../animation/types').AnimationAPI.AnimationKey} Is animation key.
     */
    static isAnimationKey(key)
    {
