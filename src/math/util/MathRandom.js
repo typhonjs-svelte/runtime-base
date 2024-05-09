@@ -1,5 +1,5 @@
 /**
- * Provides methods for retrieving pseudorandom values and other utilities using {@link Math.random()}.
+ * Provides methods for retrieving pseudorandom values and other utilities using {@link Math.random}.
  */
 export class MathRandom
 {
