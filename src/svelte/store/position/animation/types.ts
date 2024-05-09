@@ -334,6 +334,11 @@ namespace AnimationAPI {
       delay?: number;
 
       /**
+       * When true animation / tweening will not occur if other animations for the same position are already scheduled.
+       */
+      exclusive?: boolean;
+
+      /**
        * A transform origin to apply for the animation. The initial transform origin is reset when the animation
        * finishes.
        */

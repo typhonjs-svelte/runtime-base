@@ -13,7 +13,7 @@ import {
    ConvertStringData,
    TJSPositionDataUtil }         from '../data';
 
-import { TJSTransforms }         from '../transform/TJSTransforms.js';
+import { TJSTransforms }         from '../transform';
 
 export class AnimationScheduler
 {
@@ -155,7 +155,10 @@ export class AnimationScheduler
          return null;
       }
 
-      let { delay = 0, duration = 1, ease = 'cubicOut', transformOrigin } = options;
+      let { delay = 0, duration = 1, ease = 'cubicOut', exclusive = false, transformOrigin } = options;
+
+      // If `exclusive` only proceed if there are no other animations scheduled for this position.
+      if (exclusive && AnimationManager.isScheduled(position)) { return null; }
 
       // Cache any target element allowing AnimationManager to stop animation if it becomes disconnected from DOM.
       const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
@@ -247,7 +250,10 @@ export class AnimationScheduler
          return null;
       }
 
-      let { delay = 0, duration = 1, ease = 'cubicOut', transformOrigin } = options;
+      let { delay = 0, duration = 1, ease = 'cubicOut', exclusive = false, transformOrigin } = options;
+
+      // If `exclusive` only proceed if there are no other animations scheduled for this position.
+      if (exclusive && AnimationManager.isScheduled(position)) { return null; }
 
       // Cache any target element allowing AnimationManager to stop animation if it becomes disconnected from DOM.
       const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
@@ -341,7 +347,10 @@ export class AnimationScheduler
          return null;
       }
 
-      let { delay = 0, duration = 1, ease = 'cubicOut', transformOrigin } = options;
+      let { delay = 0, duration = 1, ease = 'cubicOut', exclusive = false, transformOrigin } = options;
+
+      // If `exclusive` only proceed if there are no other animations scheduled for this position.
+      if (exclusive && AnimationManager.isScheduled(position)) { return null; }
 
       // Cache any target element allowing AnimationManager to stop animation if it becomes disconnected from DOM.
       const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
