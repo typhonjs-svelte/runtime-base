@@ -149,16 +149,33 @@ export class AnimationScheduler
 
       const parent = position.parent;
 
-      // Early out if the application is not positionable.
+      // Early out if the application is not positionable.  TODO: THIS IS REFERENCING APPLICATION OPTIONS.
       if (parent !== void 0 && typeof parent?.options?.positionable === 'boolean' && !parent?.options?.positionable)
       {
          return null;
       }
 
-      let { delay = 0, duration = 1, ease = 'cubicOut', exclusive = false, transformOrigin } = options;
+      let { delay = 0, duration = 1, ease = 'cubicOut', strategy, transformOrigin } = options;
 
-      // If `exclusive` only proceed if there are no other animations scheduled for this position.
-      if (exclusive && AnimationManager.isScheduled(position)) { return null; }
+      // Handle any defined scheduling strategy allowing existing scheduled animations for the same position instance
+      // to be controlled.
+      if (strategy !== void 0)
+      {
+         switch (strategy)
+         {
+            case 'cancel':
+               if (AnimationManager.isScheduled(position)) { AnimationManager.cancel(position); }
+               break;
+
+            case 'exclusive':
+               if (AnimationManager.isScheduled(position)) { return null; }
+               break;
+
+            default:
+               console.warn(`AnimationScheduler.from error: 'strategy' is not 'cancel' or 'exclusive'.`);
+               return null;
+         }
+      }
 
       // Cache any target element allowing AnimationManager to stop animation if it becomes disconnected from DOM.
       const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
@@ -244,16 +261,33 @@ export class AnimationScheduler
 
       const parent = position.parent;
 
-      // Early out if the application is not positionable.
+      // Early out if the application is not positionable.  TODO: THIS IS REFERENCING APPLICATION OPTIONS.
       if (parent !== void 0 && typeof parent?.options?.positionable === 'boolean' && !parent?.options?.positionable)
       {
          return null;
       }
 
-      let { delay = 0, duration = 1, ease = 'cubicOut', exclusive = false, transformOrigin } = options;
+      let { delay = 0, duration = 1, ease = 'cubicOut', strategy, transformOrigin } = options;
 
-      // If `exclusive` only proceed if there are no other animations scheduled for this position.
-      if (exclusive && AnimationManager.isScheduled(position)) { return null; }
+      // Handle any defined scheduling strategy allowing existing scheduled animations for the same position instance
+      // to be controlled.
+      if (strategy !== void 0)
+      {
+         switch (strategy)
+         {
+            case 'cancel':
+               if (AnimationManager.isScheduled(position)) { AnimationManager.cancel(position); }
+               break;
+
+            case 'exclusive':
+               if (AnimationManager.isScheduled(position)) { return null; }
+               break;
+
+            default:
+               console.warn(`AnimationScheduler.fromTo error: 'strategy' is not 'cancel' or 'exclusive'.`);
+               return null;
+         }
+      }
 
       // Cache any target element allowing AnimationManager to stop animation if it becomes disconnected from DOM.
       const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
@@ -341,16 +375,33 @@ export class AnimationScheduler
 
       const parent = position.parent;
 
-      // Early out if the application is not positionable.
+      // Early out if the application is not positionable.  TODO: THIS IS REFERENCING APPLICATION OPTIONS.
       if (parent !== void 0 && typeof parent?.options?.positionable === 'boolean' && !parent?.options?.positionable)
       {
          return null;
       }
 
-      let { delay = 0, duration = 1, ease = 'cubicOut', exclusive = false, transformOrigin } = options;
+      let { delay = 0, duration = 1, ease = 'cubicOut', strategy, transformOrigin } = options;
 
-      // If `exclusive` only proceed if there are no other animations scheduled for this position.
-      if (exclusive && AnimationManager.isScheduled(position)) { return null; }
+      // Handle any defined scheduling strategy allowing existing scheduled animations for the same position instance
+      // to be controlled.
+      if (strategy !== void 0)
+      {
+         switch (strategy)
+         {
+            case 'cancel':
+               if (AnimationManager.isScheduled(position)) { AnimationManager.cancel(position); }
+               break;
+
+            case 'exclusive':
+               if (AnimationManager.isScheduled(position)) { return null; }
+               break;
+
+            default:
+               console.warn(`AnimationScheduler.to error: 'strategy' is not 'cancel' or 'exclusive'.`);
+               return null;
+         }
+      }
 
       // Cache any target element allowing AnimationManager to stop animation if it becomes disconnected from DOM.
       const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
