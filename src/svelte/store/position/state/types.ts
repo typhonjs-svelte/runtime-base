@@ -7,36 +7,46 @@ import type { Data }                from '../data/types';
 
 interface PositionStateAPI {
    /**
-    * Returns any stored save state by name.
-    *
-    * @param {object}   options - Options
-    *
-    * @param {string}   options.name - Saved data set name.
-    *
-    * @returns {Data.TJSPositionDataExtra} The saved data set.
+    * Clears all saved position data except any default state.
     */
-   get({ name }: { name: string }): Data.TJSPositionDataExtra;
+   clear(): void;
 
    /**
-    * Returns any associated default data.
+    * Gets any stored saved position data by name.
     *
-    * @returns {Data.TJSPositionDataExtra} Associated default data.
+    * @param {object}   options - Options.
+    *
+    * @param {string}   options.name - Saved data name.
+    *
+    * @returns {Data.TJSPositionDataExtra | undefined} Any saved position data.
     */
-   getDefault(): Data.TJSPositionDataExtra;
+   get({ name }: { name: string }): Data.TJSPositionDataExtra | undefined;
 
    /**
-    * Removes and returns any position state by name.
+    * Returns any associated default position data.
+    *
+    * @returns {Data.TJSPositionDataExtra | undefined} Any saved default position data.
+    */
+   getDefault(): Data.TJSPositionDataExtra | undefined;
+
+   /**
+    * @returns {IterableIterator<string>} The saved position data names / keys.
+    */
+   keys(): IterableIterator<string>;
+
+   /**
+    * Removes and returns any position data by name.
     *
     * @param {object}   options - Options.
     *
     * @param {string}   options.name - Name to remove and retrieve.
     *
-    * @returns {Data.TJSPositionDataExtra} Saved position data.
+    * @returns {Data.TJSPositionDataExtra | undefined} Any saved position data.
     */
-   remove({ name }: { name: string }): Data.TJSPositionDataExtra;
+   remove({ name }: { name: string }): Data.TJSPositionDataExtra | undefined;
 
    /**
-    * Resets data to default values and invokes set.
+    * Resets position instance to default data and invokes set.
     *
     * @param {object}   [options] - Optional parameters.
     *
@@ -73,7 +83,8 @@ interface PositionStateAPI {
     *
     * @param {EasingFunctionName | EasingFunction}    [options.ease='linear'] - Easing function name or function.
     *
-    * @returns {Data.TJSPositionDataExtra | Promise<Data.TJSPositionDataExtra>} Saved position data.
+    * @returns {Data.TJSPositionDataExtra | Promise<Data.TJSPositionDataExtra | undefined> | undefined} Any saved
+    *          position data.
     */
    restore({ name, remove, properties, silent, async, animateTo, duration, ease }: {
       name: string,
@@ -84,7 +95,7 @@ interface PositionStateAPI {
       animateTo?: boolean,
       duration?: number,
       ease?: EasingFunctionName | EasingFunction,
-   }): Data.TJSPositionDataExtra | Promise<Data.TJSPositionDataExtra>;
+   }): Data.TJSPositionDataExtra | Promise<Data.TJSPositionDataExtra | undefined> | undefined;
 
    /**
     * Saves current position state with the opportunity to add extra data to the saved state. Simply include
@@ -105,7 +116,7 @@ interface PositionStateAPI {
    }, optionsGet: TJSPositionTypes.OptionsGet): Data.TJSPositionDataExtra;
 
    /**
-    * Directly sets a position state. Simply include extra properties in `options` to set extra data.
+    * Directly sets a saved position state. Simply include extra properties in `options` to set extra data.
     *
     * @param {object}   options - Options.
     *

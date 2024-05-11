@@ -26,28 +26,41 @@ export class PositionStateAPI
       this.#position = position;
       this.#data = data;
       this.#transforms = transforms;
+
+      Object.seal(this);
+   }
+
+   /**
+    * Clears all saved position data except any default state.
+    */
+   clear()
+   {
+      for (const key of this.#dataSaved.keys())
+      {
+         if (key !== '#defaultData') { this.#dataSaved.delete(key); }
+      }
    }
 
    /**
     * Returns any stored save state by name.
     *
-    * @param {object}   options - Options
+    * @param {object}   options - Options.
     *
-    * @param {string}   options.name - Saved data set name.
+    * @param {string}   options.name - Saved data name.
     *
-    * @returns {import('../data/types').Data.TJSPositionDataExtra} The saved data set.
+    * @returns {import('../data/types').Data.TJSPositionDataExtra | undefined} Any saved position data.
     */
    get({ name })
    {
-      if (typeof name !== 'string') { throw new TypeError(`TJSPosition - getSave error: 'name' is not a string.`); }
+      if (typeof name !== 'string') { throw new TypeError(`TJSPosition - get error: 'name' is not a string.`); }
 
       return this.#dataSaved.get(name);
    }
 
    /**
-    * Returns any associated default data.
+    * Returns any associated default position data.
     *
-    * @returns {import('../data/types').Data.TJSPositionDataExtra} Associated default data.
+    * @returns {import('../data/types').Data.TJSPositionDataExtra | undefined} Any saved default position data.
     */
    getDefault()
    {
@@ -55,13 +68,21 @@ export class PositionStateAPI
    }
 
    /**
-    * Removes and returns any position state by name.
+    * @returns {IterableIterator<string>} The saved position data names / keys.
+    */
+   keys()
+   {
+      return this.#dataSaved.keys();
+   }
+
+   /**
+    * Removes and returns any position data by name.
     *
     * @param {object}   options - Options.
     *
     * @param {string}   options.name - Name to remove and retrieve.
     *
-    * @returns {import('../data/types').Data.TJSPositionDataExtra} Saved position data.
+    * @returns {import('../data/types').Data.TJSPositionDataExtra | undefined} Any saved position data.
     */
    remove({ name })
    {
@@ -74,7 +95,7 @@ export class PositionStateAPI
    }
 
    /**
-    * Resets data to default values and invokes set.
+    * Resets position instance to default data and invokes set.
     *
     * @param {object}   [options] - Optional parameters.
     *
@@ -92,10 +113,7 @@ export class PositionStateAPI
       if (!isObject(defaultData)) { return false; }
 
       // Cancel all animations for TJSPosition if there are currently any scheduled.
-      if (this.#position.animate.isScheduled)
-      {
-         this.#position.animate.cancel();
-      }
+      if (this.#position.animate.isScheduled) { this.#position.animate.cancel(); }
 
       const zIndex = this.#position.zIndex;
 
@@ -105,6 +123,8 @@ export class PositionStateAPI
 
       // Reset the transform data.
       this.#transforms.reset(data);
+
+      // TODO: REFACTOR FOR APPLICATION DIRECT ACCESS.
 
       // If current minimized invoke `maximize`.
       if (this.#position.parent?.reactive?.minimized)
@@ -128,7 +148,7 @@ export class PositionStateAPI
     *
     * @param {string}            options.name - Saved data set name.
     *
-    * @param {boolean}           [options.remove=false] - Remove data set.
+    * @param {boolean}           [options.remove=false] - Deletes data set.
     *
     * @param {Iterable<string>}  [options.properties] - Specific properties to set / animate.
     *
@@ -148,8 +168,9 @@ export class PositionStateAPI
     *
     * @returns {(
     *    import('../data/types').Data.TJSPositionDataExtra |
-    *    Promise<import('../data/types').Data.TJSPositionDataExtra>
-    * )} Saved position data.
+    *    Promise<import('../data/types').Data.TJSPositionDataExtra | undefined> |
+    *    undefined
+    * )} Any saved position data.
     */
    restore({ name, remove = false, properties, silent = false, async = false, animateTo = false, duration = 0.1,
     ease = 'linear' })
@@ -230,7 +251,7 @@ export class PositionStateAPI
    }
 
    /**
-    * Directly sets position state data. Simply include extra properties in `options` to set extra data.
+    * Directly sets a saved position state. Simply include extra properties in `options` to set extra data.
     *
     * @param {object}   opts - Options.
     *
