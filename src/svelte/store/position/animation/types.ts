@@ -15,9 +15,9 @@ import type { TJSPosition }               from '../TJSPosition.js';
 interface AnimationAPI
 {
    /**
-    * Returns whether there are scheduled animations whether active or delayed for this TJSPosition.
+    * Returns if there are scheduled animations whether active or pending for this TJSPosition instance.
     *
-    * @returns {boolean} Are there active animation instances.
+    * @returns {boolean} Are there scheduled animations.
     */
    get isScheduled(): boolean;
 
@@ -128,6 +128,17 @@ interface AnimationGroupAPI
       entry: TJSPositionTypes.Positionable | undefined,
       controls: BasicAnimation[]
    }[];
+
+   /**
+    * Returns the status _for the entire position group_ specified if all position instances of the group are scheduled.
+    *
+    * @param {TJSPositionTypes.PositionGroup}   positionGroup - A position group.
+    *
+    * @param {AnimationAPI.ScheduleOptions}     [options] - Scheduling options.
+    *
+    * @returns True if all are scheduled / false if just one position instance in the group is not scheduled.
+    */
+   isScheduled(positionGroup: TJSPositionTypes.PositionGroup, options?: AnimationAPI.ScheduleOptions): boolean;
 
    /**
     * Provides the `from` animation tween for one or more positionable instances as a group.
@@ -323,6 +334,21 @@ namespace AnimationAPI {
        */
       interpolate?: InterpolateFunctionName;
    };
+
+   /**
+    * Defines options for the {@link AnimationGroupAPI.isScheduled}.
+    */
+   export type ScheduleOptions = {
+      /**
+       * When false exclude searching active animations.
+       */
+      active?: boolean;
+
+      /**
+       * When false exclude searching pending animations that have not started.
+       */
+      pending?: boolean;
+   }
 
    /**
     * Defines the tweening options.

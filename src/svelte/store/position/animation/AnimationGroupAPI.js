@@ -161,6 +161,53 @@ export class AnimationGroupAPI
    }
 
    /**
+    * Returns the status _for the entire position group_ specified if all position instances of the group are scheduled.
+    *
+    * @param {import('../types').TJSPositionTypes.PositionGroup} positionGroup - A position group.
+    *
+    * @param {import('./types').AnimationAPI.ScheduleOptions} [options] - Options.
+    *
+    * @returns {boolean} True if all are scheduled / false if just one position instance in the group is not scheduled.
+    */
+   static isScheduled(positionGroup, options)
+   {
+      if (isIterable(positionGroup))
+      {
+         let index = -1;
+
+         for (const entry of positionGroup)
+         {
+            index++;
+
+            const actualPosition = this.#getPosition(entry);
+
+            if (!actualPosition)
+            {
+               console.warn(`AnimationGroupAPI.isScheduled warning: No TJSPosition instance found at index: ${index}.`);
+
+               continue;
+            }
+
+            if (!AnimationManager.isScheduled(actualPosition, options)) { return false; }
+         }
+      }
+      else
+      {
+         const actualPosition = this.#getPosition(positionGroup);
+
+         if (!actualPosition)
+         {
+            console.warn(`AnimationGroupAPI.isScheduled warning: No TJSPosition instance found.`);
+            return false;
+         }
+
+         if (!AnimationManager.isScheduled(actualPosition, options)) { return false; }
+      }
+
+      return true;
+   }
+
+   /**
     * Provides the `from` animation tween for one or more positionable instances as a group.
     *
     * @param {import('../types').TJSPositionTypes.PositionGroup} positionGroup - A position group.
