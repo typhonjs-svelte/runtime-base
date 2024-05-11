@@ -41,9 +41,9 @@ export class AnimationAPI
    }
 
    /**
-    * Returns whether there are scheduled animations whether active or pending for this {@link TJSPosition}.
+    * Returns if there are scheduled animations whether active or pending for this TJSPosition instance.
     *
-    * @returns {boolean} True if scheduled / false if not.
+    * @returns {boolean} Are there scheduled animations.
     */
    get isScheduled()
    {
