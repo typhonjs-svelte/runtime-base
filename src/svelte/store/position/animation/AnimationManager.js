@@ -28,6 +28,13 @@ export class AnimationManager
    static #pendingList = [];
 
    /**
+    * Tracks whether a requestAnimationFrame callback is pending via {@link AnimationManager.add};
+    *
+    * @type {boolean}
+    */
+   static #rafPending = false;
+
+   /**
     * Time of last `rAF` callback.
     *
     * @type {number}
@@ -64,29 +71,19 @@ export class AnimationManager
     */
    static add(data)
    {
-      const now = globalThis.performance.now();
-
-      // Offset start time by delta between last rAF time. This allows continuous tween cycles to appear naturally as
-      // starting from the instant they are added to the AnimationManager. This is what makes `draggable` smooth when
-      // easing is enabled.
-      data.start = now + (AnimationManager.#timeNow - now);
-
       if (data.cancelled)
       {
          this.#cleanupData(data);
          return;
       }
 
-      if (data.active)
-      {
-         // Set any transform origin for the animation.
-         if (data.transformOrigin) { data.position.set({ transformOrigin: data.transformOrigin }); }
+      AnimationManager.#pendingList.push(data);
 
-         AnimationManager.#activeList.push(data);
-      }
-      else
+      // If there is no rAF pending schedule one now.
+      if (!AnimationManager.#rafPending)
       {
-         AnimationManager.#pendingList.push(data);
+         AnimationManager.#rafPending = true;
+         globalThis.requestAnimationFrame(this.#animateBound);
       }
    }
 
@@ -95,15 +92,13 @@ export class AnimationManager
     */
    static animate(timeFrame)
    {
+      AnimationManager.#rafPending = false;
+
       AnimationManager.#timeNow = globalThis.performance.now();
       AnimationManager.#timeFrame = timeFrame;
 
-      // Early out of the rAF callback when there are no current animations.
-      if (AnimationManager.#activeList.length === 0 && AnimationManager.#pendingList.length === 0)
-      {
-         globalThis.requestAnimationFrame(this.#animateBound);
-         return;
-      }
+      // Early out of the continual rAF callback when there are no current animations scheduled.
+      if (AnimationManager.#activeList.length === 0 && AnimationManager.#pendingList.length === 0) { return; }
 
       if (AnimationManager.#pendingList.length)
       {
@@ -124,6 +119,8 @@ export class AnimationManager
             {
                // Set any transform origin for the animation.
                if (data.transformOrigin) { data.position.set({ transformOrigin: data.transformOrigin }); }
+
+               data.start = AnimationManager.#timeFrame;
 
                // Remove from new list and add to active list.
                AnimationManager.#pendingList.splice(cntr, 1);
@@ -323,6 +320,3 @@ export class AnimationManager
       return false;
    }
 }
-
-// Start animation manager immediately. It constantly is running in background.
-AnimationManager.animate();

@@ -103,20 +103,8 @@ export class AnimationScheduler
       {
          animationData.active = false;
 
-         // Delay w/ setTimeout and schedule w/ AnimationManager if not already canceled
-         setTimeout(() =>
-         {
-            if (!animationData.cancelled)
-            {
-               animationData.active = true;
-
-               const now = globalThis.performance.now();
-
-               // Offset start time by delta between last rAF time. This allows a delayed tween to start from the
-               // precise delayed time.
-               animationData.start = now + (AnimationManager.timeNow - now);
-            }
-         }, delay * 1000);
+         // Delay w/ setTimeout and make active w/ AnimationManager.
+         setTimeout(() => animationData.active = true, delay * 1000);
       }
 
       // Schedule immediately w/ AnimationManager
