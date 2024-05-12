@@ -487,6 +487,8 @@ export class TJSPosition
             this.validators.add(validatorFn);
          }
       }
+
+      Object.seal(this);
    }
 
    /**

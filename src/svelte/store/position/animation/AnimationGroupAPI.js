@@ -21,7 +21,7 @@ import { TJSPositionDataUtil }   from '../data/index.js';
  *
  * @implements {import('./types').AnimationGroupAPI}
  */
-export class AnimationGroupAPI
+class AnimationGroupAPI
 {
    /**
     * Returns the TJSPosition instance for the possible given positionable by checking the instance by checking for
@@ -951,3 +951,7 @@ export class AnimationGroupAPI
       return quickToCB;
    }
 }
+
+Object.seal(AnimationGroupAPI);
+
+export { AnimationGroupAPI };

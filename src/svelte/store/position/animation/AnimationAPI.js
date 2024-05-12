@@ -38,6 +38,8 @@ export class AnimationAPI
    {
       this.#position = position;
       this.#data = data;
+
+      Object.seal(this);
    }
 
    /**
