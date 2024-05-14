@@ -42,7 +42,7 @@ const easingList = Object.freeze([
 /**
  * @type {Readonly<Record<import('./types').EasingFunctionName, import('#runtime/svelte/easing').EasingFunction>>}
  */
-const easingFunc = Object.freeze(svelteEasingFunc);
+const easingFunc = svelteEasingFunc;
 
 /**
  * Performs a lookup for standard Svelte easing functions by name. For convenience if passing in a function it is

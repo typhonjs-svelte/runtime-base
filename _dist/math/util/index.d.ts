@@ -21,7 +21,7 @@ declare function clamp(value?: number, min?: number, max?: number): number;
 declare function degToRad(deg: number): number;
 
 /**
- * Provides methods for retrieving pseudorandom values and other utilities using {@link Math.random()}.
+ * Provides methods for retrieving pseudorandom values and other utilities using {@link Math.random}.
  */
 declare class MathRandom {
   /**

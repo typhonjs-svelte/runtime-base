@@ -662,6 +662,20 @@ class AnimationControl
 class AnimationManager
 {
    /**
+    * Cancels all animations except `quickTo` animations.
+    *
+    * @type {import('./types-local').AnimationCancelFunction}
+    */
+   static cancelFn = (data) => data.quickTo !== true;
+
+   /**
+    * Cancels all animations.
+    *
+    * @type {import('./types-local').AnimationCancelFunction}
+    */
+   static cancelAllFn = () => true;
+
+   /**
     * Defines the options used for {@link TJSPosition.set}.
     *
     * @type {Readonly<{immediateElementUpdate: boolean}>}
@@ -684,6 +698,13 @@ class AnimationManager
     * @type {import('./types-local').AnimationData[]}
     */
    static #pendingList = [];
+
+   /**
+    * Tracks whether a requestAnimationFrame callback is pending via {@link AnimationManager.add};
+    *
+    * @type {boolean}
+    */
+   static #rafPending = false;
 
    /**
     * Time of last `rAF` callback.
@@ -722,29 +743,19 @@ class AnimationManager
     */
    static add(data)
    {
-      const now = globalThis.performance.now();
-
-      // Offset start time by delta between last rAF time. This allows continuous tween cycles to appear naturally as
-      // starting from the instant they are added to the AnimationManager. This is what makes `draggable` smooth when
-      // easing is enabled.
-      data.start = now + (AnimationManager.#timeNow - now);
-
       if (data.cancelled)
       {
          this.#cleanupData(data);
          return;
       }
 
-      if (data.active)
-      {
-         // Set any transform origin for the animation.
-         if (data.transformOrigin) { data.position.set({ transformOrigin: data.transformOrigin }); }
+      AnimationManager.#pendingList.push(data);
 
-         AnimationManager.#activeList.push(data);
-      }
-      else
+      // If there is no rAF pending schedule one now.
+      if (!AnimationManager.#rafPending)
       {
-         AnimationManager.#pendingList.push(data);
+         AnimationManager.#rafPending = true;
+         globalThis.requestAnimationFrame(this.#animateBound);
       }
    }
 
@@ -753,15 +764,13 @@ class AnimationManager
     */
    static animate(timeFrame)
    {
+      AnimationManager.#rafPending = false;
+
       AnimationManager.#timeNow = globalThis.performance.now();
       AnimationManager.#timeFrame = timeFrame;
 
-      // Early out of the rAF callback when there are no current animations.
-      if (AnimationManager.#activeList.length === 0 && AnimationManager.#pendingList.length === 0)
-      {
-         globalThis.requestAnimationFrame(this.#animateBound);
-         return;
-      }
+      // Early out of the continual rAF callback when there are no current animations scheduled.
+      if (AnimationManager.#activeList.length === 0 && AnimationManager.#pendingList.length === 0) { return; }
 
       if (AnimationManager.#pendingList.length)
       {
@@ -782,6 +791,8 @@ class AnimationManager
             {
                // Set any transform origin for the animation.
                if (data.transformOrigin) { data.position.set({ transformOrigin: data.transformOrigin }); }
+
+               data.start = AnimationManager.#timeFrame;
 
                // Remove from new list and add to active list.
                AnimationManager.#pendingList.splice(cntr, 1);
@@ -842,13 +853,16 @@ class AnimationManager
     * Cancels all animations for given TJSPosition instance.
     *
     * @param {import('../').TJSPosition} position - TJSPosition instance.
+    *
+    * @param {import('./types-local').AnimationCancelFunction} [cancelFn] - An optional function to control cancelling
+    *        animations.
     */
-   static cancel(position)
+   static cancel(position, cancelFn = AnimationManager.cancelFn)
    {
       for (let cntr = AnimationManager.#activeList.length; --cntr >= 0;)
       {
          const data = AnimationManager.#activeList[cntr];
-         if (data.position === position)
+         if (data.position === position && cancelFn(data))
          {
             AnimationManager.#activeList.splice(cntr, 1);
             data.cancelled = true;
@@ -859,7 +873,7 @@ class AnimationManager
       for (let cntr = AnimationManager.#pendingList.length; --cntr >= 0;)
       {
          const data = AnimationManager.#pendingList[cntr];
-         if (data.position === position)
+         if (data.position === position && cancelFn(data))
          {
             AnimationManager.#pendingList.splice(cntr, 1);
             data.cancelled = true;
@@ -956,26 +970,31 @@ class AnimationManager
     *
     * @param {import('../index.js').TJSPosition} position - TJSPosition instance.
     *
+    * @param {import('./types').AnimationAPI.ScheduleOptions} [options] - Scheduling options.
+    *
     * @returns {boolean} True if scheduled / false if not.
     */
-   static isScheduled(position)
+   static isScheduled(position, { active = true, pending = true } = {})
    {
-      for (let cntr = AnimationManager.#activeList.length; --cntr >= 0;)
+      if (active)
       {
-         if (AnimationManager.#activeList[cntr].position === position) { return true; }
+         for (let cntr = AnimationManager.#activeList.length; --cntr >= 0;)
+         {
+            if (AnimationManager.#activeList[cntr].position === position) { return true; }
+         }
       }
 
-      for (let cntr = AnimationManager.#pendingList.length; --cntr >= 0;)
+      if (pending)
       {
-         if (AnimationManager.#pendingList[cntr].position === position) { return true; }
+         for (let cntr = AnimationManager.#pendingList.length; --cntr >= 0;)
+         {
+            if (AnimationManager.#pendingList[cntr].position === position) { return true; }
+         }
       }
 
       return false;
    }
 }
-
-// Start animation manager immediately. It constantly is running in background.
-AnimationManager.animate();
 
 /**
  * Defines stored positional data.
@@ -2593,20 +2612,8 @@ class AnimationScheduler
       {
          animationData.active = false;
 
-         // Delay w/ setTimeout and schedule w/ AnimationManager if not already canceled
-         setTimeout(() =>
-         {
-            if (!animationData.cancelled)
-            {
-               animationData.active = true;
-
-               const now = globalThis.performance.now();
-
-               // Offset start time by delta between last rAF time. This allows a delayed tween to start from the
-               // precise delayed time.
-               animationData.start = now + (AnimationManager.timeNow - now);
-            }
-         }, delay * 1000);
+         // Delay w/ setTimeout and make active w/ AnimationManager.
+         setTimeout(() => animationData.active = true, delay * 1000);
       }
 
       // Schedule immediately w/ AnimationManager
@@ -2639,13 +2646,19 @@ class AnimationScheduler
 
       const parent = position.parent;
 
-      // Early out if the application is not positionable.
+      // Early out if the application is not positionable.  TODO: THIS IS REFERENCING APPLICATION OPTIONS.
       if (parent !== void 0 && typeof parent?.options?.positionable === 'boolean' && !parent?.options?.positionable)
       {
          return null;
       }
 
-      let { delay = 0, duration = 1, ease = 'cubicOut', transformOrigin } = options;
+      let { delay = 0, duration = 1, ease = 'cubicOut', strategy, transformOrigin } = options;
+
+      // Handle any defined scheduling strategy.
+      if (strategy !== void 0)
+      {
+         if (this.#handleStrategy(position, strategy) === null) { return null; }
+      }
 
       // Cache any target element allowing AnimationManager to stop animation if it becomes disconnected from DOM.
       const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
@@ -2731,13 +2744,19 @@ class AnimationScheduler
 
       const parent = position.parent;
 
-      // Early out if the application is not positionable.
+      // Early out if the application is not positionable.  TODO: THIS IS REFERENCING APPLICATION OPTIONS.
       if (parent !== void 0 && typeof parent?.options?.positionable === 'boolean' && !parent?.options?.positionable)
       {
          return null;
       }
 
-      let { delay = 0, duration = 1, ease = 'cubicOut', transformOrigin } = options;
+      let { delay = 0, duration = 1, ease = 'cubicOut', strategy, transformOrigin } = options;
+
+      // Handle any defined scheduling strategy.
+      if (strategy !== void 0)
+      {
+         if (this.#handleStrategy(position, strategy) === null) { return null; }
+      }
 
       // Cache any target element allowing AnimationManager to stop animation if it becomes disconnected from DOM.
       const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
@@ -2825,13 +2844,19 @@ class AnimationScheduler
 
       const parent = position.parent;
 
-      // Early out if the application is not positionable.
+      // Early out if the application is not positionable.  TODO: THIS IS REFERENCING APPLICATION OPTIONS.
       if (parent !== void 0 && typeof parent?.options?.positionable === 'boolean' && !parent?.options?.positionable)
       {
          return null;
       }
 
-      let { delay = 0, duration = 1, ease = 'cubicOut', transformOrigin } = options;
+      let { delay = 0, duration = 1, ease = 'cubicOut', strategy, transformOrigin } = options;
+
+      // Handle any defined scheduling strategy.
+      if (strategy !== void 0)
+      {
+         if (this.#handleStrategy(position, strategy) === null) { return null; }
+      }
 
       // Cache any target element allowing AnimationManager to stop animation if it becomes disconnected from DOM.
       const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
@@ -2886,6 +2911,43 @@ class AnimationScheduler
       return this.#addAnimation(position, initial, destination, duration, el, delay, ease, lerp, transformOrigin,
        transformOriginInitial, cleanup);
    }
+
+   // Internal implementation ----------------------------------------------------------------------------------------
+
+   /**
+    * Handle any defined scheduling strategy allowing existing scheduled animations for the same position instance
+    * to be controlled.
+    *
+    * @param {import('../').TJSPosition} position - The target position instance.
+    *
+    * @param {import('./types').AnimationAPI.TweenOptions.strategy} strategy - A scheduling strategy to apply.
+    *
+    * @returns {undefined | null} Returns null to abort scheduling current animation.
+    */
+   static #handleStrategy(position, strategy)
+   {
+      switch (strategy)
+      {
+         case 'cancel':
+            if (AnimationManager.isScheduled(position)) { AnimationManager.cancel(position); }
+            break;
+
+         case 'cancelAll':
+            if (AnimationManager.isScheduled(position))
+            {
+               AnimationManager.cancel(position, AnimationManager.cancelAllFn);
+            }
+            break;
+
+         case 'exclusive':
+            if (AnimationManager.isScheduled(position)) { return null; }
+            break;
+
+         default:
+            console.warn(`AnimationScheduler error: 'strategy' is not 'cancel', 'cancelAll', or 'exclusive'.`);
+            return null;
+      }
+   }
 }
 
 /**
@@ -2910,12 +2972,14 @@ class AnimationAPI
    {
       this.#position = position;
       this.#data = data;
+
+      Object.seal(this);
    }
 
    /**
-    * Returns whether there are scheduled animations whether active or pending for this {@link TJSPosition}.
+    * Returns if there are scheduled animations whether active or pending for this TJSPosition instance.
     *
-    * @returns {boolean} True if scheduled / false if not.
+    * @returns {boolean} Are there scheduled animations.
     */
    get isScheduled()
    {
@@ -2927,7 +2991,7 @@ class AnimationAPI
     */
    cancel()
    {
-      AnimationManager.cancel(this.#position);
+      AnimationManager.cancel(this.#position, AnimationManager.cancelAllFn);
    }
 
    /**
@@ -3135,6 +3199,7 @@ class AnimationAPI
          // Reschedule the quickTo animation with AnimationManager as it is finished.
          if (animationData.finished)
          {
+            animationData.cancelled = false;
             animationData.finished = false;
             animationData.active = true;
             animationData.current = 0;
@@ -3145,10 +3210,12 @@ class AnimationAPI
          {
             const now = globalThis.performance.now();
 
+            animationData.cancelled = false;
+            animationData.current = 0;
+
             // Offset start time by delta between last rAF time. This allows a delayed tween to start from the
             // precise delayed time.
             animationData.start = now + (AnimationManager.timeNow - now);
-            animationData.current = 0;
          }
       };
 
@@ -3459,6 +3526,53 @@ class AnimationGroupAPI
    static isAnimationKey(key)
    {
       return TJSPositionDataUtil.isAnimationKey(key);
+   }
+
+   /**
+    * Returns the status _for the entire position group_ specified if all position instances of the group are scheduled.
+    *
+    * @param {import('../types').TJSPositionTypes.PositionGroup} positionGroup - A position group.
+    *
+    * @param {import('./types').AnimationAPI.ScheduleOptions} [options] - Options.
+    *
+    * @returns {boolean} True if all are scheduled / false if just one position instance in the group is not scheduled.
+    */
+   static isScheduled(positionGroup, options)
+   {
+      if (isIterable(positionGroup))
+      {
+         let index = -1;
+
+         for (const entry of positionGroup)
+         {
+            index++;
+
+            const actualPosition = this.#getPosition(entry);
+
+            if (!actualPosition)
+            {
+               console.warn(`AnimationGroupAPI.isScheduled warning: No TJSPosition instance found at index: ${index}.`);
+
+               continue;
+            }
+
+            if (!AnimationManager.isScheduled(actualPosition, options)) { return false; }
+         }
+      }
+      else
+      {
+         const actualPosition = this.#getPosition(positionGroup);
+
+         if (!actualPosition)
+         {
+            console.warn(`AnimationGroupAPI.isScheduled warning: No TJSPosition instance found.`);
+            return false;
+         }
+
+         if (!AnimationManager.isScheduled(actualPosition, options)) { return false; }
+      }
+
+      return true;
    }
 
    /**
@@ -4206,6 +4320,8 @@ class AnimationGroupAPI
    }
 }
 
+Object.seal(AnimationGroupAPI);
+
 /**
  * @implements {import('./types').PositionStateAPI}
  */
@@ -4230,28 +4346,41 @@ class PositionStateAPI
       this.#position = position;
       this.#data = data;
       this.#transforms = transforms;
+
+      Object.seal(this);
+   }
+
+   /**
+    * Clears all saved position data except any default state.
+    */
+   clear()
+   {
+      for (const key of this.#dataSaved.keys())
+      {
+         if (key !== '#defaultData') { this.#dataSaved.delete(key); }
+      }
    }
 
    /**
     * Returns any stored save state by name.
     *
-    * @param {object}   options - Options
+    * @param {object}   options - Options.
     *
-    * @param {string}   options.name - Saved data set name.
+    * @param {string}   options.name - Saved data name.
     *
-    * @returns {import('../data/types').Data.TJSPositionDataExtra} The saved data set.
+    * @returns {import('../data/types').Data.TJSPositionDataExtra | undefined} Any saved position data.
     */
    get({ name })
    {
-      if (typeof name !== 'string') { throw new TypeError(`TJSPosition - getSave error: 'name' is not a string.`); }
+      if (typeof name !== 'string') { throw new TypeError(`TJSPosition - get error: 'name' is not a string.`); }
 
       return this.#dataSaved.get(name);
    }
 
    /**
-    * Returns any associated default data.
+    * Returns any associated default position data.
     *
-    * @returns {import('../data/types').Data.TJSPositionDataExtra} Associated default data.
+    * @returns {import('../data/types').Data.TJSPositionDataExtra | undefined} Any saved default position data.
     */
    getDefault()
    {
@@ -4259,13 +4388,21 @@ class PositionStateAPI
    }
 
    /**
-    * Removes and returns any position state by name.
+    * @returns {IterableIterator<string>} The saved position data names / keys.
+    */
+   keys()
+   {
+      return this.#dataSaved.keys();
+   }
+
+   /**
+    * Removes and returns any position data by name.
     *
     * @param {object}   options - Options.
     *
     * @param {string}   options.name - Name to remove and retrieve.
     *
-    * @returns {import('../data/types').Data.TJSPositionDataExtra} Saved position data.
+    * @returns {import('../data/types').Data.TJSPositionDataExtra | undefined} Any saved position data.
     */
    remove({ name })
    {
@@ -4278,7 +4415,7 @@ class PositionStateAPI
    }
 
    /**
-    * Resets data to default values and invokes set.
+    * Resets position instance to default data and invokes set.
     *
     * @param {object}   [options] - Optional parameters.
     *
@@ -4296,10 +4433,7 @@ class PositionStateAPI
       if (!isObject(defaultData)) { return false; }
 
       // Cancel all animations for TJSPosition if there are currently any scheduled.
-      if (this.#position.animate.isScheduled)
-      {
-         this.#position.animate.cancel();
-      }
+      if (this.#position.animate.isScheduled) { this.#position.animate.cancel(); }
 
       const zIndex = this.#position.zIndex;
 
@@ -4309,6 +4443,8 @@ class PositionStateAPI
 
       // Reset the transform data.
       this.#transforms.reset(data);
+
+      // TODO: REFACTOR FOR APPLICATION DIRECT ACCESS.
 
       // If current minimized invoke `maximize`.
       if (this.#position.parent?.reactive?.minimized)
@@ -4332,7 +4468,7 @@ class PositionStateAPI
     *
     * @param {string}            options.name - Saved data set name.
     *
-    * @param {boolean}           [options.remove=false] - Remove data set.
+    * @param {boolean}           [options.remove=false] - Deletes data set.
     *
     * @param {Iterable<string>}  [options.properties] - Specific properties to set / animate.
     *
@@ -4352,8 +4488,9 @@ class PositionStateAPI
     *
     * @returns {(
     *    import('../data/types').Data.TJSPositionDataExtra |
-    *    Promise<import('../data/types').Data.TJSPositionDataExtra>
-    * )} Saved position data.
+    *    Promise<import('../data/types').Data.TJSPositionDataExtra | undefined> |
+    *    undefined
+    * )} Any saved position data.
     */
    restore({ name, remove = false, properties, silent = false, async = false, animateTo = false, duration = 0.1,
     ease = 'linear' })
@@ -4434,7 +4571,7 @@ class PositionStateAPI
    }
 
    /**
-    * Directly sets position state data. Simply include extra properties in `options` to set extra data.
+    * Directly sets a saved position state. Simply include extra properties in `options` to set extra data.
     *
     * @param {object}   opts - Options.
     *
@@ -6225,6 +6362,8 @@ class TJSPosition
             this.validators.add(validatorFn);
          }
       }
+
+      Object.seal(this);
    }
 
    /**

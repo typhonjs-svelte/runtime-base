@@ -27,7 +27,7 @@ function degToRad(deg)
 }
 
 /**
- * Provides methods for retrieving pseudorandom values and other utilities using {@link Math.random()}.
+ * Provides methods for retrieving pseudorandom values and other utilities using {@link Math.random}.
  */
 class MathRandom
 {
@@ -35,8 +35,9 @@ class MathRandom
     * Private constructor to prevent instantiation.
     * @private
     */
-   constructor() {
-      throw new Error("This class should not be instantiated.");
+   constructor()
+   {
+      throw new Error('This class should not be instantiated.');
    }
 
    /**

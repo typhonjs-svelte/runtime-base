@@ -270,6 +270,16 @@ interface AnimationGroupAPI {
     controls: BasicAnimation[];
   }[];
   /**
+   * Returns the status _for the entire position group_ specified if all position instances of the group are scheduled.
+   *
+   * @param {TJSPositionTypes.PositionGroup}   positionGroup - A position group.
+   *
+   * @param {AnimationAPI.ScheduleOptions}     [options] - Scheduling options.
+   *
+   * @returns True if all are scheduled / false if just one position instance in the group is not scheduled.
+   */
+  isScheduled(positionGroup: TJSPositionTypes.PositionGroup, options?: AnimationAPI.ScheduleOptions): boolean;
+  /**
    * Provides the `from` animation tween for one or more positionable instances as a group.
    *
    * @param {TJSPositionTypes.PositionGroup}  positionGroup - A position group.
@@ -348,9 +358,9 @@ interface AnimationGroupAPI {
 }
 interface AnimationAPI {
   /**
-   * Returns whether there are scheduled animations whether active or delayed for this TJSPosition.
+   * Returns if there are scheduled animations whether active or pending for this TJSPosition instance.
    *
-   * @returns {boolean} Are there active animation instances.
+   * @returns {boolean} Are there scheduled animations.
    */
   get isScheduled(): boolean;
   /**
@@ -532,6 +542,19 @@ declare namespace AnimationAPI {
     interpolate?: InterpolateFunctionName;
   };
   /**
+   * Defines options for the {@link AnimationGroupAPI.isScheduled}.
+   */
+  type ScheduleOptions = {
+    /**
+     * When false exclude searching active animations.
+     */
+    active?: boolean;
+    /**
+     * When false exclude searching pending animations that have not started.
+     */
+    pending?: boolean;
+  };
+  /**
    * Defines the tweening options.
    */
   type TweenOptions = QuickTweenOptions & {
@@ -539,6 +562,23 @@ declare namespace AnimationAPI {
      * Delay in seconds before animation starts; default: 0
      */
     delay?: number;
+    /**
+     * Defines the scheduling strategy for handling new animations when an existing animation is already scheduled for
+     * the same target.
+     *
+     * ```
+     * - `cancel`: Cancels any non `quickTo` pending and ongoing animations on the same target and schedules the new
+     *   animation immediately. This option ensures that the new animation takes precedence by clearing any existing
+     *   animations.
+     *
+     * - `cancelAll`: Cancels _all_ pending and ongoing animations on the same target and schedules the new animation
+     *   immediately. This option ensures that the new animation takes precedence by clearing any existing animations.
+     *
+     * - `exclusive`: Only schedules the new animation if there are no other animations currently scheduled for the
+     *   same target. This option avoids animation conflicts by ensuring that only one animation can run at a time.
+     * ```
+     */
+    strategy?: 'cancel' | 'cancelAll' | 'exclusive';
     /**
      * A transform origin to apply for the animation. The initial transform origin is reset when the animation
      * finishes.
@@ -867,33 +907,41 @@ declare namespace ValidatorAPI {
 
 interface PositionStateAPI {
   /**
-   * Returns any stored save state by name.
-   *
-   * @param {object}   options - Options
-   *
-   * @param {string}   options.name - Saved data set name.
-   *
-   * @returns {Data.TJSPositionDataExtra} The saved data set.
+   * Clears all saved position data except any default state.
    */
-  get({ name }: { name: string }): Data.TJSPositionDataExtra;
+  clear(): void;
   /**
-   * Returns any associated default data.
+   * Gets any stored saved position data by name.
    *
-   * @returns {Data.TJSPositionDataExtra} Associated default data.
+   * @param {object}   options - Options.
+   *
+   * @param {string}   options.name - Saved data name.
+   *
+   * @returns {Data.TJSPositionDataExtra | undefined} Any saved position data.
    */
-  getDefault(): Data.TJSPositionDataExtra;
+  get({ name }: { name: string }): Data.TJSPositionDataExtra | undefined;
   /**
-   * Removes and returns any position state by name.
+   * Returns any associated default position data.
+   *
+   * @returns {Data.TJSPositionDataExtra | undefined} Any saved default position data.
+   */
+  getDefault(): Data.TJSPositionDataExtra | undefined;
+  /**
+   * @returns {IterableIterator<string>} The saved position data names / keys.
+   */
+  keys(): IterableIterator<string>;
+  /**
+   * Removes and returns any position data by name.
    *
    * @param {object}   options - Options.
    *
    * @param {string}   options.name - Name to remove and retrieve.
    *
-   * @returns {Data.TJSPositionDataExtra} Saved position data.
+   * @returns {Data.TJSPositionDataExtra | undefined} Any saved position data.
    */
-  remove({ name }: { name: string }): Data.TJSPositionDataExtra;
+  remove({ name }: { name: string }): Data.TJSPositionDataExtra | undefined;
   /**
-   * Resets data to default values and invokes set.
+   * Resets position instance to default data and invokes set.
    *
    * @param {object}   [options] - Optional parameters.
    *
@@ -929,7 +977,8 @@ interface PositionStateAPI {
    *
    * @param {EasingFunctionName | EasingFunction}    [options.ease='linear'] - Easing function name or function.
    *
-   * @returns {Data.TJSPositionDataExtra | Promise<Data.TJSPositionDataExtra>} Saved position data.
+   * @returns {Data.TJSPositionDataExtra | Promise<Data.TJSPositionDataExtra | undefined> | undefined} Any saved
+   *          position data.
    */
   restore({
     name,
@@ -949,7 +998,7 @@ interface PositionStateAPI {
     animateTo?: boolean;
     duration?: number;
     ease?: EasingFunctionName | EasingFunction;
-  }): Data.TJSPositionDataExtra | Promise<Data.TJSPositionDataExtra>;
+  }): Data.TJSPositionDataExtra | Promise<Data.TJSPositionDataExtra | undefined> | undefined;
   /**
    * Saves current position state with the opportunity to add extra data to the saved state. Simply include
    * extra properties in `options` to save extra data.
@@ -974,7 +1023,7 @@ interface PositionStateAPI {
     optionsGet: TJSPositionTypes.OptionsGet,
   ): Data.TJSPositionDataExtra;
   /**
-   * Directly sets a position state. Simply include extra properties in `options` to set extra data.
+   * Directly sets a saved position state. Simply include extra properties in `options` to set extra data.
    *
    * @param {object}   options - Options.
    *
