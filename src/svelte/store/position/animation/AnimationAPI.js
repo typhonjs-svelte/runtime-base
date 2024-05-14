@@ -57,7 +57,7 @@ export class AnimationAPI
     */
    cancel()
    {
-      AnimationManager.cancel(this.#position);
+      AnimationManager.cancel(this.#position, AnimationManager.cancelAllFn);
    }
 
    /**
@@ -265,6 +265,7 @@ export class AnimationAPI
          // Reschedule the quickTo animation with AnimationManager as it is finished.
          if (animationData.finished)
          {
+            animationData.cancelled = false;
             animationData.finished = false;
             animationData.active = true;
             animationData.current = 0;
@@ -275,10 +276,12 @@ export class AnimationAPI
          {
             const now = globalThis.performance.now();
 
+            animationData.cancelled = false;
+            animationData.current = 0;
+
             // Offset start time by delta between last rAF time. This allows a delayed tween to start from the
             // precise delayed time.
             animationData.start = now + (AnimationManager.timeNow - now);
-            animationData.current = 0;
          }
       };
 

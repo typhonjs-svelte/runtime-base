@@ -119,3 +119,9 @@ export type AnimationData = {
  * A cleanup function to run when the animation is finished / cancelled.
  */
 export type AnimationCleanupFunction = (data: AnimationData) => any;
+
+/**
+ * Defines a cancel function that `AnimationManager.cancel` invokes for additional filtering / exclusion of cancelling.
+ */
+export type AnimationCancelFunction = (data?: AnimationData) => boolean;
+

@@ -363,13 +363,19 @@ namespace AnimationAPI {
        * Defines the scheduling strategy for handling new animations when an existing animation is already scheduled for
        * the same target.
        *
-       * - `cancel`: Stops any pending and ongoing animations on the same target and schedules the new animation
+       * ```
+       * - `cancel`: Cancels any non `quickTo` pending and ongoing animations on the same target and schedules the new
+       *   animation immediately. This option ensures that the new animation takes precedence by clearing any existing
+       *   animations.
+       *
+       * - `cancelAll`: Cancels _all_ pending and ongoing animations on the same target and schedules the new animation
        *   immediately. This option ensures that the new animation takes precedence by clearing any existing animations.
        *
        * - `exclusive`: Only schedules the new animation if there are no other animations currently scheduled for the
        *   same target. This option avoids animation conflicts by ensuring that only one animation can run at a time.
+       * ```
        */
-      strategy?: 'cancel' | 'exclusive';
+      strategy?: 'cancel' | 'cancelAll' | 'exclusive';
 
       /**
        * A transform origin to apply for the animation. The initial transform origin is reset when the animation

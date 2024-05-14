@@ -4,6 +4,20 @@
 export class AnimationManager
 {
    /**
+    * Cancels all animations except `quickTo` animations.
+    *
+    * @type {import('./types-local').AnimationCancelFunction}
+    */
+   static cancelFn = (data) => data.quickTo !== true;
+
+   /**
+    * Cancels all animations.
+    *
+    * @type {import('./types-local').AnimationCancelFunction}
+    */
+   static cancelAllFn = () => true;
+
+   /**
     * Defines the options used for {@link TJSPosition.set}.
     *
     * @type {Readonly<{immediateElementUpdate: boolean}>}
@@ -181,13 +195,16 @@ export class AnimationManager
     * Cancels all animations for given TJSPosition instance.
     *
     * @param {import('../').TJSPosition} position - TJSPosition instance.
+    *
+    * @param {import('./types-local').AnimationCancelFunction} [cancelFn] - An optional function to control cancelling
+    *        animations.
     */
-   static cancel(position)
+   static cancel(position, cancelFn = AnimationManager.cancelFn)
    {
       for (let cntr = AnimationManager.#activeList.length; --cntr >= 0;)
       {
          const data = AnimationManager.#activeList[cntr];
-         if (data.position === position)
+         if (data.position === position && cancelFn(data))
          {
             AnimationManager.#activeList.splice(cntr, 1);
             data.cancelled = true;
@@ -198,7 +215,7 @@ export class AnimationManager
       for (let cntr = AnimationManager.#pendingList.length; --cntr >= 0;)
       {
          const data = AnimationManager.#pendingList[cntr];
-         if (data.position === position)
+         if (data.position === position && cancelFn(data))
          {
             AnimationManager.#pendingList.splice(cntr, 1);
             data.cancelled = true;

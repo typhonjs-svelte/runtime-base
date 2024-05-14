@@ -145,24 +145,10 @@ export class AnimationScheduler
 
       let { delay = 0, duration = 1, ease = 'cubicOut', strategy, transformOrigin } = options;
 
-      // Handle any defined scheduling strategy allowing existing scheduled animations for the same position instance
-      // to be controlled.
+      // Handle any defined scheduling strategy.
       if (strategy !== void 0)
       {
-         switch (strategy)
-         {
-            case 'cancel':
-               if (AnimationManager.isScheduled(position)) { AnimationManager.cancel(position); }
-               break;
-
-            case 'exclusive':
-               if (AnimationManager.isScheduled(position)) { return null; }
-               break;
-
-            default:
-               console.warn(`AnimationScheduler.from error: 'strategy' is not 'cancel' or 'exclusive'.`);
-               return null;
-         }
+         if (this.#handleStrategy(position, strategy) === null) { return null; }
       }
 
       // Cache any target element allowing AnimationManager to stop animation if it becomes disconnected from DOM.
@@ -257,24 +243,10 @@ export class AnimationScheduler
 
       let { delay = 0, duration = 1, ease = 'cubicOut', strategy, transformOrigin } = options;
 
-      // Handle any defined scheduling strategy allowing existing scheduled animations for the same position instance
-      // to be controlled.
+      // Handle any defined scheduling strategy.
       if (strategy !== void 0)
       {
-         switch (strategy)
-         {
-            case 'cancel':
-               if (AnimationManager.isScheduled(position)) { AnimationManager.cancel(position); }
-               break;
-
-            case 'exclusive':
-               if (AnimationManager.isScheduled(position)) { return null; }
-               break;
-
-            default:
-               console.warn(`AnimationScheduler.fromTo error: 'strategy' is not 'cancel' or 'exclusive'.`);
-               return null;
-         }
+         if (this.#handleStrategy(position, strategy) === null) { return null; }
       }
 
       // Cache any target element allowing AnimationManager to stop animation if it becomes disconnected from DOM.
@@ -371,24 +343,10 @@ export class AnimationScheduler
 
       let { delay = 0, duration = 1, ease = 'cubicOut', strategy, transformOrigin } = options;
 
-      // Handle any defined scheduling strategy allowing existing scheduled animations for the same position instance
-      // to be controlled.
+      // Handle any defined scheduling strategy.
       if (strategy !== void 0)
       {
-         switch (strategy)
-         {
-            case 'cancel':
-               if (AnimationManager.isScheduled(position)) { AnimationManager.cancel(position); }
-               break;
-
-            case 'exclusive':
-               if (AnimationManager.isScheduled(position)) { return null; }
-               break;
-
-            default:
-               console.warn(`AnimationScheduler.to error: 'strategy' is not 'cancel' or 'exclusive'.`);
-               return null;
-         }
+         if (this.#handleStrategy(position, strategy) === null) { return null; }
       }
 
       // Cache any target element allowing AnimationManager to stop animation if it becomes disconnected from DOM.
@@ -443,5 +401,42 @@ export class AnimationScheduler
 
       return this.#addAnimation(position, initial, destination, duration, el, delay, ease, lerp, transformOrigin,
        transformOriginInitial, cleanup);
+   }
+
+   // Internal implementation ----------------------------------------------------------------------------------------
+
+   /**
+    * Handle any defined scheduling strategy allowing existing scheduled animations for the same position instance
+    * to be controlled.
+    *
+    * @param {import('../').TJSPosition} position - The target position instance.
+    *
+    * @param {import('./types').AnimationAPI.TweenOptions.strategy} strategy - A scheduling strategy to apply.
+    *
+    * @returns {undefined | null} Returns null to abort scheduling current animation.
+    */
+   static #handleStrategy(position, strategy)
+   {
+      switch (strategy)
+      {
+         case 'cancel':
+            if (AnimationManager.isScheduled(position)) { AnimationManager.cancel(position); }
+            break;
+
+         case 'cancelAll':
+            if (AnimationManager.isScheduled(position))
+            {
+               AnimationManager.cancel(position, AnimationManager.cancelAllFn);
+            }
+            break;
+
+         case 'exclusive':
+            if (AnimationManager.isScheduled(position)) { return null; }
+            break;
+
+         default:
+            console.warn(`AnimationScheduler error: 'strategy' is not 'cancel', 'cancelAll', or 'exclusive'.`);
+            return null;
+      }
    }
 }
