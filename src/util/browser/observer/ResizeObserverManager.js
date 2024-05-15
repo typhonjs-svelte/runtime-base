@@ -1,13 +1,12 @@
 import { isObject }           from '#runtime/util/object';
 import { isUpdatableStore }   from '#runtime/util/store';
 
-import { A11yHelper }         from '../A11yHelper.js';
 import { StyleParse }         from '../style';
 
 /**
- * Provides an instance of ResizeObserver that can manage multiple elements and notify a wide range of target
- * listeners. Offset width and height is also provided through caching the margin and padding styles of the target
- * element.
+ * Provides an instance of {@link ResizeObserver} that can manage multiple elements and notify a wide range of
+ * {@link ResizeObserverData.ResizeTarget} listeners. Offset width and height is also provided through caching the
+ * margin and padding styles of the target element.
  *
  * The action, {@link resizeObserver}, utilizes ResizeObserverManager for automatic registration and removal
  * via Svelte.
@@ -59,21 +58,29 @@ export class ResizeObserverManager
    }
 
    /**
-    * Add an HTMLElement and ResizeObserverTarget instance for monitoring. Create cached style attributes for the
-    * given element include border & padding dimensions for offset width / height calculations.
+    * Add an {@link HTMLElement} and {@link ResizeObserverData.ResizeTarget} instance for monitoring. Create cached
+    * style attributes for the given element include border & padding dimensions for offset width / height calculations.
     *
     * @param {HTMLElement}    el - The element to observe.
     *
-    * @param {import('./types').ResizeObserverData.Target} target - A target that contains one of several mechanisms
-    *        for updating resize data.
+    * @param {import('./types').ResizeObserverData.ResizeTarget} target - A target that contains one of several
+    *        mechanisms for updating resize data.
     */
    add(el, target)
    {
+      if (!(el instanceof HTMLElement))
+      {
+         throw new TypeError(`ResizeObserverManager.add error: 'el' is not a HTMLElement.`);
+      }
+
+      // Verify that this target is not already added for this element.
+      if (this.#hasTarget(el, target)) { return; }
+
       const updateType = ResizeObserverManager.#getUpdateType(target);
 
       if (updateType === 0)
       {
-         throw new Error(`'target' does not match supported ResizeObserverManager update mechanisms.`);
+         throw new Error(`ResizeObserverManager.add error: 'target' is not a valid ResizeObserverManager target.`);
       }
 
       const computed = globalThis.getComputedStyle(el);
@@ -89,9 +96,7 @@ export class ResizeObserverManager
       const paddingRight = StyleParse.pixels(el.style.paddingRight) ?? StyleParse.pixels(computed.paddingRight) ?? 0;
       const paddingTop = StyleParse.pixels(el.style.paddingTop) ?? StyleParse.pixels(computed.paddingTop) ?? 0;
 
-      /**
-       * @type {import('./types-local').ResizeObserverSubscriber}
-       */
+      /** @type {import('./types-local').ResizeObserverSubscriber} */
       const data = {
          updateType,
          target,
@@ -121,12 +126,23 @@ export class ResizeObserverManager
    }
 
    /**
-    * Removes all targets from monitoring when just an element is provided otherwise removes a specific target
-    * from the monitoring map. If no more targets remain then the element is removed from monitoring.
+    * Clears and unobserves all currently tracked elements and managed targets.
+    */
+   clear()
+   {
+      for (const el of this.#elMap.keys()) { this.#resizeObserver.unobserve(el); }
+
+      this.#elMap.clear();
+   }
+
+   /**
+    * Removes all {@link ResizeObserverData.ResizeTarget} instances for the given element from monitoring when just an
+    * element is provided otherwise removes a specific target from the monitoring map. If no more targets remain then
+    * the element is removed from monitoring.
     *
-    * @param {HTMLElement}          el - Element to remove from monitoring.
+    * @param {HTMLElement} el - Element to remove from monitoring.
     *
-    * @param {import('./types').ResizeObserverData.Target} [target] - A specific target to remove from monitoring.
+    * @param {import('./types').ResizeObserverData.ResizeTarget} [target] - A specific target to remove from monitoring.
     */
    remove(el, target = void 0)
    {
@@ -139,21 +155,12 @@ export class ResizeObserverManager
             const index = subscribers.findIndex((entry) => entry.target === target);
             if (index >= 0)
             {
-               // Update target subscriber with undefined values.
-               ResizeObserverManager.#updateSubscriber(subscribers[index], void 0, void 0);
-
                subscribers.splice(index, 1);
             }
          }
          else
          {
-            // Remove all subscribers for element.
-            for (const subscriber of subscribers)
-            {
-               // Update target subscriber with undefined values.
-               ResizeObserverManager.#updateSubscriber(subscriber, void 0, void 0);
-            }
-
+            // Remove all subscribers.
             subscribers.length = 0;
          }
 
@@ -177,11 +184,6 @@ export class ResizeObserverManager
     */
    updateCache(el)
    {
-      if (!A11yHelper.isFocusTarget(el))
-      {
-         throw new TypeError(`ResizeObserverManager.updateCache error: 'el' is not an HTMLElement.`);
-      }
-
       const subscribers = this.#elMap.get(el);
 
       if (Array.isArray(subscribers))
@@ -217,7 +219,7 @@ export class ResizeObserverManager
    /**
     * Determines the shape of the target instance regarding valid update mechanisms to set width & height changes.
     *
-    * @param {import('./types').ResizeObserverData.Target}  target - The target instance.
+    * @param {import('./types').ResizeObserverData.ResizeTarget}  target - The target instance.
     *
     * @returns {number} Update type value.
     */
@@ -253,6 +255,28 @@ export class ResizeObserverManager
       if (targetType === 'function') { return this.#updateTypes.function; }
 
       return this.#updateTypes.none;
+   }
+
+   /**
+    * Determines if a given element and target is already being observed.
+    *
+    * @param {HTMLElement} el - A HTMLElement.
+    *
+    * @param {import('./types').ResizeObserverData.ResizeTarget} [target] - A specific target to find.
+    *
+    * @returns {boolean} Whether the target is already being tracked for the given element.
+    */
+   #hasTarget(el, target)
+   {
+      if (target === void 0 || target === null) { return false;}
+
+      const subscribers = this.#elMap.get(el);
+      if (Array.isArray(subscribers))
+      {
+         return subscribers.findIndex((entry) => entry.target === target) >= 0;
+      }
+
+      return false;
    }
 
    /**
