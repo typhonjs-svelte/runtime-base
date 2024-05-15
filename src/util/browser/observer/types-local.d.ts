@@ -1,7 +1,7 @@
 import type { ResizeObserverData } from './types';
 
 /**
- * Defines internal data stored for a {@link ResizeObserverData.Target}.
+ * Defines internal data stored for a {@link ResizeObserverData.ResizeTarget}.
  */
 export type ResizeObserverSubscriber = {
    /**
@@ -12,7 +12,7 @@ export type ResizeObserverSubscriber = {
    /**
     * Target to update.
     */
-   target: ResizeObserverData.Target;
+   target: ResizeObserverData.ResizeTarget;
 
    /**
     * Stores most recent `contentRect.width` value from ResizeObserver.
