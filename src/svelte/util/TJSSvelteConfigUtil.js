@@ -1,6 +1,6 @@
-import { isObject }           from '#runtime/util/object';
+import { isObject }        from '#runtime/util/object';
 
-import { isSvelteComponent }  from './isSvelteComponent.js';
+import { TJSSvelteUtil }   from './TJSSvelteUtil.js';
 
 /**
  * Provides utilities to verify and parse {@link TJSSvelteConfig} configuration objects.
@@ -28,7 +28,7 @@ class TJSSvelteConfigUtil
          return false;
       }
 
-      if (!isSvelteComponent(config.class))
+      if (!TJSSvelteUtil.isComponent(config.class))
       {
          if (raiseException)
          {
@@ -59,7 +59,7 @@ class TJSSvelteConfigUtil
           `TJSSvelteConfigUtil.parseConfig - 'config' is not an object:\n${JSON.stringify(config)}.`);
       }
 
-      if (!isSvelteComponent(config.class))
+      if (!TJSSvelteUtil.isComponent(config.class))
       {
          throw new TypeError(
           `TJSSvelteConfigUtil.parseConfig - 'class' is not a Svelte component constructor for config:\n${
@@ -191,7 +191,7 @@ class TJSSvelteConfigUtil
          {
             const child = svelteConfig.children[cntr];
 
-            if (!isSvelteComponent(child.class))
+            if (!TJSSvelteUtil.isComponent(child.class))
             {
                throw new Error(`TJSSvelteConfigUtil.parseConfig - 'class' is not a Svelte component for child[${
                 cntr}] for config:\n${JSON.stringify(config)}`);
@@ -211,7 +211,7 @@ class TJSSvelteConfigUtil
       }
       else if (isObject(svelteConfig.children))
       {
-         if (!isSvelteComponent(svelteConfig.children.class))
+         if (!TJSSvelteUtil.isComponent(svelteConfig.children.class))
          {
             throw new Error(
              `TJSSvelteConfigUtil.parseConfig - 'class' is not a Svelte component for children object for config:\n${
