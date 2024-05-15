@@ -41,19 +41,19 @@ export class TJSPositionStyleCache
       this.hasWillChange = false;
 
       /**
-       * @type {import('#runtime/svelte/action/dom').ResizeObserverData.Object}
+       * @type {import('#runtime/util/browser').ResizeObserverData.ResizeObject}
        */
-      this.resizeObserved = {
+      this.resizeObserved = Object.seal({
          contentHeight: void 0,
          contentWidth: void 0,
          offsetHeight: void 0,
          offsetWidth: void 0
-      };
+      });
 
       /**
        * Provides a writable store to track offset & content width / height from an associated `resizeObserver` action.
        *
-       * @type {import('svelte/store').Writable<import('#runtime/svelte/action/dom').ResizeObserverData.Object>}
+       * @type {import('svelte/store').Writable<import('#runtime/util/browser').ResizeObserverData.ResizeObject>}
        */
       const storeResizeObserved = writable(this.resizeObserved);
 
@@ -62,6 +62,7 @@ export class TJSPositionStyleCache
          resizeContentHeight: propertyStore(storeResizeObserved, 'contentHeight'),
          resizeContentWidth: propertyStore(storeResizeObserved, 'contentWidth'),
          resizeObserved: storeResizeObserved,
+         resizeObservable: writable(false),
          resizeOffsetHeight: propertyStore(storeResizeObserved, 'offsetHeight'),
          resizeOffsetWidth: propertyStore(storeResizeObserved, 'offsetWidth')
       };

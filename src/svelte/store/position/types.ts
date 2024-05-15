@@ -2,7 +2,7 @@ import type {
    Readable,
    Writable }                       from 'svelte/store';
 
-import type { ResizeObserverData }  from '#runtime/svelte/action/dom';
+import type { ResizeObserverData }  from '#runtime/util/browser';
 
 import type { TJSPosition }         from './TJSPosition';
 import type { Data }                from './data/types';
@@ -257,6 +257,12 @@ namespace TJSPositionTypes {
       resizeContentWidth: Readable<number | undefined>;
 
       /**
+       * Readable store indicating when `width` or `height` is `auto` or `inherit` indicating that this position
+       * instance is a good candidate for the {@link resizeObserver} action.
+       */
+      resizeObservable: Readable<boolean>;
+
+      /**
        * Readable store for `offsetHeight`.
        */
       resizeOffsetHeight: Readable<number | undefined>;
@@ -269,7 +275,7 @@ namespace TJSPositionTypes {
       /**
        * Protected store for resize observer updates.
        */
-      resizeObserved: Writable<ResizeObserverData.Object>;
+      resizeObserved: Writable<ResizeObserverData.ResizeObject>;
 
       /**
        * Readable store for transform data.
