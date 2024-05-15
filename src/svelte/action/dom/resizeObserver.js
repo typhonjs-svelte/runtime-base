@@ -8,8 +8,9 @@ import { ResizeObserverManager } from '#runtime/util/browser';
 const resizeObserverActionManager = new ResizeObserverManager();
 
 /**
- * Provides an action to monitor the given HTMLElement node with `ResizeObserver` posting width / height changes
- * to the target in various ways depending on the shape of the target. The target can be one of the following and the
+ * Provides an action to monitor the given {@link HTMLElement} node with {@link ResizeObserver} via
+ * {@link ResizeObserverManager} posting width / height changes to the {@link ResizeObserverData.ResizeTarget} in
+ * various ways depending on the shape of the target. The target can be one of the following and the
  * precedence order is listed from top to bottom:
  *
  * - has a `resizeObserved` function as attribute; offset then content width / height are passed as parameters.
@@ -27,13 +28,13 @@ const resizeObserverActionManager = new ResizeObserverManager();
  *
  * Can-I-Use: {@link https://caniuse.com/resizeobserver}
  *
- * @param {HTMLElement}          node - The node associated with the action.
+ * @param {HTMLElement} node - The node associated with the action.
  *
- * @param {import('#runtime/util/browser').ResizeObserverData.Target} target - An object or function to update with
- *        observed width & height changes.
+ * @param {import('#runtime/util/browser').ResizeObserverData.ResizeTarget} target - A {@link ResizeObserverManager}
+ *        target to update with observed width & height changes.
  *
- * @returns {import('svelte/action').ActionReturn<import('#runtime/util/browser').ResizeObserverData.Target>} The action
- *          lifecycle methods.
+ * @returns {import('svelte/action').ActionReturn<import('#runtime/util/browser').ResizeObserverData.ResizeTarget>} The
+ *          action lifecycle methods.
  *
  * @see https://github.com/sveltejs/svelte/issues/4233
  */
@@ -43,8 +44,8 @@ function resizeObserver(node, target)
 
    return {
       /**
-       * @param {import('#runtime/util/browser').ResizeObserverData.Target} newTarget - An object or function to
-       *        update with observed width & height changes.
+       * @param {import('#runtime/util/browser').ResizeObserverData.ResizeTarget} newTarget - A
+       *        {@link ResizeObserverManager} target to update with observed width & height changes.
        */
       update: (newTarget) =>
       {
