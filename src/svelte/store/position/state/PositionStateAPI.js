@@ -161,10 +161,8 @@ export class PositionStateAPI
     *
     * @param {number}            [options.duration=0.1] - Duration in seconds.
     *
-    * @param {(
-    *    import('#runtime/svelte/easing').EasingFunctionName |
-    *    import('#runtime/svelte/easing').EasingFunction
-    * )} [options.ease='linear'] - Easing function name or function.
+    * @param {import('#runtime/svelte/easing').EasingReference} [options.ease='linear'] - Easing function name or
+    *        function.
     *
     * @returns {(
     *    import('../data/types').Data.TJSPositionDataExtra |

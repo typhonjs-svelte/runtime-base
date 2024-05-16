@@ -1,6 +1,7 @@
-import { linear } from '#svelte/easing';
+import { linear }          from '#svelte/easing';
 
-import { lerp }   from '#runtime/math/interpolate';
+import { lerp }            from '#runtime/math/interpolate';
+import { getEasingFunc }   from '#runtime/svelte/easing';
 
 /**
  * Provides a rotate transition. For options `easing` is applied to the rotate transition. The default easing is
@@ -17,8 +18,8 @@ import { lerp }   from '#runtime/math/interpolate';
  *
  * @param {number}      [options.duration] - Total transition length in ms.
  *
- * @param {import('#runtime/svelte/easing').EasingFunction}   [options.easing=linear] - The easing function to apply to the
- *        rotate transition.
+ * @param {import('#runtime/svelte/easing').EasingReference}   [options.easing='linear'] - Easing function name or
+ *        function to apply to the rotate transition.
  *
  * @param {number}      [options.end=0] - End rotation in degrees.
  *
@@ -28,7 +29,7 @@ import { lerp }   from '#runtime/math/interpolate';
  */
 export function rotate(node, options)
 {
-   const easingRotate = options.easing ?? linear;
+   const easingRotate = getEasingFunc(options.easing);
 
    const initialDeg = options.initial ?? 0;
    const endDeg = options.end ?? 0;

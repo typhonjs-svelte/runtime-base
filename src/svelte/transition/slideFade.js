@@ -1,5 +1,7 @@
-import { fade, slide }  from '#svelte/transition';
-import { linear }       from '#svelte/easing';
+import { fade, slide }     from '#svelte/transition';
+import { linear }          from '#svelte/easing';
+
+import { getEasingFunc }   from '#runtime/svelte/easing';
 
 /**
  * Combines slide & fade transitions into a single transition. For options `easing` this is applied to both transitions,
@@ -15,21 +17,21 @@ import { linear }       from '#svelte/easing';
  *
  * @param {number}      [options.duration] - Total transition length in ms.
  *
- * @param {import('#runtime/svelte/easing').EasingFunction}   [options.easing=linear] - The easing function to apply to both
- *        slide & fade transitions.
+ * @param {import('#runtime/svelte/easing').EasingReference}   [options.easing=linear] - Easing function name or
+ *        function to apply to both slide & fade transitions.
  *
- * @param {import('#runtime/svelte/easing').EasingFunction}   [options.easingFade=linear] - The easing function to apply to
- *        the fade transition.
+ * @param {import('#runtime/svelte/easing').EasingReference}   [options.easingFade=linear] - Easing function name or
+ *        function to apply to the fade transition.
  *
- * @param {import('#runtime/svelte/easing').EasingFunction}   [options.easingSlide=linear] - The easing function to apply to
- *        the slide transition.
+ * @param {import('#runtime/svelte/easing').EasingReference}   [options.easingSlide=linear] - Easing function name or
+ *        function to apply to the slide transition.
  *
  * @returns {import('svelte/transition').TransitionConfig} Transition config.
  */
 export function slideFade(node, options)
 {
-   const fadeEasing = options.easingFade ?? options.easing ?? linear;
-   const slideEasing = options.easingSlide ?? options.easing ?? linear;
+   const fadeEasing = getEasingFunc(options.easingFade ?? options.easing);
+   const slideEasing = getEasingFunc(options.easingSlide ?? options.easing);
 
    const fadeTransition = fade(node);
    const slideTransition = slide(node, { axis: options.axis });

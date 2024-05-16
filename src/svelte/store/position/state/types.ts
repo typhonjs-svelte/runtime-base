@@ -1,9 +1,7 @@
-import type {
-   EasingFunctionName,
-   EasingFunction }                 from '#runtime/svelte/easing';
+import type { EasingReference }  from '#runtime/svelte/easing';
 
-import type { TJSPositionTypes }    from '../types';
-import type { Data }                from '../data/types';
+import type { TJSPositionTypes } from '../types';
+import type { Data }             from '../data/types';
 
 interface PositionStateAPI {
    /**
@@ -81,7 +79,7 @@ interface PositionStateAPI {
     *
     * @param {number}            [options.duration=0.1] - Duration in seconds.
     *
-    * @param {EasingFunctionName | EasingFunction}    [options.ease='linear'] - Easing function name or function.
+    * @param {EasingReference}   [options.ease='linear'] - Easing function name or function.
     *
     * @returns {Data.TJSPositionDataExtra | Promise<Data.TJSPositionDataExtra | undefined> | undefined} Any saved
     *          position data.
@@ -94,7 +92,7 @@ interface PositionStateAPI {
       async?: boolean,
       animateTo?: boolean,
       duration?: number,
-      ease?: EasingFunctionName | EasingFunction,
+      ease?: EasingReference,
    }): Data.TJSPositionDataExtra | Promise<Data.TJSPositionDataExtra | undefined> | undefined;
 
    /**

@@ -406,8 +406,7 @@ class DraggableOptionsStore
    get tweenDuration() { return this.#tweenOptions.duration; }
 
    /**
-    * @returns {import('#runtime/svelte/easing').EasingFunctionName | import('#runtime/svelte/easing').EasingFunction} Get
-    *          easing function or easing function name.
+    * @returns {import('#runtime/svelte/easing').EasingReference} Get easing function or easing function name.
     */
    get tweenEase() { return this.#tweenOptions.ease; }
 
@@ -428,8 +427,7 @@ class DraggableOptionsStore
    }
 
    /**
-    * @param {import('#runtime/svelte/easing').EasingFunctionName | import('#runtime/svelte/easing').EasingFunction} ease -
-    *        Set easing function by name or direct function.
+    * @param {import('#runtime/svelte/easing').EasingReference} ease - Set easing function by name or direct function.
     */
    set tweenEase(ease)
    {

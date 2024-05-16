@@ -1,13 +1,13 @@
 import type {
    Readable,
-   Writable }                       from 'svelte/store';
+   Writable }                    from 'svelte/store';
 
-import type { EasingFunction }      from '#runtime/svelte/easing';
+import type { EasingReference }  from '#runtime/svelte/easing';
 
-import type { TJSPosition }         from '../TJSPosition';
-import type { TJSPositionTypes }    from '../types';
+import type { TJSPosition }      from '../TJSPosition';
+import type { TJSPositionTypes } from '../types';
 
-import type { AnimationAPI }        from '../animation/types';
+import type { AnimationAPI }     from '../animation/types';
 
 namespace Action {
    /**
@@ -80,9 +80,9 @@ namespace Action {
       get tweenDuration(): number;
 
       /**
-       * @returns {EasingFunctionName | EasingFunction} Get easing function or easing function name.
+       * @returns {EasingReference} Get easing function or easing function name.
        */
-      get tweenEase(): EasingFunction;
+      get tweenEase(): EasingReference;
 
       /**
        * @param {number}   duration - Set tween duration.
@@ -90,9 +90,9 @@ namespace Action {
       set tweenDuration(duration: number);
 
       /**
-       * @param {EasingFunctionName | EasingFunction} ease - Set easing function by name or direct function.
+       * @param {EasingReference} ease - Set easing function by name or direct function.
        */
-      set tweenEase(ease: EasingFunction);
+      set tweenEase(ease: EasingReference);
 
       /**
        * Resets all options data to initial values.
