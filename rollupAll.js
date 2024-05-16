@@ -341,6 +341,22 @@ const rollupConfigs = [
    },
    {
       input: {
+         input: 'src/svelte/action/util/index.js',
+         plugins: [
+            importsExternal(),
+            resolve(resolveOptions),
+            generateDTS.plugin(dtsPluginOptions)
+         ]
+      },
+      output: {
+         file: '_dist/svelte/action/util/index.js',
+         format: 'es',
+         generatedCode: { constBindings: true },
+         sourcemap
+      }
+   },
+   {
+      input: {
          input: 'src/svelte/animate/index.js',
          plugins: [
             importsExternal(),
@@ -350,6 +366,22 @@ const rollupConfigs = [
       },
       output: {
          file: '_dist/svelte/animate/index.js',
+         format: 'es',
+         generatedCode: { constBindings: true },
+         sourcemap
+      }
+   },
+   {
+      input: {
+         input: 'src/svelte/easing/index.js',
+         plugins: [
+            importsExternal(),
+            resolve(resolveOptions),
+            generateDTS.plugin(dtsPluginOptions)
+         ]
+      },
+      output: {
+         file: '_dist/svelte/easing/index.js',
          format: 'es',
          generatedCode: { constBindings: true },
          sourcemap
