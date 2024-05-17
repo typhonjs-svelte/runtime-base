@@ -10,9 +10,9 @@
 import * as svelte_action from 'svelte/action';
 import * as svelte_store from 'svelte/store';
 import { Writable, Subscriber, Invalidator, Unsubscriber, Readable } from 'svelte/store';
-import { ResizeObserverData } from '@typhonjs-svelte/runtime-base/svelte/action/dom';
+import { ResizeObserverData } from '@typhonjs-svelte/runtime-base/util/browser';
 import { InterpolateFunctionName } from '@typhonjs-svelte/runtime-base/math/interpolate';
-import { EasingFunctionName, EasingFunction } from '@typhonjs-svelte/runtime-base/svelte/easing';
+import { EasingReference } from '@typhonjs-svelte/runtime-base/svelte/easing';
 import { BasicAnimation } from '@typhonjs-svelte/runtime-base/util/animate';
 import { Mat4, Vec3 } from '@typhonjs-svelte/runtime-base/math/gl-matrix';
 
@@ -535,7 +535,7 @@ declare namespace AnimationAPI {
     /**
      * Easing function or easing function name; controls the time variable for interpolation. Default: `cubicOut`
      */
-    ease?: EasingFunctionName | EasingFunction;
+    ease?: EasingReference;
     /**
      * Interpolation function name. Currently, only `lerp` is supported and doesn't need to be specified.
      */
@@ -975,7 +975,7 @@ interface PositionStateAPI {
    *
    * @param {number}            [options.duration=0.1] - Duration in seconds.
    *
-   * @param {EasingFunctionName | EasingFunction}    [options.ease='linear'] - Easing function name or function.
+   * @param {EasingReference}   [options.ease='linear'] - Easing function name or function.
    *
    * @returns {Data.TJSPositionDataExtra | Promise<Data.TJSPositionDataExtra | undefined> | undefined} Any saved
    *          position data.
@@ -997,7 +997,7 @@ interface PositionStateAPI {
     async?: boolean;
     animateTo?: boolean;
     duration?: number;
-    ease?: EasingFunctionName | EasingFunction;
+    ease?: EasingReference;
   }): Data.TJSPositionDataExtra | Promise<Data.TJSPositionDataExtra | undefined> | undefined;
   /**
    * Saves current position state with the opportunity to add extra data to the saved state. Simply include
@@ -1422,7 +1422,7 @@ declare class TJSPosition implements TJSPositionTypes.TJSPositionWritable {
    */
   get validators(): ValidatorAPI;
   /**
-   * @param {number | string | null} height -
+   * @param {number | 'auto' | 'inherit' | null} height -
    */
   set height(height: number | 'auto' | 'inherit');
   /**
@@ -1550,7 +1550,7 @@ declare class TJSPosition implements TJSPositionTypes.TJSPositionWritable {
    */
   get translateZ(): number;
   /**
-   * @param {number | string | null} width -
+   * @param {number | 'auto' | 'inherit' | null} width -
    */
   set width(width: number | 'auto' | 'inherit');
   /**
@@ -1838,6 +1838,11 @@ declare namespace TJSPositionTypes {
      */
     resizeContentWidth: Readable<number | undefined>;
     /**
+     * Readable store indicating when `width` or `height` is `auto` or `inherit` indicating that this position
+     * instance is a good candidate for the {@link resizeObserver} action.
+     */
+    resizeObservable: Readable<boolean>;
+    /**
      * Readable store for `offsetHeight`.
      */
     resizeOffsetHeight: Readable<number | undefined>;
@@ -1848,7 +1853,7 @@ declare namespace TJSPositionTypes {
     /**
      * Protected store for resize observer updates.
      */
-    resizeObserved: Writable<ResizeObserverData.Object>;
+    resizeObserved: Writable<ResizeObserverData.ResizeObject>;
     /**
      * Readable store for transform data.
      */
@@ -1933,17 +1938,17 @@ declare namespace Action {
      */
     get tweenDuration(): number;
     /**
-     * @returns {EasingFunctionName | EasingFunction} Get easing function or easing function name.
+     * @returns {EasingReference} Get easing function or easing function name.
      */
-    get tweenEase(): EasingFunction;
+    get tweenEase(): EasingReference;
     /**
      * @param {number}   duration - Set tween duration.
      */
     set tweenDuration(duration: number);
     /**
-     * @param {EasingFunctionName | EasingFunction} ease - Set easing function by name or direct function.
+     * @param {EasingReference} ease - Set easing function by name or direct function.
      */
-    set tweenEase(ease: EasingFunction);
+    set tweenEase(ease: EasingReference);
     /**
      * Resets all options data to initial values.
      */

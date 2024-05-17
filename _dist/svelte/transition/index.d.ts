@@ -16,8 +16,8 @@ import * as _runtime_svelte_easing from '@typhonjs-svelte/runtime-base/svelte/ea
  *
  * @param {number}      [options.duration] - Total transition length in ms.
  *
- * @param {import('#runtime/svelte/easing').EasingFunction}   [options.easing=linear] - The easing function to apply to the
- *        rotate transition.
+ * @param {import('#runtime/svelte/easing').EasingReference}   [options.easing='linear'] - Easing function name or
+ *        function to apply to the rotate transition.
  *
  * @param {number}      [options.end=0] - End rotation in degrees.
  *
@@ -30,15 +30,16 @@ declare function rotate(
   options?: {
     delay?: number;
     duration?: number;
-    easing?: _runtime_svelte_easing.EasingFunction;
+    easing?: _runtime_svelte_easing.EasingReference;
     end?: number;
     initial?: number;
   },
 ): svelte_transition.TransitionConfig;
 
 /**
- * Combines rotate & fade transitions into a single transition. For options `easing` this is applied to both transitions,
- * however if provided `easingRotate` and / or `easingFade` will take precedence. The default easing is linear.
+ * Combines rotate & fade transitions into a single transition. For options `easing` this is applied to both
+ * transitions, however if provided `easingRotate` and / or `easingFade` will take precedence. The default easing is
+ * linear.
  *
  * Note: that when reversing the transition that time goes from `1 - 0`, so if specific options are applied for
  * rotating out transition then `end` and `initial` are swapped.
@@ -51,14 +52,14 @@ declare function rotate(
  *
  * @param {number}      [options.duration] - Total transition length in ms.
  *
- * @param {import('#runtime/svelte/easing').EasingFunction}   [options.easing=linear] - The easing function to apply to both
- *        slide & fade transitions.
+ * @param {import('#runtime/svelte/easing').EasingReference}   [options.easing='linear'] - Easing function name or
+ *        function to apply to both slide & fade transitions.
  *
- * @param {import('#runtime/svelte/easing').EasingFunction}   [options.easingFade=linear] - The easing function to apply to
- *        the fade transition.
+ * @param {import('#runtime/svelte/easing').EasingReference}   [options.easingFade='linear'] - Easing function name or
+ *        function to apply to the fade transition.
  *
- * @param {import('#runtime/svelte/easing').EasingFunction}   [options.easingRotate=linear] - The easing function to apply
- *        to the rotate transition.
+ * @param {import('#runtime/svelte/easing').EasingReference}   [options.easingRotate='linear'] - Easing function name or
+ *        function to apply to the rotate transition.
  *
  * @param {number}      [options.end=0] - End rotation in degrees.
  *
@@ -71,9 +72,9 @@ declare function rotateFade(
   options?: {
     delay?: number;
     duration?: number;
-    easing?: _runtime_svelte_easing.EasingFunction;
-    easingFade?: _runtime_svelte_easing.EasingFunction;
-    easingRotate?: _runtime_svelte_easing.EasingFunction;
+    easing?: _runtime_svelte_easing.EasingReference;
+    easingFade?: _runtime_svelte_easing.EasingReference;
+    easingRotate?: _runtime_svelte_easing.EasingReference;
     end?: number;
     initial?: number;
   },
@@ -93,14 +94,14 @@ declare function rotateFade(
  *
  * @param {number}      [options.duration] - Total transition length in ms.
  *
- * @param {import('#runtime/svelte/easing').EasingFunction}   [options.easing=linear] - The easing function to apply to both
- *        slide & fade transitions.
+ * @param {import('#runtime/svelte/easing').EasingReference}   [options.easing=linear] - Easing function name or
+ *        function to apply to both slide & fade transitions.
  *
- * @param {import('#runtime/svelte/easing').EasingFunction}   [options.easingFade=linear] - The easing function to apply to
- *        the fade transition.
+ * @param {import('#runtime/svelte/easing').EasingReference}   [options.easingFade=linear] - Easing function name or
+ *        function to apply to the fade transition.
  *
- * @param {import('#runtime/svelte/easing').EasingFunction}   [options.easingSlide=linear] - The easing function to apply to
- *        the slide transition.
+ * @param {import('#runtime/svelte/easing').EasingReference}   [options.easingSlide=linear] - Easing function name or
+ *        function to apply to the slide transition.
  *
  * @returns {import('svelte/transition').TransitionConfig} Transition config.
  */
@@ -110,9 +111,9 @@ declare function slideFade(
     axis?: 'x' | 'y';
     delay?: number;
     duration?: number;
-    easing?: _runtime_svelte_easing.EasingFunction;
-    easingFade?: _runtime_svelte_easing.EasingFunction;
-    easingSlide?: _runtime_svelte_easing.EasingFunction;
+    easing?: _runtime_svelte_easing.EasingReference;
+    easingFade?: _runtime_svelte_easing.EasingReference;
+    easingSlide?: _runtime_svelte_easing.EasingReference;
   },
 ): svelte_transition.TransitionConfig;
 

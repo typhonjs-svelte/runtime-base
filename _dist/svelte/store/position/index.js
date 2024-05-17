@@ -452,8 +452,7 @@ class DraggableOptionsStore
    get tweenDuration() { return this.#tweenOptions.duration; }
 
    /**
-    * @returns {import('#runtime/svelte/easing').EasingFunctionName | import('#runtime/svelte/easing').EasingFunction} Get
-    *          easing function or easing function name.
+    * @returns {import('#runtime/svelte/easing').EasingReference} Get easing function or easing function name.
     */
    get tweenEase() { return this.#tweenOptions.ease; }
 
@@ -474,8 +473,7 @@ class DraggableOptionsStore
    }
 
    /**
-    * @param {import('#runtime/svelte/easing').EasingFunctionName | import('#runtime/svelte/easing').EasingFunction} ease -
-    *        Set easing function by name or direct function.
+    * @param {import('#runtime/svelte/easing').EasingReference} ease - Set easing function by name or direct function.
     */
    set tweenEase(ease)
    {
@@ -4481,10 +4479,8 @@ class PositionStateAPI
     *
     * @param {number}            [options.duration=0.1] - Duration in seconds.
     *
-    * @param {(
-    *    import('#runtime/svelte/easing').EasingFunctionName |
-    *    import('#runtime/svelte/easing').EasingFunction
-    * )} [options.ease='linear'] - Easing function name or function.
+    * @param {import('#runtime/svelte/easing').EasingReference} [options.ease='linear'] - Easing function name or
+    *        function.
     *
     * @returns {(
     *    import('../data/types').Data.TJSPositionDataExtra |
@@ -5785,19 +5781,19 @@ class TJSPositionStyleCache
       this.hasWillChange = false;
 
       /**
-       * @type {import('#runtime/svelte/action/dom').ResizeObserverData.Object}
+       * @type {import('#runtime/util/browser').ResizeObserverData.ResizeObject}
        */
-      this.resizeObserved = {
+      this.resizeObserved = Object.seal({
          contentHeight: void 0,
          contentWidth: void 0,
          offsetHeight: void 0,
          offsetWidth: void 0
-      };
+      });
 
       /**
        * Provides a writable store to track offset & content width / height from an associated `resizeObserver` action.
        *
-       * @type {import('svelte/store').Writable<import('#runtime/svelte/action/dom').ResizeObserverData.Object>}
+       * @type {import('svelte/store').Writable<import('#runtime/util/browser').ResizeObserverData.ResizeObject>}
        */
       const storeResizeObserved = writable(this.resizeObserved);
 
@@ -5806,6 +5802,7 @@ class TJSPositionStyleCache
          resizeContentHeight: propertyStore(storeResizeObserved, 'contentHeight'),
          resizeContentWidth: propertyStore(storeResizeObserved, 'contentWidth'),
          resizeObserved: storeResizeObserved,
+         resizeObservable: writable(false),
          resizeOffsetHeight: propertyStore(storeResizeObserved, 'offsetHeight'),
          resizeOffsetWidth: propertyStore(storeResizeObserved, 'offsetWidth')
       };
@@ -5991,6 +5988,14 @@ class TJSPosition
    #positionChangeSet = new PositionChangeSet();
 
    /**
+    * Tracks the current state if this position instance is a candidate for resize observation by the `resizeObserver`
+    * action. This is `true` when `width` or `height` is `auto` or `inherit`.
+    *
+    * @type {boolean}
+    */
+   #resizeObservable = false;
+
+   /**
     * @type {import('./types').TJSPositionTypes.Stores}
     */
    #stores;
@@ -6147,9 +6152,6 @@ class TJSPosition
          this.#parent = /** @type {import('./types').TJSPositionTypes.PositionParent} */ parentOrOptions;
       }
 
-      const data = this.#data;
-      const transforms = this.#transforms;
-
       this.#styleCache = new TJSPositionStyleCache();
 
       const updateData = new UpdateElementData();
@@ -6163,113 +6165,18 @@ class TJSPosition
 
       this.#updateElementData = updateData;
 
-      if (isObject(options))
+      // Set TJSPosition options -------------------------------------------------------------------------------------
+
+      if (typeof options?.calculateTransform === 'boolean')
       {
-         // Set TJSPosition options
-         if (typeof options.calculateTransform === 'boolean')
-         {
-            this.#options.calculateTransform = options.calculateTransform;
-         }
-
-         if (typeof options.ortho === 'boolean')
-         {
-            this.#options.ortho = options.ortho;
-         }
-
-         // Set default values from options.
-
-         if (Number.isFinite(options.height) || options.height === 'auto' || options.height === 'inherit' ||
-          options.height === null)
-         {
-            data.height = updateData.dimensionData.height = typeof options.height === 'number' ?
-             Math.round(options.height) : options.height;
-         }
-
-         if (Number.isFinite(options.left) || options.left === null)
-         {
-            data.left = typeof options.left === 'number' ? Math.round(options.left) : options.left;
-         }
-
-         if (Number.isFinite(options.maxHeight) || options.maxHeight === null)
-         {
-            data.maxHeight = typeof options.maxHeight === 'number' ? Math.round(options.maxHeight) : options.maxHeight;
-         }
-
-         if (Number.isFinite(options.maxWidth) || options.maxWidth === null)
-         {
-            data.maxWidth = typeof options.maxWidth === 'number' ? Math.round(options.maxWidth) : options.maxWidth;
-         }
-
-         if (Number.isFinite(options.minHeight) || options.minHeight === null)
-         {
-            data.minHeight = typeof options.minHeight === 'number' ? Math.round(options.minHeight) : options.minHeight;
-         }
-
-         if (Number.isFinite(options.minWidth) || options.minWidth === null)
-         {
-            data.minWidth = typeof options.minWidth === 'number' ? Math.round(options.minWidth) : options.minWidth;
-         }
-
-         if (Number.isFinite(options.rotateX) || options.rotateX === null)
-         {
-            transforms.rotateX = data.rotateX = options.rotateX;
-         }
-
-         if (Number.isFinite(options.rotateY) || options.rotateY === null)
-         {
-            transforms.rotateY = data.rotateY = options.rotateY;
-         }
-
-         if (Number.isFinite(options.rotateZ) || options.rotateZ === null)
-         {
-            transforms.rotateZ = data.rotateZ = options.rotateZ;
-         }
-
-         if (Number.isFinite(options.scale) || options.scale === null)
-         {
-            transforms.scale = data.scale = options.scale;
-         }
-
-         if (Number.isFinite(options.top) || options.top === null)
-         {
-            data.top = typeof options.top === 'number' ? Math.round(options.top) : options.top;
-         }
-
-         if (typeof options.transformOrigin === 'string' || options.transformOrigin === null)
-         {
-            data.transformOrigin = TJSTransforms.transformOrigins.includes(options.transformOrigin) ?
-             options.transformOrigin : null;
-         }
-
-         if (Number.isFinite(options.translateX) || options.translateX === null)
-         {
-            transforms.translateX = data.translateX = options.translateX;
-         }
-
-         if (Number.isFinite(options.translateY) || options.translateY === null)
-         {
-            transforms.translateY = data.translateY = options.translateY;
-         }
-
-         if (Number.isFinite(options.translateZ) || options.translateZ === null)
-         {
-            transforms.translateZ = data.translateZ = options.translateZ;
-         }
-
-         if (Number.isFinite(options.width) || options.width === 'auto' || options.width === 'inherit' ||
-          options.width === null)
-         {
-            data.width = updateData.dimensionData.width = typeof options.width === 'number' ?
-             Math.round(options.width) : options.width;
-         }
-
-         if (Number.isFinite(options.zIndex) || options.zIndex === null)
-         {
-            data.zIndex = typeof options.zIndex === 'number' ? Math.round(options.zIndex) : options.zIndex;
-         }
+         this.#options.calculateTransform = options.calculateTransform;
       }
 
-      this.#stores = {
+      if (typeof options?.ortho === 'boolean') { this.#options.ortho = options.ortho; }
+
+      // Initialize stores -------------------------------------------------------------------------------------------
+
+      this.#stores = Object.freeze({
          // The main properties for manipulating TJSPosition.
          height: propertyStore(this, 'height'),
          left: propertyStore(this, 'left'),
@@ -6296,17 +6203,25 @@ class TJSPosition
          element: { subscribe: this.#styleCache.stores.element.subscribe },
          resizeContentHeight: { subscribe: this.#styleCache.stores.resizeContentHeight.subscribe },
          resizeContentWidth: { subscribe: this.#styleCache.stores.resizeContentWidth.subscribe },
+         resizeObservable: { subscribe: this.#styleCache.stores.resizeObservable.subscribe },
          resizeOffsetHeight: { subscribe: this.#styleCache.stores.resizeOffsetHeight.subscribe },
          resizeOffsetWidth: { subscribe: this.#styleCache.stores.resizeOffsetWidth.subscribe },
          transform: { subscribe: updateData.storeTransform.subscribe },
 
          // Protected store that should only be set by resizeObserver action.
          resizeObserved: this.#styleCache.stores.resizeObserved,
-      };
+      });
 
-      // When resize change from any applied resizeObserver action automatically set data for new validation run.
+      /**
+       * Define 'values' getter to retrieve static transform origins.
+       */
+      Object.defineProperty(this.#stores.transformOrigin, 'values', {
+         get: () => TJSPosition.transformOrigins
+      });
+
+      // When resize change from any applied `resizeObserver` action automatically set data for new validation run.
       // A resizeObserver prop should be set to true for ApplicationShell components or usage of resizeObserver action
-      // to monitor for changes. This should only be used on elements that have 'auto' for width or height.
+      // to monitor for changes. This should only be used on elements that have 'auto' or `inherit` for width or height.
       subscribeIgnoreFirst(this.#stores.resizeObserved, (resizeData) =>
       {
          const parent = this.#parent;
@@ -6316,17 +6231,8 @@ class TJSPosition
          if (A11yHelper.isFocusTarget(el) && Number.isFinite(resizeData?.offsetWidth) &&
           Number.isFinite(resizeData?.offsetHeight))
          {
-            this.set(data);
+            this.set();
          }
-      });
-
-      this.#stores.transformOrigin.values = TJSTransforms.transformOrigins;
-
-      /**
-       * Define 'values' getter to retrieve static transform origins.
-       */
-      Object.defineProperty(this.#stores.transformOrigin, 'values', {
-         get: () => TJSPosition.transformOrigins
       });
 
       [this.#validators, this.#validatorData] = AdapterValidators.create(() => this.set());
@@ -6364,6 +6270,9 @@ class TJSPosition
       }
 
       Object.seal(this);
+
+      // Set any remaining position data.
+      if (isObject(options)) { this.set(options); }
    }
 
    /**
@@ -6585,7 +6494,7 @@ class TJSPosition
    get zIndex() { return this.#data.zIndex; }
 
    /**
-    * @param {number | string | null} height -
+    * @param {number | 'auto' | 'inherit' | null} height -
     */
    set height(height)
    {
@@ -6716,7 +6625,7 @@ class TJSPosition
    }
 
    /**
-    * @param {number | string | null} width -
+    * @param {number | 'auto' | 'inherit' | null} width -
     */
    set width(width)
    {
@@ -7008,20 +6917,37 @@ class TJSPosition
          if (data.zIndex !== position.zIndex) { data.zIndex = position.zIndex; changeSet.zIndex = true; }
       }
 
-      if (Number.isFinite(position.width) || position.width === 'auto' || position.width === 'inherit' ||
-       position.width === null)
+      const widthIsObservable = position.width === 'auto' || position.width === 'inherit';
+
+      if (Number.isFinite(position.width) || widthIsObservable || position.width === null)
       {
          position.width = typeof position.width === 'number' ? Math.round(position.width) : position.width;
 
-         if (data.width !== position.width) { data.width = position.width; changeSet.width = true; }
+         if (data.width !== position.width)
+         {
+            data.width = position.width;
+            changeSet.width = true;
+         }
       }
 
-      if (Number.isFinite(position.height) || position.height === 'auto' || position.height === 'inherit' ||
-       position.height === null)
+      const heightIsObservable = position.height === 'auto' || position.height === 'inherit';
+
+      if (Number.isFinite(position.height) || heightIsObservable || position.height === null)
       {
          position.height = typeof position.height === 'number' ? Math.round(position.height) : position.height;
 
          if (data.height !== position.height) { data.height = position.height; changeSet.height = true; }
+      }
+
+      // Potentially update the `resizeObservable` store when the state of `width` or `height` changes between
+      // `auto` / `inherit` to a number or null.
+      const resizeObservable = widthIsObservable || heightIsObservable;
+      if (this.#resizeObservable !== resizeObservable)
+      {
+         this.#resizeObservable = resizeObservable;
+         // Set store on next clock tick.
+         // setTimeout(() => this.#styleCache.stores.resizeObservable.set(resizeObservable), 0);
+         this.#styleCache.stores.resizeObservable.set(resizeObservable);
       }
 
       if (el)
@@ -7121,7 +7047,7 @@ class TJSPosition
    });
 
    /**
-    * @param {import('./data/types').Data.TJSPositionData} data -
+    * @param {import('./data/types').Data.TJSPositionDataRelative} data -
     *
     * @param {object} parent -
     *
@@ -7145,14 +7071,16 @@ class TJSPosition
       let currentPosition = TJSPositionDataUtil.copyData(this.#data, TJSPosition.#updateDataCopy);
 
       // Update width if an explicit value is passed, or if no width value is set on the element.
-      if (el.style.width === '' || width !== void 0)
+      if (width !== void 0 || el.style.width === '')
       {
-         if (width === 'auto' || (currentPosition.width === 'auto' && width !== null))
+         const widthValid = width === null || Number.isFinite(width);
+
+         if (width === 'auto' || (currentPosition.width === 'auto' && !widthValid))
          {
             currentPosition.width = 'auto';
             width = styleCache.offsetWidth;
          }
-         else if (width === 'inherit' || (currentPosition.width === 'inherit' && width !== null))
+         else if (width === 'inherit' || (currentPosition.width === 'inherit' && !widthValid))
          {
             currentPosition.width = 'inherit';
             width = styleCache.offsetWidth;
@@ -7169,14 +7097,16 @@ class TJSPosition
       }
 
       // Update height if an explicit value is passed, or if no height value is set on the element.
-      if (el.style.height === '' || height !== void 0)
+      if (height !== void 0 || el.style.height === '')
       {
-         if (height === 'auto' || (currentPosition.height === 'auto' && height !== null))
+         const heightValid = height === null || Number.isFinite(height);
+
+         if (height === 'auto' || (currentPosition.height === 'auto' && !heightValid))
          {
             currentPosition.height = 'auto';
             height = styleCache.offsetHeight;
          }
-         else if (height === 'inherit' || (currentPosition.height === 'inherit' && height !== null))
+         else if (height === 'inherit' || (currentPosition.height === 'inherit' && !heightValid))
          {
             currentPosition.height = 'inherit';
             height = styleCache.offsetHeight;

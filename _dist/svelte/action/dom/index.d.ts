@@ -1,6 +1,6 @@
 import * as svelte_action from 'svelte/action';
 import * as svelte_store from 'svelte/store';
-import { Writable } from 'svelte/store';
+import * as _runtime_util_browser from '@typhonjs-svelte/runtime-base/util/browser';
 
 /**
  * Provides an action to always blur the element when any pointer up event occurs on the element.
@@ -69,45 +69,9 @@ declare function isFocused(
 ): svelte_action.ActionReturn<svelte_store.Writable<boolean>>;
 
 /**
- * Provides various type aliases used by the {@link resizeObserver} action.
- */
-declare namespace ResizeObserverData {
-  /**
-   * A function that receives offset / content height & width changes.
-   */
-  type Function = (offsetWidth: number, offsetHeight: number, contentWidth: number, contentHeight: number) => void;
-  /**
-   * A object to update / store observed resize updates.
-   */
-  type Object = {
-    /** Stores `contentHeight` attribute. */
-    contentHeight?: number;
-    /** Stores `contentWidth` attribute. */
-    contentWidth?: number;
-    /** Stores `offsetHeight` attribute. */
-    offsetHeight?: number;
-    /** Stores `offsetWidth` attribute. */
-    offsetWidth?: number;
-  };
-  type ObjectExtended = {
-    /** Either a function or a writable store to receive resize updates. */
-    resizedObserver?: Writable<Object> | Function;
-    /** A function that is invoked with content width & height changes. */
-    setContentBounds?: (contentWidth: number, contentHeight: number) => void;
-    /** A function that is invoked with offset width & height changes. */
-    setDimension?: (offsetWidth: number, offsetHeight: number) => void;
-    /** An object with a `stores` attribute and subsequent `resizedObserver` writable store. */
-    stores?: {
-      resizedObserver: Writable<Object>;
-    };
-  };
-  /** The receiving target for observed resize data. */
-  type Target = Object | ObjectExtended | Function;
-}
-
-/**
- * Provides an action to monitor the given HTMLElement node with `ResizeObserver` posting width / height changes
- * to the target in various ways depending on the shape of the target. The target can be one of the following and the
+ * Provides an action to monitor the given {@link HTMLElement} node with {@link ResizeObserver} via
+ * {@link ResizeObserverManager} posting width / height changes to the {@link ResizeObserverData.ResizeTarget} in
+ * various ways depending on the shape of the target. The target can be one of the following and the
  * precedence order is listed from top to bottom:
  *
  * - has a `resizeObserved` function as attribute; offset then content width / height are passed as parameters.
@@ -125,20 +89,20 @@ declare namespace ResizeObserverData {
  *
  * Can-I-Use: {@link https://caniuse.com/resizeobserver}
  *
- * @param {HTMLElement}          node - The node associated with the action.
+ * @param {HTMLElement} node - The node associated with the action.
  *
- * @param {import('./types').ResizeObserverData.Target} target - An object or function to update with observed width &
- *        height changes.
+ * @param {import('#runtime/util/browser').ResizeObserverData.ResizeTarget} target - A {@link ResizeObserverManager}
+ *        target to update with observed width & height changes.
  *
- * @returns {import('svelte/action').ActionReturn<import('./types').ResizeObserverData.Target>} The action lifecycle
- *          methods.
+ * @returns {import('svelte/action').ActionReturn<import('#runtime/util/browser').ResizeObserverData.ResizeTarget>} The
+ *          action lifecycle methods.
  *
  * @see https://github.com/sveltejs/svelte/issues/4233
  */
 declare function resizeObserver(
   node: HTMLElement,
-  target: ResizeObserverData.Target,
-): svelte_action.ActionReturn<ResizeObserverData.Target>;
+  target: _runtime_util_browser.ResizeObserverData.ResizeTarget,
+): svelte_action.ActionReturn<_runtime_util_browser.ResizeObserverData.ResizeTarget>;
 declare namespace resizeObserver {
   /**
    * Provides a function that when invoked with an element updates the cached styles for each subscriber of the element.
@@ -146,9 +110,9 @@ declare namespace resizeObserver {
    * The style attributes cached to calculate offset height / width include border & padding dimensions. You only need
    * to update the cache if you change border or padding attributes of the element.
    *
-   * @param {HTMLElement} el - An HTML element.
+   * @param {HTMLElement} el - A HTML element.
    */
   function updateCache(el: HTMLElement): void;
 }
 
-export { ResizeObserverData, alwaysBlur, applyScrolltop, applyStyles, autoBlur, isFocused, resizeObserver };
+export { alwaysBlur, applyScrolltop, applyStyles, autoBlur, isFocused, resizeObserver };
