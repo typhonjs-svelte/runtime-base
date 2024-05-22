@@ -1,6 +1,19 @@
+/**
+ * Provides various utilities for generating hash codes for strings and UUIDs.
+ *
+ * This class should not be constructed as it only contains static methods.
+ */
 export class Hashing
 {
    static #regexUuidv = /^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
+
+   /**
+    * @hideconstructor
+    */
+   constructor()
+   {
+      throw new Error('Hashing constructor: This is a static class and should not be constructed.');
+   }
 
    /**
     * Provides a solid string hashing algorithm.
@@ -9,7 +22,7 @@ export class Hashing
     *
     * @param {string}   str - String to hash.
     *
-    * @param {number}   seed - A seed value altering the hash.
+    * @param {number}   [seed=0] - A seed value altering the hash.
     *
     * @returns {number} Hash code.
     */

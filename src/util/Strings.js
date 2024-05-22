@@ -1,8 +1,18 @@
 /**
  * Provides utility functions for strings.
+ *
+ * This class should not be constructed as it only contains static methods.
  */
 export class Strings
 {
+   /**
+    * @hideconstructor
+    */
+   constructor()
+   {
+      throw new Error('Strings constructor: This is a static class and should not be constructed.');
+   }
+
    /**
     * Escape a given input string prefacing special characters with backslashes for use in a regular expression.
     *
