@@ -1,5 +1,6 @@
-import { Writable } from 'svelte/store';
-
+/**
+ * Provides various utilities for generating hash codes for strings and UUIDs.
+ */
 declare class Hashing {
   /**
    * Provides a solid string hashing algorithm.
@@ -8,7 +9,7 @@ declare class Hashing {
    *
    * @param {string}   str - String to hash.
    *
-   * @param {number}   seed - A seed value altering the hash.
+   * @param {number}   [seed=0] - A seed value altering the hash.
    *
    * @returns {number} Hash code.
    */
@@ -61,119 +62,74 @@ declare class Strings {
 
 /**
  * Provides timing related higher-order functions.
+ *
+ * This class should not be constructed as it only contains static methods.
  */
 declare class Timing {
   /**
-   * Wraps a callback in a debounced timeout.
+   * Wraps a callback in a debounced timeout. Delay execution of the callback function until the function has not been
+   * called for the given delay in milliseconds.
    *
-   * Delay execution of the callback function until the function has not been called for the given delay in milliseconds.
+   * @template Args
    *
-   * @param {Function} callback - A function to execute once the debounced threshold has been passed.
+   * @param {(...args: Args[]) => void} callback - A function to execute once the debounced threshold has been passed.
    *
    * @param {number}   delay - An amount of time in milliseconds to delay.
    *
-   * @returns {Function} A wrapped function that can be called to debounce execution.
+   * @returns {(...args: Args[]) => void} A wrapped function that can be called to debounce execution.
+   *
+   * @example
+   * /**
+   *  * Debounce the update invocation by 500ms.
+   *  *\/
+   * const updateDebounced = Timing.debounce(() => doc.update(), 500);
+   *
+   * // Use the function like:
+   * updateDebounced();
+   *
+   * @example
+   * /**
+   *  * Debounce the update invocation by 500ms.
+   *  *
+   *  * \@param {string} value - A value to update.
+   *  *\/
+   * const updateDebounced = Timing.debounce((value) => doc.update(value), 500);
+   *
+   * // Use the function like:
+   * updateDebounced('new value');
    */
-  static debounce(callback: Function, delay: number): Function;
+  static debounce<Args>(callback: (...args: Args[]) => void, delay: number): (...args: Args[]) => void;
   /**
+   * Creates a double click event handler that distinguishes between single and double clicks. Calls the `single`
+   * callback on a single click and the `double` callback on a double click. The default double click delay to invoke
+   * the `double` callback is 400 milliseconds.
+   *
    * @param {object}   opts - Optional parameters.
    *
-   * @param {Function} opts.single - Single click callback.
+   * @param {(event: Event) => void} [opts.single] - Single click callback.
    *
-   * @param {Function} opts.double - Double click callback.
+   * @param {(event: Event) => void} [opts.double] - Double click callback.
    *
    * @param {number}   [opts.delay=400] - Double click delay.
    *
    * @returns {(event: Event) => void} The gated double-click handler.
+   *
+   * @example
+   * // Given a button element.
+   * button.addEventListener('click', Timing.doubleClick({
+   *    single: (event) => console.log('Single click: ', event),
+   *    double: (event) => console.log('Double click: ', event)
+   * });
    */
   static doubleClick({
     single,
     double,
     delay,
   }: {
-    single: Function;
-    double: Function;
+    single?: (event: Event) => void;
+    double?: (event: Event) => void;
     delay?: number;
   }): (event: Event) => void;
 }
 
-/**
- * State that is available in the resolution of the {@link Promise} for {@link BasicAnimation.finished}.
- */
-type BasicAnimationState = {
-  /**
-   * True if the animation was cancelled.
-   */
-  cancelled: boolean;
-};
-/**
- * Defines the implementation for basic animation control.
- */
-interface BasicAnimation {
-  /**
-   * True if animation is active; note: delayed animations are not active until start.
-   */
-  readonly isActive: boolean;
-  /**
-   * True if animation is completely finished.
-   */
-  readonly isFinished: boolean;
-  /**
-   * A Promise that is resolved when animation is finished.
-   */
-  readonly finished: Promise<BasicAnimationState>;
-  /**
-   * Cancels animation when invoked.
-   */
-  cancel(): void;
-}
-
-/**
- * Provides various type aliases used by {@link ResizeObserverManager}.
- */
-declare namespace ResizeObserverData {
-  /**
-   * A function that receives offset / content height & width changes.
-   */
-  type ResizeFunction = (
-    offsetWidth: number,
-    offsetHeight: number,
-    contentWidth?: number,
-    contentHeight?: number,
-  ) => unknown;
-  /**
-   * An object to update as a target for {@link ResizeObserverManager} resize updates.
-   */
-  type ResizeObject = {
-    /** Stores `contentHeight` attribute. */
-    contentHeight?: number;
-    /** Stores `contentWidth` attribute. */
-    contentWidth?: number;
-    /** Stores `offsetHeight` attribute. */
-    offsetHeight?: number;
-    /** Stores `offsetWidth` attribute. */
-    offsetWidth?: number;
-  };
-  /**
-   * An extended object type defining various ways to create a valid target for {@link ResizeObserverManager}.
-   */
-  type ResizeObjectExtended = {
-    /** Either a function or a writable store to receive resize updates. */
-    resizeObserved?: Writable<ResizeObject> | ResizeFunction;
-    /** A function that is invoked with content width & height changes. */
-    setContentBounds?: (contentWidth: number, contentHeight: number) => unknown;
-    /** A function that is invoked with offset width & height changes. */
-    setDimension?: (offsetWidth: number, offsetHeight: number) => unknown;
-    /** An object with a `stores` attribute and subsequent `resizeObserved` writable store. */
-    stores?: {
-      resizeObserved: Writable<ResizeObject>;
-    };
-  };
-  /**
-   * The receiving target for observed resize data associated with {@link ResizeObserverManager}. Just one of the
-   * mechanisms defined is required to conform to a valid target.
-   */
-  type ResizeTarget = ResizeObject | ResizeObjectExtended | ResizeFunction;
-}
-
-export { type BasicAnimation, type BasicAnimationState, Hashing, ResizeObserverData, Strings, Timing };
+export { Hashing, Strings, Timing };

@@ -1,6 +1,17 @@
+/**
+ * Provides various utilities for generating hash codes for strings and UUIDs.
+ */
 class Hashing
 {
    static #regexUuidv = /^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
+
+   /**
+    * @hideconstructor
+    */
+   constructor()
+   {
+      throw new Error('Hashing constructor: This is a static class and should not be constructed.');
+   }
 
    /**
     * Provides a solid string hashing algorithm.
@@ -9,7 +20,7 @@ class Hashing
     *
     * @param {string}   str - String to hash.
     *
-    * @param {number}   seed - A seed value altering the hash.
+    * @param {number}   [seed=0] - A seed value altering the hash.
     *
     * @returns {number} Hash code.
     */
@@ -69,6 +80,14 @@ class Hashing
 class Strings
 {
    /**
+    * @hideconstructor
+    */
+   constructor()
+   {
+      throw new Error('Strings constructor: This is a static class and should not be constructed.');
+   }
+
+   /**
     * Escape a given input string prefacing special characters with backslashes for use in a regular expression.
     *
     * @param {string}   string - An un-escaped input string.
@@ -97,22 +116,63 @@ class Strings
 
 /**
  * Provides timing related higher-order functions.
+ *
+ * This class should not be constructed as it only contains static methods.
  */
 class Timing
 {
    /**
-    * Wraps a callback in a debounced timeout.
+    * @hideconstructor
+    */
+   constructor()
+   {
+      throw new Error('Timing constructor: This is a static class and should not be constructed.');
+   }
+
+   /**
+    * Wraps a callback in a debounced timeout. Delay execution of the callback function until the function has not been
+    * called for the given delay in milliseconds.
     *
-    * Delay execution of the callback function until the function has not been called for the given delay in milliseconds.
+    * @template Args
     *
-    * @param {Function} callback - A function to execute once the debounced threshold has been passed.
+    * @param {(...args: Args[]) => void} callback - A function to execute once the debounced threshold has been passed.
     *
     * @param {number}   delay - An amount of time in milliseconds to delay.
     *
-    * @returns {Function} A wrapped function that can be called to debounce execution.
+    * @returns {(...args: Args[]) => void} A wrapped function that can be called to debounce execution.
+    *
+    * @example
+    * /**
+    *  * Debounce the update invocation by 500ms.
+    *  *\/
+    * const updateDebounced = Timing.debounce(() => doc.update(), 500);
+    *
+    * // Use the function like:
+    * updateDebounced();
+    *
+    * @example
+    * /**
+    *  * Debounce the update invocation by 500ms.
+    *  *
+    *  * \@param {string} value - A value to update.
+    *  *\/
+    * const updateDebounced = Timing.debounce((value) => doc.update(value), 500);
+    *
+    * // Use the function like:
+    * updateDebounced('new value');
     */
    static debounce(callback, delay)
    {
+      if (typeof callback !== 'function')
+      {
+         throw new TypeError(`'callback' must be a function.`);
+      }
+
+      if (!Number.isInteger(delay) || delay < 0)
+      {
+         throw new TypeError(`'delay' must be a positive integer representing milliseconds.`);
+      }
+
       let timeoutId;
 
       return function(...args)
@@ -123,23 +183,43 @@ class Timing
    }
 
    /**
+    * Creates a double click event handler that distinguishes between single and double clicks. Calls the `single`
+    * callback on a single click and the `double` callback on a double click. The default double click delay to invoke
+    * the `double` callback is 400 milliseconds.
+    *
     * @param {object}   opts - Optional parameters.
     *
-    * @param {Function} opts.single - Single click callback.
+    * @param {(event: Event) => void} [opts.single] - Single click callback.
     *
-    * @param {Function} opts.double - Double click callback.
+    * @param {(event: Event) => void} [opts.double] - Double click callback.
     *
     * @param {number}   [opts.delay=400] - Double click delay.
     *
     * @returns {(event: Event) => void} The gated double-click handler.
+    *
+    * @example
+    * // Given a button element.
+    * button.addEventListener('click', Timing.doubleClick({
+    *    single: (event) => console.log('Single click: ', event),
+    *    double: (event) => console.log('Double click: ', event)
+    * });
     */
    static doubleClick({ single, double, delay = 400 })
    {
+      if (single !== void 0 && typeof single !== 'function') { throw new TypeError(`'single' must be a function.`); }
+      if (double !== void 0 && typeof double !== 'function') { throw new TypeError(`'double' must be a function.`); }
+
+      if (!Number.isInteger(delay) || delay < 0)
+      {
+         throw new TypeError(`'delay' must be a positive integer representing milliseconds.`);
+      }
+
       let clicks = 0;
       let timeoutId;
 
       return (event) =>
       {
+         globalThis.clearTimeout(timeoutId);
          clicks++;
 
          if (clicks === 1)
@@ -152,7 +232,6 @@ class Timing
          }
          else
          {
-            globalThis.clearTimeout(timeoutId);
             if (typeof double === 'function') { double(event); }
             clicks = 0;
          }
