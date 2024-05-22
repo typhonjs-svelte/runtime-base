@@ -546,7 +546,7 @@ const rollupConfigs = [
          plugins: [
             importsExternal(),
             resolve(resolveOptions),
-            generateDTS.plugin(dtsPluginOptions)
+            generateDTS.plugin({ ...dtsPluginOptions, tsFileWalk: false })
          ]
       },
       output: {
