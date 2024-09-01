@@ -1,17 +1,23 @@
-const EPSILON = 0.000001;
+// glMatrix - v4.0.0-beta.3
+/**
+ * Provides common resources and constants shared across `gl-matrix`.
+ *
+ * @packageDocumentation
+ */
+/**
+ * A small constant used to determine the acceptable error margin in floating-point calculations.
+ */
+const GLM_EPSILON = 0.000001;
 
-const IDENTITY_2X2 = new Float32Array([
-    1, 0,
-    0, 1
-]);
+// glMatrix - v4.0.0-beta.3
 /**
  * A 2x2 Matrix
  */
 class Mat2 extends Float32Array {
-    /**
-     * The number of bytes in a {@link Mat2}.
-     */
-    static BYTE_LENGTH = 4 * Float32Array.BYTES_PER_ELEMENT;
+    static #IDENTITY_2X2 = new Float32Array([
+        1, 0,
+        0, 1
+    ]);
     /**
      * Create a {@link Mat2}.
      */
@@ -36,7 +42,7 @@ class Mat2 extends Float32Array {
                 }
                 break;
             default:
-                super(IDENTITY_2X2);
+                super(Mat2.#IDENTITY_2X2);
                 break;
         }
     }
@@ -70,7 +76,7 @@ class Mat2 extends Float32Array {
      * @returns `this`
      */
     identity() {
-        this.set(IDENTITY_2X2);
+        this.set(Mat2.#IDENTITY_2X2);
         return this;
     }
     /**
@@ -127,9 +133,18 @@ class Mat2 extends Float32Array {
     rotate(rad) {
         return Mat2.rotate(this, this, rad);
     }
-    //================
+    //===================
+    // Static accessors
+    //===================
+    /**
+     * @returns The number of bytes in a {@link Mat2}.
+     */
+    static get BYTE_LENGTH() {
+        return 4 * Float32Array.BYTES_PER_ELEMENT;
+    }
+    //===================
     // Static methods
-    //================
+    //===================
     /**
      * Creates a new, identity {@link Mat2}
      * @category Static
@@ -233,7 +248,7 @@ class Mat2 extends Float32Array {
      *
      * @param out - the receiving matrix
      * @param a - the source matrix
-     * @returns `out`
+     * @returns `out` or `null` if the matrix is not invertable
      */
     static invert(out, a) {
         const a0 = a[0];
@@ -519,10 +534,10 @@ class Mat2 extends Float32Array {
         const b1 = b[1];
         const b2 = b[2];
         const b3 = b[3];
-        return (Math.abs(a0 - b0) <= EPSILON * Math.max(1, Math.abs(a0), Math.abs(b0)) &&
-            Math.abs(a1 - b1) <= EPSILON * Math.max(1, Math.abs(a1), Math.abs(b1)) &&
-            Math.abs(a2 - b2) <= EPSILON * Math.max(1, Math.abs(a2), Math.abs(b2)) &&
-            Math.abs(a3 - b3) <= EPSILON * Math.max(1, Math.abs(a3), Math.abs(b3)));
+        return (Math.abs(a0 - b0) <= GLM_EPSILON * Math.max(1, Math.abs(a0), Math.abs(b0)) &&
+            Math.abs(a1 - b1) <= GLM_EPSILON * Math.max(1, Math.abs(a1), Math.abs(b1)) &&
+            Math.abs(a2 - b2) <= GLM_EPSILON * Math.max(1, Math.abs(a2), Math.abs(b2)) &&
+            Math.abs(a3 - b3) <= GLM_EPSILON * Math.max(1, Math.abs(a3), Math.abs(b3)));
     }
     /**
      * Returns a string representation of a {@link Mat2}
@@ -541,19 +556,16 @@ Mat2.prototype.mul = Mat2.prototype.multiply;
 Mat2.mul = Mat2.multiply;
 Mat2.sub = Mat2.subtract;
 
-const IDENTITY_2X3 = new Float32Array([
-    1, 0,
-    0, 1,
-    0, 0,
-]);
+// glMatrix - v4.0.0-beta.3
 /**
  * A 2x3 Matrix
  */
 class Mat2d extends Float32Array {
-    /**
-     * The number of bytes in a {@link Mat2d}.
-     */
-    static BYTE_LENGTH = 6 * Float32Array.BYTES_PER_ELEMENT;
+    static #IDENTITY_2X3 = new Float32Array([
+        1, 0,
+        0, 1,
+        0, 0,
+    ]);
     /**
      * Create a {@link Mat2}.
      */
@@ -579,7 +591,7 @@ class Mat2d extends Float32Array {
                 }
                 break;
             default:
-                super(IDENTITY_2X3);
+                super(Mat2d.#IDENTITY_2X3);
                 break;
         }
     }
@@ -613,7 +625,7 @@ class Mat2d extends Float32Array {
      * @returns `this`
      */
     identity() {
-        this.set(IDENTITY_2X3);
+        this.set(Mat2d.#IDENTITY_2X3);
         return this;
     }
     /**
@@ -662,9 +674,18 @@ class Mat2d extends Float32Array {
     scale(v) {
         return Mat2d.scale(this, this, v);
     }
-    //================
+    //===================
+    // Static accessors
+    //===================
+    /**
+     * @returns The number of bytes in a {@link Mat2d}.
+     */
+    static get BYTE_LENGTH() {
+        return 6 * Float32Array.BYTES_PER_ELEMENT;
+    }
+    //===================
     // Static methods
-    //================
+    //===================
     /**
      * Creates a new, identity {@link Mat2d}
      * @category Static
@@ -750,7 +771,7 @@ class Mat2d extends Float32Array {
      *
      * @param out - the receiving matrix
      * @param a - the source matrix
-     * @returns `out`
+     * @returns `out` or `null` if the matrix is not invertable
      */
     static invert(out, a) {
         const aa = a[0];
@@ -1086,12 +1107,12 @@ class Mat2d extends Float32Array {
         const b3 = b[3];
         const b4 = b[4];
         const b5 = b[5];
-        return (Math.abs(a0 - b0) <= EPSILON * Math.max(1, Math.abs(a0), Math.abs(b0)) &&
-            Math.abs(a1 - b1) <= EPSILON * Math.max(1, Math.abs(a1), Math.abs(b1)) &&
-            Math.abs(a2 - b2) <= EPSILON * Math.max(1, Math.abs(a2), Math.abs(b2)) &&
-            Math.abs(a3 - b3) <= EPSILON * Math.max(1, Math.abs(a3), Math.abs(b3)) &&
-            Math.abs(a4 - b4) <= EPSILON * Math.max(1, Math.abs(a4), Math.abs(b4)) &&
-            Math.abs(a5 - b5) <= EPSILON * Math.max(1, Math.abs(a5), Math.abs(b5)));
+        return (Math.abs(a0 - b0) <= GLM_EPSILON * Math.max(1, Math.abs(a0), Math.abs(b0)) &&
+            Math.abs(a1 - b1) <= GLM_EPSILON * Math.max(1, Math.abs(a1), Math.abs(b1)) &&
+            Math.abs(a2 - b2) <= GLM_EPSILON * Math.max(1, Math.abs(a2), Math.abs(b2)) &&
+            Math.abs(a3 - b3) <= GLM_EPSILON * Math.max(1, Math.abs(a3), Math.abs(b3)) &&
+            Math.abs(a4 - b4) <= GLM_EPSILON * Math.max(1, Math.abs(a4), Math.abs(b4)) &&
+            Math.abs(a5 - b5) <= GLM_EPSILON * Math.max(1, Math.abs(a5), Math.abs(b5)));
     }
     /**
      * Returns a string representation of a {@link Mat2d}
@@ -1108,19 +1129,16 @@ class Mat2d extends Float32Array {
 Mat2d.mul = Mat2d.multiply;
 Mat2d.sub = Mat2d.subtract;
 
-const IDENTITY_3X3 = new Float32Array([
-    1, 0, 0,
-    0, 1, 0,
-    0, 0, 1,
-]);
+// glMatrix - v4.0.0-beta.3
 /**
  * A 3x3 Matrix
  */
 class Mat3 extends Float32Array {
-    /**
-     * The number of bytes in a {@link Mat3}.
-     */
-    static BYTE_LENGTH = 9 * Float32Array.BYTES_PER_ELEMENT;
+    static #IDENTITY_3X3 = new Float32Array([
+        1, 0, 0,
+        0, 1, 0,
+        0, 0, 1,
+    ]);
     /**
      * Create a {@link Mat3}.
      */
@@ -1146,7 +1164,7 @@ class Mat3 extends Float32Array {
                 }
                 break;
             default:
-                super(IDENTITY_3X3);
+                super(Mat3.#IDENTITY_3X3);
                 break;
         }
     }
@@ -1180,7 +1198,7 @@ class Mat3 extends Float32Array {
      * @returns `this`
      */
     identity() {
-        this.set(IDENTITY_3X3);
+        this.set(Mat3.#IDENTITY_3X3);
         return this;
     }
     /**
@@ -1247,9 +1265,18 @@ class Mat3 extends Float32Array {
     scale(v) {
         return Mat3.scale(this, this, v);
     }
-    //================
+    //===================
+    // Static accessors
+    //===================
+    /**
+     * @returns The number of bytes in a {@link Mat3}.
+     */
+    static get BYTE_LENGTH() {
+        return 9 * Float32Array.BYTES_PER_ELEMENT;
+    }
+    //===================
     // Static methods
-    //================
+    //===================
     /**
      * Creates a new, identity {@link Mat3}
      * @category Static
@@ -1376,7 +1403,7 @@ class Mat3 extends Float32Array {
      *
      * @param out - the receiving matrix
      * @param a - the source matrix
-     * @returns `out`
+     * @returns `out` or `null` if the matrix is not invertable
      */
     static invert(out, a) {
         const a00 = a[0], a01 = a[1], a02 = a[2];
@@ -1787,7 +1814,7 @@ class Mat3 extends Float32Array {
      *
      * @param {mat3} out mat3 receiving operation result
      * @param {ReadonlyMat4} a Mat4 to derive the normal matrix from
-     * @returns `out`
+     * @returns `out` or `null` if the matrix is not invertable
      */
     static normalFromMat4(out, a) {
         const a00 = a[0];
@@ -1833,6 +1860,38 @@ class Mat3 extends Float32Array {
         out[6] = (a31 * b05 - a32 * b04 + a33 * b03) * det;
         out[7] = (a32 * b02 - a30 * b05 - a33 * b01) * det;
         out[8] = (a30 * b04 - a31 * b02 + a33 * b00) * det;
+        return out;
+    }
+    /**
+     * Calculates a {@link Mat3} normal matrix (transpose inverse) from a {@link Mat4}
+     * This version omits the calculation of the constant factor (1/determinant), so
+     * any normals transformed with it will need to be renormalized.
+     * From https://stackoverflow.com/a/27616419/25968
+     * @category Static
+     *
+     * @param out - Matrix receiving operation result
+     * @param a - Mat4 to derive the normal matrix from
+     * @returns `out`
+     */
+    static normalFromMat4Fast(out, a) {
+        const ax = a[0];
+        const ay = a[1];
+        const az = a[2];
+        const bx = a[4];
+        const by = a[5];
+        const bz = a[6];
+        const cx = a[8];
+        const cy = a[9];
+        const cz = a[10];
+        out[0] = by * cz - cz * cy;
+        out[1] = bz * cx - cx * cz;
+        out[2] = bx * cy - cy * cx;
+        out[3] = cy * az - cz * ay;
+        out[4] = cz * ax - cx * az;
+        out[5] = cx * ay - cy * ax;
+        out[6] = ay * bz - az * by;
+        out[7] = az * bx - ax * bz;
+        out[8] = ax * by - ay * bx;
         return out;
     }
     /**
@@ -1963,15 +2022,15 @@ class Mat3 extends Float32Array {
         const b6 = b[6];
         const b7 = b[7];
         const b8 = b[8];
-        return (Math.abs(a0 - b0) <= EPSILON * Math.max(1, Math.abs(a0), Math.abs(b0)) &&
-            Math.abs(a1 - b1) <= EPSILON * Math.max(1, Math.abs(a1), Math.abs(b1)) &&
-            Math.abs(a2 - b2) <= EPSILON * Math.max(1, Math.abs(a2), Math.abs(b2)) &&
-            Math.abs(a3 - b3) <= EPSILON * Math.max(1, Math.abs(a3), Math.abs(b3)) &&
-            Math.abs(a4 - b4) <= EPSILON * Math.max(1, Math.abs(a4), Math.abs(b4)) &&
-            Math.abs(a5 - b5) <= EPSILON * Math.max(1, Math.abs(a5), Math.abs(b5)) &&
-            Math.abs(a6 - b6) <= EPSILON * Math.max(1, Math.abs(a6), Math.abs(b6)) &&
-            Math.abs(a7 - b7) <= EPSILON * Math.max(1, Math.abs(a7), Math.abs(b7)) &&
-            Math.abs(a8 - b8) <= EPSILON * Math.max(1, Math.abs(a8), Math.abs(b8)));
+        return (Math.abs(a0 - b0) <= GLM_EPSILON * Math.max(1, Math.abs(a0), Math.abs(b0)) &&
+            Math.abs(a1 - b1) <= GLM_EPSILON * Math.max(1, Math.abs(a1), Math.abs(b1)) &&
+            Math.abs(a2 - b2) <= GLM_EPSILON * Math.max(1, Math.abs(a2), Math.abs(b2)) &&
+            Math.abs(a3 - b3) <= GLM_EPSILON * Math.max(1, Math.abs(a3), Math.abs(b3)) &&
+            Math.abs(a4 - b4) <= GLM_EPSILON * Math.max(1, Math.abs(a4), Math.abs(b4)) &&
+            Math.abs(a5 - b5) <= GLM_EPSILON * Math.max(1, Math.abs(a5), Math.abs(b5)) &&
+            Math.abs(a6 - b6) <= GLM_EPSILON * Math.max(1, Math.abs(a6), Math.abs(b6)) &&
+            Math.abs(a7 - b7) <= GLM_EPSILON * Math.max(1, Math.abs(a7), Math.abs(b7)) &&
+            Math.abs(a8 - b8) <= GLM_EPSILON * Math.max(1, Math.abs(a8), Math.abs(b8)));
     }
     /**
      * Returns a string representation of a {@link Mat3}
@@ -1990,20 +2049,22 @@ Mat3.prototype.mul = Mat3.prototype.multiply;
 Mat3.mul = Mat3.multiply;
 Mat3.sub = Mat3.subtract;
 
-const IDENTITY_4X4 = new Float32Array([
-    1, 0, 0, 0,
-    0, 1, 0, 0,
-    0, 0, 1, 0,
-    0, 0, 0, 1,
-]);
+// glMatrix - v4.0.0-beta.3
 /**
  * A 4x4 Matrix
  */
 class Mat4 extends Float32Array {
+    static #IDENTITY_4X4 = new Float32Array([
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1,
+    ]);
     /**
-     * The number of bytes in a {@link Mat4}.
+     * Temporary variable to prevent repeated allocations in the algorithms within Mat4.
+     * These are declared as TypedArrays to aid in tree-shaking.
      */
-    static BYTE_LENGTH = 16 * Float32Array.BYTES_PER_ELEMENT;
+    static #TMP_VEC3 = new Float32Array(3);
     /**
      * Create a {@link Mat4}.
      */
@@ -2030,7 +2091,7 @@ class Mat4 extends Float32Array {
                 }
                 break;
             default:
-                super(IDENTITY_4X4);
+                super(Mat4.#IDENTITY_4X4);
                 break;
         }
     }
@@ -2064,7 +2125,7 @@ class Mat4 extends Float32Array {
      * @returns `this`
      */
     identity() {
-        this.set(IDENTITY_4X4);
+        this.set(Mat4.#IDENTITY_4X4);
         return this;
     }
     /**
@@ -2228,9 +2289,18 @@ class Mat4 extends Float32Array {
     orthoZO(left, right, bottom, top, near, far) {
         return Mat4.orthoZO(this, left, right, bottom, top, near, far);
     }
-    //================
+    //===================
+    // Static accessors
+    //===================
+    /**
+     * @returns The number of bytes in a {@link Mat4}.
+     */
+    static get BYTE_LENGTH() {
+        return 16 * Float32Array.BYTES_PER_ELEMENT;
+    }
+    //===================
     // Static methods
-    //================
+    //===================
     /**
      * Creates a new, identity {@link Mat4}
      * @category Static
@@ -2393,7 +2463,7 @@ class Mat4 extends Float32Array {
      *
      * @param out - the receiving matrix
      * @param a - the source matrix
-     * @returns `out`
+     * @returns `out` or `null` if the matrix is not invertable
      */
     static invert(out, a) {
         const a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3];
@@ -2660,14 +2730,14 @@ class Mat4 extends Float32Array {
      * @param a - the matrix to rotate
      * @param rad - the angle to rotate the matrix by
      * @param axis - the axis to rotate around
-     * @returns `out`
+     * @returns `out` or `null` if axis has a length of 0
      */
     static rotate(out, a, rad, axis) {
         let x = axis[0];
         let y = axis[1];
         let z = axis[2];
         let len = Math.sqrt(x * x + y * y + z * z);
-        if (len < EPSILON) {
+        if (len < GLM_EPSILON) {
             return null;
         }
         len = 1 / len;
@@ -2920,14 +2990,14 @@ class Mat4 extends Float32Array {
      * @param out - {@link Mat4} receiving operation result
      * @param rad - the angle to rotate the matrix by
      * @param axis - the axis to rotate around
-     * @returns `out`
+     * @returns `out` or `null` if `axis` has a length of 0
      */
     static fromRotation(out, rad, axis) {
         let x = axis[0];
         let y = axis[1];
         let z = axis[2];
         let len = Math.sqrt(x * x + y * y + z * z);
-        if (len < EPSILON) {
+        if (len < GLM_EPSILON) {
             return null;
         }
         len = 1 / len;
@@ -3119,7 +3189,6 @@ class Mat4 extends Float32Array {
      * @returns `out`
      */
     static fromQuat2(out, a) {
-        let translation = [0, 0, 0];
         const bx = -a[0];
         const by = -a[1];
         const bz = -a[2];
@@ -3131,16 +3200,118 @@ class Mat4 extends Float32Array {
         let magnitude = bx * bx + by * by + bz * bz + bw * bw;
         //Only scale if it makes sense
         if (magnitude > 0) {
-            translation[0] = ((ax * bw + aw * bx + ay * bz - az * by) * 2) / magnitude;
-            translation[1] = ((ay * bw + aw * by + az * bx - ax * bz) * 2) / magnitude;
-            translation[2] = ((az * bw + aw * bz + ax * by - ay * bx) * 2) / magnitude;
+            Mat4.#TMP_VEC3[0] = ((ax * bw + aw * bx + ay * bz - az * by) * 2) / magnitude;
+            Mat4.#TMP_VEC3[1] = ((ay * bw + aw * by + az * bx - ax * bz) * 2) / magnitude;
+            Mat4.#TMP_VEC3[2] = ((az * bw + aw * bz + ax * by - ay * bx) * 2) / magnitude;
         }
         else {
-            translation[0] = (ax * bw + aw * bx + ay * bz - az * by) * 2;
-            translation[1] = (ay * bw + aw * by + az * bx - ax * bz) * 2;
-            translation[2] = (az * bw + aw * bz + ax * by - ay * bx) * 2;
+            Mat4.#TMP_VEC3[0] = (ax * bw + aw * bx + ay * bz - az * by) * 2;
+            Mat4.#TMP_VEC3[1] = (ay * bw + aw * by + az * bx - ax * bz) * 2;
+            Mat4.#TMP_VEC3[2] = (az * bw + aw * bz + ax * by - ay * bx) * 2;
         }
-        Mat4.fromRotationTranslation(out, a, translation);
+        Mat4.fromRotationTranslation(out, a, Mat4.#TMP_VEC3);
+        return out;
+    }
+    /**
+     * Calculates a {@link Mat4} normal matrix (transpose inverse) from a {@link Mat4}
+     * @category Static
+     *
+     * @param out - Matrix receiving operation result
+     * @param a - Mat4 to derive the normal matrix from
+     * @returns `out` or `null` if the matrix is not invertable
+     */
+    static normalFromMat4(out, a) {
+        const a00 = a[0];
+        const a01 = a[1];
+        const a02 = a[2];
+        const a03 = a[3];
+        const a10 = a[4];
+        const a11 = a[5];
+        const a12 = a[6];
+        const a13 = a[7];
+        const a20 = a[8];
+        const a21 = a[9];
+        const a22 = a[10];
+        const a23 = a[11];
+        const a30 = a[12];
+        const a31 = a[13];
+        const a32 = a[14];
+        const a33 = a[15];
+        const b00 = a00 * a11 - a01 * a10;
+        const b01 = a00 * a12 - a02 * a10;
+        const b02 = a00 * a13 - a03 * a10;
+        const b03 = a01 * a12 - a02 * a11;
+        const b04 = a01 * a13 - a03 * a11;
+        const b05 = a02 * a13 - a03 * a12;
+        const b06 = a20 * a31 - a21 * a30;
+        const b07 = a20 * a32 - a22 * a30;
+        const b08 = a20 * a33 - a23 * a30;
+        const b09 = a21 * a32 - a22 * a31;
+        const b10 = a21 * a33 - a23 * a31;
+        const b11 = a22 * a33 - a23 * a32;
+        // Calculate the determinant
+        let det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
+        if (!det) {
+            return null;
+        }
+        det = 1.0 / det;
+        out[0] = (a11 * b11 - a12 * b10 + a13 * b09) * det;
+        out[1] = (a12 * b08 - a10 * b11 - a13 * b07) * det;
+        out[2] = (a10 * b10 - a11 * b08 + a13 * b06) * det;
+        out[3] = 0;
+        out[4] = (a02 * b10 - a01 * b11 - a03 * b09) * det;
+        out[5] = (a00 * b11 - a02 * b08 + a03 * b07) * det;
+        out[6] = (a01 * b08 - a00 * b10 - a03 * b06) * det;
+        out[7] = 0;
+        out[8] = (a31 * b05 - a32 * b04 + a33 * b03) * det;
+        out[9] = (a32 * b02 - a30 * b05 - a33 * b01) * det;
+        out[10] = (a30 * b04 - a31 * b02 + a33 * b00) * det;
+        out[11] = 0;
+        // No translation
+        out[12] = 0;
+        out[13] = 0;
+        out[14] = 0;
+        out[15] = 1;
+        return out;
+    }
+    /**
+     * Calculates a {@link Mat4} normal matrix (transpose inverse) from a {@link Mat4}
+     * This version omits the calculation of the constant factor (1/determinant), so
+     * any normals transformed with it will need to be renormalized.
+     * From https://stackoverflow.com/a/27616419/25968
+     * @category Static
+     *
+     * @param out - Matrix receiving operation result
+     * @param a - Mat4 to derive the normal matrix from
+     * @returns `out`
+     */
+    static normalFromMat4Fast(out, a) {
+        const ax = a[0];
+        const ay = a[1];
+        const az = a[2];
+        const bx = a[4];
+        const by = a[5];
+        const bz = a[6];
+        const cx = a[8];
+        const cy = a[9];
+        const cz = a[10];
+        out[0] = by * cz - cz * cy;
+        out[1] = bz * cx - cx * cz;
+        out[2] = bx * cy - cy * cx;
+        out[3] = 0;
+        out[4] = cy * az - cz * ay;
+        out[5] = cz * ax - cx * az;
+        out[6] = cx * ay - cy * ax;
+        out[7] = 0;
+        out[8] = ay * bz - az * by;
+        out[9] = az * bx - ax * bz;
+        out[10] = ax * by - ay * bx;
+        out[11] = 0;
+        // No translation
+        out[12] = 0;
+        out[13] = 0;
+        out[14] = 0;
+        out[15] = 1;
         return out;
     }
     /**
@@ -3163,7 +3334,7 @@ class Mat4 extends Float32Array {
     /**
      * Returns the scaling factor component of a transformation
      * matrix. If a matrix is built with fromRotationTranslationScale
-     * with a normalized Quaternion paramter, the returned vector will be
+     * with a normalized Quaternion parameter, the returned vector will be
      * the same as the scaling vector
      * originally supplied.
      * @category Static
@@ -3199,10 +3370,10 @@ class Mat4 extends Float32Array {
      * @return `out`
      */
     static getRotation(out, mat) {
-        Mat4.getScaling(tmpVec3$1, mat);
-        const is1 = 1 / tmpVec3$1[0];
-        const is2 = 1 / tmpVec3$1[1];
-        const is3 = 1 / tmpVec3$1[2];
+        Mat4.getScaling(Mat4.#TMP_VEC3, mat);
+        const is1 = 1 / Mat4.#TMP_VEC3[0];
+        const is2 = 1 / Mat4.#TMP_VEC3[1];
+        const is3 = 1 / Mat4.#TMP_VEC3[2];
         const sm11 = mat[0] * is1;
         const sm12 = mat[1] * is2;
         const sm13 = mat[2] * is3;
@@ -3489,6 +3660,9 @@ class Mat4 extends Float32Array {
     }
     /**
      * Generates a frustum matrix with the given bounds
+     * The near/far clip planes correspond to a normalized device coordinate Z range of [-1, 1],
+     * which matches WebGL/OpenGL's clip volume.
+     * Passing null/undefined/no value for far will generate infinite projection matrix.
      * @category Static
      *
      * @param out - mat4 frustum matrix will be written into
@@ -3497,13 +3671,12 @@ class Mat4 extends Float32Array {
      * @param bottom - Bottom bound of the frustum
      * @param top - Top bound of the frustum
      * @param near - Near bound of the frustum
-     * @param far - Far bound of the frustum
+     * @param far -  Far bound of the frustum, can be null or Infinity
      * @returns `out`
      */
-    static frustum(out, left, right, bottom, top, near, far) {
+    static frustumNO(out, left, right, bottom, top, near, far = Infinity) {
         const rl = 1 / (right - left);
         const tb = 1 / (top - bottom);
-        const nf = 1 / (near - far);
         out[0] = near * 2 * rl;
         out[1] = 0;
         out[2] = 0;
@@ -3514,12 +3687,69 @@ class Mat4 extends Float32Array {
         out[7] = 0;
         out[8] = (right + left) * rl;
         out[9] = (top + bottom) * tb;
-        out[10] = (far + near) * nf;
         out[11] = -1;
         out[12] = 0;
         out[13] = 0;
-        out[14] = far * near * 2 * nf;
         out[15] = 0;
+        if (far != null && far !== Infinity) {
+            const nf = 1 / (near - far);
+            out[10] = (far + near) * nf;
+            out[14] = 2 * far * near * nf;
+        }
+        else {
+            out[10] = -1;
+            out[14] = -2 * near;
+        }
+        return out;
+    }
+    /**
+     * Alias for {@link Mat4.frustumNO}
+     * @category Static
+     * @deprecated Use {@link Mat4.frustumNO} or {@link Mat4.frustumZO} explicitly
+     */
+    static frustum(out, left, right, bottom, top, near, far = Infinity) { return out; }
+    /**
+     * Generates a frustum matrix with the given bounds
+     * The near/far clip planes correspond to a normalized device coordinate Z range of [0, 1],
+     * which matches WebGPU/Vulkan/DirectX/Metal's clip volume.
+     * Passing null/undefined/no value for far will generate infinite projection matrix.
+     * @category Static
+     *
+     * @param out - mat4 frustum matrix will be written into
+     * @param left - Left bound of the frustum
+     * @param right - Right bound of the frustum
+     * @param bottom - Bottom bound of the frustum
+     * @param top - Top bound of the frustum
+     * @param near - Near bound of the frustum
+     * @param far - Far bound of the frustum, can be null or Infinity
+     * @returns `out`
+     */
+    static frustumZO(out, left, right, bottom, top, near, far = Infinity) {
+        const rl = 1 / (right - left);
+        const tb = 1 / (top - bottom);
+        out[0] = near * 2 * rl;
+        out[1] = 0;
+        out[2] = 0;
+        out[3] = 0;
+        out[4] = 0;
+        out[5] = near * 2 * tb;
+        out[6] = 0;
+        out[7] = 0;
+        out[8] = (right + left) * rl;
+        out[9] = (top + bottom) * tb;
+        out[11] = -1;
+        out[12] = 0;
+        out[13] = 0;
+        out[15] = 0;
+        if (far != null && far !== Infinity) {
+            const nf = 1 / (near - far);
+            out[10] = far * nf;
+            out[14] = far * near * nf;
+        }
+        else {
+            out[10] = -1;
+            out[14] = -near;
+        }
         return out;
     }
     /**
@@ -3536,7 +3766,7 @@ class Mat4 extends Float32Array {
      * @param far - Far bound of the frustum, can be null or Infinity
      * @returns `out`
      */
-    static perspectiveNO(out, fovy, aspect, near, far) {
+    static perspectiveNO(out, fovy, aspect, near, far = Infinity) {
         const f = 1.0 / Math.tan(fovy / 2);
         out[0] = f / aspect;
         out[1] = 0;
@@ -3568,7 +3798,7 @@ class Mat4 extends Float32Array {
      * @category Static
      * @deprecated Use {@link Mat4.perspectiveNO} or {@link Mat4.perspectiveZO} explicitly
      */
-    static perspective(out, fovy, aspect, near, far) { return out; }
+    static perspective(out, fovy, aspect, near, far = Infinity) { return out; }
     /**
      * Generates a perspective projection matrix suitable for WebGPU with the given bounds.
      * The near/far clip planes correspond to a normalized device coordinate Z range of [0, 1],
@@ -3583,7 +3813,7 @@ class Mat4 extends Float32Array {
      * @param far - Far bound of the frustum, can be null or Infinity
      * @returns `out`
      */
-    static perspectiveZO(out, fovy, aspect, near, far) {
+    static perspectiveZO(out, fovy, aspect, near, far = Infinity) {
         const f = 1.0 / Math.tan(fovy / 2);
         out[0] = f / aspect;
         out[1] = 0;
@@ -3749,9 +3979,9 @@ class Mat4 extends Float32Array {
         const centerx = center[0];
         const centery = center[1];
         const centerz = center[2];
-        if (Math.abs(eyex - centerx) < EPSILON &&
-            Math.abs(eyey - centery) < EPSILON &&
-            Math.abs(eyez - centerz) < EPSILON) {
+        if (Math.abs(eyex - centerx) < GLM_EPSILON &&
+            Math.abs(eyey - centery) < GLM_EPSILON &&
+            Math.abs(eyez - centerz) < GLM_EPSILON) {
             return Mat4.identity(out);
         }
         let z0 = eyex - centerx;
@@ -4074,22 +4304,22 @@ class Mat4 extends Float32Array {
         const b13 = b[13];
         const b14 = b[14];
         const b15 = b[15];
-        return (Math.abs(a0 - b0) <= EPSILON * Math.max(1, Math.abs(a0), Math.abs(b0)) &&
-            Math.abs(a1 - b1) <= EPSILON * Math.max(1, Math.abs(a1), Math.abs(b1)) &&
-            Math.abs(a2 - b2) <= EPSILON * Math.max(1, Math.abs(a2), Math.abs(b2)) &&
-            Math.abs(a3 - b3) <= EPSILON * Math.max(1, Math.abs(a3), Math.abs(b3)) &&
-            Math.abs(a4 - b4) <= EPSILON * Math.max(1, Math.abs(a4), Math.abs(b4)) &&
-            Math.abs(a5 - b5) <= EPSILON * Math.max(1, Math.abs(a5), Math.abs(b5)) &&
-            Math.abs(a6 - b6) <= EPSILON * Math.max(1, Math.abs(a6), Math.abs(b6)) &&
-            Math.abs(a7 - b7) <= EPSILON * Math.max(1, Math.abs(a7), Math.abs(b7)) &&
-            Math.abs(a8 - b8) <= EPSILON * Math.max(1, Math.abs(a8), Math.abs(b8)) &&
-            Math.abs(a9 - b9) <= EPSILON * Math.max(1, Math.abs(a9), Math.abs(b9)) &&
-            Math.abs(a10 - b10) <= EPSILON * Math.max(1, Math.abs(a10), Math.abs(b10)) &&
-            Math.abs(a11 - b11) <= EPSILON * Math.max(1, Math.abs(a11), Math.abs(b11)) &&
-            Math.abs(a12 - b12) <= EPSILON * Math.max(1, Math.abs(a12), Math.abs(b12)) &&
-            Math.abs(a13 - b13) <= EPSILON * Math.max(1, Math.abs(a13), Math.abs(b13)) &&
-            Math.abs(a14 - b14) <= EPSILON * Math.max(1, Math.abs(a14), Math.abs(b14)) &&
-            Math.abs(a15 - b15) <= EPSILON * Math.max(1, Math.abs(a15), Math.abs(b15)));
+        return (Math.abs(a0 - b0) <= GLM_EPSILON * Math.max(1, Math.abs(a0), Math.abs(b0)) &&
+            Math.abs(a1 - b1) <= GLM_EPSILON * Math.max(1, Math.abs(a1), Math.abs(b1)) &&
+            Math.abs(a2 - b2) <= GLM_EPSILON * Math.max(1, Math.abs(a2), Math.abs(b2)) &&
+            Math.abs(a3 - b3) <= GLM_EPSILON * Math.max(1, Math.abs(a3), Math.abs(b3)) &&
+            Math.abs(a4 - b4) <= GLM_EPSILON * Math.max(1, Math.abs(a4), Math.abs(b4)) &&
+            Math.abs(a5 - b5) <= GLM_EPSILON * Math.max(1, Math.abs(a5), Math.abs(b5)) &&
+            Math.abs(a6 - b6) <= GLM_EPSILON * Math.max(1, Math.abs(a6), Math.abs(b6)) &&
+            Math.abs(a7 - b7) <= GLM_EPSILON * Math.max(1, Math.abs(a7), Math.abs(b7)) &&
+            Math.abs(a8 - b8) <= GLM_EPSILON * Math.max(1, Math.abs(a8), Math.abs(b8)) &&
+            Math.abs(a9 - b9) <= GLM_EPSILON * Math.max(1, Math.abs(a9), Math.abs(b9)) &&
+            Math.abs(a10 - b10) <= GLM_EPSILON * Math.max(1, Math.abs(a10), Math.abs(b10)) &&
+            Math.abs(a11 - b11) <= GLM_EPSILON * Math.max(1, Math.abs(a11), Math.abs(b11)) &&
+            Math.abs(a12 - b12) <= GLM_EPSILON * Math.max(1, Math.abs(a12), Math.abs(b12)) &&
+            Math.abs(a13 - b13) <= GLM_EPSILON * Math.max(1, Math.abs(a13), Math.abs(b13)) &&
+            Math.abs(a14 - b14) <= GLM_EPSILON * Math.max(1, Math.abs(a14), Math.abs(b14)) &&
+            Math.abs(a15 - b15) <= GLM_EPSILON * Math.max(1, Math.abs(a15), Math.abs(b15)));
     }
     /**
      * Returns a string representation of a {@link Mat4}
@@ -4102,27 +4332,23 @@ class Mat4 extends Float32Array {
         return `Mat4(${a.join(', ')})`;
     }
 }
-// Temporary variables to prevent repeated allocations in the algorithms above.
-const tmpVec3$1 = [0, 0, 0];
 // Instance method alias assignments
 Mat4.prototype.mul = Mat4.prototype.multiply;
 // Static method alias assignments
 Mat4.sub = Mat4.subtract;
 Mat4.mul = Mat4.multiply;
+Mat4.frustum = Mat4.frustumNO;
 Mat4.perspective = Mat4.perspectiveNO;
 Mat4.ortho = Mat4.orthoNO;
 
+// glMatrix - v4.0.0-beta.3
 /**
  * 3 Dimensional Vector
  */
 class Vec3 extends Float32Array {
     /**
-    * The number of bytes in a {@link Vec3}.
-    */
-    static BYTE_LENGTH = 3 * Float32Array.BYTES_PER_ELEMENT;
-    /**
-    * Create a {@link Vec3}.
-    */
+     * Create a {@link Vec3}.
+     */
     constructor(...values) {
         switch (values.length) {
             case 3:
@@ -4194,7 +4420,7 @@ class Vec3 extends Float32Array {
      * Equivalent to `Vec3.magnitude(this);`
      *
      * Magnitude is used because the `length` attribute is already defined by
-     * `Float32Array` to mean the number of elements in the array.
+     * TypedArrays to mean the number of elements in the array.
      */
     get magnitude() {
         const x = this[0];
@@ -4384,6 +4610,18 @@ class Vec3 extends Float32Array {
         return this;
     }
     /**
+     * Sets each component of `this` to it's absolute value.
+     * Equivalent to `Vec3.abs(this, this);`
+     *
+     * @returns `this`
+     */
+    abs() {
+        this[0] = Math.abs(this[0]);
+        this[1] = Math.abs(this[1]);
+        this[2] = Math.abs(this[2]);
+        return this;
+    }
+    /**
      * Calculates the dot product of this and another {@link Vec3}.
      * Equivalent to `Vec3.dot(this, b);`
      *
@@ -4402,9 +4640,18 @@ class Vec3 extends Float32Array {
     normalize() {
         return Vec3.normalize(this, this);
     }
-    //================
+    //===================
+    // Static accessors
+    //===================
+    /**
+     * @returns The number of bytes in a {@link Vec3}.
+     */
+    static get BYTE_LENGTH() {
+        return 3 * Float32Array.BYTES_PER_ELEMENT;
+    }
+    //===================
     // Static methods
-    //================
+    //===================
     /**
      * Creates a new, empty vec3
      * @category Static
@@ -4759,6 +5006,20 @@ class Vec3 extends Float32Array {
         out[0] = 1.0 / a[0];
         out[1] = 1.0 / a[1];
         out[2] = 1.0 / a[2];
+        return out;
+    }
+    /**
+     * Returns the absolute value of the components of a {@link Vec3}
+     * @category Static
+     *
+     * @param out - The receiving vector
+     * @param a - Vector to compute the absolute values of
+     * @returns `out`
+     */
+    static abs(out, a) {
+        out[0] = Math.abs(a[0]);
+        out[1] = Math.abs(a[1]);
+        out[2] = Math.abs(a[2]);
         return out;
     }
     /**
@@ -5117,9 +5378,9 @@ class Vec3 extends Float32Array {
         const b0 = b[0];
         const b1 = b[1];
         const b2 = b[2];
-        return (Math.abs(a0 - b0) <= EPSILON * Math.max(1.0, Math.abs(a0), Math.abs(b0)) &&
-            Math.abs(a1 - b1) <= EPSILON * Math.max(1.0, Math.abs(a1), Math.abs(b1)) &&
-            Math.abs(a2 - b2) <= EPSILON * Math.max(1.0, Math.abs(a2), Math.abs(b2)));
+        return (Math.abs(a0 - b0) <= GLM_EPSILON * Math.max(1.0, Math.abs(a0), Math.abs(b0)) &&
+            Math.abs(a1 - b1) <= GLM_EPSILON * Math.max(1.0, Math.abs(a1), Math.abs(b1)) &&
+            Math.abs(a2 - b2) <= GLM_EPSILON * Math.max(1.0, Math.abs(a2), Math.abs(b2)));
     }
 }
 // Instance method alias assignments
@@ -5139,14 +5400,11 @@ Vec3.mag = Vec3.magnitude;
 Vec3.length = Vec3.magnitude;
 Vec3.len = Vec3.magnitude;
 
+// glMatrix - v4.0.0-beta.3
 /**
  * 4 Dimensional Vector
  */
 class Vec4 extends Float32Array {
-    /**
-     * The number of bytes in a {@link Vec4}.
-     */
-    static BYTE_LENGTH = 4 * Float32Array.BYTES_PER_ELEMENT;
     /**
      * Create a {@link Vec4}.
      */
@@ -5233,7 +5491,7 @@ class Vec4 extends Float32Array {
      * Equivalent to `Vec4.magnitude(this);`
      *
      * Magnitude is used because the `length` attribute is already defined by
-     * `Float32Array` to mean the number of elements in the array.
+     * TypedArrays to mean the number of elements in the array.
      */
     get magnitude() {
         const x = this[0];
@@ -5418,6 +5676,19 @@ class Vec4 extends Float32Array {
         return this;
     }
     /**
+     * Sets each component of `this` to it's absolute value.
+     * Equivalent to `Vec4.abs(this, this);`
+     *
+     * @returns `this`
+     */
+    abs() {
+        this[0] = Math.abs(this[0]);
+        this[1] = Math.abs(this[1]);
+        this[2] = Math.abs(this[2]);
+        this[3] = Math.abs(this[3]);
+        return this;
+    }
+    /**
      * Calculates the dot product of this and another {@link Vec4}.
      * Equivalent to `Vec4.dot(this, b);`
      *
@@ -5435,6 +5706,15 @@ class Vec4 extends Float32Array {
      */
     normalize() {
         return Vec4.normalize(this, this);
+    }
+    //===================
+    // Static accessors
+    //===================
+    /**
+     * @returns The number of bytes in a {@link Vec4}.
+     */
+    static get BYTE_LENGTH() {
+        return 4 * Float32Array.BYTES_PER_ELEMENT;
     }
     //===================
     // Static methods
@@ -5815,6 +6095,21 @@ class Vec4 extends Float32Array {
         return out;
     }
     /**
+     * Returns the absolute value of the components of a {@link Vec4}
+     * @category Static
+     *
+     * @param out - The receiving vector
+     * @param a - Vector to compute the absolute values of
+     * @returns `out`
+     */
+    static abs(out, a) {
+        out[0] = Math.abs(a[0]);
+        out[1] = Math.abs(a[1]);
+        out[2] = Math.abs(a[2]);
+        out[3] = Math.abs(a[3]);
+        return out;
+    }
+    /**
      * Normalize a {@link Vec4}
      * @category Static
      *
@@ -6031,10 +6326,10 @@ class Vec4 extends Float32Array {
         const b1 = b[1];
         const b2 = b[2];
         const b3 = b[3];
-        return (Math.abs(a0 - b0) <= EPSILON * Math.max(1.0, Math.abs(a0), Math.abs(b0)) &&
-            Math.abs(a1 - b1) <= EPSILON * Math.max(1.0, Math.abs(a1), Math.abs(b1)) &&
-            Math.abs(a2 - b2) <= EPSILON * Math.max(1.0, Math.abs(a2), Math.abs(b2)) &&
-            Math.abs(a3 - b3) <= EPSILON * Math.max(1.0, Math.abs(a3), Math.abs(b3)));
+        return (Math.abs(a0 - b0) <= GLM_EPSILON * Math.max(1.0, Math.abs(a0), Math.abs(b0)) &&
+            Math.abs(a1 - b1) <= GLM_EPSILON * Math.max(1.0, Math.abs(a1), Math.abs(b1)) &&
+            Math.abs(a2 - b2) <= GLM_EPSILON * Math.max(1.0, Math.abs(a2), Math.abs(b2)) &&
+            Math.abs(a3 - b3) <= GLM_EPSILON * Math.max(1.0, Math.abs(a3), Math.abs(b3)));
     }
 }
 // Instance method alias assignments
@@ -6054,14 +6349,20 @@ Vec4.mag = Vec4.magnitude;
 Vec4.length = Vec4.magnitude;
 Vec4.len = Vec4.magnitude;
 
+// glMatrix - v4.0.0-beta.3
 /**
  * Quaternion
  */
 class Quat extends Float32Array {
-    /**
-     * The number of bytes in a {@link Quat}.
-     */
-    static BYTE_LENGTH = 4 * Float32Array.BYTES_PER_ELEMENT;
+    static #DEFAULT_ANGLE_ORDER = 'zyx';
+    // Temporary variables to prevent repeated allocations in the algorithms within Quat.
+    // These are declared as TypedArrays to aid in tree-shaking.
+    static #TMP_QUAT1 = new Float32Array(4);
+    static #TMP_QUAT2 = new Float32Array(4);
+    static #TMP_MAT3 = new Float32Array(9);
+    static #TMP_VEC3 = new Float32Array(3);
+    static #X_UNIT_VEC3 = new Float32Array([1, 0, 0]);
+    static #Y_UNIT_VEC3 = new Float32Array([0, 1, 0]);
     /**
      * Create a {@link Quat}.
      */
@@ -6123,7 +6424,7 @@ class Quat extends Float32Array {
      * Equivalent to `Quat.magnitude(this);`
      *
      * Magnitude is used because the `length` attribute is already defined by
-     * `Float32Array` to mean the number of elements in the array.
+     * TypedArrays to mean the number of elements in the array.
      */
     get magnitude() {
         const x = this[0];
@@ -6249,6 +6550,15 @@ class Quat extends Float32Array {
         return Quat.dot(this, b);
     }
     //===================
+    // Static accessors
+    //===================
+    /**
+     * @returns The number of bytes in a {@link Quat}.
+     */
+    static get BYTE_LENGTH() {
+        return 4 * Float32Array.BYTES_PER_ELEMENT;
+    }
+    //===================
     // Static methods
     //===================
     /**
@@ -6311,7 +6621,7 @@ class Quat extends Float32Array {
     static getAxisAngle(out_axis, q) {
         const rad = Math.acos(q[3]) * 2.0;
         const s = Math.sin(rad / 2.0);
-        if (s > EPSILON) {
+        if (s > GLM_EPSILON) {
             out_axis[0] = q[0] / s;
             out_axis[1] = q[1] / s;
             out_axis[2] = q[2] / s;
@@ -6527,7 +6837,7 @@ class Quat extends Float32Array {
             bw = -bw;
         }
         // calculate coefficients
-        if (1.0 - cosom > EPSILON) {
+        if (1.0 - cosom > GLM_EPSILON) {
             // standard case (slerp)
             const omega = Math.acos(cosom);
             const sinom = Math.sin(omega);
@@ -6656,9 +6966,10 @@ class Quat extends Float32Array {
      * @param x - Angle to rotate around X axis in degrees.
      * @param y - Angle to rotate around Y axis in degrees.
      * @param z - Angle to rotate around Z axis in degrees.
+     * @param {'xyz'|'xzy'|'yxz'|'yzx'|'zxy'|'zyx'} order - Intrinsic order for conversion, default is zyx.
      * @returns `out`
      */
-    static fromEuler(out, x, y, z) {
+    static fromEuler(out, x, y, z, order = Quat.#DEFAULT_ANGLE_ORDER) {
         let halfToRad = (0.5 * Math.PI) / 180.0;
         x *= halfToRad;
         y *= halfToRad;
@@ -6669,10 +6980,46 @@ class Quat extends Float32Array {
         let cy = Math.cos(y);
         let sz = Math.sin(z);
         let cz = Math.cos(z);
-        out[0] = sx * cy * cz - cx * sy * sz;
-        out[1] = cx * sy * cz + sx * cy * sz;
-        out[2] = cx * cy * sz - sx * sy * cz;
-        out[3] = cx * cy * cz + sx * sy * sz;
+        switch (order) {
+            case 'xyz':
+                out[0] = sx * cy * cz + cx * sy * sz;
+                out[1] = cx * sy * cz - sx * cy * sz;
+                out[2] = cx * cy * sz + sx * sy * cz;
+                out[3] = cx * cy * cz - sx * sy * sz;
+                break;
+            case 'xzy':
+                out[0] = sx * cy * cz - cx * sy * sz;
+                out[1] = cx * sy * cz - sx * cy * sz;
+                out[2] = cx * cy * sz + sx * sy * cz;
+                out[3] = cx * cy * cz + sx * sy * sz;
+                break;
+            case 'yxz':
+                out[0] = sx * cy * cz + cx * sy * sz;
+                out[1] = cx * sy * cz - sx * cy * sz;
+                out[2] = cx * cy * sz - sx * sy * cz;
+                out[3] = cx * cy * cz + sx * sy * sz;
+                break;
+            case 'yzx':
+                out[0] = sx * cy * cz + cx * sy * sz;
+                out[1] = cx * sy * cz + sx * cy * sz;
+                out[2] = cx * cy * sz - sx * sy * cz;
+                out[3] = cx * cy * cz - sx * sy * sz;
+                break;
+            case 'zxy':
+                out[0] = sx * cy * cz - cx * sy * sz;
+                out[1] = cx * sy * cz + sx * cy * sz;
+                out[2] = cx * cy * sz + sx * sy * cz;
+                out[3] = cx * cy * cz - sx * sy * sz;
+                break;
+            case 'zyx':
+                out[0] = sx * cy * cz - cx * sy * sz;
+                out[1] = cx * sy * cz + sx * cy * sz;
+                out[2] = cx * cy * sz - sx * sy * cz;
+                out[3] = cx * cy * cz + sx * sy * sz;
+                break;
+            default:
+                throw new Error('Unknown angle order ' + order);
+        }
         return out;
     }
     /**
@@ -6869,11 +7216,11 @@ class Quat extends Float32Array {
     static rotationTo(out, a, b) {
         let dot = Vec3.dot(a, b);
         if (dot < -0.999999) {
-            Vec3.cross(tmpVec3, xUnitVec3, a);
-            if (Vec3.len(tmpVec3) < 0.000001)
-                Vec3.cross(tmpVec3, yUnitVec3, a);
-            Vec3.normalize(tmpVec3, tmpVec3);
-            Quat.setAxisAngle(out, tmpVec3, Math.PI);
+            Vec3.cross(Quat.#TMP_VEC3, Quat.#X_UNIT_VEC3, a);
+            if (Vec3.mag(Quat.#TMP_VEC3) < 0.000001)
+                Vec3.cross(Quat.#TMP_VEC3, Quat.#Y_UNIT_VEC3, a);
+            Vec3.normalize(Quat.#TMP_VEC3, Quat.#TMP_VEC3);
+            Quat.setAxisAngle(out, Quat.#TMP_VEC3, Math.PI);
             return out;
         }
         else if (dot > 0.999999) {
@@ -6884,10 +7231,10 @@ class Quat extends Float32Array {
             return out;
         }
         else {
-            Vec3.cross(tmpVec3, a, b);
-            out[0] = tmpVec3[0];
-            out[1] = tmpVec3[1];
-            out[2] = tmpVec3[2];
+            Vec3.cross(Quat.#TMP_VEC3, a, b);
+            out[0] = Quat.#TMP_VEC3[0];
+            out[1] = Quat.#TMP_VEC3[1];
+            out[2] = Quat.#TMP_VEC3[2];
             out[3] = 1 + dot;
             return Quat.normalize(out, out);
         }
@@ -6905,9 +7252,9 @@ class Quat extends Float32Array {
      * @returns `out`
      */
     static sqlerp(out, a, b, c, d, t) {
-        Quat.slerp(temp1, a, d, t);
-        Quat.slerp(temp2, b, c, t);
-        Quat.slerp(out, temp1, temp2, 2 * t * (1 - t));
+        Quat.slerp(Quat.#TMP_QUAT1, a, d, t);
+        Quat.slerp(Quat.#TMP_QUAT2, b, c, t);
+        Quat.slerp(out, Quat.#TMP_QUAT1, Quat.#TMP_QUAT2, 2 * t * (1 - t));
         return out;
     }
     /**
@@ -6918,30 +7265,23 @@ class Quat extends Float32Array {
      *
      * @param out - The receiving quaternion
      * @param view - the vector representing the viewing direction
-     * @param right - the vector representing the local "right" direction
-     * @param up - the vector representing the local "up" direction
+     * @param right - the vector representing the local `right` direction
+     * @param up - the vector representing the local `up` direction
      * @returns `out`
      */
     static setAxes(out, view, right, up) {
-        tempMat3[0] = right[0];
-        tempMat3[3] = right[1];
-        tempMat3[6] = right[2];
-        tempMat3[1] = up[0];
-        tempMat3[4] = up[1];
-        tempMat3[7] = up[2];
-        tempMat3[2] = -view[0];
-        tempMat3[5] = -view[1];
-        tempMat3[8] = -view[2];
-        return Quat.normalize(out, Quat.fromMat3(out, tempMat3));
+        Quat.#TMP_MAT3[0] = right[0];
+        Quat.#TMP_MAT3[3] = right[1];
+        Quat.#TMP_MAT3[6] = right[2];
+        Quat.#TMP_MAT3[1] = up[0];
+        Quat.#TMP_MAT3[4] = up[1];
+        Quat.#TMP_MAT3[7] = up[2];
+        Quat.#TMP_MAT3[2] = -view[0];
+        Quat.#TMP_MAT3[5] = -view[1];
+        Quat.#TMP_MAT3[8] = -view[2];
+        return Quat.normalize(out, Quat.fromMat3(out, Quat.#TMP_MAT3));
     }
 }
-// Temporary variables to prevent repeated allocations in the algorithms above.
-const temp1 = [0, 0, 0, 0];
-const temp2 = [0, 0, 0, 0];
-const tempMat3 = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-const tmpVec3 = [0, 0, 0];
-const xUnitVec3 = [1, 0, 0];
-const yUnitVec3 = [0, 1, 0];
 // Methods which re-use the Vec4 implementation
 Quat.set = Vec4.set;
 Quat.add = Vec4.add;
@@ -6960,14 +7300,15 @@ Quat.mag = Quat.magnitude;
 Quat.length = Quat.magnitude;
 Quat.len = Quat.magnitude;
 
+// glMatrix - v4.0.0-beta.3
 /**
  * Dual Quaternion
  */
 class Quat2 extends Float32Array {
-    /**
-     * The number of bytes in a {@link Quat}.
-     */
-    static BYTE_LENGTH = 8 * Float32Array.BYTES_PER_ELEMENT;
+    // Temporary variables to prevent repeated allocations in the algorithms within Quat2.
+    // These are declared as TypedArrays to aid in tree-shaking.
+    static #TMP_QUAT = new Float32Array(4);
+    static #TMP_VEC3 = new Float32Array(3);
     /**
      * Create a {@link Quat2}.
      */
@@ -7017,6 +7358,15 @@ class Quat2 extends Float32Array {
     copy(a) {
         super.set(a);
         return this;
+    }
+    //===================
+    // Static accessors
+    //===================
+    /**
+     * @returns The number of bytes in a {@link Quat2}.
+     */
+    static get BYTE_LENGTH() {
+        return 8 * Float32Array.BYTES_PER_ELEMENT;
     }
     //===================
     // Static methods
@@ -7150,9 +7500,9 @@ class Quat2 extends Float32Array {
      * @returns `out`
      */
     static fromMat4(out, a) {
-        Mat4.getRotation(tempQuat, a);
-        Mat4.getTranslation(tempVec3, a);
-        return Quat2.fromRotationTranslation(out, tempQuat, tempVec3);
+        Mat4.getRotation(Quat2.#TMP_QUAT, a);
+        Mat4.getTranslation(Quat2.#TMP_VEC3, a);
+        return Quat2.fromRotationTranslation(out, Quat2.#TMP_QUAT, Quat2.#TMP_VEC3);
     }
     /**
      * Copy the values from one {@link Quat2} to another
@@ -7507,7 +7857,7 @@ class Quat2 extends Float32Array {
      */
     static rotateAroundAxis(out, a, axis, rad) {
         //Special case for rad = 0
-        if (Math.abs(rad) < EPSILON) {
+        if (Math.abs(rad) < GLM_EPSILON) {
             return Quat2.copy(out, a);
         }
         const axisLength = Math.sqrt(axis[0] * axis[0] + axis[1] * axis[1] + axis[2] * axis[2]);
@@ -7846,19 +8196,16 @@ class Quat2 extends Float32Array {
         const b5 = b[5];
         const b6 = b[6];
         const b7 = b[7];
-        return (Math.abs(a0 - b0) <= EPSILON * Math.max(1.0, Math.abs(a0), Math.abs(b0)) &&
-            Math.abs(a1 - b1) <= EPSILON * Math.max(1.0, Math.abs(a1), Math.abs(b1)) &&
-            Math.abs(a2 - b2) <= EPSILON * Math.max(1.0, Math.abs(a2), Math.abs(b2)) &&
-            Math.abs(a3 - b3) <= EPSILON * Math.max(1.0, Math.abs(a3), Math.abs(b3)) &&
-            Math.abs(a4 - b4) <= EPSILON * Math.max(1.0, Math.abs(a4), Math.abs(b4)) &&
-            Math.abs(a5 - b5) <= EPSILON * Math.max(1.0, Math.abs(a5), Math.abs(b5)) &&
-            Math.abs(a6 - b6) <= EPSILON * Math.max(1.0, Math.abs(a6), Math.abs(b6)) &&
-            Math.abs(a7 - b7) <= EPSILON * Math.max(1.0, Math.abs(a7), Math.abs(b7)));
+        return (Math.abs(a0 - b0) <= GLM_EPSILON * Math.max(1.0, Math.abs(a0), Math.abs(b0)) &&
+            Math.abs(a1 - b1) <= GLM_EPSILON * Math.max(1.0, Math.abs(a1), Math.abs(b1)) &&
+            Math.abs(a2 - b2) <= GLM_EPSILON * Math.max(1.0, Math.abs(a2), Math.abs(b2)) &&
+            Math.abs(a3 - b3) <= GLM_EPSILON * Math.max(1.0, Math.abs(a3), Math.abs(b3)) &&
+            Math.abs(a4 - b4) <= GLM_EPSILON * Math.max(1.0, Math.abs(a4), Math.abs(b4)) &&
+            Math.abs(a5 - b5) <= GLM_EPSILON * Math.max(1.0, Math.abs(a5), Math.abs(b5)) &&
+            Math.abs(a6 - b6) <= GLM_EPSILON * Math.max(1.0, Math.abs(a6), Math.abs(b6)) &&
+            Math.abs(a7 - b7) <= GLM_EPSILON * Math.max(1.0, Math.abs(a7), Math.abs(b7)));
     }
 }
-// Temporary variables to prevent repeated allocations in the algorithms above.
-const tempQuat = [0, 0, 0, 0];
-const tempVec3 = [0, 0, 0];
 // Methods which re-use the Quat implementation
 // @ts-ignore
 Quat2.dot = Quat.dot;
@@ -7875,14 +8222,11 @@ Quat2.len = Quat.magnitude;
 // Static method alias assignments
 Quat2.mul = Quat2.multiply;
 
+// glMatrix - v4.0.0-beta.3
 /**
  * 2 Dimensional Vector
  */
 class Vec2 extends Float32Array {
-    /**
-     * The number of bytes in a {@link Vec2}.
-     */
-    static BYTE_LENGTH = 2 * Float32Array.BYTES_PER_ELEMENT;
     /**
      * Create a {@link Vec2}.
      */
@@ -7949,7 +8293,7 @@ class Vec2 extends Float32Array {
      * Equivalent to `Vec2.magnitude(this);`
      *
      * Magnitude is used because the `length` attribute is already defined by
-     * `Float32Array` to mean the number of elements in the array.
+     * TypedArrays to mean the number of elements in the array.
      */
     get magnitude() {
         return Math.hypot(this[0], this[1]);
@@ -8128,6 +8472,17 @@ class Vec2 extends Float32Array {
         return this;
     }
     /**
+     * Sets each component of `this` to it's absolute value.
+     * Equivalent to `Vec2.abs(this, this);`
+     *
+     * @returns `this`
+     */
+    abs() {
+        this[0] = Math.abs(this[0]);
+        this[1] = Math.abs(this[1]);
+        return this;
+    }
+    /**
      * Calculates the dot product of this and another {@link Vec2}.
      * Equivalent to `Vec2.dot(this, b);`
      *
@@ -8146,9 +8501,18 @@ class Vec2 extends Float32Array {
     normalize() {
         return Vec2.normalize(this, this);
     }
-    //================
+    //===================
+    // Static accessors
+    //===================
+    /**
+     * @returns The number of bytes in a {@link Vec2}.
+     */
+    static get BYTE_LENGTH() {
+        return 2 * Float32Array.BYTES_PER_ELEMENT;
+    }
+    //===================
     // Static methods
-    //================
+    //===================
     /**
      * Creates a new, empty {@link Vec2}
      * @category Static
@@ -8483,6 +8847,19 @@ class Vec2 extends Float32Array {
         return out;
     }
     /**
+     * Returns the absolute value of the components of a {@link Vec2}
+     * @category Static
+     *
+     * @param out - The receiving vector
+     * @param a - Vector to compute the absolute values of
+     * @returns `out`
+     */
+    static abs(out, a) {
+        out[0] = Math.abs(a[0]);
+        out[1] = Math.abs(a[1]);
+        return out;
+    }
+    /**
      * Normalize a {@link Vec2}
      * @category Static
      *
@@ -8687,8 +9064,8 @@ class Vec2 extends Float32Array {
         const a1 = a[1];
         const b0 = b[0];
         const b1 = b[1];
-        return (Math.abs(a0 - b0) <= EPSILON * Math.max(1.0, Math.abs(a0), Math.abs(b0)) &&
-            Math.abs(a1 - b1) <= EPSILON * Math.max(1.0, Math.abs(a1), Math.abs(b1)));
+        return (Math.abs(a0 - b0) <= GLM_EPSILON * Math.max(1.0, Math.abs(a0), Math.abs(b0)) &&
+            Math.abs(a1 - b1) <= GLM_EPSILON * Math.max(1.0, Math.abs(a1), Math.abs(b1)));
     }
     /**
      * Returns a string representation of a vector
@@ -8718,87 +9095,5 @@ Vec2.mag = Vec2.magnitude;
 Vec2.length = Vec2.magnitude;
 Vec2.len = Vec2.magnitude;
 
-// The contents of the following section are autogenerated by scripts/gen-swizzle.js and should
-// not be modified by hand.
-// [Swizzle Autogen]
-const VEC2_SWIZZLES = ['xx', 'xy', 'yx', 'yy', 'xxx', 'xxy', 'xyx', 'xyy', 'yxx', 'yxy', 'yyx', 'yyy', 'xxxx', 'xxxy', 'xxyx', 'xxyy', 'xyxx', 'xyxy', 'xyyx', 'xyyy', 'yxxx', 'yxxy', 'yxyx', 'yxyy', 'yyxx', 'yyxy', 'yyyx', 'yyyy', 'rr', 'rg', 'gr', 'gg', 'rrr', 'rrg', 'rgr', 'rgg', 'grr', 'grg', 'ggr', 'ggg', 'rrrr', 'rrrg', 'rrgr', 'rrgg', 'rgrr', 'rgrg', 'rggr', 'rggg', 'grrr', 'grrg', 'grgr', 'grgg', 'ggrr', 'ggrg', 'gggr', 'gggg'];
-const VEC3_SWIZZLES = ['xz', 'yz', 'zx', 'zy', 'zz', 'xxz', 'xyz', 'xzx', 'xzy', 'xzz', 'yxz', 'yyz', 'yzx', 'yzy', 'yzz', 'zxx', 'zxy', 'zxz', 'zyx', 'zyy', 'zyz', 'zzx', 'zzy', 'zzz', 'xxxz', 'xxyz', 'xxzx', 'xxzy', 'xxzz', 'xyxz', 'xyyz', 'xyzx', 'xyzy', 'xyzz', 'xzxx', 'xzxy', 'xzxz', 'xzyx', 'xzyy', 'xzyz', 'xzzx', 'xzzy', 'xzzz', 'yxxz', 'yxyz', 'yxzx', 'yxzy', 'yxzz', 'yyxz', 'yyyz', 'yyzx', 'yyzy', 'yyzz', 'yzxx', 'yzxy', 'yzxz', 'yzyx', 'yzyy', 'yzyz', 'yzzx', 'yzzy', 'yzzz', 'zxxx', 'zxxy', 'zxxz', 'zxyx', 'zxyy', 'zxyz', 'zxzx', 'zxzy', 'zxzz', 'zyxx', 'zyxy', 'zyxz', 'zyyx', 'zyyy', 'zyyz', 'zyzx', 'zyzy', 'zyzz', 'zzxx', 'zzxy', 'zzxz', 'zzyx', 'zzyy', 'zzyz', 'zzzx', 'zzzy', 'zzzz', 'rb', 'gb', 'br', 'bg', 'bb', 'rrb', 'rgb', 'rbr', 'rbg', 'rbb', 'grb', 'ggb', 'gbr', 'gbg', 'gbb', 'brr', 'brg', 'brb', 'bgr', 'bgg', 'bgb', 'bbr', 'bbg', 'bbb', 'rrrb', 'rrgb', 'rrbr', 'rrbg', 'rrbb', 'rgrb', 'rggb', 'rgbr', 'rgbg', 'rgbb', 'rbrr', 'rbrg', 'rbrb', 'rbgr', 'rbgg', 'rbgb', 'rbbr', 'rbbg', 'rbbb', 'grrb', 'grgb', 'grbr', 'grbg', 'grbb', 'ggrb', 'gggb', 'ggbr', 'ggbg', 'ggbb', 'gbrr', 'gbrg', 'gbrb', 'gbgr', 'gbgg', 'gbgb', 'gbbr', 'gbbg', 'gbbb', 'brrr', 'brrg', 'brrb', 'brgr', 'brgg', 'brgb', 'brbr', 'brbg', 'brbb', 'bgrr', 'bgrg', 'bgrb', 'bggr', 'bggg', 'bggb', 'bgbr', 'bgbg', 'bgbb', 'bbrr', 'bbrg', 'bbrb', 'bbgr', 'bbgg', 'bbgb', 'bbbr', 'bbbg', 'bbbb'];
-const VEC4_SWIZZLES = ['xw', 'yw', 'zw', 'wx', 'wy', 'wz', 'ww', 'xxw', 'xyw', 'xzw', 'xwx', 'xwy', 'xwz', 'xww', 'yxw', 'yyw', 'yzw', 'ywx', 'ywy', 'ywz', 'yww', 'zxw', 'zyw', 'zzw', 'zwx', 'zwy', 'zwz', 'zww', 'wxx', 'wxy', 'wxz', 'wxw', 'wyx', 'wyy', 'wyz', 'wyw', 'wzx', 'wzy', 'wzz', 'wzw', 'wwx', 'wwy', 'wwz', 'www', 'xxxw', 'xxyw', 'xxzw', 'xxwx', 'xxwy', 'xxwz', 'xxww', 'xyxw', 'xyyw', 'xyzw', 'xywx', 'xywy', 'xywz', 'xyww', 'xzxw', 'xzyw', 'xzzw', 'xzwx', 'xzwy', 'xzwz', 'xzww', 'xwxx', 'xwxy', 'xwxz', 'xwxw', 'xwyx', 'xwyy', 'xwyz', 'xwyw', 'xwzx', 'xwzy', 'xwzz', 'xwzw', 'xwwx', 'xwwy', 'xwwz', 'xwww', 'yxxw', 'yxyw', 'yxzw', 'yxwx', 'yxwy', 'yxwz', 'yxww', 'yyxw', 'yyyw', 'yyzw', 'yywx', 'yywy', 'yywz', 'yyww', 'yzxw', 'yzyw', 'yzzw', 'yzwx', 'yzwy', 'yzwz', 'yzww', 'ywxx', 'ywxy', 'ywxz', 'ywxw', 'ywyx', 'ywyy', 'ywyz', 'ywyw', 'ywzx', 'ywzy', 'ywzz', 'ywzw', 'ywwx', 'ywwy', 'ywwz', 'ywww', 'zxxw', 'zxyw', 'zxzw', 'zxwx', 'zxwy', 'zxwz', 'zxww', 'zyxw', 'zyyw', 'zyzw', 'zywx', 'zywy', 'zywz', 'zyww', 'zzxw', 'zzyw', 'zzzw', 'zzwx', 'zzwy', 'zzwz', 'zzww', 'zwxx', 'zwxy', 'zwxz', 'zwxw', 'zwyx', 'zwyy', 'zwyz', 'zwyw', 'zwzx', 'zwzy', 'zwzz', 'zwzw', 'zwwx', 'zwwy', 'zwwz', 'zwww', 'wxxx', 'wxxy', 'wxxz', 'wxxw', 'wxyx', 'wxyy', 'wxyz', 'wxyw', 'wxzx', 'wxzy', 'wxzz', 'wxzw', 'wxwx', 'wxwy', 'wxwz', 'wxww', 'wyxx', 'wyxy', 'wyxz', 'wyxw', 'wyyx', 'wyyy', 'wyyz', 'wyyw', 'wyzx', 'wyzy', 'wyzz', 'wyzw', 'wywx', 'wywy', 'wywz', 'wyww', 'wzxx', 'wzxy', 'wzxz', 'wzxw', 'wzyx', 'wzyy', 'wzyz', 'wzyw', 'wzzx', 'wzzy', 'wzzz', 'wzzw', 'wzwx', 'wzwy', 'wzwz', 'wzww', 'wwxx', 'wwxy', 'wwxz', 'wwxw', 'wwyx', 'wwyy', 'wwyz', 'wwyw', 'wwzx', 'wwzy', 'wwzz', 'wwzw', 'wwwx', 'wwwy', 'wwwz', 'wwww', 'ra', 'ga', 'ba', 'ar', 'ag', 'ab', 'aa', 'rra', 'rga', 'rba', 'rar', 'rag', 'rab', 'raa', 'gra', 'gga', 'gba', 'gar', 'gag', 'gab', 'gaa', 'bra', 'bga', 'bba', 'bar', 'bag', 'bab', 'baa', 'arr', 'arg', 'arb', 'ara', 'agr', 'agg', 'agb', 'aga', 'abr', 'abg', 'abb', 'aba', 'aar', 'aag', 'aab', 'aaa', 'rrra', 'rrga', 'rrba', 'rrar', 'rrag', 'rrab', 'rraa', 'rgra', 'rgga', 'rgba', 'rgar', 'rgag', 'rgab', 'rgaa', 'rbra', 'rbga', 'rbba', 'rbar', 'rbag', 'rbab', 'rbaa', 'rarr', 'rarg', 'rarb', 'rara', 'ragr', 'ragg', 'ragb', 'raga', 'rabr', 'rabg', 'rabb', 'raba', 'raar', 'raag', 'raab', 'raaa', 'grra', 'grga', 'grba', 'grar', 'grag', 'grab', 'graa', 'ggra', 'ggga', 'ggba', 'ggar', 'ggag', 'ggab', 'ggaa', 'gbra', 'gbga', 'gbba', 'gbar', 'gbag', 'gbab', 'gbaa', 'garr', 'garg', 'garb', 'gara', 'gagr', 'gagg', 'gagb', 'gaga', 'gabr', 'gabg', 'gabb', 'gaba', 'gaar', 'gaag', 'gaab', 'gaaa', 'brra', 'brga', 'brba', 'brar', 'brag', 'brab', 'braa', 'bgra', 'bgga', 'bgba', 'bgar', 'bgag', 'bgab', 'bgaa', 'bbra', 'bbga', 'bbba', 'bbar', 'bbag', 'bbab', 'bbaa', 'barr', 'barg', 'barb', 'bara', 'bagr', 'bagg', 'bagb', 'baga', 'babr', 'babg', 'babb', 'baba', 'baar', 'baag', 'baab', 'baaa', 'arrr', 'arrg', 'arrb', 'arra', 'argr', 'argg', 'argb', 'arga', 'arbr', 'arbg', 'arbb', 'arba', 'arar', 'arag', 'arab', 'araa', 'agrr', 'agrg', 'agrb', 'agra', 'aggr', 'aggg', 'aggb', 'agga', 'agbr', 'agbg', 'agbb', 'agba', 'agar', 'agag', 'agab', 'agaa', 'abrr', 'abrg', 'abrb', 'abra', 'abgr', 'abgg', 'abgb', 'abga', 'abbr', 'abbg', 'abbb', 'abba', 'abar', 'abag', 'abab', 'abaa', 'aarr', 'aarg', 'aarb', 'aara', 'aagr', 'aagg', 'aagb', 'aaga', 'aabr', 'aabg', 'aabb', 'aaba', 'aaar', 'aaag', 'aaab', 'aaaa'];
-// [/Swizzle Autogen]
-const SWIZZLE_INDEX = {
-    x: 0, r: 0,
-    y: 1, g: 1,
-    z: 2, b: 2,
-    w: 3, a: 3,
-};
-function getSwizzleImpl(swizzle) {
-    switch (swizzle.length) {
-        case 2:
-            return function () { return new Vec2(this[SWIZZLE_INDEX[swizzle[0]]], this[SWIZZLE_INDEX[swizzle[1]]]); };
-        case 3:
-            return function () { return new Vec3(this[SWIZZLE_INDEX[swizzle[0]]], this[SWIZZLE_INDEX[swizzle[1]]], this[SWIZZLE_INDEX[swizzle[2]]]); };
-        case 4:
-            return function () { return new Vec4(this[SWIZZLE_INDEX[swizzle[0]]], this[SWIZZLE_INDEX[swizzle[1]]], this[SWIZZLE_INDEX[swizzle[2]]], this[SWIZZLE_INDEX[swizzle[3]]]); };
-    }
-}
-let swizzlesEnabled = false;
-/**
- * Enables Swizzle operations on {@link Vec2}, {@link Vec3}, and {@link Vec4} types.
- *
- * Swizzle operations are performed by using the `.` operator in conjunction with any combination
- * of between two to four component names, either from the set `xyzw` or `rgbw` (though not intermixed).
- * They return a new vector with the same number of components as specified in the swizzle attribute.
- *
- * @example
- * ```js
- * import { Vec3, EnableSwizzles } from 'gl-matrix';
- *
- * EnableSwizzles();
- *
- * let v = new Vec3(0, 1, 2);
- *
- * v.yx // returns new Vec2(1, 0);
- * v.xzy // returns new Vec3(0, 2, 1);
- * v.zyxz // returns new Vec4(2, 1, 0, 2);
- *
- * v.rgb // returns new Vec3(0, 1, 2);
- * v.rbg // returns new Vec3(0, 2, 1);
- * v.gg // returns new Vec2(1, 1);
- * ```
- */
-function EnableSwizzles() {
-    if (swizzlesEnabled) {
-        return;
-    }
-    for (const swizzle of VEC2_SWIZZLES) {
-        const impl = getSwizzleImpl(swizzle);
-        Object.defineProperty(Vec2.prototype, swizzle, {
-            get: impl
-        });
-        Object.defineProperty(Vec3.prototype, swizzle, {
-            get: impl
-        });
-        Object.defineProperty(Vec4.prototype, swizzle, {
-            get: impl
-        });
-    }
-    for (const swizzle of VEC3_SWIZZLES) {
-        const impl = getSwizzleImpl(swizzle);
-        Object.defineProperty(Vec3.prototype, swizzle, {
-            get: impl
-        });
-        Object.defineProperty(Vec4.prototype, swizzle, {
-            get: impl
-        });
-    }
-    for (const swizzle of VEC4_SWIZZLES) {
-        const impl = getSwizzleImpl(swizzle);
-        Object.defineProperty(Vec4.prototype, swizzle, {
-            get: impl
-        });
-    }
-    swizzlesEnabled = true;
-}
-
-export { EnableSwizzles, Mat2, Mat2d, Mat3, Mat4, Quat, Quat2, Vec2, Vec3, Vec4 };
+export { Mat2, Mat2d, Mat3, Mat4, Quat, Quat2, Vec2, Vec3, Vec4 };
 //# sourceMappingURL=index.js.map

@@ -1,5 +1,7 @@
 /**
  * Provides various utilities for generating hash codes for strings and UUIDs.
+ *
+ * This class should not be constructed as it only contains static methods.
  */
 class Hashing
 {
@@ -76,6 +78,8 @@ class Hashing
 
 /**
  * Provides utility functions for strings.
+ *
+ * This class should not be constructed as it only contains static methods.
  */
 class Strings
 {
