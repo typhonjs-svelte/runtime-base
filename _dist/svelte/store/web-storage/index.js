@@ -323,6 +323,16 @@ class TJSWebStorage
    }
 
    /**
+    * Returns whether a store has already been created for the given key.
+    *
+    * @param {string}   key - Key to lookup in storage API.
+    */
+   hasStore(key)
+   {
+      return this.#stores.has(key);
+   }
+
+   /**
     * Sets the value for the given key in storage API.
     *
     * @param {string}   key - Key to lookup in storage API.
@@ -336,7 +346,7 @@ class TJSWebStorage
    }
 
    /**
-    * Convenience method to swap a boolean value stored in storage API.
+    * Convenience method to swap a boolean value stored in storage API updating the associated store value.
     *
     * @param {string}   key - Key to lookup in storage API.
     *
