@@ -588,12 +588,67 @@ declare class ClipboardAccess {
   static writeText(text: string, activeWindow?: Window): Promise<boolean>;
 }
 
+/**
+ * Provides utility functions for retrieving data about images.
+ */
+declare class ImageData {
+  /**
+   * Loads given URLs into image elements returning those that resolved with width & height dimensions. This is useful
+   * when the size of an image is necessary before usage.
+   *
+   * @param {string | { url?: string } | Iterable<string | { url?: string }>} urls - A list of image URLS to load or
+   *        object with an `url` property.
+   *
+   * @param {object} [options] - Optional options.
+   *
+   * @param {string} [options.accessor='url'] - Accessor string to access child attribute when `urls` entry contains
+   *        objects.
+   *
+   * @param {boolean} [options.warn=false] - Log debug warnings when a target URL can not be determined; default: false.
+   *
+   * @returns {(Promise<{
+   *    fulfilled: { url: string, width: number, height: number }[],
+   *    rejected: { url: string }[]
+   * }>)} An object with `fulfilled` and `rejected` requests.
+   */
+  static getDimensions(
+    urls:
+      | string
+      | {
+          url?: string;
+        }
+      | Iterable<
+          | string
+          | {
+              url?: string;
+            }
+        >,
+    {
+      accessor,
+      warn,
+    }?: {
+      accessor?: string;
+      warn?: boolean;
+    },
+  ): Promise<{
+    fulfilled: {
+      url: string;
+      width: number;
+      height: number;
+    }[];
+    rejected: {
+      url: string;
+    }[];
+  }>;
+}
+
 export {
   type A11yFocusSource,
   A11yHelper,
   BrowserSupports,
   ClipboardAccess,
   type FocusableElement,
+  ImageData,
   ResizeObserverData,
   ResizeObserverManager,
   type StackingContext,
