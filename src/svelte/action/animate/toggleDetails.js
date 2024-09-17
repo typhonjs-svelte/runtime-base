@@ -55,16 +55,22 @@ export function toggleDetails(details, { store, animate = true, clickActive = tr
    /** @type {boolean} */
    let open = details.open;  // eslint-disable-line no-shadow
 
-   // The store sets initial open state and handles animation on further changes.
-   let unsubscribe = subscribeFirstRest(store, (value) => { open = value; details.open = open; }, async (value) =>
+   /** @type {import('svelte/store').Unsubscriber} */
+   let unsubscribe;
+
+   if (store)
    {
-      open = value;
+      // The store sets initial open state and handles animation on further changes.
+      unsubscribe = subscribeFirstRest(store, (value) => { open = value; details.open = open; }, async (value) =>
+      {
+         open = value;
 
-      // Await `tick` to allow any conditional logic in the template to complete updating before handling animation.
-      await tick();
+         // Await `tick` to allow any conditional logic in the template to complete updating before handling animation.
+         await tick();
 
-      handleAnimation();
-   });
+         handleAnimation();
+      });
+   }
 
    /**
     * @param {number} a -
@@ -178,7 +184,7 @@ export function toggleDetails(details, { store, animate = true, clickActive = tr
       },
       destroy()
       {
-         unsubscribe();
+         if (typeof unsubscribe === 'function') { unsubscribe(); }
          summaryEl.removeEventListener('click', handleClick);
       }
    };
