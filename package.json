@@ -172,10 +172,10 @@
     "./package.json": "./package.json"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^25.0.7",
-    "@rollup/plugin-node-resolve": "^15.2.3",
-    "@typhonjs-build-test/esm-d-ts": "^0.3.0-next.3",
-    "@typhonjs-build-test/rollup-plugin-pkg-imports": "^0.3.0",
+    "@rollup/plugin-commonjs": "^28.0.0",
+    "@rollup/plugin-node-resolve": "^15.3.0",
+    "@typhonjs-build-test/esm-d-ts": "^0.3.0-next.7",
+    "@typhonjs-build-test/rollup-plugin-pkg-imports": "^0.5.0",
     "@typhonjs-config/eslint-config": "^0.6.3",
     "@typhonjs-plugin/manager": "^0.1.2",
     "@typhonjs-svelte/dynamic-reducer": "^0.1.1",
@@ -186,14 +186,14 @@
     "@typhonjs-utils/unicode": "^0.1.0",
     "eslint": "^8.57.0",
     "fflate": "^0.8.2",
-    "gl-matrix": "github:typhonjs-svelte-scratch/gl-matrix-dist-test#glmatrix-next",
+    "gl-matrix": "github:typhonjs-svelte-scratch/gl-matrix-beta3-dist#glmatrix-next",
     "js-base64": "^3.7.7",
     "json5": "^2.2.3",
-    "msgpackr": "^1.10.1",
+    "msgpackr": "^1.11.0",
     "quick-lru": "^7.0.0",
-    "rollup": "^4.13.1",
+    "rollup": "^4.22.4",
     "striptags": "github:typhonjs-svelte-scratch/striptags",
-    "svelte-writable-derived": "^3.1.0",
+    "svelte-writable-derived": "^3.1.1",
     "upath": "^2.0.1"
   },
   "peerDependencies": {
