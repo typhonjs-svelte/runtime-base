@@ -521,7 +521,7 @@ type FocusableElement = Element & HTMLOrSVGElement;
  */
 type A11yFocusSource = {
   /**
-   * When true logs to console the actions taken in {@link A11yHelper.applyFocusSource }.
+   * When true logs to console the actions taken in {@link A11yHelper.applyFocusSource}.
    */
   debug?: boolean;
   /**

@@ -905,8 +905,10 @@ function readKey() {
 }
 
 function asSafeString(property) {
+	// protect against expensive (DoS) string conversions
 	if (typeof property === 'string') return property;
-	if (typeof property === 'number') return property.toString();
+	if (typeof property === 'number' || typeof property === 'boolean' || typeof property === 'bigint') return property.toString();
+	if (property == null) return property + '';
 	throw new Error('Invalid property type for record', typeof property);
 }
 // the registration of the record definition extension (as "r")
@@ -946,7 +948,7 @@ currentExtensions[0x42] = (data) => {
 let errors = { Error, TypeError, ReferenceError };
 currentExtensions[0x65] = () => {
 	let data = read();
-	return (errors[data[0]] || Error)(data[1])
+	return (errors[data[0]] || Error)(data[1], { cause: data[2] })
 };
 
 currentExtensions[0x69] = (data) => {
@@ -990,8 +992,15 @@ let glbl = typeof globalThis === 'object' ? globalThis : window;
 currentExtensions[0x74] = (data) => {
 	let typeCode = data[0];
 	let typedArrayName = typedArrays[typeCode];
-	if (!typedArrayName)
+	if (!typedArrayName) {
+		if (typeCode === 16) {
+			let ab = new ArrayBuffer(data.length - 1);
+			let u8 = new Uint8Array(ab);
+			u8.set(data.subarray(1));
+			return ab;
+		}
 		throw new Error('Could not find typed array for code ' + typeCode)
+	}
 	// we have to always slice/copy here to get a new ArrayBuffer that is word/byte aligned
 	return new glbl[typedArrayName](Uint8Array.prototype.slice.call(data, 1).buffer)
 };
@@ -1151,7 +1160,7 @@ class Packr extends Unpackr {
 		if (!this.structures && options.useRecords != false)
 			this.structures = [];
 		// two byte record ids for shared structures
-		let useTwoByteRecords = maxSharedStructures > 32 || (maxOwnStructures + maxSharedStructures > 64);		
+		let useTwoByteRecords = maxSharedStructures > 32 || (maxOwnStructures + maxSharedStructures > 64);
 		let sharedLimitId = maxSharedStructures + 0x40;
 		let maxStructureId = maxSharedStructures + maxOwnStructures + 0x40;
 		if (maxStructureId > 8256) {
@@ -1169,7 +1178,7 @@ class Packr extends Unpackr {
 			}
 			safeEnd = target.length - 10;
 			if (safeEnd - position < 0x800) {
-				// don't start too close to the end, 
+				// don't start too close to the end,
 				target = new ByteArrayAllocate(target.length);
 				targetView = target.dataView || (target.dataView = new DataView(target.buffer, 0, target.length));
 				safeEnd = target.length - 10;
@@ -1287,10 +1296,14 @@ class Packr extends Unpackr {
 								return packr.pack(value, encodeOptions)
 							}
 							packr.lastNamedStructuresLength = sharedLength;
+							// don't keep large buffers around
+							if (target.length > 0x40000000) target = null;
 							return returnBuffer
 						}
 					}
 				}
+				// don't keep large buffers around, they take too much memory and cause problems (limit at 1GB)
+				if (target.length > 0x40000000) target = null;
 				if (encodeOptions & RESET_BUFFER_MODE)
 					position = start;
 			}
@@ -1508,12 +1521,12 @@ class Packr extends Unpackr {
 							targetView.setUint32(position, referee.id);
 							position += 4;
 							return
-						} else 
+						} else
 							referenceMap.set(value, { offset: position - start });
 					}
 					let constructor = value.constructor;
 					if (constructor === Object) {
-						writeObject(value, true);
+						writeObject(value);
 					} else if (constructor === Array) {
 						packArray(value);
 					} else if (constructor === Map) {
@@ -1536,7 +1549,7 @@ class Packr extends Unpackr {
 								pack(entryValue);
 							}
 						}
-					} else {	
+					} else {
 						for (let i = 0, l = extensions.length; i < l; i++) {
 							let extensionClass = extensionClasses[i];
 							if (value instanceof extensionClass) {
@@ -1604,13 +1617,13 @@ class Packr extends Unpackr {
 								if (json !== value)
 									return pack(json)
 							}
-							
+
 							// if there is a writeFunction, use it, otherwise just encode as undefined
 							if (type === 'function')
 								return pack(this.writeFunction && this.writeFunction(value));
-							
-							// no extension found, write as object
-							writeObject(value, !value.hasOwnProperty); // if it doesn't have hasOwnProperty, don't do hasOwnProperty checks
+
+							// no extension found, write as plain object
+							writeObject(value);
 						}
 					}
 				}
@@ -1666,9 +1679,19 @@ class Packr extends Unpackr {
 			}
 		};
 
-		const writePlainObject = (this.variableMapSize || this.coercibleKeyAsNumber) ? (object) => {
+		const writePlainObject = (this.variableMapSize || this.coercibleKeyAsNumber || this.skipValues) ? (object) => {
 			// this method is slightly slower, but generates "preferred serialization" (optimally small for smaller objects)
-			let keys = Object.keys(object);
+			let keys;
+			if (this.skipValues) {
+				keys = [];
+				for (let key in object) {
+					if ((typeof object.hasOwnProperty !== 'function' || object.hasOwnProperty(key)) &&
+						!this.skipValues.includes(object[key]))
+						keys.push(key);
+				}
+			} else {
+				keys = Object.keys(object);
+			}
 			let length = keys.length;
 			if (length < 0x10) {
 				target[position++] = 0x80 | length;
@@ -1697,13 +1720,13 @@ class Packr extends Unpackr {
 				}
 			}
 		} :
-		(object, safePrototype) => {
+		(object) => {
 			target[position++] = 0xde; // always using map 16, so we can preallocate and set the length afterwards
 			let objectOffset = position - start;
 			position += 2;
 			let size = 0;
 			for (let key in object) {
-				if (safePrototype || object.hasOwnProperty(key)) {
+				if (typeof object.hasOwnProperty !== 'function' || object.hasOwnProperty(key)) {
 					pack(key);
 					pack(object[key]);
 					size++;
@@ -1715,12 +1738,12 @@ class Packr extends Unpackr {
 
 		const writeRecord = this.useRecords === false ? writePlainObject :
 		(options.progressiveRecords && !useTwoByteRecords) ?  // this is about 2% faster for highly stable structures, since it only requires one for-in loop (but much more expensive when new structure needs to be written)
-		(object, safePrototype) => {
+		(object) => {
 			let nextTransition, transition = structures.transitions || (structures.transitions = Object.create(null));
 			let objectOffset = position++ - start;
 			let wroteKeys;
 			for (let key in object) {
-				if (safePrototype || object.hasOwnProperty(key)) {
+				if (typeof object.hasOwnProperty !== 'function' || object.hasOwnProperty(key)) {
 					nextTransition = transition[key];
 					if (nextTransition)
 						transition = nextTransition;
@@ -1759,10 +1782,10 @@ class Packr extends Unpackr {
 					insertNewRecord(transition, Object.keys(object), objectOffset, 0);
 			}
 		} :
-		(object, safePrototype) => {
+		(object) => {
 			let nextTransition, transition = structures.transitions || (structures.transitions = Object.create(null));
 			let newTransitions = 0;
-			for (let key in object) if (safePrototype || object.hasOwnProperty(key)) {
+			for (let key in object) if (typeof object.hasOwnProperty !== 'function' || object.hasOwnProperty(key)) {
 				nextTransition = transition[key];
 				if (!nextTransition) {
 					nextTransition = transition[key] = Object.create(null);
@@ -1782,16 +1805,16 @@ class Packr extends Unpackr {
 			}
 			// now write the values
 			for (let key in object)
-				if (safePrototype || object.hasOwnProperty(key)) {
+				if (typeof object.hasOwnProperty !== 'function' || object.hasOwnProperty(key)) {
 					pack(object[key]);
 				}
 		};
 
-		// craete reference to useRecords if useRecords is a function
+		// create reference to useRecords if useRecords is a function
 		const checkUseRecords = typeof this.useRecords == 'function' && this.useRecords;
-		
-		const writeObject = checkUseRecords ? (object, safePrototype) => {
-			checkUseRecords(object) ? writeRecord(object,safePrototype) : writePlainObject(object,safePrototype);
+
+		const writeObject = checkUseRecords ? (object) => {
+			checkUseRecords(object) ? writeRecord(object) : writePlainObject(object);
 		} : writeRecord;
 
 		const makeRoom = (end) => {
@@ -1896,7 +1919,7 @@ class Packr extends Unpackr {
 				target[insertionOffset + start] = keysTarget[0];
 			}
 		};
-		const writeStruct = (object, safePrototype) => {
+		const writeStruct = (object) => {
 			let newPosition = writeStructSlots(object, target, start, position, structures, makeRoom, (value, newPosition, notifySharedUpdate) => {
 				if (notifySharedUpdate)
 					return hasSharedUpdate = true;
@@ -1910,15 +1933,21 @@ class Packr extends Unpackr {
 				return position;
 			}, this);
 			if (newPosition === 0) // bail and go to a msgpack object
-				return writeObject(object, true);
+				return writeObject(object);
 			position = newPosition;
 		};
 	}
 	useBuffer(buffer) {
 		// this means we are finished using our own buffer and we can write over it safely
 		target = buffer;
-		targetView = new DataView(target.buffer, target.byteOffset, target.byteLength);
+		target.dataView || (target.dataView = new DataView(target.buffer, target.byteOffset, target.byteLength));
 		position = 0;
+	}
+	set position (value) {
+		position = value;
+	}
+	get position() {
+		return position;
 	}
 	clearSharedData() {
 		if (this.structures)
@@ -1988,7 +2017,7 @@ extensions = [{
 			target[position++] = 0x65; // 'e' for error
 			target[position++] = 0;
 		}
-		pack([ error.name, error.message ]);
+		pack([ error.name, error.message, error.cause ]);
 	}
 }, {
 	pack(regex, allocateForWrite, pack) {
@@ -2041,6 +2070,7 @@ function writeExtBuffer(typedArray, type, allocateForWrite, encode) {
 	}
 	target[position++] = 0x74; // "t" for typed array
 	target[position++] = type;
+	if (!typedArray.buffer) typedArray = new Uint8Array(typedArray);
 	target.set(new Uint8Array(typedArray.buffer, typedArray.byteOffset, typedArray.byteLength), position);
 }
 function writeBuffer(buffer, allocateForWrite) {
@@ -2255,5 +2285,5 @@ const encodeIter = packIter;
 const useRecords = false;
 const mapsAsObjects = true;
 
-export { ALWAYS, C1, DECIMAL_FIT, DECIMAL_ROUND, Decoder, Encoder, FLOAT32_OPTIONS, NEVER, Packr, REUSE_BUFFER_MODE, Unpackr, addExtension, clearSource, decode, decodeIter, encode, encodeIter, isNativeAccelerationEnabled, mapsAsObjects, pack, roundFloat32, unpack, unpackMultiple, useRecords };
+export { ALWAYS, C1, DECIMAL_FIT, DECIMAL_ROUND, Decoder, Encoder, FLOAT32_OPTIONS, NEVER, Packr, RESERVE_START_SPACE, RESET_BUFFER_MODE, REUSE_BUFFER_MODE, Unpackr, addExtension, clearSource, decode, decodeIter, encode, encodeIter, isNativeAccelerationEnabled, mapsAsObjects, pack, roundFloat32, unpack, unpackMultiple, useRecords };
 //# sourceMappingURL=index.js.map

@@ -133,7 +133,10 @@ declare function rippleFocus({
 }): svelte_action.Action;
 
 /**
- * Provides a toggle action for `details` HTML elements. The boolean store provided controls animation.
+ * Provides a toggle action for `details` HTML elements. The boolean store when provided controls open / closed state.
+ * Animation is accomplished using WAAPI controlling the height of the details element. It should be noted that this
+ * animation may cause layout thrashing (reflows) depending on the amount of DOM elements on the page though this
+ * doesn't occur under most situations. Animation can be toggled on / off with the `animate` option.
  *
  * It is not necessary to bind the store to the `open` attribute of the associated details element.
  *

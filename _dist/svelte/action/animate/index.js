@@ -441,7 +441,10 @@ function rippleFocus({ duration = 300, background = 'rgba(255, 255, 255, 0.7)', 
 }
 
 /**
- * Provides a toggle action for `details` HTML elements. The boolean store provided controls animation.
+ * Provides a toggle action for `details` HTML elements. The boolean store when provided controls open / closed state.
+ * Animation is accomplished using WAAPI controlling the height of the details element. It should be noted that this
+ * animation may cause layout thrashing (reflows) depending on the amount of DOM elements on the page though this
+ * doesn't occur under most situations. Animation can be toggled on / off with the `animate` option.
  *
  * It is not necessary to bind the store to the `open` attribute of the associated details element.
  *
@@ -488,16 +491,22 @@ function toggleDetails(details, { store, animate = true, clickActive = true } = 
    /** @type {boolean} */
    let open = details.open;  // eslint-disable-line no-shadow
 
-   // The store sets initial open state and handles animation on further changes.
-   let unsubscribe = subscribeFirstRest(store, (value) => { open = value; details.open = open; }, async (value) =>
+   /** @type {import('svelte/store').Unsubscriber} */
+   let unsubscribe;
+
+   if (store)
    {
-      open = value;
+      // The store sets initial open state and handles animation on further changes.
+      unsubscribe = subscribeFirstRest(store, (value) => { open = value; details.open = open; }, async (value) =>
+      {
+         open = value;
 
-      // Await `tick` to allow any conditional logic in the template to complete updating before handling animation.
-      await tick();
+         // Await `tick` to allow any conditional logic in the template to complete updating before handling animation.
+         await tick();
 
-      handleAnimation();
-   });
+         handleAnimation();
+      });
+   }
 
    /**
     * @param {number} a -
@@ -611,7 +620,7 @@ function toggleDetails(details, { store, animate = true, clickActive = true } = 
       },
       destroy()
       {
-         unsubscribe();
+         if (typeof unsubscribe === 'function') { unsubscribe(); }
          summaryEl.removeEventListener('click', handleClick);
       }
    };

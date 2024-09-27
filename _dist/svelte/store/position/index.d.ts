@@ -1432,7 +1432,7 @@ declare class TJSPosition implements TJSPositionTypes.TJSPositionWritable {
   /**
    * @param {number | string | null} left -
    */
-  set left(left: number);
+  set left(left: string | number);
   /**
    * @returns {number | null} left
    */
@@ -1440,7 +1440,7 @@ declare class TJSPosition implements TJSPositionTypes.TJSPositionWritable {
   /**
    * @param {number | string | null} maxHeight -
    */
-  set maxHeight(maxHeight: number);
+  set maxHeight(maxHeight: string | number);
   /**
    * @returns {number | null} maxHeight
    */
@@ -1448,7 +1448,7 @@ declare class TJSPosition implements TJSPositionTypes.TJSPositionWritable {
   /**
    * @param {number | string | null} maxWidth -
    */
-  set maxWidth(maxWidth: number);
+  set maxWidth(maxWidth: string | number);
   /**
    * @returns {number | null} maxWidth
    */
@@ -1456,7 +1456,7 @@ declare class TJSPosition implements TJSPositionTypes.TJSPositionWritable {
   /**
    * @param {number | string | null} minHeight -
    */
-  set minHeight(minHeight: number);
+  set minHeight(minHeight: string | number);
   /**
    * @returns {number | null} minHeight
    */
@@ -1464,7 +1464,7 @@ declare class TJSPosition implements TJSPositionTypes.TJSPositionWritable {
   /**
    * @param {number | string | null} minWidth -
    */
-  set minWidth(minWidth: number);
+  set minWidth(minWidth: string | number);
   /**
    * @returns {number | null} minWidth
    */
@@ -1472,7 +1472,7 @@ declare class TJSPosition implements TJSPositionTypes.TJSPositionWritable {
   /**
    * @param {number | string | null} rotateX -
    */
-  set rotateX(rotateX: number);
+  set rotateX(rotateX: string | number);
   /**
    * @returns {number | null} rotateX
    */
@@ -1480,7 +1480,7 @@ declare class TJSPosition implements TJSPositionTypes.TJSPositionWritable {
   /**
    * @param {number | string | null} rotateY -
    */
-  set rotateY(rotateY: number);
+  set rotateY(rotateY: string | number);
   /**
    * @returns {number | null} rotateY
    */
@@ -1488,7 +1488,7 @@ declare class TJSPosition implements TJSPositionTypes.TJSPositionWritable {
   /**
    * @param {number | string | null} rotateZ -
    */
-  set rotateZ(rotateZ: number);
+  set rotateZ(rotateZ: string | number);
   /**
    * @returns {number | null} rotateZ
    */
@@ -1496,7 +1496,7 @@ declare class TJSPosition implements TJSPositionTypes.TJSPositionWritable {
   /**
    * @param {number | string | null} rotateZ - alias for rotateZ
    */
-  set rotation(rotateZ: number);
+  set rotation(rotateZ: string | number);
   /**
    * @returns {number | null} alias for rotateZ
    */
@@ -1504,7 +1504,7 @@ declare class TJSPosition implements TJSPositionTypes.TJSPositionWritable {
   /**
    * @param {number | string | null} scale -
    */
-  set scale(scale: number);
+  set scale(scale: string | number);
   /**
    * @returns {number | null} scale
    */
@@ -1512,7 +1512,7 @@ declare class TJSPosition implements TJSPositionTypes.TJSPositionWritable {
   /**
    * @param {number | string | null} top -
    */
-  set top(top: number);
+  set top(top: string | number);
   /**
    * @returns {number | null} top
    */
@@ -1528,7 +1528,7 @@ declare class TJSPosition implements TJSPositionTypes.TJSPositionWritable {
   /**
    * @param {number | string | null} translateX -
    */
-  set translateX(translateX: number);
+  set translateX(translateX: string | number);
   /**
    * @returns {number | null} translateX
    */
@@ -1536,7 +1536,7 @@ declare class TJSPosition implements TJSPositionTypes.TJSPositionWritable {
   /**
    * @param {number | string | null} translateY -
    */
-  set translateY(translateY: number);
+  set translateY(translateY: string | number);
   /**
    * @returns {number | null} translateY
    */
@@ -1544,7 +1544,7 @@ declare class TJSPosition implements TJSPositionTypes.TJSPositionWritable {
   /**
    * @param {number | string | null} translateZ -
    */
-  set translateZ(translateZ: number);
+  set translateZ(translateZ: string | number);
   /**
    * @returns {number | null} translateZ
    */
@@ -1560,7 +1560,7 @@ declare class TJSPosition implements TJSPositionTypes.TJSPositionWritable {
   /**
    * @param {number | string | null} zIndex -
    */
-  set zIndex(zIndex: number);
+  set zIndex(zIndex: string | number);
   /**
    * @returns {number | null} z-index
    */
