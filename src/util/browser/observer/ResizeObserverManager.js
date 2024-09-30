@@ -268,7 +268,7 @@ export class ResizeObserverManager
     */
    #hasTarget(el, target)
    {
-      if (target === void 0 || target === null) { return false;}
+      if (target === void 0 || target === null) { return false; }
 
       const subscribers = this.#elMap.get(el);
       if (Array.isArray(subscribers))

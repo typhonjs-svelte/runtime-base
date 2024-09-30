@@ -111,7 +111,7 @@ export class TJSPositionDataUtil
     *
     * @param {boolean}  [aliased=false] - When use non-aliased key.
     *
-    * @returns {*|number|null}
+    * @returns {*|number|null} Data at key or numeric default.
     */
    static getDataOrDefault(data, key, aliased = false)
    {

@@ -180,7 +180,8 @@ export class UpdateElementManager
    // Internal Implementation ----------------------------------------------------------------------------------------
 
    /**
-    * Temporary data for
+    * Temporary data for validation.
+    *
     * @type {{width, marginTop, height, marginLeft}}
     */
    static #validationData = Object.seal({

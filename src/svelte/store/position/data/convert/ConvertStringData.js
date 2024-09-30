@@ -57,6 +57,8 @@ export class ConvertStringData
     * @param {import('../data/types').Data.TJSPositionData}   position - The source position data.
     *
     * @param {HTMLElement} el - Target positioned element.
+    *
+    * @returns {import('../data/types').Data.TJSPositionDataRelative} Converted data.
     */
    static process(data, position, el)
    {

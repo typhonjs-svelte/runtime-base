@@ -212,7 +212,8 @@ export class TJSPosition
    /**
     * Returns a list of supported transform origins.
     *
-    * @returns {Readonly<import('./transform/types').TransformAPI.TransformOrigin[]>}
+    * @returns {Readonly<import('./transform/types').TransformAPI.TransformOrigin[]>} The supported transform origin
+    *          strings.
     */
    static get transformOrigins()
    {
@@ -1139,7 +1140,7 @@ export class TJSPosition
     * {@link TJSPositionDataRelative}.
     *
     * @param {import('svelte/store').Updater<import('./data/types').Data.TJSPositionDataRelative>} updater -
-   */
+    */
    update(updater)
    {
       const result = updater(this.get());

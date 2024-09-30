@@ -47,7 +47,7 @@ export class AnimationControl
    /**
     * Get a promise that resolves when animation is finished.
     *
-    * @returns {Promise<import('#runtime/util/animate').BasicAnimationState>}
+    * @returns {Promise<import('#runtime/util/animate').BasicAnimationState>} Animation finished Promise.
     */
    get finished()
    {

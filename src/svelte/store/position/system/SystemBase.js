@@ -4,6 +4,7 @@ import { A11yHelper } from '#runtime/util/browser';
  * Provides a base {@link System.SystemBase} implementation.
  *
  * @implements {import('svelte/store').Readable}
+ *
  * @implements {import('./types').System.SystemBase}
  */
 export class SystemBase

@@ -102,7 +102,9 @@ export class AnimationManager
    }
 
    /**
-    * Manage all animation
+    * Manage all animation.
+    *
+    * @param {DOMHighResTimeStamp} timeFrame - rAF callback time.
     */
    static animate(timeFrame)
    {
