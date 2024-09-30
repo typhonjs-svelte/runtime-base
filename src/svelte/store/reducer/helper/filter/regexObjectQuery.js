@@ -33,7 +33,7 @@ export function regexObjectQuery(accessors, { accessWarn = false, caseSensitive 
 
    if (store !== void 0 && !isWritableStore(store))
    {
-      throw new TypeError(`createObjectQuery error: 'store' is not a writable store.`);
+      throw new TypeError(`regexObjectQuery error: 'store' is not a writable store.`);
    }
 
    const storeKeyword = store ? store : writable(keyword);
