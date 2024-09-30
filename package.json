@@ -17,6 +17,10 @@
     "#svelte/*": "svelte/*"
   },
   "exports": {
+    "./data/color/colord": {
+      "types": "./_dist/data/color/colord/index.d.ts",
+      "import": "./_dist/data/color/colord/index.js"
+    },
     "./data/compress": {
       "types": "./_dist/data/compress/index.d.ts",
       "import": "./_dist/data/compress/index.js"
@@ -157,6 +161,10 @@
       "types": "./_dist/util/browser/index.d.ts",
       "import": "./_dist/util/browser/index.js"
     },
+    "./util/i18n": {
+      "types": "./_dist/util/i18n/index.d.ts",
+      "import": "./_dist/util/i18n/index.js"
+    },
     "./util/loader-module": {
       "types": "./_dist/util/loader-module/index.d.ts",
       "import": "./_dist/util/loader-module/index.js"
@@ -184,6 +192,7 @@
     "@typhonjs-utils/loader-module": "^0.1.0",
     "@typhonjs-utils/object": "^0.1.0",
     "@typhonjs-utils/unicode": "^0.1.0",
+    "colord-typhonjs": "github:typhonjs-svelte-scratch/colord#0.0.3",
     "eslint": "^8.57.0",
     "fflate": "^0.8.2",
     "gl-matrix": "github:typhonjs-svelte-scratch/gl-matrix-beta3-dist#glmatrix-next",

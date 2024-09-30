@@ -22,6 +22,22 @@ const resolveOptions = { browser: true };
 const rollupConfigs = [
    {
       input: {
+         input: 'src/data/color/colord/index.js',
+         plugins: [
+            importsExternal(),
+            resolve(resolveOptions),
+            generateDTS.plugin(dtsPluginOptions)
+         ]
+      },
+      output: {
+         file: '_dist/data/color/colord/index.js',
+         format: 'es',
+         generatedCode: { constBindings: true },
+         sourcemap
+      }
+   },
+   {
+      input: {
          input: 'src/data/compress/index.js',
          plugins: [
             importsExternal(),
@@ -599,6 +615,22 @@ const rollupConfigs = [
       },
       output: {
          file: '_dist/util/browser/index.js',
+         format: 'es',
+         generatedCode: { constBindings: true },
+         sourcemap
+      }
+   },
+   {
+      input: {
+         input: 'src/util/i18n/index.js',
+         plugins: [
+            importsExternal(),
+            resolve(resolveOptions),
+            generateDTS.plugin(dtsPluginOptions)
+         ]
+      },
+      output: {
+         file: '_dist/util/i18n/index.js',
          format: 'es',
          generatedCode: { constBindings: true },
          sourcemap
