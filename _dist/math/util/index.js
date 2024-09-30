@@ -33,6 +33,7 @@ class MathRandom
 {
    /**
     * Private constructor to prevent instantiation.
+    *
     * @private
     */
    constructor()
@@ -66,7 +67,8 @@ class MathRandom
     *
     * @returns {number} Random float.
     */
-   static getFloat(min, max) {
+   static getFloat(min, max)
+   {
       return Math.random() * (max - min) + min;
    }
 
@@ -75,7 +77,8 @@ class MathRandom
     *
     * @returns {boolean} Random boolean.
     */
-   static getBoolean() {
+   static getBoolean()
+   {
       return Math.random() > 0.5;
    }
 

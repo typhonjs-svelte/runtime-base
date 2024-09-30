@@ -609,7 +609,7 @@ class AnimationControl
    /**
     * Get a promise that resolves when animation is finished.
     *
-    * @returns {Promise<import('#runtime/util/animate').BasicAnimationState>}
+    * @returns {Promise<import('#runtime/util/animate').BasicAnimationState>} Animation finished Promise.
     */
    get finished()
    {
@@ -758,7 +758,9 @@ class AnimationManager
    }
 
    /**
-    * Manage all animation
+    * Manage all animation.
+    *
+    * @param {DOMHighResTimeStamp} timeFrame - rAF callback time.
     */
    static animate(timeFrame)
    {
@@ -1214,7 +1216,7 @@ class TJSPositionDataUtil
     *
     * @param {boolean}  [aliased=false] - When use non-aliased key.
     *
-    * @returns {*|number|null}
+    * @returns {*|number|null} Data at key or numeric default.
     */
    static getDataOrDefault(data, key, aliased = false)
    {
@@ -1311,6 +1313,8 @@ class ConvertStringData
     * @param {import('../data/types').Data.TJSPositionData}   position - The source position data.
     *
     * @param {HTMLElement} el - Target positioned element.
+    *
+    * @returns {import('../data/types').Data.TJSPositionDataRelative} Converted data.
     */
    static process(data, position, el)
    {
@@ -1755,7 +1759,7 @@ class TJSTransforms
    /**
     * Returns a list of supported transform origins.
     *
-    * @returns {Readonly<import('./types').TransformAPI.TransformOrigin[]>}
+    * @returns {Readonly<import('./types').TransformAPI.TransformOrigin[]>} The supported transform origin strings.
     */
    static get transformOrigins()
    {
@@ -4585,6 +4589,7 @@ class PositionStateAPI
  * Provides a base {@link System.SystemBase} implementation.
  *
  * @implements {import('svelte/store').Readable}
+ *
  * @implements {import('./types').System.SystemBase}
  */
 class SystemBase
@@ -5612,7 +5617,8 @@ class UpdateElementManager
    // Internal Implementation ----------------------------------------------------------------------------------------
 
    /**
-    * Temporary data for
+    * Temporary data for validation.
+    *
     * @type {{width, marginTop, height, marginLeft}}
     */
    static #validationData = Object.seal({
@@ -6084,7 +6090,8 @@ class TJSPosition
    /**
     * Returns a list of supported transform origins.
     *
-    * @returns {Readonly<import('./transform/types').TransformAPI.TransformOrigin[]>}
+    * @returns {Readonly<import('./transform/types').TransformAPI.TransformOrigin[]>} The supported transform origin
+    *          strings.
     */
    static get transformOrigins()
    {
@@ -7005,7 +7012,7 @@ class TJSPosition
     * {@link TJSPositionDataRelative}.
     *
     * @param {import('svelte/store').Updater<import('./data/types').Data.TJSPositionDataRelative>} updater -
-   */
+    */
    update(updater)
    {
       const result = updater(this.get());

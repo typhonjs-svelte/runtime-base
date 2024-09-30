@@ -1306,7 +1306,8 @@ declare class TJSPosition implements TJSPositionTypes.TJSPositionWritable {
   /**
    * Returns a list of supported transform origins.
    *
-   * @returns {Readonly<import('./transform/types').TransformAPI.TransformOrigin[]>}
+   * @returns {Readonly<import('./transform/types').TransformAPI.TransformOrigin[]>} The supported transform origin
+   *          strings.
    */
   static get transformOrigins(): readonly TransformAPI.TransformOrigin[];
   /**
