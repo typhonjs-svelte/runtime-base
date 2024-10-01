@@ -1,4 +1,4 @@
-import { A11yHelper } from '#runtime/util/browser';
+import { A11yHelper } from '#runtime/util/a11y';
 
 /**
  * Provides a base {@link System.SystemBase} implementation.

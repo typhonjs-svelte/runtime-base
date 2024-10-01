@@ -2,7 +2,7 @@ import { lerp }                  from '#runtime/math/interpolate';
 
 import { getEasingFunc }         from '#runtime/svelte/easing';
 
-import { A11yHelper }            from '#runtime/util/browser';
+import { A11yHelper }            from '#runtime/util/a11y';
 
 import {
    isIterable,

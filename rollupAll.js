@@ -574,6 +574,22 @@ const rollupConfigs = [
    },
    {
       input: {
+         input: 'src/util/a11y/index.js',
+         plugins: [
+            importsExternal(),
+            resolve(resolveOptions),
+            generateDTS.plugin(dtsPluginOptions)
+         ]
+      },
+      output: {
+         file: '_dist/util/a11y/index.js',
+         format: 'es',
+         generatedCode: { constBindings: true },
+         sourcemap
+      }
+   },
+   {
+      input: {
          input: 'src/util/animate/index.js',
          plugins: [
             importsExternal(),

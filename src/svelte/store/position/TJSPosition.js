@@ -2,7 +2,7 @@ import { clamp }                 from '#runtime/math/util';
 
 import { propertyStore }         from '#runtime/svelte/store/writable-derived';
 
-import { A11yHelper }            from '#runtime/util/browser';
+import { A11yHelper }            from '#runtime/util/a11y';
 
 import {
    isIterable,

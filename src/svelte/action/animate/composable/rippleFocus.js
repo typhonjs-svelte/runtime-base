@@ -1,4 +1,4 @@
-import { A11yHelper } from '#runtime/util/browser';
+import { A11yHelper } from '#runtime/util/a11y';
 
 /**
  * Defines the classic Material Design ripple effect as an action that is attached to an elements focus and blur events.

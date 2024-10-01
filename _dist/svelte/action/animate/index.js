@@ -2,7 +2,7 @@ import { tick } from 'svelte';
 import { subscribeFirstRest, isWritableStore } from '@typhonjs-svelte/runtime-base/util/store';
 import { Timing } from '@typhonjs-svelte/runtime-base/util';
 import { isObject } from '@typhonjs-svelte/runtime-base/util/object';
-import { A11yHelper } from '@typhonjs-svelte/runtime-base/util/browser';
+import { A11yHelper } from '@typhonjs-svelte/runtime-base/util/a11y';
 
 /**
  * Defines an `Element.animate` animation from provided keyframes and options.
