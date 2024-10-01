@@ -29,6 +29,10 @@
       "types": "./_dist/data/format/base64/index.d.ts",
       "import": "./_dist/data/format/base64/index.js"
     },
+    "./data/format/jsonc": {
+      "types": "./_dist/data/format/jsonc/index.d.ts",
+      "import": "./_dist/data/format/jsonc/index.js"
+    },
     "./data/format/json5": {
       "types": "./_dist/data/format/json5/index.d.ts",
       "import": "./_dist/data/format/json5/index.js"
@@ -217,6 +221,7 @@
     "fflate": "^0.8.2",
     "gl-matrix": "github:typhonjs-svelte-scratch/gl-matrix-beta3-dist#glmatrix-next",
     "js-base64": "^3.7.7",
+    "jsonc-parser": "^3.3.1",
     "json5": "^2.2.3",
     "msgpackr": "^1.11.0",
     "quick-lru": "^7.0.0",

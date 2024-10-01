@@ -70,6 +70,22 @@ const rollupConfigs = [
    },
    {
       input: {
+         input: 'src/data/format/jsonc/index.js',
+         plugins: [
+            importsExternal(),
+            resolve(resolveOptions),
+            generateDTS.plugin(dtsPluginOptions)
+         ]
+      },
+      output: {
+         file: '_dist/data/format/jsonc/index.js',
+         format: 'es',
+         generatedCode: { constBindings: true },
+         sourcemap
+      }
+   },
+   {
+      input: {
          input: 'src/data/format/json5/index.js',
          plugins: [
             commonjs(),
