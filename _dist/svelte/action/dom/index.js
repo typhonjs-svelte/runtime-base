@@ -1,6 +1,6 @@
 import { Timing } from '@typhonjs-svelte/runtime-base/util';
 import { isWritableStore } from '@typhonjs-svelte/runtime-base/util/store';
-import { ResizeObserverManager } from '@typhonjs-svelte/runtime-base/util/dom/observer/resize';
+import { ResizeObserverManager } from '@typhonjs-svelte/runtime-base/util/dom/observer';
 import { isObject } from '@typhonjs-svelte/runtime-base/util/object';
 
 /**
@@ -57,11 +57,11 @@ const resizeObserverActionManager = new ResizeObserverManager();
  *
  * @param {HTMLElement} node - The node associated with the action.
  *
- * @param {import('#runtime/util/dom/observer/resize').ResizeObserverData.ResizeTarget} target - A
+ * @param {import('#runtime/util/dom/observer').ResizeObserverData.ResizeTarget} target - A
  *        {@link ResizeObserverManager} target to update with observed width & height changes.
  *
  * @returns {(import('svelte/action').ActionReturn<
- *   import('#runtime/util/dom/observer/resize').ResizeObserverData.ResizeTarget
+ *   import('#runtime/util/dom/observer').ResizeObserverData.ResizeTarget
  * >)} The action lifecycle methods.
  *
  * @see https://github.com/sveltejs/svelte/issues/4233
@@ -72,7 +72,7 @@ function resizeObserver(node, target)
 
    return {
       /**
-       * @param {import('#runtime/util/dom/observer/resize').ResizeObserverData.ResizeTarget} newTarget - A
+       * @param {import('#runtime/util/dom/observer').ResizeObserverData.ResizeTarget} newTarget - A
        *        {@link ResizeObserverManager} target to update with observed width & height changes.
        */
       update: (newTarget) =>

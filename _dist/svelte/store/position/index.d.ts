@@ -10,7 +10,7 @@
 import * as svelte_action from 'svelte/action';
 import * as svelte_store from 'svelte/store';
 import { Writable, Subscriber, Invalidator, Unsubscriber, Readable } from 'svelte/store';
-import { ResizeObserverData } from '@typhonjs-svelte/runtime-base/util/dom/observer/resize';
+import { ResizeObserverData } from '@typhonjs-svelte/runtime-base/util/dom/observer';
 import { InterpolateFunctionName } from '@typhonjs-svelte/runtime-base/math/interpolate';
 import { EasingReference } from '@typhonjs-svelte/runtime-base/svelte/easing';
 import { BasicAnimation } from '@typhonjs-svelte/runtime-base/util/animate';

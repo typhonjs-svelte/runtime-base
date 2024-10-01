@@ -1,6 +1,6 @@
 import * as svelte_action from 'svelte/action';
 import * as svelte_store from 'svelte/store';
-import * as _runtime_util_dom_observer_resize from '@typhonjs-svelte/runtime-base/util/dom/observer/resize';
+import * as _runtime_util_dom_observer from '@typhonjs-svelte/runtime-base/util/dom/observer';
 
 /**
  * Provides an action to always blur the element when any pointer up event occurs on the element.
@@ -91,19 +91,19 @@ declare function isFocused(
  *
  * @param {HTMLElement} node - The node associated with the action.
  *
- * @param {import('#runtime/util/dom/observer/resize').ResizeObserverData.ResizeTarget} target - A
+ * @param {import('#runtime/util/dom/observer').ResizeObserverData.ResizeTarget} target - A
  *        {@link ResizeObserverManager} target to update with observed width & height changes.
  *
  * @returns {(import('svelte/action').ActionReturn<
- *   import('#runtime/util/dom/observer/resize').ResizeObserverData.ResizeTarget
+ *   import('#runtime/util/dom/observer').ResizeObserverData.ResizeTarget
  * >)} The action lifecycle methods.
  *
  * @see https://github.com/sveltejs/svelte/issues/4233
  */
 declare function resizeObserver(
   node: HTMLElement,
-  target: _runtime_util_dom_observer_resize.ResizeObserverData.ResizeTarget,
-): svelte_action.ActionReturn<_runtime_util_dom_observer_resize.ResizeObserverData.ResizeTarget>;
+  target: _runtime_util_dom_observer.ResizeObserverData.ResizeTarget,
+): svelte_action.ActionReturn<_runtime_util_dom_observer.ResizeObserverData.ResizeTarget>;
 declare namespace resizeObserver {
   /**
    * Provides a function that when invoked with an element updates the cached styles for each subscriber of the element.

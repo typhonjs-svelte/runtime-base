@@ -654,7 +654,7 @@ const rollupConfigs = [
    },
    {
       input: {
-         input: 'src/util/dom/observer/resize/index.js',
+         input: 'src/util/dom/observer/index.js',
          plugins: [
             importsExternal(),
             resolve(resolveOptions),
@@ -662,7 +662,7 @@ const rollupConfigs = [
          ]
       },
       output: {
-         file: '_dist/util/dom/observer/resize/index.js',
+         file: '_dist/util/dom/observer/index.js',
          format: 'es',
          generatedCode: { constBindings: true },
          sourcemap

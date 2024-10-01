@@ -2,7 +2,7 @@ import type {
    Readable,
    Writable }                       from 'svelte/store';
 
-import type { ResizeObserverData }  from '#runtime/util/dom/observer/resize';
+import type { ResizeObserverData }  from '#runtime/util/dom/observer';
 
 import type { TJSPosition }         from './TJSPosition';
 import type { Data }                from './data/types';
