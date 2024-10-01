@@ -1,4 +1,4 @@
-import { ResizeObserverManager } from '#runtime/util/browser';
+import { ResizeObserverManager } from '#runtime/util/dom/observer/resize';
 
 /**
  * Provides a single global ResizeObserverManager instance for the resizeObserver action.
@@ -30,11 +30,12 @@ const resizeObserverActionManager = new ResizeObserverManager();
  *
  * @param {HTMLElement} node - The node associated with the action.
  *
- * @param {import('#runtime/util/browser').ResizeObserverData.ResizeTarget} target - A {@link ResizeObserverManager}
- *        target to update with observed width & height changes.
+ * @param {import('#runtime/util/dom/observer/resize').ResizeObserverData.ResizeTarget} target - A
+ *        {@link ResizeObserverManager} target to update with observed width & height changes.
  *
- * @returns {import('svelte/action').ActionReturn<import('#runtime/util/browser').ResizeObserverData.ResizeTarget>} The
- *          action lifecycle methods.
+ * @returns {(import('svelte/action').ActionReturn<
+ *   import('#runtime/util/dom/observer/resize').ResizeObserverData.ResizeTarget
+ * >)} The action lifecycle methods.
  *
  * @see https://github.com/sveltejs/svelte/issues/4233
  */
@@ -44,7 +45,7 @@ function resizeObserver(node, target)
 
    return {
       /**
-       * @param {import('#runtime/util/browser').ResizeObserverData.ResizeTarget} newTarget - A
+       * @param {import('#runtime/util/dom/observer/resize').ResizeObserverData.ResizeTarget} newTarget - A
        *        {@link ResizeObserverManager} target to update with observed width & height changes.
        */
       update: (newTarget) =>

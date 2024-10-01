@@ -1,7 +1,6 @@
+import { StyleParse }         from '#runtime/util/browser';
 import { isObject }           from '#runtime/util/object';
 import { isUpdatableStore }   from '#runtime/util/store';
-
-import { StyleParse }         from '../style';
 
 /**
  * Provides an instance of {@link ResizeObserver} that can manage multiple elements and notify a wide range of

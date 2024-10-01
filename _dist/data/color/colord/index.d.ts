@@ -1,3 +1,12 @@
+/**
+ * Documentation: {@link https://github.com/omgovich/colord#getting-started}
+ *
+ * Note: For the time being `colord` provides "the best" API / support for working with color with Javascript. It
+ * however may not be the long term solution for TRL as it is not maintained.
+ *
+ * @module
+ */
+
 type RgbColor = {
   r: number;
   g: number;
