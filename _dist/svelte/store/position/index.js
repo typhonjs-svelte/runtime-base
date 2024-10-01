@@ -7,7 +7,7 @@ import { Vec3, Mat4 } from '@typhonjs-svelte/runtime-base/math/gl-matrix';
 import { lerp } from '@typhonjs-svelte/runtime-base/math/interpolate';
 import { getEasingFunc } from '@typhonjs-svelte/runtime-base/svelte/easing';
 import { writable } from 'svelte/store';
-import { StyleParse } from '@typhonjs-svelte/runtime-base/util/browser';
+import { StyleParse } from '@typhonjs-svelte/runtime-base/util/dom/style';
 import { nextAnimationFrame } from '@typhonjs-svelte/runtime-base/util/animate';
 
 /**

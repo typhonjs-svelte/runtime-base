@@ -4,7 +4,7 @@ import { propertyStore }   from '#runtime/svelte/store/writable-derived';
 
 import { A11yHelper }      from '#runtime/util/a11y';
 
-import { StyleParse }      from '#runtime/util/browser';
+import { StyleParse }      from '#runtime/util/dom/style';
 
 /**
  * Caches computed styles of a {@link TJSPosition} target element.

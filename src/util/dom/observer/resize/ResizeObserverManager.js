@@ -1,4 +1,4 @@
-import { StyleParse }         from '#runtime/util/browser';
+import { StyleParse }         from '#runtime/util/dom/style';
 import { isObject }           from '#runtime/util/object';
 import { isUpdatableStore }   from '#runtime/util/store';
 

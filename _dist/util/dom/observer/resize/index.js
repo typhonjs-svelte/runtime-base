@@ -1,4 +1,4 @@
-import { StyleParse } from '@typhonjs-svelte/runtime-base/util/browser';
+import { StyleParse } from '@typhonjs-svelte/runtime-base/util/dom/style';
 import { isObject } from '@typhonjs-svelte/runtime-base/util/object';
 import { isUpdatableStore } from '@typhonjs-svelte/runtime-base/util/store';
 
