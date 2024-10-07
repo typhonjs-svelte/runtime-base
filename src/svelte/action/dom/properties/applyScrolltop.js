@@ -1,7 +1,6 @@
+import { resizeObserver }  from '#runtime/svelte/action/dom/observer';
 import { Timing }          from '#runtime/util';
 import { isWritableStore } from '#runtime/util/store';
-
-import { resizeObserver }  from './resizeObserver.js';
 
 /**
  * Provides an action to save `scrollTop` of an element with a vertical scrollbar. This action should be used on the

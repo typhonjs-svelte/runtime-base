@@ -357,7 +357,7 @@ const rollupConfigs = [
    },
    {
       input: {
-         input: 'src/svelte/action/dom/index.js',
+         input: 'src/svelte/action/dom/focus/index.js',
          plugins: [
             importsExternal(),
             resolve(resolveOptions),
@@ -365,7 +365,55 @@ const rollupConfigs = [
          ]
       },
       output: {
-         file: '_dist/svelte/action/dom/index.js',
+         file: '_dist/svelte/action/dom/focus/index.js',
+         format: 'es',
+         generatedCode: { constBindings: true },
+         sourcemap
+      }
+   },
+   {
+      input: {
+         input: 'src/svelte/action/dom/observer/index.js',
+         plugins: [
+            importsExternal(),
+            resolve(resolveOptions),
+            generateDTS.plugin(dtsPluginOptions)
+         ]
+      },
+      output: {
+         file: '_dist/svelte/action/dom/observer/index.js',
+         format: 'es',
+         generatedCode: { constBindings: true },
+         sourcemap
+      }
+   },
+   {
+      input: {
+         input: 'src/svelte/action/dom/properties/index.js',
+         plugins: [
+            importsExternal(),
+            resolve(resolveOptions),
+            generateDTS.plugin(dtsPluginOptions)
+         ]
+      },
+      output: {
+         file: '_dist/svelte/action/dom/properties/index.js',
+         format: 'es',
+         generatedCode: { constBindings: true },
+         sourcemap
+      }
+   },
+   {
+      input: {
+         input: 'src/svelte/action/dom/style/index.js',
+         plugins: [
+            importsExternal(),
+            resolve(resolveOptions),
+            generateDTS.plugin(dtsPluginOptions)
+         ]
+      },
+      output: {
+         file: '_dist/svelte/action/dom/style/index.js',
          format: 'es',
          generatedCode: { constBindings: true },
          sourcemap
