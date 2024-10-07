@@ -7,7 +7,7 @@ import {
 import { isWritableStore } from '#runtime/util/store';
 
 /**
- * Creates a filter function to compare objects by a give property key against a regex test. The returned function
+ * Creates a filter function to compare objects by a given accessor key against a regex test. The returned function
  * is also a writable Svelte store that builds a regex from the stores value.
  *
  * This filter function can be used w/ a dynamic reducer and bound as a store to input elements.
