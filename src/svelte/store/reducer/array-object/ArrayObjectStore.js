@@ -1,16 +1,16 @@
 import { DynArrayReducer }    from '#runtime/svelte/store/reducer';
 
 import {
+   isMinimalWritableStore,
+   subscribeIgnoreFirst }     from '#runtime/svelte/store/util';
+
+import {
    Hashing,
    Timing }                   from '#runtime/util';
 
 import {
    isObject,
    klona }                    from '#runtime/util/object';
-
-import {
-   isWritableStore,
-   subscribeIgnoreFirst }     from '#runtime/util/store';
 
 import { ObjectEntryStore }   from './ObjectEntryStore.js';
 
@@ -71,9 +71,9 @@ export class ArrayObjectStore
 
       if (typeof manualUpdate !== 'boolean') { throw new TypeError(`'manualUpdate' is not a boolean.`); }
 
-      if (!isWritableStore(StoreClass.prototype))
+      if (!isMinimalWritableStore(StoreClass.prototype))
       {
-         throw new TypeError(`'StoreClass' is not a writable store constructor.`);
+         throw new TypeError(`'StoreClass' is not a minimal writable store constructor.`);
       }
 
       let hasIDGetter = false;

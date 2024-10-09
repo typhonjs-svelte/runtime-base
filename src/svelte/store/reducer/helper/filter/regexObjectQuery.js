@@ -1,10 +1,11 @@
-import { get, writable }   from '#svelte/store';
+import { get, writable }            from '#svelte/store';
 
-import { Strings }         from '#runtime/util';
+import { isMinimalWritableStore }   from '#runtime/svelte/store/util';
+import { Strings }                  from '#runtime/util';
+
 import {
    isIterable,
-   safeAccess }            from '#runtime/util/object';
-import { isWritableStore } from '#runtime/util/store';
+   safeAccess }                     from '#runtime/util/object';
 
 /**
  * Creates a filter function to compare objects by a given accessor key against a regex test. The returned function
@@ -12,7 +13,7 @@ import { isWritableStore } from '#runtime/util/store';
  *
  * This filter function can be used w/ a dynamic reducer and bound as a store to input elements.
  *
- * @param {string|Iterable<string>}   accessors - Property key / accessors to lookup key to compare. To access deeper
+ * @param {string | Iterable<string>}   accessors - Property key / accessors to lookup key to compare. To access deeper
  *        entries into the object format the accessor string with `.` between entries to walk.
  *
  * @param {object}   [opts] - Optional parameters.
@@ -21,19 +22,20 @@ import { isWritableStore } from '#runtime/util/store';
  *
  * @param {boolean}  [opts.caseSensitive=false] - When true regex test is case-sensitive.
  *
- * @param {import('svelte/store').Writable<string>}  [opts.store] - Use the provided store to instead of creating
- *        a default writable store.
+ * @param {import('#runtime/svelte/store/util').MinimalWritable<string>}  [opts.store] - Use the provided minimal
+ *        writable store to instead of creating a default `writable` store.
  *
- * @returns {((data: object) => boolean) & import('svelte/store').Writable<string>} The query string filter.
+ * @returns {((data: object) => boolean) & import('#runtime/svelte/store/util').MinimalWritable<string>}
+ *        The query string filter.
  */
 export function regexObjectQuery(accessors, { accessWarn = false, caseSensitive = false, store } = {})
 {
    let keyword = '';
    let regex;
 
-   if (store !== void 0 && !isWritableStore(store))
+   if (store !== void 0 && !isMinimalWritableStore(store))
    {
-      throw new TypeError(`regexObjectQuery error: 'store' is not a writable store.`);
+      throw new TypeError(`regexObjectQuery error: 'store' is not a minimal writable store.`);
    }
 
    const storeKeyword = store ? store : writable(keyword);

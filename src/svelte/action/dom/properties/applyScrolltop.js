@@ -1,6 +1,6 @@
-import { resizeObserver }  from '#runtime/svelte/action/dom/observer';
-import { Timing }          from '#runtime/util';
-import { isWritableStore } from '#runtime/util/store';
+import { resizeObserver }           from '#runtime/svelte/action/dom/observer';
+import { isMinimalWritableStore }   from '#runtime/svelte/store/util';
+import { Timing }                   from '#runtime/util';
 
 /**
  * Provides an action to save `scrollTop` of an element with a vertical scrollbar. This action should be used on the
@@ -10,15 +10,18 @@ import { isWritableStore } from '#runtime/util/store';
  *
  * @param {HTMLElement} element - The target scrollable HTML element.
  *
- * @param {import('svelte/store').Writable<number>}   store - A writable store that stores the element scrollTop.
+ * @param {import('#runtime/svelte/store/util').MinimalWritable<number>}   store - A minimal writable store that stores
+ *        the element scrollTop.
  *
- * @returns {import('svelte/action').ActionReturn<import('svelte/store').Writable<number>>} Lifecycle functions.
+ * @returns {(import('svelte/action').ActionReturn<
+ *    import('#runtime/svelte/store/util').MinimalWritable<number>
+ * >)} Lifecycle functions.
  */
 export function applyScrolltop(element, store)
 {
-   if (!isWritableStore(store))
+   if (!isMinimalWritableStore(store))
    {
-      throw new TypeError(`applyScrolltop error: 'store' must be a writable Svelte store.`);
+      throw new TypeError(`applyScrolltop error: 'store' must be a minimal writable Svelte store.`);
    }
 
    /**
@@ -57,16 +60,17 @@ export function applyScrolltop(element, store)
 
    return {
       /**
-       * @param {import('svelte/store').Writable<number>} newStore - A writable store that stores the element scrollTop.
+       * @param {import('#runtime/svelte/store/util').MinimalWritable<number>} newStore - A minimal writable store that
+       *        stores the element scrollTop.
        */
       update: (newStore) =>
       {
          unsubscribe();
          store = newStore;
 
-         if (!isWritableStore(store))
+         if (!isMinimalWritableStore(store))
          {
-            throw new TypeError(`applyScrolltop.update error: 'store' must be a writable Svelte store.`);
+            throw new TypeError(`applyScrolltop.update error: 'store' must be a minimal writable Svelte store.`);
          }
 
          unsubscribe = store.subscribe(storeUpdate);

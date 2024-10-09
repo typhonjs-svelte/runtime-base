@@ -1,4 +1,4 @@
-import { isWritableStore } from '#runtime/util/store';
+import { isMinimalWritableStore } from '#runtime/svelte/store/util';
 
 /**
  * Provides an action to monitor focus state of a given element and set an associated store with current focus state.
@@ -7,9 +7,12 @@ import { isWritableStore } from '#runtime/util/store';
  *
  * @param {HTMLElement} node - Target element.
  *
- * @param {import('svelte/store').Writable<boolean>}  storeFocused - Update store for focus changes.
+ * @param {import('#runtime/svelte/store/util').MinimalWritable<boolean>}  storeFocused - Update store for focus
+ *        changes.
  *
- * @returns {import('svelte/action').ActionReturn<import('svelte/store').Writable<boolean>>} Lifecycle functions.
+ * @returns {(import('svelte/action').ActionReturn<
+ *    import('#runtime/svelte/store/util').MinimalWritable<boolean>
+ * >)} Lifecycle functions.
  */
 export function isFocused(node, storeFocused)
 {
@@ -24,7 +27,7 @@ export function isFocused(node, storeFocused)
    {
       localFocused = current;
 
-      if (isWritableStore(storeFocused)) { storeFocused.set(localFocused); }
+      if (isMinimalWritableStore(storeFocused)) { storeFocused.set(localFocused); }
    }
 
    /**
@@ -65,7 +68,8 @@ export function isFocused(node, storeFocused)
 
    return {
       /**
-       * @param {import('svelte/store').Writable<boolean>}  newStoreFocused - Update store for focus changes.
+       * @param {import('#runtime/svelte/store/util').MinimalWritable<boolean>}  newStoreFocused - Update store for
+       *        focus changes.
        */
       update: (newStoreFocused) =>
       {

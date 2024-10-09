@@ -1,6 +1,6 @@
-import { StyleParse }         from '#runtime/util/dom/style';
-import { isObject }           from '#runtime/util/object';
-import { isUpdatableStore }   from '#runtime/util/store';
+import { isWritableStore } from '#runtime/svelte/store/util';
+import { StyleParse }      from '#runtime/util/dom/style';
+import { isObject }        from '#runtime/util/object';
 
 /**
  * Provides an instance of {@link ResizeObserver} that can manage multiple elements and notify a wide range of
@@ -233,7 +233,7 @@ export class ResizeObserverManager
       // Does the target have resizeObserved writable store?
       if (targetType !== null && (targetType === 'object' || targetType === 'function'))
       {
-         if (isUpdatableStore(target.resizeObserved))
+         if (isWritableStore(target.resizeObserved))
          {
             return this.#updateTypes.storeObject;
          }
@@ -242,7 +242,7 @@ export class ResizeObserverManager
          const stores = target?.stores;
          if (isObject(stores) || typeof stores === 'function')
          {
-            if (isUpdatableStore(stores.resizeObserved))
+            if (isWritableStore(stores.resizeObserved))
             {
                return this.#updateTypes.storesObject;
             }

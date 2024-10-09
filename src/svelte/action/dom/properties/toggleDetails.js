@@ -1,8 +1,8 @@
-import { tick }         from '#svelte';
+import { tick }            from '#svelte';
 
 import {
-   isWritableStore,
-   subscribeFirstRest } from '#runtime/util/store';
+   isMinimalWritableStore,
+   subscribeFirstRest }    from '#runtime/svelte/store/util';
 
 /**
  * Provides a toggle action for `details` HTML elements. The boolean store when provided controls open / closed state.
@@ -19,7 +19,7 @@ import {
  *
  * @param {object} opts - Options parameters.
  *
- * @param {import('svelte/store').Writable<boolean>} opts.store - A boolean store.
+ * @param {import('#runtime/svelte/store/util').MinimalWritable<boolean>} opts.store - A minimal writable boolean store.
  *
  * @param {boolean} [opts.animate=true] - When true animate close / open state with WAAPI.
  *
@@ -161,7 +161,7 @@ export function toggleDetails(details, { store, animate = true, clickActive = tr
    return {
       update(options)
       {
-         if (isWritableStore(options.store) && options.store !== store)
+         if (isMinimalWritableStore(options.store) && options.store !== store)
          {
             if (typeof unsubscribe === 'function') { unsubscribe(); }
             store = options.store;
