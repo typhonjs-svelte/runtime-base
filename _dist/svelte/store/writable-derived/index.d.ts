@@ -3,7 +3,7 @@ import { Writable, Updater, Readable } from 'svelte/store';
 /** The minimal requirements of the
  * [writable store contract](https://svelte.dev/docs#component-format-script-4-prefix-stores-with-$-to-access-their-values-store-contract).
  */
-export type MinimalWritable<T> = Pick<Writable<T>, 'set' | 'subscribe'>;
+import type { MinimalWritable } from '#runtime/svelte/store/util';
 
 /** Stores that may be used as origins. */
 export type Stores = MinimalWritable<any> | [Readable<any>, ...Array<Readable<any>>] | Array<Readable<any>>;

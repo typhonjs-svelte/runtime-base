@@ -253,7 +253,7 @@ class TrieSearch {
      *
      * @param {object}   [options] - Search Options.
      *
-     * @param {ITrieSearchReducer<T>}  [options.reducer] - A trie reducer instance to apply to this search.
+     * @param {TrieSearchReducer<T>}  [options.reducer] - A trie reducer instance to apply to this search.
      *
      * @param {number}   [options.limit] - The limit for search results returned.
      *

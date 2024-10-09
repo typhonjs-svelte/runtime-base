@@ -88,7 +88,7 @@ class TrieSearchQuery extends DynArrayReducer {
      */
     get isDestroyed() { return this.#isDestroyed; }
     /**
-     * @returns {ITrieSearchReducer<T>} Any associated TrieSearch reducer function.
+     * @returns {TrieSearchReducer<T>} Any associated TrieSearch reducer function.
      */
     get trieReducer() { return this.#trieReducer; }
     /**
@@ -100,7 +100,7 @@ class TrieSearchQuery extends DynArrayReducer {
      */
     get query() { return this.#storeQuery; }
     /**
-     * @param {ITrieSearchReducer<T> | undefined}  trieReducer - A new trie reducer function.
+     * @param {TrieSearchReducer<T> | undefined}  trieReducer - A new trie reducer function.
      */
     set trieReducer(trieReducer) {
         if (trieReducer !== void 0 && typeof trieReducer?.reduce !== 'function') {

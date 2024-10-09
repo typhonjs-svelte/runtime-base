@@ -157,6 +157,8 @@ sessionStores.writable;
  * {@link TJSSessionStorage} for standard browser local and session storage use cases. TJSWebStorage exists
  * to provide additional customization options for custom Storage API compatible storage instances and custom
  * serialization configuration.
+ *
+ * @implements {import('./types').WebStorage}
  */
 class TJSWebStorage
 {
@@ -382,7 +384,7 @@ class TJSWebStorage
     * @param {RegExp} [regex] - Optional regular expression to filter by storage keys.
     *
     * @returns {IterableIterator<[string, import('svelte/store').Writable<T>]>} Iterable iterator of keys and stores.
-    * @yields {import('svelte/store').Writable<T>}
+    * @yields {import('svelte/store').Writable<[string, Writable<T>]>}
     */
    *entries(regex = void 0)
    {
