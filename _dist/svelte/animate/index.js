@@ -1,4 +1,4 @@
-import { isWritableStore } from '@typhonjs-svelte/runtime-base/util/store';
+import { isMinimalWritableStore } from '@typhonjs-svelte/runtime-base/svelte/store/util';
 
 /**
  * Svelte doesn't provide any events for the animate directive.
@@ -40,8 +40,8 @@ import { isWritableStore } from '@typhonjs-svelte/runtime-base/util/store';
  *    ...rest: any
  * ) => import('svelte/animate').AnimationConfig} fn - A Svelte animation function.
  *
- * @param {import('svelte/store').Writable<boolean>} [store] - An optional boolean writable store that is set to true
- *        when animation is active.
+ * @param {import('#runtime/svelte/store/util').MinimalWritable<boolean>} [store] - An optional boolean minimal
+ *        writable store that is set to true when animation is active.
  *
  * @returns {(
  *    node: Element,
@@ -52,7 +52,10 @@ import { isWritableStore } from '@typhonjs-svelte/runtime-base/util/store';
 function animateEvents(fn, store = void 0)
 {
    if (typeof fn !== 'function') { throw new TypeError(`'fn' is not a function.`); }
-   if (store !== void 0 && !isWritableStore(store)) { throw new TypeError(`'store' is not a writable store.`); }
+   if (store !== void 0 && !isMinimalWritableStore(store))
+   {
+      throw new TypeError(`'store' is not a minimal writable store.`);
+   }
 
    // Track a single start / end sequence across all animations.
    let startFired = false;

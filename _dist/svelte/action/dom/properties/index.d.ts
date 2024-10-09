@@ -1,5 +1,6 @@
 import * as svelte_action from 'svelte/action';
 import * as svelte_store from 'svelte/store';
+import * as _runtime_svelte_store_util from '@typhonjs-svelte/runtime-base/svelte/store/util';
 
 /**
  * Provides an action to save `scrollTop` of an element with a vertical scrollbar. This action should be used on the
@@ -9,13 +10,14 @@ import * as svelte_store from 'svelte/store';
  *
  * @param {HTMLElement} element - The target scrollable HTML element.
  *
- * @param {import('svelte/store').Writable<number>}   store - A writable store that stores the element scrollTop.
+ * @param {import('#runtime/svelte/store/util').MinimalWritable<number>}   store - A minimal writable store that stores
+ *        the element scrollTop.
  *
  * @returns {import('svelte/action').ActionReturn<import('svelte/store').Writable<number>>} Lifecycle functions.
  */
 declare function applyScrolltop(
   element: HTMLElement,
-  store: svelte_store.Writable<number>,
+  store: _runtime_svelte_store_util.MinimalWritable<number>,
 ): svelte_action.ActionReturn<svelte_store.Writable<number>>;
 
 /**
@@ -33,7 +35,7 @@ declare function applyScrolltop(
  *
  * @param {object} opts - Options parameters.
  *
- * @param {import('svelte/store').Writable<boolean>} opts.store - A boolean store.
+ * @param {import('#runtime/svelte/store/util').MinimalWritable<boolean>} opts.store - A minimal writable boolean store.
  *
  * @param {boolean} [opts.animate=true] - When true animate close / open state with WAAPI.
  *
@@ -48,7 +50,7 @@ declare function toggleDetails(
     animate,
     clickActive,
   }?: {
-    store: svelte_store.Writable<boolean>;
+    store: _runtime_svelte_store_util.MinimalWritable<boolean>;
     animate?: boolean;
     clickActive?: boolean;
   },

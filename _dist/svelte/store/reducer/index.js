@@ -1,7 +1,7 @@
 import { writable, get } from 'svelte/store';
+import { isMinimalWritableStore } from '@typhonjs-svelte/runtime-base/svelte/store/util';
 import { Strings } from '@typhonjs-svelte/runtime-base/util';
 import { isIterable, safeAccess } from '@typhonjs-svelte/runtime-base/util/object';
-import { isWritableStore } from '@typhonjs-svelte/runtime-base/util/store';
 
 class DynReducerUtils {
     /**
@@ -1817,7 +1817,7 @@ class DynMapReducer {
  *
  * This filter function can be used w/ a dynamic reducer and bound as a store to input elements.
  *
- * @param {string|Iterable<string>}   accessors - Property key / accessors to lookup key to compare. To access deeper
+ * @param {string | Iterable<string>}   accessors - Property key / accessors to lookup key to compare. To access deeper
  *        entries into the object format the accessor string with `.` between entries to walk.
  *
  * @param {object}   [opts] - Optional parameters.
@@ -1826,19 +1826,20 @@ class DynMapReducer {
  *
  * @param {boolean}  [opts.caseSensitive=false] - When true regex test is case-sensitive.
  *
- * @param {import('svelte/store').Writable<string>}  [opts.store] - Use the provided store to instead of creating
- *        a default writable store.
+ * @param {import('#runtime/svelte/store/util').MinimalWritable<string>}  [opts.store] - Use the provided minimal
+ *        writable store to instead of creating a default `writable` store.
  *
- * @returns {((data: object) => boolean) & import('svelte/store').Writable<string>} The query string filter.
+ * @returns {((data: object) => boolean) & import('#runtime/svelte/store/util').MinimalWritable<string>}
+ *        The query string filter.
  */
 function regexObjectQuery(accessors, { accessWarn = false, caseSensitive = false, store } = {})
 {
    let keyword = '';
    let regex;
 
-   if (store !== void 0 && !isWritableStore(store))
+   if (store !== void 0 && !isMinimalWritableStore(store))
    {
-      throw new TypeError(`regexObjectQuery error: 'store' is not a writable store.`);
+      throw new TypeError(`regexObjectQuery error: 'store' is not a minimal writable store.`);
    }
 
    const storeKeyword = store ? store : writable(keyword);

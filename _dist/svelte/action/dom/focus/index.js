@@ -1,4 +1,4 @@
-import { isWritableStore } from '@typhonjs-svelte/runtime-base/util/store';
+import { isMinimalWritableStore } from '@typhonjs-svelte/runtime-base/svelte/store/util';
 
 /**
  * Provides an action to always blur the element when any pointer up event occurs on the element.
@@ -76,7 +76,8 @@ function autoBlur(node)
  *
  * @param {HTMLElement} node - Target element.
  *
- * @param {import('svelte/store').Writable<boolean>}  storeFocused - Update store for focus changes.
+ * @param {import('#runtime/svelte/store/util').MinimalWritable<boolean>}  storeFocused - Update store for focus
+ *        changes.
  *
  * @returns {import('svelte/action').ActionReturn<import('svelte/store').Writable<boolean>>} Lifecycle functions.
  */
@@ -93,7 +94,7 @@ function isFocused(node, storeFocused)
    {
       localFocused = current;
 
-      if (isWritableStore(storeFocused)) { storeFocused.set(localFocused); }
+      if (isMinimalWritableStore(storeFocused)) { storeFocused.set(localFocused); }
    }
 
    /**

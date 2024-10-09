@@ -1,4 +1,4 @@
-import * as svelte_store from 'svelte/store';
+import * as _runtime_svelte_store_util from '@typhonjs-svelte/runtime-base/svelte/store/util';
 import * as svelte_animate from 'svelte/animate';
 
 /**
@@ -41,8 +41,8 @@ import * as svelte_animate from 'svelte/animate';
  *    ...rest: any
  * ) => import('svelte/animate').AnimationConfig} fn - A Svelte animation function.
  *
- * @param {import('svelte/store').Writable<boolean>} [store] - An optional boolean writable store that is set to true
- *        when animation is active.
+ * @param {import('#runtime/svelte/store/util').MinimalWritable<boolean>} [store] - An optional boolean minimal
+ *        writable store that is set to true when animation is active.
  *
  * @returns {(
  *    node: Element,
@@ -59,7 +59,7 @@ declare function animateEvents(
     },
     ...rest: any
   ) => svelte_animate.AnimationConfig,
-  store?: svelte_store.Writable<boolean>,
+  store?: _runtime_svelte_store_util.MinimalWritable<boolean>,
 ): (
   node: Element,
   data: {

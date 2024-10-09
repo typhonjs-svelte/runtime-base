@@ -1,7 +1,7 @@
 import { DynArrayReducer } from '@typhonjs-svelte/runtime-base/svelte/store/reducer';
+import { isMinimalWritableStore, subscribeIgnoreFirst } from '@typhonjs-svelte/runtime-base/svelte/store/util';
 import { Hashing, Timing } from '@typhonjs-svelte/runtime-base/util';
 import { isObject, klona } from '@typhonjs-svelte/runtime-base/util/object';
-import { isWritableStore, subscribeIgnoreFirst } from '@typhonjs-svelte/runtime-base/util/store';
 
 /**
  * Provides a base implementation for store entries in {@link ArrayObjectStore}.
@@ -154,9 +154,9 @@ class ArrayObjectStore
 
       if (typeof manualUpdate !== 'boolean') { throw new TypeError(`'manualUpdate' is not a boolean.`); }
 
-      if (!isWritableStore(StoreClass.prototype))
+      if (!isMinimalWritableStore(StoreClass.prototype))
       {
-         throw new TypeError(`'StoreClass' is not a writable store constructor.`);
+         throw new TypeError(`'StoreClass' is not a minimal writable store constructor.`);
       }
 
       let hasIDGetter = false;

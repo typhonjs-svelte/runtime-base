@@ -1,6 +1,6 @@
 import { resizeObserver } from '@typhonjs-svelte/runtime-base/svelte/action/dom/observer';
+import { isMinimalWritableStore, subscribeFirstRest } from '@typhonjs-svelte/runtime-base/svelte/store/util';
 import { Timing } from '@typhonjs-svelte/runtime-base/util';
-import { isWritableStore, subscribeFirstRest } from '@typhonjs-svelte/runtime-base/util/store';
 import { tick } from 'svelte';
 
 /**
@@ -11,15 +11,16 @@ import { tick } from 'svelte';
  *
  * @param {HTMLElement} element - The target scrollable HTML element.
  *
- * @param {import('svelte/store').Writable<number>}   store - A writable store that stores the element scrollTop.
+ * @param {import('#runtime/svelte/store/util').MinimalWritable<number>}   store - A minimal writable store that stores
+ *        the element scrollTop.
  *
  * @returns {import('svelte/action').ActionReturn<import('svelte/store').Writable<number>>} Lifecycle functions.
  */
 function applyScrolltop(element, store)
 {
-   if (!isWritableStore(store))
+   if (!isMinimalWritableStore(store))
    {
-      throw new TypeError(`applyScrolltop error: 'store' must be a writable Svelte store.`);
+      throw new TypeError(`applyScrolltop error: 'store' must be a minimal writable Svelte store.`);
    }
 
    /**
@@ -65,9 +66,9 @@ function applyScrolltop(element, store)
          unsubscribe();
          store = newStore;
 
-         if (!isWritableStore(store))
+         if (!isMinimalWritableStore(store))
          {
-            throw new TypeError(`applyScrolltop.update error: 'store' must be a writable Svelte store.`);
+            throw new TypeError(`applyScrolltop.update error: 'store' must be a minimal writable Svelte store.`);
          }
 
          unsubscribe = store.subscribe(storeUpdate);
@@ -97,7 +98,7 @@ function applyScrolltop(element, store)
  *
  * @param {object} opts - Options parameters.
  *
- * @param {import('svelte/store').Writable<boolean>} opts.store - A boolean store.
+ * @param {import('#runtime/svelte/store/util').MinimalWritable<boolean>} opts.store - A minimal writable boolean store.
  *
  * @param {boolean} [opts.animate=true] - When true animate close / open state with WAAPI.
  *
@@ -239,7 +240,7 @@ function toggleDetails(details, { store, animate = true, clickActive = true } = 
    return {
       update(options)
       {
-         if (isWritableStore(options.store) && options.store !== store)
+         if (isMinimalWritableStore(options.store) && options.store !== store)
          {
             if (typeof unsubscribe === 'function') { unsubscribe(); }
             store = options.store;

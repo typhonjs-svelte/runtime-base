@@ -1,6 +1,6 @@
+import { isWritableStore } from '@typhonjs-svelte/runtime-base/svelte/store/util';
 import { StyleParse } from '@typhonjs-svelte/runtime-base/util/dom/style';
 import { isObject } from '@typhonjs-svelte/runtime-base/util/object';
-import { isUpdatableStore } from '@typhonjs-svelte/runtime-base/util/store';
 
 /**
  * Provides an instance of {@link ResizeObserver} that can manage multiple elements and notify a wide range of
@@ -233,7 +233,7 @@ class ResizeObserverManager
       // Does the target have resizeObserved writable store?
       if (targetType !== null && (targetType === 'object' || targetType === 'function'))
       {
-         if (isUpdatableStore(target.resizeObserved))
+         if (isWritableStore(target.resizeObserved))
          {
             return this.#updateTypes.storeObject;
          }
@@ -242,7 +242,7 @@ class ResizeObserverManager
          const stores = target?.stores;
          if (isObject(stores) || typeof stores === 'function')
          {
-            if (isUpdatableStore(stores.resizeObserved))
+            if (isWritableStore(stores.resizeObserved))
             {
                return this.#updateTypes.storesObject;
             }

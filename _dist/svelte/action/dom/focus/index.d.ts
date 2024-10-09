@@ -1,5 +1,6 @@
 import * as svelte_action from 'svelte/action';
 import * as svelte_store from 'svelte/store';
+import * as _runtime_svelte_store_util from '@typhonjs-svelte/runtime-base/svelte/store/util';
 
 /**
  * Provides an action to always blur the element when any pointer up event occurs on the element.
@@ -27,13 +28,14 @@ declare function autoBlur(node: HTMLElement): svelte_action.ActionReturn;
  *
  * @param {HTMLElement} node - Target element.
  *
- * @param {import('svelte/store').Writable<boolean>}  storeFocused - Update store for focus changes.
+ * @param {import('#runtime/svelte/store/util').MinimalWritable<boolean>}  storeFocused - Update store for focus
+ *        changes.
  *
  * @returns {import('svelte/action').ActionReturn<import('svelte/store').Writable<boolean>>} Lifecycle functions.
  */
 declare function isFocused(
   node: HTMLElement,
-  storeFocused: svelte_store.Writable<boolean>,
+  storeFocused: _runtime_svelte_store_util.MinimalWritable<boolean>,
 ): svelte_action.ActionReturn<svelte_store.Writable<boolean>>;
 
 export { alwaysBlur, autoBlur, isFocused };
