@@ -533,6 +533,22 @@ const rollupConfigs = [
    },
    {
       input: {
+         input: 'src/svelte/store/util/index.js',
+         plugins: [
+            importsExternal(),
+            resolve(resolveOptions),
+            generateDTS.plugin(dtsPluginOptions)
+         ]
+      },
+      output: {
+         file: '_dist/svelte/store/util/index.js',
+         format: 'es',
+         generatedCode: { constBindings: true },
+         sourcemap
+      }
+   },
+   {
+      input: {
          input: 'src/svelte/store/web-storage/index.js',
          plugins: [
             importsExternal(),
@@ -573,6 +589,9 @@ const rollupConfigs = [
                ...dtsPluginOptions,
                dtsReplace: {
                   ...dtsPluginOptions.dtsReplace,
+                  // MinimalWritable is defined in `svelte/store/util` and replaced in `writable-derived`.
+                  '^type\\s+MinimalWritable.*?;': "import type { MinimalWritable } from '#runtime/svelte/store/util';",
+
                   // For now manually replace "type" to "export type"; see issue:
                   // https://github.com/PixievoltNo1/svelte-writable-derived/issues/24
                   '^type': 'export type'
