@@ -1959,7 +1959,9 @@ class DynReducerHelper
     *   and passing in an existing store.
     *
     * @returns {{
-    *    regexObjectQuery: (accessors: string|Iterable<string>, options?: {accessWarn?: boolean, caseSensitive?: boolean, store?: import('svelte/store').Writable<string>}) => (((data: {}) => boolean) & import('svelte/store').Writable<string>)
+    *    regexObjectQuery: (accessors: string|Iterable<string>, options?: {accessWarn?: boolean,
+    *     caseSensitive?: boolean, store?: import('svelte/store').Writable<string>}) =>
+    *      (((data: {}) => boolean) & import('#runtime/svelte/store/util').MinimalWritable<string>)
     * }} All available filters.
     */
    static get filters() { return filters; }

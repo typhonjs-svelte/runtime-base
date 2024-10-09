@@ -79,7 +79,9 @@ function autoBlur(node)
  * @param {import('#runtime/svelte/store/util').MinimalWritable<boolean>}  storeFocused - Update store for focus
  *        changes.
  *
- * @returns {import('svelte/action').ActionReturn<import('svelte/store').Writable<boolean>>} Lifecycle functions.
+ * @returns {(import('svelte/action').ActionReturn<
+ *    import('#runtime/svelte/store/util').MinimalWritable<boolean>
+ * >)} Lifecycle functions.
  */
 function isFocused(node, storeFocused)
 {
@@ -135,7 +137,8 @@ function isFocused(node, storeFocused)
 
    return {
       /**
-       * @param {import('svelte/store').Writable<boolean>}  newStoreFocused - Update store for focus changes.
+       * @param {import('#runtime/svelte/store/util').MinimalWritable<boolean>}  newStoreFocused - Update store for
+       *        focus changes.
        */
       update: (newStoreFocused) =>
       {

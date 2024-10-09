@@ -14,7 +14,9 @@ import { tick } from 'svelte';
  * @param {import('#runtime/svelte/store/util').MinimalWritable<number>}   store - A minimal writable store that stores
  *        the element scrollTop.
  *
- * @returns {import('svelte/action').ActionReturn<import('svelte/store').Writable<number>>} Lifecycle functions.
+ * @returns {(import('svelte/action').ActionReturn<
+ *    import('#runtime/svelte/store/util').MinimalWritable<number>
+ * >)} Lifecycle functions.
  */
 function applyScrolltop(element, store)
 {
@@ -59,7 +61,8 @@ function applyScrolltop(element, store)
 
    return {
       /**
-       * @param {import('svelte/store').Writable<number>} newStore - A writable store that stores the element scrollTop.
+       * @param {import('#runtime/svelte/store/util').MinimalWritable<number>} newStore - A minimal writable store that
+       *        stores the element scrollTop.
        */
       update: (newStore) =>
       {

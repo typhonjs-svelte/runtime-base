@@ -1,5 +1,4 @@
 import * as svelte_action from 'svelte/action';
-import * as svelte_store from 'svelte/store';
 import * as _runtime_svelte_store_util from '@typhonjs-svelte/runtime-base/svelte/store/util';
 
 /**
@@ -13,12 +12,14 @@ import * as _runtime_svelte_store_util from '@typhonjs-svelte/runtime-base/svelt
  * @param {import('#runtime/svelte/store/util').MinimalWritable<number>}   store - A minimal writable store that stores
  *        the element scrollTop.
  *
- * @returns {import('svelte/action').ActionReturn<import('svelte/store').Writable<number>>} Lifecycle functions.
+ * @returns {(import('svelte/action').ActionReturn<
+ *    import('#runtime/svelte/store/util').MinimalWritable<number>
+ * >)} Lifecycle functions.
  */
 declare function applyScrolltop(
   element: HTMLElement,
   store: _runtime_svelte_store_util.MinimalWritable<number>,
-): svelte_action.ActionReturn<svelte_store.Writable<number>>;
+): svelte_action.ActionReturn<_runtime_svelte_store_util.MinimalWritable<number>>;
 
 /**
  * Provides a toggle action for `details` HTML elements. The boolean store when provided controls open / closed state.

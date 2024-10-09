@@ -1,3 +1,4 @@
+import * as _runtime_svelte_store_util from '@typhonjs-svelte/runtime-base/svelte/store/util';
 import * as svelte_store from 'svelte/store';
 
 /**
@@ -840,7 +841,9 @@ declare class DynReducerHelper {
    *   and passing in an existing store.
    *
    * @returns {{
-   *    regexObjectQuery: (accessors: string|Iterable<string>, options?: {accessWarn?: boolean, caseSensitive?: boolean, store?: import('svelte/store').Writable<string>}) => (((data: {}) => boolean) & import('svelte/store').Writable<string>)
+   *    regexObjectQuery: (accessors: string|Iterable<string>, options?: {accessWarn?: boolean,
+   *     caseSensitive?: boolean, store?: import('svelte/store').Writable<string>}) =>
+   *      (((data: {}) => boolean) & import('#runtime/svelte/store/util').MinimalWritable<string>)
    * }} All available filters.
    */
   static get filters(): {
@@ -851,7 +854,7 @@ declare class DynReducerHelper {
         caseSensitive?: boolean;
         store?: svelte_store.Writable<string>;
       },
-    ) => ((data: {}) => boolean) & svelte_store.Writable<string>;
+    ) => ((data: {}) => boolean) & _runtime_svelte_store_util.MinimalWritable<string>;
   };
 }
 
