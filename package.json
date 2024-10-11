@@ -193,9 +193,9 @@
       "types": "./_dist/util/dom/style/index.d.ts",
       "import": "./_dist/util/dom/style/index.js"
     },
-    "./util/dom/tinykeys": {
-      "types": "./_dist/util/dom/tinykeys/index.d.ts",
-      "import": "./_dist/util/dom/tinykeys/index.js"
+    "./util/dom/input/tinykeys": {
+      "types": "./_dist/util/dom/input/tinykeys/index.d.ts",
+      "import": "./_dist/util/dom/input/tinykeys/index.js"
     },
     "./util/i18n": {
       "types": "./_dist/util/i18n/index.d.ts",

@@ -753,7 +753,7 @@ const rollupConfigs = [
    },
    {
       input: {
-         input: 'src/util/dom/tinykeys/index.js',
+         input: 'src/util/dom/input/tinykeys/index.js',
          plugins: [
             importsExternal(),
             resolve(resolveOptions),
@@ -761,7 +761,7 @@ const rollupConfigs = [
          ]
       },
       output: {
-         file: '_dist/util/dom/tinykeys/index.js',
+         file: '_dist/util/dom/input/tinykeys/index.js',
          format: 'es',
          generatedCode: { constBindings: true },
          sourcemap
