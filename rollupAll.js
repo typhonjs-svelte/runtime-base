@@ -357,6 +357,22 @@ const rollupConfigs = [
    },
    {
       input: {
+         input: 'src/svelte/action/dom/input/index.js',
+         plugins: [
+            importsExternal(),
+            resolve(resolveOptions),
+            generateDTS.plugin(dtsPluginOptions)
+         ]
+      },
+      output: {
+         file: '_dist/svelte/action/dom/input/index.js',
+         format: 'es',
+         generatedCode: { constBindings: true },
+         sourcemap
+      }
+   },
+   {
+      input: {
          input: 'src/svelte/action/dom/observer/index.js',
          plugins: [
             importsExternal(),
@@ -453,7 +469,7 @@ const rollupConfigs = [
    },
    {
       input: {
-         input: 'src/svelte/store/dom/index.js',
+         input: 'src/svelte/store/dom/input/index.js',
          plugins: [
             importsExternal(),
             resolve(resolveOptions),
@@ -461,7 +477,7 @@ const rollupConfigs = [
          ]
       },
       output: {
-         file: '_dist/svelte/store/dom/index.js',
+         file: '_dist/svelte/store/dom/input/index.js',
          format: 'es',
          generatedCode: { constBindings: true },
          sourcemap

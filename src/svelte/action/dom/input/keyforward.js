@@ -4,15 +4,18 @@
  *
  * @param {HTMLElement} node - Target element.
  *
- * @param {import('..').KeyStore}   keyStore - KeyStore to forward events key down / up events to...
+ * @param {{ keydown: (event: KeyboardEvent) => void, keyup: (event: KeyboardEvent) => void }}  keyTarget - An object
+ *        to forward events key down / up events to as pressed.
  *
- * @returns {import('svelte/action').ActionReturn<import('..').KeyStore>} Action lifecycle methods.
+ * @returns {(import('svelte/action').ActionReturn<
+ *    { keydown: (event: KeyboardEvent) => void, keyup: (event: KeyboardEvent) => void }
+ * >)} Action lifecycle methods.
  */
-export function keyforward(node, keyStore)
+export function keyforward(node, keyTarget)
 {
-   if (typeof keyStore?.keydown !== 'function' || typeof keyStore.keyup !== 'function')
+   if (typeof keyTarget?.keydown !== 'function' || typeof keyTarget.keyup !== 'function')
    {
-      throw new TypeError(`'keyStore' doesn't have required 'keydown' or 'keyup' methods.`);
+      throw new TypeError(`'keyTarget' doesn't have required 'keydown' or 'keyup' methods.`);
    }
 
    /**
@@ -20,7 +23,7 @@ export function keyforward(node, keyStore)
     */
    function onKeydown(event)
    {
-      keyStore.keydown(event);
+      keyTarget.keydown(event);
    }
 
    /**
@@ -28,7 +31,7 @@ export function keyforward(node, keyStore)
     */
    function onKeyup(event)
    {
-      keyStore.keyup(event);
+      keyTarget.keyup(event);
    }
 
    /**
@@ -54,11 +57,11 @@ export function keyforward(node, keyStore)
    return {
       update: (newKeyStore) =>  // eslint-disable-line no-shadow
       {
-         keyStore = newKeyStore;
+         keyTarget = newKeyStore;
 
-         if (typeof keyStore?.keydown !== 'function' || typeof keyStore.keyup !== 'function')
+         if (typeof keyTarget?.keydown !== 'function' || typeof keyTarget.keyup !== 'function')
          {
-            throw new TypeError(`'newKeyStore' doesn't have required 'keydown' or 'keyup' methods.`);
+            throw new TypeError(`'keyTarget' doesn't have required 'keydown' or 'keyup' methods.`);
          }
       },
 
