@@ -90,60 +90,6 @@ declare class ClipboardAccess {
 }
 
 /**
- * Provides utility functions for retrieving data about images.
- */
-declare class ImageData {
-  /**
-   * Loads given URLs into image elements returning those that resolved with width & height dimensions. This is useful
-   * when the size of an image is necessary before usage.
-   *
-   * @param {string | { url?: string } | Iterable<string | { url?: string }>} urls - A list of image URLS to load or
-   *        object with an `url` property.
-   *
-   * @param {object} [options] - Optional options.
-   *
-   * @param {string} [options.accessor='url'] - Accessor string to access child attribute when `urls` entry contains
-   *        objects.
-   *
-   * @param {boolean} [options.warn=false] - Log debug warnings when a target URL can not be determined; default: false.
-   *
-   * @returns {(Promise<{
-   *    fulfilled: { url: string, width: number, height: number }[],
-   *    rejected: { url: string }[]
-   * }>)} An object with `fulfilled` and `rejected` requests.
-   */
-  static getDimensions(
-    urls:
-      | string
-      | {
-          url?: string;
-        }
-      | Iterable<
-          | string
-          | {
-              url?: string;
-            }
-        >,
-    {
-      accessor,
-      warn,
-    }?: {
-      accessor?: string;
-      warn?: boolean;
-    },
-  ): Promise<{
-    fulfilled: {
-      url: string;
-      width: number;
-      height: number;
-    }[];
-    rejected: {
-      url: string;
-    }[];
-  }>;
-}
-
-/**
  * Provides a utility function to parse / construct fully qualified URL instances from a URL string.
  */
 declare class URLParser {
@@ -166,4 +112,4 @@ declare class URLParser {
   static parse({ url, base, routePrefix }: { url: string | URL; base?: string; routePrefix?: string }): URL | null;
 }
 
-export { BrowserSupports, ClipboardAccess, ImageData, URLParser, processHTML, striptags };
+export { BrowserSupports, ClipboardAccess, URLParser, processHTML, striptags };
