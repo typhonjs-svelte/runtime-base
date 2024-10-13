@@ -318,26 +318,6 @@ const rollupConfigs = [
          sourcemap
       }
    },
-   {
-      input: {
-         input: 'src/plugin/manager/eventbus/buses/index.js',
-         external: ['@typhonjs-plugin/manager/eventbus'],
-         plugins: [
-            importsExternal(),
-            resolve(resolveOptions),
-         ]
-      },
-      copyDTS: './node_modules/@typhonjs-plugin/manager/dist/eventbus/buses/index.d.ts',
-      output: {
-         file: '_dist/plugin/manager/eventbus/buses/index.js',
-         format: 'es',
-         generatedCode: { constBindings: true },
-         paths: {
-            '@typhonjs-plugin/manager/eventbus': '@typhonjs-svelte/runtime-base/plugin/manager/eventbus'
-         },
-         sourcemap
-      }
-   },
 
    {
       input: {
