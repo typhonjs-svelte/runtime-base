@@ -30,7 +30,7 @@ export class TJSPositionDataUtil
     * Provides numeric defaults for all parameters. This is used by {@link TJSPosition.get} to optionally
     * provide numeric defaults.
     *
-    * @type {Record<string, number | null>}
+    * @type {{ [key: string]: number | null }}
     */
    static #numericDefaults = Object.freeze({
       // Other keys

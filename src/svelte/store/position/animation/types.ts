@@ -396,7 +396,7 @@ namespace AnimationAPI {
       /**
        * @param arg - A single object with animation keys specified and numerical or relative string values.
        */
-      (arg: Partial<Record<AnimationKey, string | number>>): void;
+      (arg: Partial<{ [key in AnimationKey]: string | number }>): void;
 
       /**
        * The keys assigned for this quickTo callback.

@@ -1,13 +1,14 @@
 import { isObject } from '@typhonjs-svelte/runtime-base/util/object';
 
 /**
- * Provides an action to apply style properties provided as an object.
+ * Provides an action to apply CSS style properties provided as an object.
  *
  * @param {HTMLElement} node - Target element
  *
- * @param {Record<string, string>}  properties - Key / value object of properties to set.
+ * @param {{ [key: string]: string | null }}  properties - Hyphen case CSS property key / value object of properties
+ *        to set.
  *
- * @returns {import('svelte/action').ActionReturn<Record<string, string>>} Lifecycle functions.
+ * @returns {import('svelte/action').ActionReturn<{ [key: string]: string | null }>} Lifecycle functions.
  */
 function applyStyles(node, properties)
 {
@@ -26,7 +27,7 @@ function applyStyles(node, properties)
 
    return {
       /**
-       * @param {Record<string, string>}  newProperties - Key / value object of properties to set.
+       * @param {{ [key: string]: string | null }}  newProperties - Key / value object of properties to set.
        */
       update: (newProperties) =>
       {

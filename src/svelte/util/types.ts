@@ -19,7 +19,7 @@ export type TJSSvelteConfig = {
    /**
     * The root-level context to pass to the component. You may define context as a callback function.
     */
-   context?: (() => (Record<string, any> | Map<string, any>)) | Map<string, any> | Record<string, any>
+   context?: (() => ({ [key: string]: any } | Map<string, any>)) | Map<string, any> | { [key: string]: any }
 
    /**
     * See description in main Svelte docs
@@ -35,7 +35,7 @@ export type TJSSvelteConfig = {
    /**
     * Props to pass to the component. You may define props as a callback function.
     */
-   props?: (() => Record<string, any>) | Record<string, any>;
+   props?: (() => { [key: string]: any }) | { [key: string]: any };
 
    /**
     * The target to render component to. By default, `document.body` is used as the target if not otherwise defined.

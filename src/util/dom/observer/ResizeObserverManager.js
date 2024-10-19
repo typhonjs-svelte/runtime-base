@@ -21,7 +21,7 @@ export class ResizeObserverManager
    /**
     * Defines the various shape / update type of the given target.
     *
-    * @type {Record<string, number>}
+    * @type {{ [key: string]: number }}
     */
    static #updateTypes = Object.freeze({
       none: 0,

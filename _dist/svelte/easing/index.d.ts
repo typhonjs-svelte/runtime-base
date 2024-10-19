@@ -58,9 +58,9 @@ type EasingReference = EasingFunctionName | EasingFunction;
 declare const easingList: Readonly<EasingFunctionName[]>;
 
 /**
- * @type {Readonly<Record<import('./types').EasingFunctionName, import('#runtime/svelte/easing').EasingFunction>>}
+ * @type {Readonly<{ [key in import('./types').EasingFunctionName]: import('#runtime/svelte/easing').EasingFunction }>}
  */
-declare const easingFunc: Readonly<Record<EasingFunctionName, _runtime_svelte_easing.EasingFunction>>;
+declare const easingFunc: Readonly<{ [key in EasingFunctionName]: _runtime_svelte_easing.EasingFunction }>;
 
 /**
  * Performs a lookup for standard Svelte easing functions by name. For convenience if passing in a function it is

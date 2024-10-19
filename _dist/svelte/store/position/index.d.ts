@@ -597,7 +597,11 @@ declare namespace AnimationAPI {
     /**
      * @param arg - A single object with animation keys specified and numerical or relative string values.
      */
-    (arg: Partial<Record<AnimationKey, string | number>>): void;
+    (
+      arg: Partial<{
+        [key in AnimationKey]: string | number;
+      }>,
+    ): void;
     /**
      * The keys assigned for this quickTo callback.
      */
@@ -851,7 +855,11 @@ declare namespace ValidatorAPI {
      * The rest of any data submitted to {@link TJSPosition.set}. This may be used to provide directives to
      * validators.
      */
-    rest: Record<string, any> | undefined;
+    rest:
+      | {
+          [key: string]: any;
+        }
+      | undefined;
   };
   /**
    * Defines a validator function entry with optional data such as assigning an `id` / `weight` or providing more

@@ -151,7 +151,7 @@ namespace ValidatorAPI {
        * The rest of any data submitted to {@link TJSPosition.set}. This may be used to provide directives to
        * validators.
        */
-      rest: Record<string, any> | undefined;
+      rest: { [key: string]: any } | undefined;
    }
 
    /**

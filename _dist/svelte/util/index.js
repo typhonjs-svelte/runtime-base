@@ -323,13 +323,13 @@ class TJSSvelteConfigUtil
    /**
     * Processes Svelte props. Potentially props can be a function to invoke with `thisArg`.
     *
-    * @param {Record<string, any> | Function}   props - Svelte props.
+    * @param {{ [key: string]: any } | Function}   props - Svelte props.
     *
     * @param {*}                 thisArg - `This` reference to set for invoking any props function.
     *
     * @param {object}            config - Svelte config
     *
-    * @returns {Record<string, any> | undefined}     Svelte props.
+    * @returns {{ [key: string]: any } | undefined}     Svelte props.
     */
    static #processProps(props, thisArg, config)
    {

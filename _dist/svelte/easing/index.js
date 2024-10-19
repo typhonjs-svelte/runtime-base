@@ -40,7 +40,7 @@ const easingList = Object.freeze([
 ]);
 
 /**
- * @type {Readonly<Record<import('./types').EasingFunctionName, import('#runtime/svelte/easing').EasingFunction>>}
+ * @type {Readonly<{ [key in import('./types').EasingFunctionName]: import('#runtime/svelte/easing').EasingFunction }>}
  */
 const easingFunc = svelteEasingFunc;
 
