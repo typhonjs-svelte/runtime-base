@@ -27,7 +27,7 @@ import {
  *
  * @returns {import('svelte/action').ActionReturn} Lifecycle functions.
  */
-function toggleDetails(details, { store, animate = true, clickActive = true } = {})
+export function toggleDetails(details, { store, animate = true, clickActive = true } = {})
 {
    // Add closing data. Useful for animating chevron immediately while closing.
    details.dataset.closing = 'false';
