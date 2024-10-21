@@ -21,40 +21,4 @@ declare function applyScrolltop(
   store: _runtime_svelte_store_util.MinimalWritable<number>,
 ): svelte_action.ActionReturn<_runtime_svelte_store_util.MinimalWritable<number>>;
 
-/**
- * Provides a toggle action for `details` HTML elements. The boolean store when provided controls open / closed state.
- * Animation is accomplished using WAAPI controlling the height of the details element. It should be noted that this
- * animation may cause layout thrashing (reflows) depending on the amount of DOM elements on the page though this
- * doesn't occur under most situations. Animation can be toggled on / off with the `animate` option.
- *
- * It is not necessary to bind the store to the `open` attribute of the associated details element.
- *
- * When the action is triggered to close the details element a data attribute `closing` is set to `true`. This allows
- * any associated closing transitions to start immediately.
- *
- * @param {HTMLDetailsElement} details - The details element.
- *
- * @param {object} opts - Options parameters.
- *
- * @param {import('#runtime/svelte/store/util').MinimalWritable<boolean>} opts.store - A minimal writable boolean store.
- *
- * @param {boolean} [opts.animate=true] - When true animate close / open state with WAAPI.
- *
- * @param {boolean} [opts.clickActive=true] - When false click events are not handled.
- *
- * @returns {import('svelte/action').ActionReturn} Lifecycle functions.
- */
-declare function toggleDetails(
-  details: HTMLDetailsElement,
-  {
-    store,
-    animate,
-    clickActive,
-  }?: {
-    store: _runtime_svelte_store_util.MinimalWritable<boolean>;
-    animate?: boolean;
-    clickActive?: boolean;
-  },
-): svelte_action.ActionReturn;
-
-export { applyScrolltop, toggleDetails };
+export { applyScrolltop };

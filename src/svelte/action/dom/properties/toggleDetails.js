@@ -27,7 +27,7 @@ import {
  *
  * @returns {import('svelte/action').ActionReturn} Lifecycle functions.
  */
-export function toggleDetails(details, { store, animate = true, clickActive = true } = {})
+function toggleDetails(details, { store, animate = true, clickActive = true } = {})
 {
    // Add closing data. Useful for animating chevron immediately while closing.
    details.dataset.closing = 'false';
@@ -90,13 +90,13 @@ export function toggleDetails(details, { store, animate = true, clickActive = tr
          if (contentEl) { contentEl.style.overflow = 'hidden'; }
 
          animation = details.animate(
-          {
-             height: [`${a}px`, `${b}px`]
-          },
-          {
-             duration,
-             easing: 'ease-out'
-          }
+            {
+               height: [`${a}px`, `${b}px`]
+            },
+            {
+               duration,
+               easing: 'ease-out'
+            }
          );
 
          animation.onfinish = () =>
@@ -121,24 +121,31 @@ export function toggleDetails(details, { store, animate = true, clickActive = tr
     */
    function handleAnimation()
    {
-      if (open)
+      if (animate)
       {
-         const a = details.offsetHeight;
-         if (animation) { animation.cancel(); }
-         details.open = true;
-         const b = details.offsetHeight;
+         if (open)
+         {
+            const a = details.offsetHeight;
+            if (animation) { animation.cancel(); }
+            details.open = true;
+            const b = details.offsetHeight;
 
-         animateWAAPI(a, b, true);
+            animateWAAPI(a, b, true);
+         }
+         else
+         {
+            const a = details.offsetHeight;
+            if (animation) { animation.cancel(); }
+            const b = summaryEl.offsetHeight;
+
+            details.dataset.closing = 'true';
+
+            animateWAAPI(a, b, false);
+         }
       }
       else
       {
-         const a = details.offsetHeight;
-         if (animation) { animation.cancel(); }
-         const b = summaryEl.offsetHeight;
-
-         details.dataset.closing = 'true';
-
-         animateWAAPI(a, b, false);
+         details.open = open;
       }
    }
 
