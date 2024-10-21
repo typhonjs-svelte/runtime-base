@@ -117,6 +117,8 @@ declare class TJSSvelteUtil {
    * Workaround for https://github.com/sveltejs/svelte/issues/4056
    *
    * @param {*}  instance - A Svelte component.
+   *
+   * @returns {Promise} Promise returned after outro transition completed and component destroyed.
    */
   static outroAndDestroy(instance: any): Promise<any>;
 }

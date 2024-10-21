@@ -59,24 +59,28 @@ class TJSSvelteUtil
     * Workaround for https://github.com/sveltejs/svelte/issues/4056
     *
     * @param {*}  instance - A Svelte component.
+    *
+    * @returns {Promise} Promise returned after outro transition completed and component destroyed.
     */
    static async outroAndDestroy(instance)
    {
+      if (instance === void 0 || instance === null) { return Promise.resolve(); }
+
       return new Promise((resolve) =>
       {
-         if (instance.$$.fragment && instance.$$.fragment.o)
+         if (instance?.$$?.fragment && instance?.$$?.fragment?.o)
          {
             group_outros();
             transition_out(instance.$$.fragment, 0, 0, () =>
             {
-               instance.$destroy();
+               instance?.$destroy?.();
                resolve();
             });
             check_outros();
          }
          else
          {
-            instance.$destroy();
+            instance?.$destroy?.();
             resolve();
          }
       });
