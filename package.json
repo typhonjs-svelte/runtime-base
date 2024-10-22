@@ -1,6 +1,6 @@
 {
   "name": "@typhonjs-svelte/runtime-base",
-  "version": "0.1.1",
+  "version": "0.2.0-next.1",
   "description": "Provides the base to the TyphonJS Runtime Library including re-exported packages & all common packages.",
   "type": "module",
   "author": "Michael Leahy <support@typhonjs.io> (https://github.com/typhonrt)",
