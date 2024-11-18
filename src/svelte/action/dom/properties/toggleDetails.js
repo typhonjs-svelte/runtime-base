@@ -116,6 +116,8 @@ export function toggleDetails(details, { store, animate = true, clickActive = tr
       }
    }
 
+   const noop = () => void 0;
+
    /**
     * Handles animation coordination based on current state.
     */
@@ -125,8 +127,14 @@ export function toggleDetails(details, { store, animate = true, clickActive = tr
       {
          if (open)
          {
+            if (animation)
+            {
+               animation.cancel();
+               animation.effect = null;
+               animation.onfinish = noop;
+            }
+
             const a = details.offsetHeight;
-            if (animation) { animation.cancel(); }
             details.open = true;
             const b = details.offsetHeight;
 
@@ -135,7 +143,12 @@ export function toggleDetails(details, { store, animate = true, clickActive = tr
          else
          {
             const a = details.offsetHeight;
-            if (animation) { animation.cancel(); }
+            if (animation)
+            {
+               animation.cancel();
+               animation.effect = null;
+               animation.onfinish = noop;
+            }
             const b = summaryEl.offsetHeight;
 
             details.dataset.closing = 'true';
