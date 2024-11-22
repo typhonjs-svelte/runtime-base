@@ -42,6 +42,8 @@ declare function applyScrolltop(
  *
  * @param {boolean} [opts.clickActive=true] - When false click events are not handled.
  *
+ * @param {boolean} [opts.enabled=true] - When false store changes and click events are not handled.
+ *
  * @returns {import('svelte/action').ActionReturn} Lifecycle functions.
  */
 declare function toggleDetails(
@@ -50,10 +52,12 @@ declare function toggleDetails(
     store,
     animate,
     clickActive,
+    enabled,
   }?: {
     store: _runtime_svelte_store_util.MinimalWritable<boolean>;
     animate?: boolean;
     clickActive?: boolean;
+    enabled?: boolean;
   },
 ): svelte_action.ActionReturn;
 

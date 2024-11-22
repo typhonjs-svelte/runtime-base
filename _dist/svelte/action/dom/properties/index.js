@@ -2,6 +2,7 @@ import { resizeObserver } from '@typhonjs-svelte/runtime-base/svelte/action/dom/
 import { isMinimalWritableStore, subscribeFirstRest } from '@typhonjs-svelte/runtime-base/svelte/store/util';
 import { Timing } from '@typhonjs-svelte/runtime-base/util';
 import { tick } from 'svelte';
+import { writable } from 'svelte/store';
 
 /**
  * Provides an action to save `scrollTop` of an element with a vertical scrollbar. This action should be used on the
@@ -107,9 +108,11 @@ function applyScrolltop(element, store)
  *
  * @param {boolean} [opts.clickActive=true] - When false click events are not handled.
  *
+ * @param {boolean} [opts.enabled=true] - When false store changes and click events are not handled.
+ *
  * @returns {import('svelte/action').ActionReturn} Lifecycle functions.
  */
-function toggleDetails(details, { store, animate = true, clickActive = true } = {})
+function toggleDetails(details, { store, animate = true, clickActive = true, enabled = true } = {})
 {
    // Add closing data. Useful for animating chevron immediately while closing.
    details.dataset.closing = 'false';
@@ -140,17 +143,30 @@ function toggleDetails(details, { store, animate = true, clickActive = true } = 
    /** @type {import('svelte/store').Unsubscriber} */
    let unsubscribe;
 
+   // Create store instance if not provided.
+   if (!isMinimalWritableStore(store)) { store = writable(false); }
+
    if (store)
    {
       // The store sets initial open state and handles animation on further changes.
-      unsubscribe = subscribeFirstRest(store, (value) => { open = value; details.open = open; }, async (value) =>
+      unsubscribe = subscribeFirstRest(store, (value) =>
       {
-         open = value;
+         if (enabled && typeof value === 'boolean')
+         {
+            open = value;
+            details.open = open;
+         }
+      }, async (value) =>
+      {
+         if (enabled && typeof value === 'boolean')
+         {
+            open = value;
 
-         // Await `tick` to allow any conditional logic in the template to complete updating before handling animation.
-         await tick();
+            // Await `tick` to allow any conditional logic in the template to complete updating before handling animation.
+            await tick();
 
-         handleAnimation();
+            handleAnimation();
+         }
       });
    }
 
@@ -209,14 +225,13 @@ function toggleDetails(details, { store, animate = true, clickActive = true } = 
       {
          if (open)
          {
+            const a = details.offsetHeight;
             if (animation)
             {
                animation.cancel();
                animation.effect = null;
                animation.onfinish = noop;
             }
-
-            const a = details.offsetHeight;
             details.open = true;
             const b = details.offsetHeight;
 
@@ -249,7 +264,7 @@ function toggleDetails(details, { store, animate = true, clickActive = true } = 
     */
    function handleClick(e)
    {
-      if (clickActive)
+      if (clickActive && enabled)
       {
          e.preventDefault();
 
@@ -263,26 +278,38 @@ function toggleDetails(details, { store, animate = true, clickActive = true } = 
    return {
       update(options)
       {
+         if (typeof options.animate === 'boolean') { animate = options.animate; }
+
+         if (typeof options.clickActive === 'boolean') { clickActive = options.clickActive; }
+
+         if (typeof options.enabled === 'boolean') { enabled = options.enabled; }
+
          if (isMinimalWritableStore(options.store) && options.store !== store)
          {
             if (typeof unsubscribe === 'function') { unsubscribe(); }
             store = options.store;
 
-            unsubscribe = subscribeFirstRest(store, (value) => { open = value; details.open = open; }, async (value) =>
+            // The store sets initial open state and handles animation on further changes.
+            unsubscribe = subscribeFirstRest(store, (value) =>
             {
-               open = value;
+               if (enabled && typeof value === 'boolean')
+               {
+                  open = value;
+                  details.open = open;
+               }
+            }, async (value) =>
+            {
+               if (enabled && typeof value === 'boolean')
+               {
+                  open = value;
 
-               // Await `tick` to allow any conditional logic in the template to complete updating before handling
-               // animation.
-               await tick();
+                  // Await `tick` to allow any conditional logic in the template to complete updating before handling animation.
+                  await tick();
 
-               handleAnimation();
+                  handleAnimation();
+               }
             });
          }
-
-         if (typeof options.animate === 'boolean') { animate = options.animate; }
-
-         if (typeof options.clickActive === 'boolean') { clickActive = options.clickActive; }
       },
       destroy()
       {
