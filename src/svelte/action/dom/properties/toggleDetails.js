@@ -1,4 +1,5 @@
 import { tick }            from '#svelte';
+import { writable }        from '#svelte/store';
 
 import {
    isMinimalWritableStore,
@@ -25,9 +26,11 @@ import {
  *
  * @param {boolean} [opts.clickActive=true] - When false click events are not handled.
  *
+ * @param {boolean} [opts.enabled=true] - When false store changes and click events are not handled.
+ *
  * @returns {import('svelte/action').ActionReturn} Lifecycle functions.
  */
-export function toggleDetails(details, { store, animate = true, clickActive = true } = {})
+export function toggleDetails(details, { store, animate = true, clickActive = true, enabled = true } = {})
 {
    // Add closing data. Useful for animating chevron immediately while closing.
    details.dataset.closing = 'false';
@@ -58,17 +61,30 @@ export function toggleDetails(details, { store, animate = true, clickActive = tr
    /** @type {import('svelte/store').Unsubscriber} */
    let unsubscribe;
 
+   // Create store instance if not provided.
+   if (!isMinimalWritableStore(store)) { store = writable(false); }
+
    if (store)
    {
       // The store sets initial open state and handles animation on further changes.
-      unsubscribe = subscribeFirstRest(store, (value) => { open = value; details.open = open; }, async (value) =>
+      unsubscribe = subscribeFirstRest(store, (value) =>
       {
-         open = value;
+         if (enabled && typeof value === 'boolean')
+         {
+            open = value;
+            details.open = open;
+         }
+      }, async (value) =>
+      {
+         if (enabled && typeof value === 'boolean')
+         {
+            open = value;
 
-         // Await `tick` to allow any conditional logic in the template to complete updating before handling animation.
-         await tick();
+            // Await `tick` to allow any conditional logic in the template to complete updating before handling animation.
+            await tick();
 
-         handleAnimation();
+            handleAnimation();
+         }
       });
    }
 
@@ -127,14 +143,13 @@ export function toggleDetails(details, { store, animate = true, clickActive = tr
       {
          if (open)
          {
+            const a = details.offsetHeight;
             if (animation)
             {
                animation.cancel();
                animation.effect = null;
                animation.onfinish = noop;
             }
-
-            const a = details.offsetHeight;
             details.open = true;
             const b = details.offsetHeight;
 
@@ -167,7 +182,7 @@ export function toggleDetails(details, { store, animate = true, clickActive = tr
     */
    function handleClick(e)
    {
-      if (clickActive)
+      if (clickActive && enabled)
       {
          e.preventDefault();
 
@@ -181,26 +196,38 @@ export function toggleDetails(details, { store, animate = true, clickActive = tr
    return {
       update(options)
       {
+         if (typeof options.animate === 'boolean') { animate = options.animate; }
+
+         if (typeof options.clickActive === 'boolean') { clickActive = options.clickActive; }
+
+         if (typeof options.enabled === 'boolean') { enabled = options.enabled; }
+
          if (isMinimalWritableStore(options.store) && options.store !== store)
          {
             if (typeof unsubscribe === 'function') { unsubscribe(); }
             store = options.store;
 
-            unsubscribe = subscribeFirstRest(store, (value) => { open = value; details.open = open; }, async (value) =>
+            // The store sets initial open state and handles animation on further changes.
+            unsubscribe = subscribeFirstRest(store, (value) =>
             {
-               open = value;
+               if (enabled && typeof value === 'boolean')
+               {
+                  open = value;
+                  details.open = open;
+               }
+            }, async (value) =>
+            {
+               if (enabled && typeof value === 'boolean')
+               {
+                  open = value;
 
-               // Await `tick` to allow any conditional logic in the template to complete updating before handling
-               // animation.
-               await tick();
+                  // Await `tick` to allow any conditional logic in the template to complete updating before handling animation.
+                  await tick();
 
-               handleAnimation();
+                  handleAnimation();
+               }
             });
          }
-
-         if (typeof options.animate === 'boolean') { animate = options.animate; }
-
-         if (typeof options.clickActive === 'boolean') { clickActive = options.clickActive; }
       },
       destroy()
       {
