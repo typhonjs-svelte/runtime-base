@@ -1,3 +1,5 @@
+import { CrossWindow } from './CrossWindow.js';
+
 /**
  * Provides access to the Clipboard API for reading / writing text strings. This requires a secure context.
  *
@@ -20,9 +22,9 @@ export class ClipboardAccess
    {
       let result;
 
-      if (Object.prototype.toString.call(activeWindow) !== '[object Window]')
+      if (!CrossWindow.isWindow(activeWindow))
       {
-         throw new TypeError(`ClipboardAccess.readText error: 'activeWindow' is not a Window or WindowProxy.`);
+         throw new TypeError(`ClipboardAccess.readText error: 'activeWindow' is not a Window.`);
       }
 
       if (activeWindow?.navigator?.clipboard)
@@ -54,9 +56,9 @@ export class ClipboardAccess
          throw new TypeError(`ClipboardAccess.writeText error: 'text' is not a string.`);
       }
 
-      if (Object.prototype.toString.call(activeWindow) !== '[object Window]')
+      if (!CrossWindow.isWindow(activeWindow))
       {
-         throw new TypeError(`ClipboardAccess.writeText error: 'activeWindow' is not a Window or WindowProxy.`);
+         throw new TypeError(`ClipboardAccess.writeText error: 'activeWindow' is not a Window.`);
       }
 
       let success = false;
@@ -70,7 +72,7 @@ export class ClipboardAccess
          }
          catch (err) { /**/ }
       }
-      else if (activeWindow?.document?.execCommand instanceof Function)
+      else if (typeof activeWindow?.document?.execCommand === 'function')
       {
          const textArea = activeWindow.document.createElement('textarea');
 
