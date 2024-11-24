@@ -1,3 +1,5 @@
+import { CrossWindow } from './CrossWindow.js';
+
 /**
  * Provides a utility function to parse / construct fully qualified URL instances from a URL string.
  */
@@ -21,7 +23,7 @@ export class URLParser
     */
    static parse({ url, base, routePrefix })
    {
-      if (url instanceof URL) { return url; }
+      if (CrossWindow.isURL(url)) { return url; }
 
       if (typeof url !== 'string') { return null; }
 

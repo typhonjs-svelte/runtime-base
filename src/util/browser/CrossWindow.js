@@ -26,7 +26,7 @@ export class CrossWindow
 
    static #InputEventSet = new Set(['KeyboardEvent', 'MouseEvent', 'PointerEvent']);
 
-   // Collection typing ----------------------------------------------------------------------------------------------
+   // ES / Browser API typing ----------------------------------------------------------------------------------------
 
    /**
     * Provides basic prototype string type checking if `target` is a Document.
@@ -62,6 +62,18 @@ export class CrossWindow
    static isSet(target)
    {
       return isObject(target) && Object.prototype.toString.call(target) === '[object Set]';
+   }
+
+   /**
+    * Provides basic prototype string type checking if `target` is a URL.
+    *
+    * @param {unknown}  target - A potential URL to test.
+    *
+    * @returns {boolean} Is `target` a URL.
+    */
+   static isURL(target)
+   {
+      return isObject(target) && Object.prototype.toString.call(target) === '[object URL]';
    }
 
    /**
