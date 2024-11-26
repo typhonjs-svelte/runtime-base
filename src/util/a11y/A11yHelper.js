@@ -2,6 +2,8 @@ import {
    isIterable,
    isObject } from '#runtime/util/object';
 
+import { CrossWindow } from '../browser/index.js';
+
 /**
  * Provides several helpful utility methods for accessibility and keyboard navigation.
  *
@@ -549,17 +551,15 @@ export class A11yHelper
     *
     * @param {Element}  element - An element to match in parent traversal from the active element.
     *
-    * @param {Window}   [activeWindow=globalThis] The active window to use for the current active element.
-    *
     * @returns {boolean} Whether there is focus within the given element.
     */
-   static isFocusWithin(element, activeWindow = globalThis)
+   static isFocusWithin(element)
    {
-      if (element === void 0 || element === null || element?.hidden || !element?.isConnected) { return false; }
+      if (!isObject(element) || element?.hidden || !element?.isConnected) { return false; }
 
-      if (Object.prototype.toString.call(activeWindow) !== '[object Window]') { return false; }
+      let active = CrossWindow.getActiveElement(element);
 
-      let active = activeWindow.document.activeElement;
+      if (!active) { return false; }
 
       while (active)
       {
