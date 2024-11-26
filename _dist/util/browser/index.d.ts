@@ -53,88 +53,142 @@ declare class ClipboardAccess {
  *
  * TRL supports moving applications from a main central browser window and popping them out into separate standalone
  * app instances in a separate browser window. In this case for essential DOM element and event checks it's necessary to
- * employ the workarounds found in `CrossWindowCheck`.
+ * employ the workarounds found in `CrossWindow`.
  */
-declare class CrossWindowCheck {
+declare class CrossWindow {
   /**
-   * Provides basic prototype string type checking if `map` is a Map.
+   * Provides basic prototype string type checking if `target` is a Document.
    *
-   * @param {unknown}  map - A potential Map to test.
+   * @param {unknown}  target - A potential Document to test.
    *
-   * @returns {boolean} Is `map` a Map.
+   * @returns {boolean} Is `target` a Document.
    */
-  static isMap(map: unknown): boolean;
+  static isDocument(target: unknown): boolean;
   /**
-   * Provides basic prototype string type checking if `element` is an Element.
+   * Provides basic prototype string type checking if `target` is a Map.
    *
-   * @param {unknown}  set - A potential Set to test.
+   * @param {unknown}  target - A potential Map to test.
    *
-   * @returns {boolean} Is `set` a Set.
+   * @returns {boolean} Is `target` a Map.
    */
-  static isSet(set: unknown): boolean;
+  static isMap(target: unknown): boolean;
   /**
-   * Provides precise type checking if `element` is an Element.
+   * Provides basic prototype string type checking if `target` is a Set.
    *
-   * @param {unknown}  element - A potential Element to test.
+   * @param {unknown}  target - A potential Set to test.
    *
-   * @returns {boolean} Is `element` an Element.
+   * @returns {boolean} Is `target` a Set.
    */
-  static isElement(element: unknown): boolean;
+  static isSet(target: unknown): boolean;
   /**
-   * Provides precise type checking if `element` is a HTMLElement.
+   * Provides basic prototype string type checking if `target` is a URL.
    *
-   * @param {unknown}  element - A potential HTMLElement to test.
+   * @param {unknown}  target - A potential URL to test.
    *
-   * @returns {boolean} Is `element` an HTMLElement.
+   * @returns {boolean} Is `target` a URL.
    */
-  static isHTMLElement(element: unknown): boolean;
+  static isURL(target: unknown): boolean;
   /**
-   * Provides precise type checking if `element` is a Node.
+   * Provides basic prototype string type checking if `target` is a Window.
    *
-   * @param {unknown}  node - A potential Node to test.
+   * @param {unknown}  target - A potential Window to test.
    *
-   * @returns {boolean} Is `node` a DOM Node.
+   * @returns {boolean} Is `target` a Window.
    */
-  static isNode(node: unknown): boolean;
+  static isWindow(target: unknown): boolean;
   /**
-   * Provides precise type checking if `element` is a SVGElement.
+   * Convenience method to retrieve the `document.activeElement` value in the current Window context of a DOM Node /
+   * Element, EventTarget, Document, or Window.
    *
-   * @param {unknown}  element - A potential SVGElement to test.
+   * @param {Document | EventTarget | Node | Window}  target - DOM Node / Element, EventTarget, Document, or Window to
+   *        query.
    *
-   * @returns {boolean} Is `element` an SVGElement.
+   * @returns {Element | null} Active element.
    */
-  static isSVGElement(element: unknown): boolean;
+  static getActiveElement(target: Document | EventTarget | Node | Window): Element | null;
   /**
-   * Provides basic type checking by constructor name(s) for objects. This can be useful when checking multiple
-   * constructor names against a provided Set.
+   * Convenience method to retrieve the `Document` value in the current context of a DOM Node / Element, EventTarget,
+   * Document, or Window.
    *
-   * @param {unknown}  object - Object to test for constructor name.
+   * @param {Document | EventTarget | Node | Window}  target - DOM Node / Element, EventTarget, Document, or Window to
+   *        query.
    *
-   * @param {string | Set<string>} types Specific constructor name or Set of constructor names to match.
-   *
-   * @returns {boolean} Does the provided object constructor name match the types provided.
+   * @returns {Document} Active document.
    */
-  static isCtorName(object: unknown, types: string | Set<string>): boolean;
+  static getDocument(target: Document | EventTarget | Node | Window): Document;
+  /**
+   * Convenience method to retrieve the `Window` value in the current context of a DOM Node / Element, EventTarget,
+   * Document, or Window.
+   *
+   * @param {Document | EventTarget | Node | Window}  target - DOM Node / Element, EventTarget, Document, or Window to
+   *        query.
+   *
+   * @returns {Window} Active window.
+   */
+  static getWindow(target: Document | EventTarget | Node | Window): Window;
+  /**
+   * Provides precise type checking if `target` is an Element.
+   *
+   * @param {unknown}  target - A potential Element to test.
+   *
+   * @returns {boolean} Is `target` an Element.
+   */
+  static isElement(target: unknown): boolean;
+  /**
+   * Provides precise type checking if `target` is a HTMLElement.
+   *
+   * @param {unknown}  target - A potential HTMLElement to test.
+   *
+   * @returns {boolean} Is `target` an HTMLElement.
+   */
+  static isHTMLElement(target: unknown): boolean;
+  /**
+   * Provides precise type checking if `target` is a Node.
+   *
+   * @param {unknown}  target - A potential Node to test.
+   *
+   * @returns {boolean} Is `target` a DOM Node.
+   */
+  static isNode(target: unknown): boolean;
+  /**
+   * Provides precise type checking if `target` is a SVGElement.
+   *
+   * @param {unknown}  target - A potential SVGElement to test.
+   *
+   * @returns {boolean} Is `target` an SVGElement.
+   */
+  static isSVGElement(target: unknown): boolean;
   /**
    * Provides basic duck type checking for `Event` signature and optional constructor name(s).
    *
-   * @param {unknown}  event - A potential DOM event to test.
+   * @param {unknown}  target - A potential DOM event to test.
    *
    * @param {string | Set<string>} [types] Specific constructor name or Set of constructor names to match.
    *
-   * @returns {boolean} Is `event` an Event with optional constructor name check.
+   * @returns {boolean} Is `target` an Event with optional constructor name check.
    */
-  static isEvent(event: unknown, types?: string | Set<string>): boolean;
+  static isEvent(target: unknown, types?: string | Set<string>): boolean;
   /**
    * Provides basic duck type checking for `Event` signature for standard input events including `KeyboardEvent`,
    * `MouseEvent`, and `PointerEvent`. This method is useful when constructing a Set for constructor name testing is
    * not convenient.
    *
-   * @param {unknown}  event - A potential DOM event to test.
+   * @param {unknown}  target - A potential DOM event to test.
    *
-   * @returns {boolean} Is `event` a Keyboard, MouseEvent, or PointerEvent.
+   * @returns {boolean} Is `target` a Keyboard, MouseEvent, or PointerEvent.
    */
-  static isInputEvent(event: unknown): boolean;
+  static isInputEvent(target: unknown): boolean;
+  /**
+   * Provides basic type checking by constructor name(s) for objects. This can be useful when checking multiple
+   * constructor names against a provided Set.
+   *
+   * @param {unknown}  target - Object to test for constructor name.
+   *
+   * @param {string | Set<string>} types Specific constructor name or Set of constructor names to match.
+   *
+   * @returns {boolean} Does the provided object constructor name match the types provided.
+   */
+  static isCtorName(target: unknown, types: string | Set<string>): boolean;
 }
 
 /**
@@ -160,4 +214,4 @@ declare class URLParser {
   static parse({ url, base, routePrefix }: { url: string | URL; base?: string; routePrefix?: string }): URL | null;
 }
 
-export { BrowserSupports, ClipboardAccess, CrossWindowCheck, URLParser };
+export { BrowserSupports, ClipboardAccess, CrossWindow, URLParser };
