@@ -102,20 +102,22 @@ export class CrossWindow
     *        UIEvent or Window to query.
     *
     * @returns {Element | null} Active element.
+    *
+    * @throws {@link TypeError} Target must be a DOM Node / Element, Document, UIEvent, or Window.
     */
    static getActiveElement(target)
    {
       // Duck type if target is a Node / Element.
       if (typeof target?.nodeType === 'number') { return target?.ownerDocument?.activeElement ?? null; }
 
+      // Duck type if target is a UIEvent.
+      if (this.isUIEvent(target) && isObject(target?.view)) { return target?.view?.document?.activeElement ?? null; }
+
       // Duck type if target is a Document.
       if (isObject(target?.defaultView)) { return target?.activeElement ?? null; }
 
       // Duck type if target is a Window.
       if (isObject(target?.document) && isObject(target?.location)) { return target?.document?.activeElement ?? null; }
-
-      // Duck type if target is a UIEvent.
-      if (this.isUIEvent(target) && isObject(target?.view)) { return target?.view?.document?.activeElement ?? null; }
 
       throw new TypeError(`'target' must be a DOM Node / Element, Document, UIEvent, or Window.`);
    }
@@ -128,20 +130,22 @@ export class CrossWindow
     *        UIEvent or Window to query.
     *
     * @returns {Document} Active document.
+    *
+    * @throws {@link TypeError} Target must be a DOM Node / Element, Document, UIEvent, or Window.
     */
    static getDocument(target)
    {
       // Duck type if target is a Node / Element.
       if (typeof target?.nodeType === 'number') { return target?.ownerDocument; }
 
+      // Duck type if target is a UIEvent.
+      if (this.isUIEvent(target) && isObject(target?.view)) { return target?.view?.document; }
+
       // Duck type if target is a Document.
       if (isObject(target?.defaultView)) { return target; }
 
       // Duck type if target is a Window.
       if (isObject(target?.document) && isObject(target?.location)) { return target?.document; }
-
-      // Duck type if target is a UIEvent.
-      if (this.isUIEvent(target) && isObject(target?.view)) { return target?.view?.document; }
 
       throw new TypeError(`'target' must be a DOM Node / Element, Document, UIEvent, or Window.`);
    }
@@ -154,20 +158,22 @@ export class CrossWindow
     *        UIEvent or Window to query.
     *
     * @returns {Window} Active window.
+    *
+    * @throws {@link TypeError} Target must be a DOM Node / Element, Document, UIEvent, or Window.
     */
    static getWindow(target)
    {
       // Duck type if target is a Node / Element.
       if (typeof target?.nodeType === 'number') { return target.ownerDocument?.defaultView ?? globalThis; }
 
+      // Duck type if target is a UIEvent.
+      if (this.isUIEvent(target) && isObject(target?.view)) { return target?.view; }
+
       // Duck type if target is a Document.
       if (isObject(target?.defaultView)) { return target.defaultView ?? globalThis; }
 
       // Duck type if target is a Window.
       if (isObject(target?.document) && isObject(target?.location)) { return target; }
-
-      // Duck type if target is a UIEvent.
-      if (this.isUIEvent(target) && isObject(target?.view)) { return target?.view; }
 
       throw new TypeError(`'target' must be a DOM Node / Element, Document, UIEvent, or Window.`);
    }
