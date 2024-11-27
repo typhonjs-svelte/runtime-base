@@ -1,3 +1,4 @@
+import { CrossWindow }     from '#runtime/util/browser';
 import { isObject }        from '#runtime/util/object';
 
 import { TJSSvelteUtil }   from './TJSSvelteUtil.js';
@@ -78,22 +79,22 @@ class TJSSvelteConfigUtil
           `TJSSvelteConfigUtil.parseConfig - 'intro' is not a boolean for config:\n${JSON.stringify(config)}.`);
       }
 
-      if (config.target !== void 0 && typeof config.target !== 'string' && !(config.target instanceof Element) &&
-       !(config.target instanceof ShadowRoot) && !(config.target instanceof DocumentFragment))
+      if (config.target !== void 0 && typeof config.target !== 'string' && !CrossWindow.isElement(config.target) &&
+       !CrossWindow.isShadowRoot(config.target) && !CrossWindow.isDocumentFragment(config.target))
       {
          throw new TypeError(
           `TJSSvelteConfigUtil.parseConfig - 'target' is not a Element, ShadowRoot, or DocumentFragment for config:\n${
            JSON.stringify(config)}.`);
       }
 
-      if (config.anchor !== void 0 && typeof config.anchor !== 'string' && !(config.anchor instanceof Element) &&
-       !(config.anchor instanceof ShadowRoot) && !(config.anchor instanceof DocumentFragment))
+      if (config.anchor !== void 0 && typeof config.anchor !== 'string' && !CrossWindow.isElement(config.anchor) &&
+       !CrossWindow.isShadowRoot(config.anchor) && !CrossWindow.isDocumentFragment(config.anchor))
       {
          throw new TypeError(`TJSSvelteConfigUtil.parseConfig - 'anchor' is not a string, Element for config:\n${
           JSON.stringify(config)}.`);
       }
 
-      if (config.context !== void 0 && typeof config.context !== 'function' && !(config.context instanceof Map) &&
+      if (config.context !== void 0 && typeof config.context !== 'function' && !CrossWindow.isMap(config.context) &&
        !isObject(config.context))
       {
          throw new TypeError(
@@ -167,7 +168,7 @@ class TJSSvelteConfigUtil
               JSON.stringify(config)}`);
          }
       }
-      else if (svelteConfig.context instanceof Map)
+      else if (CrossWindow.isMap(svelteConfig.context))
       {
          externalContext = Object.fromEntries(svelteConfig.context);
          delete svelteConfig.context;
@@ -224,7 +225,7 @@ class TJSSvelteConfigUtil
          delete svelteConfig.children;
       }
 
-      if (!(svelteConfig.context instanceof Map))
+      if (!CrossWindow.isMap(svelteConfig.context))
       {
          svelteConfig.context = new Map();
       }
