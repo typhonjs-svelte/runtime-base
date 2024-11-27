@@ -25,6 +25,7 @@ export class CrossWindow
    static #SVGElement = globalThis.SVGElement;
 
    static #InputEventSet = new Set(['KeyboardEvent', 'MouseEvent', 'PointerEvent']);
+   static #PointerEventSet = new Set(['MouseEvent', 'PointerEvent']);
 
    // ES / Browser API typing ----------------------------------------------------------------------------------------
 
@@ -267,6 +268,20 @@ export class CrossWindow
    static isInputEvent(target)
    {
       return this.isEvent(target, this.#InputEventSet);
+   }
+
+   /**
+    * Provides basic duck type checking for `Event` signature for standard mouse / pointer events including
+    * `MouseEvent` and `PointerEvent`. This method is useful when constructing a Set for constructor name testing is
+    * not convenient.
+    *
+    * @param {unknown}  target - A potential DOM event to test.
+    *
+    * @returns {boolean} Is `target` a MouseEvent or PointerEvent.
+    */
+   static isPointerEvent(target)
+   {
+      return this.isEvent(target, this.#PointerEventSet);
    }
 
    // Generic typing -------------------------------------------------------------------------------------------------

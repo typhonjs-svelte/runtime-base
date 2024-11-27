@@ -1,8 +1,8 @@
+import { CrossWindow }  from '#runtime/util/browser';
+
 import {
    isIterable,
-   isObject } from '#runtime/util/object';
-
-import { CrossWindow } from '../browser/index.js';
+   isObject }           from '#runtime/util/object';
 
 /**
  * Provides several helpful utility methods for accessibility and keyboard navigation.
@@ -11,15 +11,6 @@ import { CrossWindow } from '../browser/index.js';
  */
 export class A11yHelper
 {
-   /**
-    * Provides the event constructor names to duck type against. This is necessary for when HTML nodes / elements are
-    * moved to another browser window as `instanceof` checks will fail.
-    *
-    * @type {Set<string>}
-    */
-   static #eventTypesAll = new Set(['KeyboardEvent', 'MouseEvent', 'PointerEvent']);
-   static #eventTypesPointer = new Set(['MouseEvent', 'PointerEvent']);
-
    /**
     * You can set global focus debugging enabled by setting `A11yHelper.debug = true`.
     *
@@ -333,7 +324,7 @@ export class A11yHelper
       }
 
       // Perform duck typing on event constructor name.
-      if (!A11yHelper.#eventTypesAll.has(event?.constructor?.name))
+      if (event !== void 0 && !CrossWindow.isInputEvent(event))
       {
          throw new TypeError(
           `A11yHelper.getFocusSource error: 'event' is not a KeyboardEvent, MouseEvent, or PointerEvent.`);
@@ -393,7 +384,7 @@ export class A11yHelper
       const result = { debug };
 
       // Perform duck typing on event constructor name.
-      if (A11yHelper.#eventTypesPointer.has(event?.constructor?.name))
+      if (CrossWindow.isPointerEvent(event))
       {
          // Firefox currently (1/23) does not correctly determine the location of a keyboard originated
          // context menu location, so calculate position from middle of the event target.
@@ -424,13 +415,16 @@ export class A11yHelper
       else
       {
          // Always include x / y coordinates and targetEl may not be defined.
-         const rectTarget = targetEl ?? event.target;
+         const rectTarget = targetEl ?? event?.target;
 
-         const rect = rectTarget.getBoundingClientRect();
-         result.source = 'keyboard';
-         result.x = x ?? rect.left + (rect.width / 2);
-         result.y = y ?? rect.top + (rect.height / 2);
-         result.focusEl = targetEl ? [targetEl] : [];
+         if (rectTarget)
+         {
+            const rect = rectTarget.getBoundingClientRect();
+            result.source = 'keyboard';
+            result.x = x ?? rect.left + (rect.width / 2);
+            result.y = y ?? rect.top + (rect.height / 2);
+            result.focusEl = targetEl ? [targetEl] : [];
+         }
 
          if (focusEl) { result.focusEl.push(focusEl); }
       }
