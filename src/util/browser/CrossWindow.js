@@ -8,7 +8,7 @@ import { isObject } from '#runtime/util/object';
  * windows.
  *
  * TRL supports moving applications from a main central browser window and popping them out into separate standalone
- * app instances in a separate browser window. In this case for essential DOM element and event checks it's necessary to
+ * app instances in a separate browser window. In this case for essential DOM element and event checks it is necessary to
  * employ the workarounds found in `CrossWindow`.
  */
 export class CrossWindow
@@ -24,8 +24,11 @@ export class CrossWindow
    static #Node = globalThis.Node;
    static #SVGElement = globalThis.SVGElement;
 
+   // Various UI Event sets for duck typing by constructor name.
    static #InputEventSet = new Set(['KeyboardEvent', 'MouseEvent', 'PointerEvent']);
    static #PointerEventSet = new Set(['MouseEvent', 'PointerEvent']);
+   static #UIEventSet = new Set(['UIEvent', 'FocusEvent', 'MouseEvent', 'WheelEvent', 'KeyboardEvent', 'PointerEvent',
+    'TouchEvent', 'InputEvent', 'CompositionEvent', 'DragEvent']);
 
    // ES / Browser API typing ----------------------------------------------------------------------------------------
 
@@ -34,7 +37,7 @@ export class CrossWindow
     *
     * @param {unknown}  target - A potential Document to test.
     *
-    * @returns {boolean} Is `target` a Document.
+    * @returns {target is Document} Is `target` a Document.
     */
    static isDocument(target)
    {
@@ -46,7 +49,7 @@ export class CrossWindow
     *
     * @param {unknown}  target - A potential Map to test.
     *
-    * @returns {boolean} Is `target` a Map.
+    * @returns {target is Map} Is `target` a Map.
     */
    static isMap(target)
    {
@@ -58,7 +61,7 @@ export class CrossWindow
     *
     * @param {unknown}  target - A potential Set to test.
     *
-    * @returns {boolean} Is `target` a Set.
+    * @returns {target is Set} Is `target` a Set.
     */
    static isSet(target)
    {
@@ -70,7 +73,7 @@ export class CrossWindow
     *
     * @param {unknown}  target - A potential URL to test.
     *
-    * @returns {boolean} Is `target` a URL.
+    * @returns {target is URL} Is `target` a URL.
     */
    static isURL(target)
    {
@@ -82,7 +85,7 @@ export class CrossWindow
     *
     * @param {unknown}  target - A potential Window to test.
     *
-    * @returns {boolean} Is `target` a Window.
+    * @returns {target is Window} Is `target` a Window.
     */
    static isWindow(target)
    {
@@ -95,8 +98,8 @@ export class CrossWindow
     * Convenience method to retrieve the `document.activeElement` value in the current Window context of a DOM Node /
     * Element, EventTarget, Document, or Window.
     *
-    * @param {Document | EventTarget | Node | Window}  target - DOM Node / Element, EventTarget, Document, or Window to
-    *        query.
+    * @param {Document | EventTarget | Node | UIEvent | Window}  target - DOM Node / Element, EventTarget, Document,
+    *        UIEvent or Window to query.
     *
     * @returns {Element | null} Active element.
     */
@@ -111,15 +114,18 @@ export class CrossWindow
       // Duck type if target is a Window.
       if (isObject(target?.document) && isObject(target?.location)) { return target?.document?.activeElement ?? null; }
 
-      throw new TypeError(`'target' must be a DOM Node / Element, Document, or Window.`);
+      // Duck type if target is a UIEvent.
+      if (this.isUIEvent(target) && isObject(target?.view)) { return target?.view?.document?.activeElement ?? null; }
+
+      throw new TypeError(`'target' must be a DOM Node / Element, Document, UIEvent, or Window.`);
    }
 
    /**
     * Convenience method to retrieve the `Document` value in the current context of a DOM Node / Element, EventTarget,
-    * Document, or Window.
+    * Document, UIEvent, or Window.
     *
-    * @param {Document | EventTarget | Node | Window}  target - DOM Node / Element, EventTarget, Document, or Window to
-    *        query.
+    * @param {Document | EventTarget | Node | UIEvent | Window}  target - DOM Node / Element, EventTarget, Document,
+    *        UIEvent or Window to query.
     *
     * @returns {Document} Active document.
     */
@@ -134,15 +140,18 @@ export class CrossWindow
       // Duck type if target is a Window.
       if (isObject(target?.document) && isObject(target?.location)) { return target?.document; }
 
-      throw new TypeError(`'target' must be a DOM Node / Element, Document, or Window.`);
+      // Duck type if target is a UIEvent.
+      if (this.isUIEvent(target) && isObject(target?.view)) { return target?.view?.document; }
+
+      throw new TypeError(`'target' must be a DOM Node / Element, Document, UIEvent, or Window.`);
    }
 
    /**
     * Convenience method to retrieve the `Window` value in the current context of a DOM Node / Element, EventTarget,
     * Document, or Window.
     *
-    * @param {Document | EventTarget | Node | Window}  target - DOM Node / Element, EventTarget, Document, or Window to
-    *        query.
+    * @param {Document | EventTarget | Node | UIEvent | Window}  target - DOM Node / Element, EventTarget, Document,
+    *        UIEvent or Window to query.
     *
     * @returns {Window} Active window.
     */
@@ -157,7 +166,10 @@ export class CrossWindow
       // Duck type if target is a Window.
       if (isObject(target?.document) && isObject(target?.location)) { return target; }
 
-      throw new TypeError(`'target' must be a DOM Node / Element, Document, or Window.`);
+      // Duck type if target is a UIEvent.
+      if (this.isUIEvent(target) && isObject(target?.view)) { return target?.view; }
+
+      throw new TypeError(`'target' must be a DOM Node / Element, Document, UIEvent, or Window.`);
    }
 
    // DOM Element typing ---------------------------------------------------------------------------------------------
@@ -167,7 +179,7 @@ export class CrossWindow
     *
     * @param {unknown}  target - A potential Element to test.
     *
-    * @returns {boolean} Is `target` an Element.
+    * @returns {target is Element} Is `target` an Element.
     */
    static isElement(target)
    {
@@ -185,7 +197,7 @@ export class CrossWindow
     *
     * @param {unknown}  target - A potential HTMLElement to test.
     *
-    * @returns {boolean} Is `target` an HTMLElement.
+    * @returns {target is HTMLElement} Is `target` an HTMLElement.
     */
    static isHTMLElement(target)
    {
@@ -203,7 +215,7 @@ export class CrossWindow
     *
     * @param {unknown}  target - A potential Node to test.
     *
-    * @returns {boolean} Is `target` a DOM Node.
+    * @returns {target is Node} Is `target` a DOM Node.
     */
    static isNode(target)
    {
@@ -221,7 +233,7 @@ export class CrossWindow
     *
     * @param {unknown}  target - A potential SVGElement to test.
     *
-    * @returns {boolean} Is `target` an SVGElement.
+    * @returns {target is SVGElement} Is `target` an SVGElement.
     */
    static isSVGElement(target)
    {
@@ -243,7 +255,7 @@ export class CrossWindow
     *
     * @param {string | Set<string>} [types] Specific constructor name or Set of constructor names to match.
     *
-    * @returns {boolean} Is `target` an Event with optional constructor name check.
+    * @returns {target is Event} Is `target` an Event with optional constructor name check.
     */
    static isEvent(target, types)
    {
@@ -263,7 +275,7 @@ export class CrossWindow
     *
     * @param {unknown}  target - A potential DOM event to test.
     *
-    * @returns {boolean} Is `target` a Keyboard, MouseEvent, or PointerEvent.
+    * @returns {target is KeyboardEvent | MouseEvent | PointerEvent} Is `target` a Keyboard, MouseEvent, or PointerEvent.
     */
    static isInputEvent(target)
    {
@@ -277,11 +289,24 @@ export class CrossWindow
     *
     * @param {unknown}  target - A potential DOM event to test.
     *
-    * @returns {boolean} Is `target` a MouseEvent or PointerEvent.
+    * @returns {target is PointerEvent} Is `target` a MouseEvent or PointerEvent.
     */
    static isPointerEvent(target)
    {
       return this.isEvent(target, this.#PointerEventSet);
+   }
+
+   /**
+    * Provides basic duck type checking for `Event` signature for all UI events.
+    *
+    * @param {unknown}  target - A potential DOM event to test.
+    *
+    * @returns {target is UIEvent} Is `target` a UIEvent.
+    * @see https://developer.mozilla.org/en-US/docs/Web/API/UIEvent
+    */
+   static isUIEvent(target)
+   {
+      return this.isEvent(target, this.#UIEventSet);
    }
 
    // Generic typing -------------------------------------------------------------------------------------------------
