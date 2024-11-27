@@ -1,15 +1,15 @@
 import { isObject } from '#runtime/util/object';
 
 /**
- * Provides cross window checks for DOM elements, events, and essential duck typing for any class based object with a
- * constructor name. The impetus is that certain browsers such as Chrome and Firefox behave differently when
+ * Provides cross window checks for DOM nodes / elements, events, and essential duck typing for any class based object
+ * with a constructor name. The impetus is that certain browsers such as Chrome and Firefox behave differently when
  * performing `instanceof` checks when elements are moved between browser windows. With Firefox in particular the
  * entire JS runtime can not use `instanceof` checks as the instances of fundamental DOM elements differ between
  * windows.
  *
  * TRL supports moving applications from a main central browser window and popping them out into separate standalone
- * app instances in a separate browser window. In this case for essential DOM element and event checks it is necessary to
- * employ the workarounds found in `CrossWindow`.
+ * app instances in a separate browser window. In this case for essential DOM element and event checks it is necessary
+ * to employ the workarounds found in `CrossWindow`.
  */
 export class CrossWindow
 {
@@ -18,17 +18,27 @@ export class CrossWindow
     */
    constructor() {} // eslint-disable-line no-useless-constructor
 
+   /**
+    * DOM nodes with defined `ownerDocument` property.
+    *
+    * @type {Set<number>}
+    */
+   static #NodesWithOwnerDocument = new Set([Node.ELEMENT_NODE, Node.TEXT_NODE, Node.COMMENT_NODE,
+    Node.DOCUMENT_FRAGMENT_NODE]);
+
    // Cached DOM nodes from initial `globalThis` reference / originating window.
+   static #DocumentFragment = globalThis.DocumentFragment;
    static #Element = globalThis.Element;
    static #HTMLElement = globalThis.HTMLElement;
    static #Node = globalThis.Node;
+   static #ShadowRoot = globalThis.ShadowRoot;
    static #SVGElement = globalThis.SVGElement;
 
    // Various UI Event sets for duck typing by constructor name.
-   static #InputEventSet = new Set(['KeyboardEvent', 'MouseEvent', 'PointerEvent']);
    static #PointerEventSet = new Set(['MouseEvent', 'PointerEvent']);
    static #UIEventSet = new Set(['UIEvent', 'FocusEvent', 'MouseEvent', 'WheelEvent', 'KeyboardEvent', 'PointerEvent',
     'TouchEvent', 'InputEvent', 'CompositionEvent', 'DragEvent']);
+   static #UserInputEventSet = new Set(['KeyboardEvent', 'MouseEvent', 'PointerEvent']);
 
    // ES / Browser API typing ----------------------------------------------------------------------------------------
 
@@ -54,6 +64,30 @@ export class CrossWindow
    static isMap(target)
    {
       return isObject(target) && Object.prototype.toString.call(target) === '[object Map]';
+   }
+
+   /**
+    * Provides basic prototype string type checking if `target` is a Promise.
+    *
+    * @param {unknown}  target - A potential Promise to test.
+    *
+    * @returns {target is Promise} Is `target` a Promise.
+    */
+   static isPromise(target)
+   {
+      return isObject(target) && Object.prototype.toString.call(target) === '[object Promise]';
+   }
+
+   /**
+    * Provides basic prototype string type checking if `target` is a RegExp.
+    *
+    * @param {unknown}  target - A potential RegExp to test.
+    *
+    * @returns {target is RegExp} Is `target` a RegExp.
+    */
+   static isRegExp(target)
+   {
+      return isObject(target) && Object.prototype.toString.call(target) === '[object RegExp]';
    }
 
    /**
@@ -107,8 +141,8 @@ export class CrossWindow
     */
    static getActiveElement(target)
    {
-      // Duck type if target is a Node / Element.
-      if (typeof target?.nodeType === 'number') { return target?.ownerDocument?.activeElement ?? null; }
+      // Duck type if target has known defined `ownerDocument` property.
+      if (this.#NodesWithOwnerDocument.has(target?.nodeType)) { return target?.ownerDocument?.activeElement ?? null; }
 
       // Duck type if target is a UIEvent.
       if (this.isUIEvent(target) && isObject(target?.view)) { return target?.view?.document?.activeElement ?? null; }
@@ -135,8 +169,8 @@ export class CrossWindow
     */
    static getDocument(target)
    {
-      // Duck type if target is a Node / Element.
-      if (typeof target?.nodeType === 'number') { return target?.ownerDocument; }
+      // Duck type if target has known defined `ownerDocument` property.
+      if (this.#NodesWithOwnerDocument.has(target?.nodeType)) { return target?.ownerDocument; }
 
       // Duck type if target is a UIEvent.
       if (this.isUIEvent(target) && isObject(target?.view)) { return target?.view?.document; }
@@ -163,11 +197,14 @@ export class CrossWindow
     */
    static getWindow(target)
    {
-      // Duck type if target is a Node / Element.
-      if (typeof target?.nodeType === 'number') { return target.ownerDocument?.defaultView ?? globalThis; }
+      // Duck type if target has known defined `ownerDocument` property.
+      if (this.#NodesWithOwnerDocument.has(target?.nodeType))
+      {
+         return target.ownerDocument?.defaultView ?? globalThis;
+      }
 
       // Duck type if target is a UIEvent.
-      if (this.isUIEvent(target) && isObject(target?.view)) { return target?.view; }
+      if (this.isUIEvent(target) && isObject(target?.view)) { return target.view ?? globalThis; }
 
       // Duck type if target is a Document.
       if (isObject(target?.defaultView)) { return target.defaultView ?? globalThis; }
@@ -181,6 +218,24 @@ export class CrossWindow
    // DOM Element typing ---------------------------------------------------------------------------------------------
 
    /**
+    * Provides precise type checking if `target` is a DocumentFragment.
+    *
+    * @param {unknown}  target - A potential DocumentFragment to test.
+    *
+    * @returns {target is DocumentFragment} Is `target` a DocumentFragment.
+    */
+   static isDocumentFragment(target)
+   {
+      if (target?.nodeType !== Node.DOCUMENT_FRAGMENT_NODE) { return false; }
+
+      if (target instanceof this.#DocumentFragment) { return true; }
+
+      const OwnerDocumentFragment = target?.ownerDocument?.defaultView?.DocumentFragment;
+
+      return OwnerDocumentFragment && target instanceof OwnerDocumentFragment;
+   }
+
+   /**
     * Provides precise type checking if `target` is an Element.
     *
     * @param {unknown}  target - A potential Element to test.
@@ -189,7 +244,7 @@ export class CrossWindow
     */
    static isElement(target)
    {
-      if (target?.nodeType !== 1) { return false; }
+      if (target?.nodeType !== Node.ELEMENT_NODE) { return false; }
 
       if (target instanceof this.#Element) { return true; }
 
@@ -203,11 +258,11 @@ export class CrossWindow
     *
     * @param {unknown}  target - A potential HTMLElement to test.
     *
-    * @returns {target is HTMLElement} Is `target` an HTMLElement.
+    * @returns {target is HTMLElement} Is `target` a HTMLElement.
     */
    static isHTMLElement(target)
    {
-      if (target?.nodeType !== 1) { return false; }
+      if (target?.nodeType !== Node.ELEMENT_NODE) { return false; }
 
       if (target instanceof this.#HTMLElement) { return true; }
 
@@ -229,9 +284,37 @@ export class CrossWindow
 
       if (target instanceof this.#Node) { return true; }
 
-      const OwnerNode = target?.ownerDocument?.defaultView?.Node;
+      try
+      {
+         // Must retrieve window by a more thorough duck type via `getWindow` as not all Nodes have `ownerDocument`
+         // defined.
+         const ownerWindow = this.getWindow(target);
 
-      return OwnerNode && target instanceof OwnerNode;
+         const OwnerNode = ownerWindow?.Node;
+         return OwnerNode && target instanceof OwnerNode;
+      }
+      catch (err) { /* noop */ }
+
+      return false;
+   }
+
+   /**
+    * Provides precise type checking if `target` is a ShadowRoot.
+    *
+    * @param {unknown}  target - A potential ShadowRoot to test.
+    *
+    * @returns {target is ShadowRoot} Is `target` a ShadowRoot.
+    */
+   static isShadowRoot(target)
+   {
+      // ShadowRoot is a specialized type of DocumentFragment.
+      if (target?.nodeType !== Node.DOCUMENT_FRAGMENT_NODE) { return false; }
+
+      if (target instanceof this.#ShadowRoot) { return true; }
+
+      const OwnerShadowRoot = target?.ownerDocument?.defaultView?.ShadowRoot;
+
+      return OwnerShadowRoot && target instanceof OwnerShadowRoot;
    }
 
    /**
@@ -239,11 +322,11 @@ export class CrossWindow
     *
     * @param {unknown}  target - A potential SVGElement to test.
     *
-    * @returns {target is SVGElement} Is `target` an SVGElement.
+    * @returns {target is SVGElement} Is `target` a SVGElement.
     */
    static isSVGElement(target)
    {
-      if (target?.nodeType !== 1) { return false; }
+      if (target?.nodeType !== Node.ELEMENT_NODE) { return false; }
 
       if (target instanceof this.#SVGElement) { return true; }
 
@@ -306,11 +389,12 @@ export class CrossWindow
     *
     * @param {unknown}  target - A potential DOM event to test.
     *
-    * @returns {target is KeyboardEvent | MouseEvent | PointerEvent} Is `target` a Keyboard, MouseEvent, or PointerEvent.
+    * @returns {target is KeyboardEvent | MouseEvent | PointerEvent} Is `target` a Keyboard, MouseEvent, or
+    *          PointerEvent.
     */
    static isUserInputEvent(target)
    {
-      return this.isEvent(target, this.#InputEventSet);
+      return this.isEvent(target, this.#UserInputEventSet);
    }
 
    // Generic typing -------------------------------------------------------------------------------------------------
