@@ -324,7 +324,7 @@ export class A11yHelper
       }
 
       // Perform duck typing on event constructor name.
-      if (event !== void 0 && !CrossWindow.isInputEvent(event))
+      if (event !== void 0 && !CrossWindow.isUserInputEvent(event))
       {
          throw new TypeError(
           `A11yHelper.getFocusSource error: 'event' is not a KeyboardEvent, MouseEvent, or PointerEvent.`);
@@ -386,7 +386,7 @@ export class A11yHelper
       // Perform duck typing on event constructor name.
       if (CrossWindow.isPointerEvent(event))
       {
-         // Firefox currently (1/23) does not correctly determine the location of a keyboard originated
+         // Firefox currently (11/24) does not correctly determine the location of a keyboard originated
          // context menu location, so calculate position from middle of the event target.
          // Firefox fires a mouse event for the context menu key.
          if (event?.button !== 2 && event.type === 'contextmenu')

@@ -269,23 +269,8 @@ export class CrossWindow
    }
 
    /**
-    * Provides basic duck type checking for `Event` signature for standard input events including `KeyboardEvent`,
-    * `MouseEvent`, and `PointerEvent`. This method is useful when constructing a Set for constructor name testing is
-    * not convenient.
-    *
-    * @param {unknown}  target - A potential DOM event to test.
-    *
-    * @returns {target is KeyboardEvent | MouseEvent | PointerEvent} Is `target` a Keyboard, MouseEvent, or PointerEvent.
-    */
-   static isInputEvent(target)
-   {
-      return this.isEvent(target, this.#InputEventSet);
-   }
-
-   /**
     * Provides basic duck type checking for `Event` signature for standard mouse / pointer events including
-    * `MouseEvent` and `PointerEvent`. This method is useful when constructing a Set for constructor name testing is
-    * not convenient.
+    * `MouseEvent` and `PointerEvent`.
     *
     * @param {unknown}  target - A potential DOM event to test.
     *
@@ -307,6 +292,19 @@ export class CrossWindow
    static isUIEvent(target)
    {
       return this.isEvent(target, this.#UIEventSet);
+   }
+
+   /**
+    * Provides basic duck type checking for `Event` signature for standard user input events including `KeyboardEvent`,
+    * `MouseEvent`, and `PointerEvent`.
+    *
+    * @param {unknown}  target - A potential DOM event to test.
+    *
+    * @returns {target is KeyboardEvent | MouseEvent | PointerEvent} Is `target` a Keyboard, MouseEvent, or PointerEvent.
+    */
+   static isUserInputEvent(target)
+   {
+      return this.isEvent(target, this.#InputEventSet);
    }
 
    // Generic typing -------------------------------------------------------------------------------------------------
