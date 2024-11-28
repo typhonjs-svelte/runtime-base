@@ -1,3 +1,5 @@
+import { CrossWindow } from '#runtime/util/browser';
+
 /**
  * Provides management of a single Promise that can be shared and accessed across JS & Svelte components. This allows a
  * Promise to be created and managed as part of the TRL application lifecycle and accessed safely in various control
@@ -72,7 +74,7 @@ export class ManagedPromise
          throw new TypeError(`[TRL] ManagedPromise.create error: 'reuse' is not a boolean.`);
       }
 
-      if (reuse && this.#current !== void 0 && this.#current.promise instanceof Promise)
+      if (reuse && this.#current !== void 0 && CrossWindow.isPromise(this.#current.promise))
       {
          if (ManagedPromise.#logging)
          {
@@ -142,7 +144,7 @@ export class ManagedPromise
       {
          this.#current.isProcessing = true;
 
-         if (result instanceof Promise)
+         if (CrossWindow.isPromise(result))
          {
             result.then((value) =>
             {
@@ -195,7 +197,7 @@ export class ManagedPromise
 
       if (this.#current !== void 0)
       {
-         if (result instanceof Promise)
+         if (CrossWindow.isPromise(result))
          {
             this.#current.isProcessing = true;
 
