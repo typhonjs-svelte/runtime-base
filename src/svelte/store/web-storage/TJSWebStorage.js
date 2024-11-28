@@ -1,3 +1,5 @@
+import { CrossWindow } from '#runtime/util/browser';
+
 /**
  * Provides the base Storage API store manager. It is recommended to use {@link TJSLocalStorage} &
  * {@link TJSSessionStorage} for standard browser local and session storage use cases. TJSWebStorage exists
@@ -234,7 +236,7 @@ export class TJSWebStorage
     */
    *entries(regex = void 0)
    {
-      if (regex !== void 0 && !(regex instanceof RegExp)) { throw new TypeError(`'regex' is not a RegExp`); }
+      if (regex !== void 0 && !CrossWindow.isRegExp(regex)) { throw new TypeError(`'regex' is not a RegExp`); }
 
       if (!this.#stores.size) { return void 0; }
 
@@ -261,7 +263,7 @@ export class TJSWebStorage
     */
    *keys(regex = void 0)
    {
-      if (regex !== void 0 && !(regex instanceof RegExp)) { throw new TypeError(`'regex' is not a RegExp`); }
+      if (regex !== void 0 && !CrossWindow.isRegExp(regex)) { throw new TypeError(`'regex' is not a RegExp`); }
 
       if (!this.#stores.size) { return void 0; }
 
@@ -290,7 +292,7 @@ export class TJSWebStorage
     */
    *stores(regex = void 0)
    {
-      if (regex !== void 0 && !(regex instanceof RegExp)) { throw new TypeError(`'regex' is not a RegExp`); }
+      if (regex !== void 0 && !CrossWindow.isRegExp(regex)) { throw new TypeError(`'regex' is not a RegExp`); }
 
       if (!this.#stores.size) { return void 0; }
 
