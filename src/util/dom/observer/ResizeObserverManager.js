@@ -1,4 +1,5 @@
 import { isWritableStore } from '#runtime/svelte/store/util';
+import { CrossWindow }     from '#runtime/util/browser';
 import { StyleParse }      from '#runtime/util/dom/style';
 import { isObject }        from '#runtime/util/object';
 
@@ -67,7 +68,7 @@ export class ResizeObserverManager
     */
    add(el, target)
    {
-      if (!(el instanceof HTMLElement))
+      if (!CrossWindow.isHTMLElement(el))
       {
          throw new TypeError(`ResizeObserverManager.add error: 'el' is not a HTMLElement.`);
       }
