@@ -1,3 +1,5 @@
+import { CrossWindow } from '#runtime/util/browser';
+
 /**
  * Provides a implementation for a TJSPosition animation for a group of TJSPosition instances.
  *
@@ -43,7 +45,7 @@ export class AnimationGroupControl
    {
       const animationControls = this.#animationControls;
 
-      if (!(this.#finishedPromise instanceof Promise))
+      if (!CrossWindow.isPromise(this.#finishedPromise))
       {
          if (animationControls === null || animationControls === void 0 || animationControls.size === 0)
          {

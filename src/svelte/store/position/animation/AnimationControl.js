@@ -1,4 +1,5 @@
-import { isObject }              from '#runtime/util/object';
+import { CrossWindow }  from '#runtime/util/browser';
+import { isObject }     from '#runtime/util/object';
 
 /**
  * Provides a basic animation implementation for TJSPosition animation.
@@ -51,7 +52,7 @@ export class AnimationControl
     */
    get finished()
    {
-      if (!(this.#finishedPromise instanceof Promise))
+      if (!CrossWindow.isPromise(this.#finishedPromise))
       {
          this.#finishedPromise = this.#willFinish ? new Promise((resolve) => this.#animationData.resolve = resolve) :
           Promise.resolve({ cancelled: false });
