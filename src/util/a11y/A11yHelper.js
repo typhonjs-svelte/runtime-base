@@ -460,7 +460,7 @@ export class A11yHelper
    /**
     * Tests if the given element is focusable.
     *
-    * @param {Element} el - Element to test.
+    * @param {unknown} el - Element to test.
     *
     * @param {object} [options] - Optional parameters.
     *
@@ -495,14 +495,11 @@ export class A11yHelper
       const tabindexAttr = globalThis.parseInt(el.getAttribute('tabindex'));
       const tabindexFocusable = Number.isInteger(tabindexAttr) && tabindexAttr >= 0;
 
-      const isAnchor = el instanceof HTMLAnchorElement;
-
-      if (contenteditableFocusable || tabindexFocusable || isAnchor || el instanceof HTMLButtonElement ||
-       el instanceof HTMLDetailsElement || el instanceof HTMLEmbedElement || el instanceof HTMLIFrameElement ||
-        el instanceof HTMLInputElement || el instanceof HTMLObjectElement || el instanceof HTMLSelectElement ||
-         el instanceof HTMLTextAreaElement)
+      if (contenteditableFocusable || tabindexFocusable || CrossWindow.isFocusableHTMLElement(el))
       {
-         if (isAnchor && !tabindexFocusable && anchorHref && typeof el.getAttribute('href') !== 'string')
+         // Ensure that an anchor element has an `href` attribute.
+         if (anchorHref && !tabindexFocusable && CrossWindow.isHTMLAnchorElement(el) &&
+          typeof el.getAttribute('href') !== 'string')
          {
             return false;
          }
