@@ -165,7 +165,7 @@ export class A11yHelper
          throw new TypeError(`'ignoreClasses' is not an iterable list.`);
       }
 
-      if (ignoreElements !== void 0 && !(ignoreElements instanceof Set))
+      if (ignoreElements !== void 0 && !CrossWindow.isSet(ignoreElements))
       {
          throw new TypeError(`'ignoreElements' is not a Set.`);
       }
