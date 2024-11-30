@@ -45,119 +45,210 @@ declare class ClipboardAccess {
 }
 
 /**
- * Provides cross window checks for DOM elements, events, and essential duck typing for any class based object with a
- * constructor name. The impetus is that certain browsers such as Chrome and Firefox behave differently when
+ * Provides cross window checks for DOM nodes / elements, events, and essential duck typing for any class based object
+ * with a constructor name. The impetus is that certain browsers such as Chrome and Firefox behave differently when
  * performing `instanceof` checks when elements are moved between browser windows. With Firefox in particular the
  * entire JS runtime can not use `instanceof` checks as the instances of fundamental DOM elements differ between
  * windows.
  *
  * TRL supports moving applications from a main central browser window and popping them out into separate standalone
- * app instances in a separate browser window. In this case for essential DOM element and event checks it's necessary to
- * employ the workarounds found in `CrossWindow`.
+ * app instances in a separate browser window. In this case for essential DOM element and event checks it is necessary
+ * to employ the workarounds found in `CrossWindow`.
  */
 declare class CrossWindow {
+  /**
+   * Convenience method to retrieve the `document.activeElement` value in the current Window context of a DOM Node /
+   * Element, EventTarget, Document, or Window.
+   *
+   * @param {Document | EventTarget | Node | UIEvent | Window}  target - DOM Node / Element, EventTarget, Document,
+   *        UIEvent or Window to query.
+   *
+   * @param {object} [options] - Options.
+   *
+   * @param {boolean} [options.throws=true] - When `true` and target is invalid throw an exception. If `false` and the
+   *        target is invalid `undefined` is returned; default: `true`.
+   *
+   * @returns {Element | null} Active element or `undefined` when `throws` option is `false` and the target is invalid.
+   *
+   * @throws {@link TypeError} Target must be a DOM Node / Element, Document, UIEvent, or Window.
+   */
+  static getActiveElement(
+    target: Document | EventTarget | Node | UIEvent | Window,
+    {
+      throws,
+    }?: {
+      throws?: boolean;
+    },
+  ): Element | null;
+  /**
+   * Convenience method to retrieve the `Document` value in the current context of a DOM Node / Element, EventTarget,
+   * Document, UIEvent, or Window.
+   *
+   * @param {Document | EventTarget | Node | UIEvent | Window}  target - DOM Node / Element, EventTarget, Document,
+   *        UIEvent or Window to query.
+   *
+   * @param {object} [options] - Options.
+   *
+   * @param {boolean} [options.throws=true] - When `true` and target is invalid throw an exception. If `false` and the
+   *        target is invalid `undefined` is returned; default: `true`.
+   *
+   * @returns {Document} Active document or `undefined` when `throws` option is `false` and the target is invalid.
+   *
+   * @throws {@link TypeError} Target must be a DOM Node / Element, Document, UIEvent, or Window.
+   */
+  static getDocument(
+    target: Document | EventTarget | Node | UIEvent | Window,
+    {
+      throws,
+    }?: {
+      throws?: boolean;
+    },
+  ): Document;
+  /**
+   * Convenience method to retrieve the `Window` value in the current context of a DOM Node / Element, EventTarget,
+   * Document, or Window.
+   *
+   * @param {Document | EventTarget | Node | UIEvent | Window}  target - DOM Node / Element, EventTarget, Document,
+   *        UIEvent or Window to query.
+   *
+   * @param {object} [options] - Options.
+   *
+   * @param {boolean} [options.throws=true] - When `true` and target is invalid throw an exception. If `false` and the
+   *        target is invalid `undefined` is returned; default: `true`.
+   *
+   * @returns {Window} Active window or `undefined` when `throws` option is `false` and the target is invalid.
+   *
+   * @throws {@link TypeError} Target must be a DOM Node / Element, Document, UIEvent, or Window.
+   */
+  static getWindow(
+    target: Document | EventTarget | Node | UIEvent | Window,
+    {
+      throws,
+    }?: {
+      throws?: boolean;
+    },
+  ): Window;
   /**
    * Provides basic prototype string type checking if `target` is a Document.
    *
    * @param {unknown}  target - A potential Document to test.
    *
-   * @returns {boolean} Is `target` a Document.
+   * @returns {target is Document} Is `target` a Document.
    */
-  static isDocument(target: unknown): boolean;
+  static isDocument(target: unknown): target is Document;
   /**
    * Provides basic prototype string type checking if `target` is a Map.
    *
    * @param {unknown}  target - A potential Map to test.
    *
-   * @returns {boolean} Is `target` a Map.
+   * @returns {target is Map} Is `target` a Map.
    */
-  static isMap(target: unknown): boolean;
+  static isMap(target: unknown): target is Map<any, any>;
+  /**
+   * Provides basic prototype string type checking if `target` is a Promise.
+   *
+   * @param {unknown}  target - A potential Promise to test.
+   *
+   * @returns {target is Promise} Is `target` a Promise.
+   */
+  static isPromise(target: unknown): target is Promise<any>;
+  /**
+   * Provides basic prototype string type checking if `target` is a RegExp.
+   *
+   * @param {unknown}  target - A potential RegExp to test.
+   *
+   * @returns {target is RegExp} Is `target` a RegExp.
+   */
+  static isRegExp(target: unknown): target is RegExp;
   /**
    * Provides basic prototype string type checking if `target` is a Set.
    *
    * @param {unknown}  target - A potential Set to test.
    *
-   * @returns {boolean} Is `target` a Set.
+   * @returns {target is Set} Is `target` a Set.
    */
-  static isSet(target: unknown): boolean;
+  static isSet(target: unknown): target is Set<any>;
   /**
    * Provides basic prototype string type checking if `target` is a URL.
    *
    * @param {unknown}  target - A potential URL to test.
    *
-   * @returns {boolean} Is `target` a URL.
+   * @returns {target is URL} Is `target` a URL.
    */
-  static isURL(target: unknown): boolean;
+  static isURL(target: unknown): target is URL;
   /**
    * Provides basic prototype string type checking if `target` is a Window.
    *
    * @param {unknown}  target - A potential Window to test.
    *
-   * @returns {boolean} Is `target` a Window.
+   * @returns {target is Window} Is `target` a Window.
    */
-  static isWindow(target: unknown): boolean;
+  static isWindow(target: unknown): target is Window;
   /**
-   * Convenience method to retrieve the `document.activeElement` value in the current Window context of a DOM Node /
-   * Element, EventTarget, Document, or Window.
+   * Ensures that the given target is an `instanceof` all known DOM elements that are focusable. Please note that
+   * additional checks are required regarding focusable state; use {@link A11yHelper.isFocusable} for a complete check.
    *
-   * @param {Document | EventTarget | Node | Window}  target - DOM Node / Element, EventTarget, Document, or Window to
-   *        query.
+   * @param {unknown}  target - Target to test for `instanceof` focusable HTML element.
    *
-   * @returns {Element | null} Active element.
+   * @returns {boolean} Is target an `instanceof` a focusable DOM element.
    */
-  static getActiveElement(target: Document | EventTarget | Node | Window): Element | null;
+  static isFocusableHTMLElement(target: unknown): boolean;
   /**
-   * Convenience method to retrieve the `Document` value in the current context of a DOM Node / Element, EventTarget,
-   * Document, or Window.
+   * Provides precise type checking if `target` is a DocumentFragment.
    *
-   * @param {Document | EventTarget | Node | Window}  target - DOM Node / Element, EventTarget, Document, or Window to
-   *        query.
+   * @param {unknown}  target - A potential DocumentFragment to test.
    *
-   * @returns {Document} Active document.
+   * @returns {target is DocumentFragment} Is `target` a DocumentFragment.
    */
-  static getDocument(target: Document | EventTarget | Node | Window): Document;
-  /**
-   * Convenience method to retrieve the `Window` value in the current context of a DOM Node / Element, EventTarget,
-   * Document, or Window.
-   *
-   * @param {Document | EventTarget | Node | Window}  target - DOM Node / Element, EventTarget, Document, or Window to
-   *        query.
-   *
-   * @returns {Window} Active window.
-   */
-  static getWindow(target: Document | EventTarget | Node | Window): Window;
+  static isDocumentFragment(target: unknown): target is DocumentFragment;
   /**
    * Provides precise type checking if `target` is an Element.
    *
    * @param {unknown}  target - A potential Element to test.
    *
-   * @returns {boolean} Is `target` an Element.
+   * @returns {target is Element} Is `target` an Element.
    */
-  static isElement(target: unknown): boolean;
+  static isElement(target: unknown): target is Element;
+  /**
+   * Provides precise type checking if `target` is a HTMLAnchorElement.
+   *
+   * @param {unknown}  target - A potential HTMLAnchorElement to test.
+   *
+   * @returns {target is HTMLAnchorElement} Is `target` a HTMLAnchorElement.
+   */
+  static isHTMLAnchorElement(target: unknown): target is HTMLAnchorElement;
   /**
    * Provides precise type checking if `target` is a HTMLElement.
    *
    * @param {unknown}  target - A potential HTMLElement to test.
    *
-   * @returns {boolean} Is `target` an HTMLElement.
+   * @returns {target is HTMLElement} Is `target` a HTMLElement.
    */
-  static isHTMLElement(target: unknown): boolean;
+  static isHTMLElement(target: unknown): target is HTMLElement;
   /**
    * Provides precise type checking if `target` is a Node.
    *
    * @param {unknown}  target - A potential Node to test.
    *
-   * @returns {boolean} Is `target` a DOM Node.
+   * @returns {target is Node} Is `target` a DOM Node.
    */
-  static isNode(target: unknown): boolean;
+  static isNode(target: unknown): target is Node;
+  /**
+   * Provides precise type checking if `target` is a ShadowRoot.
+   *
+   * @param {unknown}  target - A potential ShadowRoot to test.
+   *
+   * @returns {target is ShadowRoot} Is `target` a ShadowRoot.
+   */
+  static isShadowRoot(target: unknown): target is ShadowRoot;
   /**
    * Provides precise type checking if `target` is a SVGElement.
    *
    * @param {unknown}  target - A potential SVGElement to test.
    *
-   * @returns {boolean} Is `target` an SVGElement.
+   * @returns {target is SVGElement} Is `target` a SVGElement.
    */
-  static isSVGElement(target: unknown): boolean;
+  static isSVGElement(target: unknown): target is SVGElement;
   /**
    * Provides basic duck type checking for `Event` signature and optional constructor name(s).
    *
@@ -165,19 +256,37 @@ declare class CrossWindow {
    *
    * @param {string | Set<string>} [types] Specific constructor name or Set of constructor names to match.
    *
-   * @returns {boolean} Is `target` an Event with optional constructor name check.
+   * @returns {target is Event} Is `target` an Event with optional constructor name check.
    */
-  static isEvent(target: unknown, types?: string | Set<string>): boolean;
+  static isEvent(target: unknown, types?: string | Set<string>): target is Event;
   /**
-   * Provides basic duck type checking for `Event` signature for standard input events including `KeyboardEvent`,
-   * `MouseEvent`, and `PointerEvent`. This method is useful when constructing a Set for constructor name testing is
-   * not convenient.
+   * Provides basic duck type checking for `Event` signature for standard mouse / pointer events including
+   * `MouseEvent` and `PointerEvent`.
    *
    * @param {unknown}  target - A potential DOM event to test.
    *
-   * @returns {boolean} Is `target` a Keyboard, MouseEvent, or PointerEvent.
+   * @returns {target is PointerEvent} Is `target` a MouseEvent or PointerEvent.
    */
-  static isInputEvent(target: unknown): boolean;
+  static isPointerEvent(target: unknown): target is PointerEvent;
+  /**
+   * Provides basic duck type checking for `Event` signature for all UI events.
+   *
+   * @param {unknown}  target - A potential DOM event to test.
+   *
+   * @returns {target is UIEvent} Is `target` a UIEvent.
+   * @see https://developer.mozilla.org/en-US/docs/Web/API/UIEvent
+   */
+  static isUIEvent(target: unknown): target is UIEvent;
+  /**
+   * Provides basic duck type checking for `Event` signature for standard user input events including `KeyboardEvent`,
+   * `MouseEvent`, and `PointerEvent`.
+   *
+   * @param {unknown}  target - A potential DOM event to test.
+   *
+   * @returns {target is KeyboardEvent | MouseEvent | PointerEvent} Is `target` a Keyboard, MouseEvent, or
+   *          PointerEvent.
+   */
+  static isUserInputEvent(target: unknown): target is KeyboardEvent | MouseEvent | PointerEvent;
   /**
    * Provides basic type checking by constructor name(s) for objects. This can be useful when checking multiple
    * constructor names against a provided Set.

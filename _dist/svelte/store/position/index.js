@@ -6,6 +6,7 @@ import { hasSetter, isIterable, isObject, isPlainObject } from '@typhonjs-svelte
 import { Vec3, Mat4 } from '@typhonjs-svelte/runtime-base/math/gl-matrix';
 import { lerp } from '@typhonjs-svelte/runtime-base/math/interpolate';
 import { getEasingFunc } from '@typhonjs-svelte/runtime-base/svelte/easing';
+import { CrossWindow } from '@typhonjs-svelte/runtime-base/util/browser';
 import { writable } from 'svelte/store';
 import { StyleParse } from '@typhonjs-svelte/runtime-base/util/dom/style';
 import { nextAnimationFrame } from '@typhonjs-svelte/runtime-base/util/animate';
@@ -614,7 +615,7 @@ class AnimationControl
     */
    get finished()
    {
-      if (!(this.#finishedPromise instanceof Promise))
+      if (!CrossWindow.isPromise(this.#finishedPromise))
       {
          this.#finishedPromise = this.#willFinish ? new Promise((resolve) => this.#animationData.resolve = resolve) :
           Promise.resolve({ cancelled: false });
@@ -3298,7 +3299,7 @@ class AnimationGroupControl
    {
       const animationControls = this.#animationControls;
 
-      if (!(this.#finishedPromise instanceof Promise))
+      if (!CrossWindow.isPromise(this.#finishedPromise))
       {
          if (animationControls === null || animationControls === void 0 || animationControls.size === 0)
          {

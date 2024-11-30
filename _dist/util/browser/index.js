@@ -20,15 +20,15 @@ class BrowserSupports
 }
 
 /**
- * Provides cross window checks for DOM elements, events, and essential duck typing for any class based object with a
- * constructor name. The impetus is that certain browsers such as Chrome and Firefox behave differently when
+ * Provides cross window checks for DOM nodes / elements, events, and essential duck typing for any class based object
+ * with a constructor name. The impetus is that certain browsers such as Chrome and Firefox behave differently when
  * performing `instanceof` checks when elements are moved between browser windows. With Firefox in particular the
  * entire JS runtime can not use `instanceof` checks as the instances of fundamental DOM elements differ between
  * windows.
  *
  * TRL supports moving applications from a main central browser window and popping them out into separate standalone
- * app instances in a separate browser window. In this case for essential DOM element and event checks it's necessary to
- * employ the workarounds found in `CrossWindow`.
+ * app instances in a separate browser window. In this case for essential DOM element and event checks it is necessary
+ * to employ the workarounds found in `CrossWindow`.
  */
 class CrossWindow
 {
@@ -37,22 +37,172 @@ class CrossWindow
     */
    constructor() {} // eslint-disable-line no-useless-constructor
 
-   // Cached DOM nodes from initial `globalThis` reference / originating window.
-   static #Element = globalThis.Element;
-   static #HTMLElement = globalThis.HTMLElement;
-   static #Node = globalThis.Node;
-   static #SVGElement = globalThis.SVGElement;
+   /**
+    * Class names for all focusable element types.
+    *
+    * @type {string[]}
+    */
+   static #FocusableElementClassNames = ['HTMLAnchorElement', 'HTMLButtonElement', 'HTMLDetailsElement',
+    'HTMLEmbedElement', 'HTMLIFrameElement', 'HTMLInputElement', 'HTMLObjectElement', 'HTMLSelectElement',
+     'HTMLTextAreaElement'];
 
-   static #InputEventSet = new Set(['KeyboardEvent', 'MouseEvent', 'PointerEvent']);
+   /**
+    * DOM nodes with defined `ownerDocument` property.
+    *
+    * @type {Set<number>}
+    */
+   static #NodesWithOwnerDocument = new Set([Node.ELEMENT_NODE, Node.TEXT_NODE, Node.COMMENT_NODE,
+    Node.DOCUMENT_FRAGMENT_NODE]);
 
-   // ES / Browser API typing ----------------------------------------------------------------------------------------
+   // Various UI Event sets for duck typing by constructor name.
+   /**
+    * Duck typing class names for pointer events.
+    *
+    * @type {Set<string>}
+    */
+   static #PointerEventSet = new Set(['MouseEvent', 'PointerEvent']);
+
+   /**
+    * Duck typing class names for all UIEvents.
+    *
+    * @type {Set<string>}
+    */
+   static #UIEventSet = new Set(['UIEvent', 'FocusEvent', 'MouseEvent', 'WheelEvent', 'KeyboardEvent', 'PointerEvent',
+    'TouchEvent', 'InputEvent', 'CompositionEvent', 'DragEvent']);
+
+   /**
+    * Duck typing class names for events considered as user input.
+    *
+    * @type {Set<string>}
+    */
+   static #UserInputEventSet = new Set(['KeyboardEvent', 'MouseEvent', 'PointerEvent']);
+
+   /**
+    * Internal options used by `#checkDOMInstanceType` when retrieving the Window reference from a Node that doesn't
+    * define `ownerDocument`.
+    *
+    * @type {{throws: boolean}}
+    */
+   static #optionsInternalCheckDOM = { throws: false };
+
+   // DOM Querying ---------------------------------------------------------------------------------------------------
+
+   /**
+    * Convenience method to retrieve the `document.activeElement` value in the current Window context of a DOM Node /
+    * Element, EventTarget, Document, or Window.
+    *
+    * @param {Document | EventTarget | Node | UIEvent | Window}  target - DOM Node / Element, EventTarget, Document,
+    *        UIEvent or Window to query.
+    *
+    * @param {object} [options] - Options.
+    *
+    * @param {boolean} [options.throws=true] - When `true` and target is invalid throw an exception. If `false` and the
+    *        target is invalid `undefined` is returned; default: `true`.
+    *
+    * @returns {Element | null} Active element or `undefined` when `throws` option is `false` and the target is invalid.
+    *
+    * @throws {@link TypeError} Target must be a DOM Node / Element, Document, UIEvent, or Window.
+    */
+   static getActiveElement(target, { throws = true } = {})
+   {
+      // Duck type if target has known defined `ownerDocument` property.
+      if (this.#NodesWithOwnerDocument.has(target?.nodeType)) { return target?.ownerDocument?.activeElement ?? null; }
+
+      // Duck type if target is a UIEvent.
+      if (this.isUIEvent(target) && isObject(target?.view)) { return target?.view?.document?.activeElement ?? null; }
+
+      // Duck type if target is a Document.
+      if (isObject(target?.defaultView)) { return target?.activeElement ?? null; }
+
+      // Duck type if target is a Window.
+      if (isObject(target?.document) && isObject(target?.location)) { return target?.document?.activeElement ?? null; }
+
+      if (throws) { throw new TypeError(`'target' must be a DOM Node / Element, Document, UIEvent, or Window.`); }
+
+      return void 0;
+   }
+
+   /**
+    * Convenience method to retrieve the `Document` value in the current context of a DOM Node / Element, EventTarget,
+    * Document, UIEvent, or Window.
+    *
+    * @param {Document | EventTarget | Node | UIEvent | Window}  target - DOM Node / Element, EventTarget, Document,
+    *        UIEvent or Window to query.
+    *
+    * @param {object} [options] - Options.
+    *
+    * @param {boolean} [options.throws=true] - When `true` and target is invalid throw an exception. If `false` and the
+    *        target is invalid `undefined` is returned; default: `true`.
+    *
+    * @returns {Document} Active document or `undefined` when `throws` option is `false` and the target is invalid.
+    *
+    * @throws {@link TypeError} Target must be a DOM Node / Element, Document, UIEvent, or Window.
+    */
+   static getDocument(target, { throws = true } = {})
+   {
+      // Duck type if target has known defined `ownerDocument` property.
+      if (this.#NodesWithOwnerDocument.has(target?.nodeType)) { return target?.ownerDocument; }
+
+      // Duck type if target is a UIEvent.
+      if (this.isUIEvent(target) && isObject(target?.view)) { return target?.view?.document; }
+
+      // Duck type if target is a Document.
+      if (isObject(target?.defaultView)) { return target; }
+
+      // Duck type if target is a Window.
+      if (isObject(target?.document) && isObject(target?.location)) { return target?.document; }
+
+      if (throws) { throw new TypeError(`'target' must be a DOM Node / Element, Document, UIEvent, or Window.`); }
+
+      return void 0;
+   }
+
+   /**
+    * Convenience method to retrieve the `Window` value in the current context of a DOM Node / Element, EventTarget,
+    * Document, or Window.
+    *
+    * @param {Document | EventTarget | Node | UIEvent | Window}  target - DOM Node / Element, EventTarget, Document,
+    *        UIEvent or Window to query.
+    *
+    * @param {object} [options] - Options.
+    *
+    * @param {boolean} [options.throws=true] - When `true` and target is invalid throw an exception. If `false` and the
+    *        target is invalid `undefined` is returned; default: `true`.
+    *
+    * @returns {Window} Active window or `undefined` when `throws` option is `false` and the target is invalid.
+    *
+    * @throws {@link TypeError} Target must be a DOM Node / Element, Document, UIEvent, or Window.
+    */
+   static getWindow(target, { throws = true } = {})
+   {
+      // Duck type if target has known defined `ownerDocument` property.
+      if (this.#NodesWithOwnerDocument.has(target?.nodeType))
+      {
+         return target.ownerDocument?.defaultView ?? globalThis;
+      }
+
+      // Duck type if target is a UIEvent.
+      if (this.isUIEvent(target) && isObject(target?.view)) { return target.view ?? globalThis; }
+
+      // Duck type if target is a Document.
+      if (isObject(target?.defaultView)) { return target.defaultView ?? globalThis; }
+
+      // Duck type if target is a Window.
+      if (isObject(target?.document) && isObject(target?.location)) { return target; }
+
+      if (throws) { throw new TypeError(`'target' must be a DOM Node / Element, Document, UIEvent, or Window.`); }
+
+      return void 0;
+   }
+
+   // ES / Browser API basic prototype tests -------------------------------------------------------------------------
 
    /**
     * Provides basic prototype string type checking if `target` is a Document.
     *
     * @param {unknown}  target - A potential Document to test.
     *
-    * @returns {boolean} Is `target` a Document.
+    * @returns {target is Document} Is `target` a Document.
     */
    static isDocument(target)
    {
@@ -64,7 +214,7 @@ class CrossWindow
     *
     * @param {unknown}  target - A potential Map to test.
     *
-    * @returns {boolean} Is `target` a Map.
+    * @returns {target is Map} Is `target` a Map.
     */
    static isMap(target)
    {
@@ -72,11 +222,35 @@ class CrossWindow
    }
 
    /**
+    * Provides basic prototype string type checking if `target` is a Promise.
+    *
+    * @param {unknown}  target - A potential Promise to test.
+    *
+    * @returns {target is Promise} Is `target` a Promise.
+    */
+   static isPromise(target)
+   {
+      return isObject(target) && Object.prototype.toString.call(target) === '[object Promise]';
+   }
+
+   /**
+    * Provides basic prototype string type checking if `target` is a RegExp.
+    *
+    * @param {unknown}  target - A potential RegExp to test.
+    *
+    * @returns {target is RegExp} Is `target` a RegExp.
+    */
+   static isRegExp(target)
+   {
+      return isObject(target) && Object.prototype.toString.call(target) === '[object RegExp]';
+   }
+
+   /**
     * Provides basic prototype string type checking if `target` is a Set.
     *
     * @param {unknown}  target - A potential Set to test.
     *
-    * @returns {boolean} Is `target` a Set.
+    * @returns {target is Set} Is `target` a Set.
     */
    static isSet(target)
    {
@@ -88,7 +262,7 @@ class CrossWindow
     *
     * @param {unknown}  target - A potential URL to test.
     *
-    * @returns {boolean} Is `target` a URL.
+    * @returns {target is URL} Is `target` a URL.
     */
    static isURL(target)
    {
@@ -100,102 +274,70 @@ class CrossWindow
     *
     * @param {unknown}  target - A potential Window to test.
     *
-    * @returns {boolean} Is `target` a Window.
+    * @returns {target is Window} Is `target` a Window.
     */
    static isWindow(target)
    {
       return isObject(target) && Object.prototype.toString.call(target) === '[object Window]';
    }
 
-   // DOM Querying ---------------------------------------------------------------------------------------------------
-
-   /**
-    * Convenience method to retrieve the `document.activeElement` value in the current Window context of a DOM Node /
-    * Element, EventTarget, Document, or Window.
-    *
-    * @param {Document | EventTarget | Node | Window}  target - DOM Node / Element, EventTarget, Document, or Window to
-    *        query.
-    *
-    * @returns {Element | null} Active element.
-    */
-   static getActiveElement(target)
-   {
-      // Duck type if target is a Node / Element.
-      if (typeof target?.nodeType === 'number') { return target?.ownerDocument?.activeElement ?? null; }
-
-      // Duck type if target is a Document.
-      if (isObject(target?.defaultView)) { return target?.activeElement ?? null; }
-
-      // Duck type if target is a Window.
-      if (isObject(target?.document) && isObject(target?.location)) { return target?.document?.activeElement ?? null; }
-
-      throw new TypeError(`'target' must be a DOM Node / Element, Document, or Window.`);
-   }
-
-   /**
-    * Convenience method to retrieve the `Document` value in the current context of a DOM Node / Element, EventTarget,
-    * Document, or Window.
-    *
-    * @param {Document | EventTarget | Node | Window}  target - DOM Node / Element, EventTarget, Document, or Window to
-    *        query.
-    *
-    * @returns {Document} Active document.
-    */
-   static getDocument(target)
-   {
-      // Duck type if target is a Node / Element.
-      if (typeof target?.nodeType === 'number') { return target?.ownerDocument; }
-
-      // Duck type if target is a Document.
-      if (isObject(target?.defaultView)) { return target; }
-
-      // Duck type if target is a Window.
-      if (isObject(target?.document) && isObject(target?.location)) { return target?.document; }
-
-      throw new TypeError(`'target' must be a DOM Node / Element, Document, or Window.`);
-   }
-
-   /**
-    * Convenience method to retrieve the `Window` value in the current context of a DOM Node / Element, EventTarget,
-    * Document, or Window.
-    *
-    * @param {Document | EventTarget | Node | Window}  target - DOM Node / Element, EventTarget, Document, or Window to
-    *        query.
-    *
-    * @returns {Window} Active window.
-    */
-   static getWindow(target)
-   {
-      // Duck type if target is a Node / Element.
-      if (typeof target?.nodeType === 'number') { return target.ownerDocument?.defaultView ?? globalThis; }
-
-      // Duck type if target is a Document.
-      if (isObject(target?.defaultView)) { return target.defaultView ?? globalThis; }
-
-      // Duck type if target is a Window.
-      if (isObject(target?.document) && isObject(target?.location)) { return target; }
-
-      throw new TypeError(`'target' must be a DOM Node / Element, Document, or Window.`);
-   }
-
    // DOM Element typing ---------------------------------------------------------------------------------------------
+
+   /**
+    * Ensures that the given target is an `instanceof` all known DOM elements that are focusable. Please note that
+    * additional checks are required regarding focusable state; use {@link A11yHelper.isFocusable} for a complete check.
+    *
+    * @param {unknown}  target - Target to test for `instanceof` focusable HTML element.
+    *
+    * @returns {boolean} Is target an `instanceof` a focusable DOM element.
+    */
+   static isFocusableHTMLElement(target)
+   {
+      for (let cntr = this.#FocusableElementClassNames.length; --cntr >= 0;)
+      {
+         if (this.#checkDOMInstanceType(target, Node.ELEMENT_NODE, this.#FocusableElementClassNames[cntr]))
+         {
+            return true;
+         }
+      }
+
+      return false;
+   }
+
+   /**
+    * Provides precise type checking if `target` is a DocumentFragment.
+    *
+    * @param {unknown}  target - A potential DocumentFragment to test.
+    *
+    * @returns {target is DocumentFragment} Is `target` a DocumentFragment.
+    */
+   static isDocumentFragment(target)
+   {
+      return this.#checkDOMInstanceType(target, Node.DOCUMENT_FRAGMENT_NODE, 'DocumentFragment');
+   }
 
    /**
     * Provides precise type checking if `target` is an Element.
     *
     * @param {unknown}  target - A potential Element to test.
     *
-    * @returns {boolean} Is `target` an Element.
+    * @returns {target is Element} Is `target` an Element.
     */
    static isElement(target)
    {
-      if (target?.nodeType !== 1) { return false; }
+      return this.#checkDOMInstanceType(target, Node.ELEMENT_NODE, 'Element');
+   }
 
-      if (target instanceof this.#Element) { return true; }
-
-      const OwnerElement = target?.ownerDocument?.defaultView?.Element;
-
-      return OwnerElement && target instanceof OwnerElement;
+   /**
+    * Provides precise type checking if `target` is a HTMLAnchorElement.
+    *
+    * @param {unknown}  target - A potential HTMLAnchorElement to test.
+    *
+    * @returns {target is HTMLAnchorElement} Is `target` a HTMLAnchorElement.
+    */
+   static isHTMLAnchorElement(target)
+   {
+      return this.#checkDOMInstanceType(target, Node.ELEMENT_NODE, 'HTMLAnchorElement');
    }
 
    /**
@@ -203,17 +345,11 @@ class CrossWindow
     *
     * @param {unknown}  target - A potential HTMLElement to test.
     *
-    * @returns {boolean} Is `target` an HTMLElement.
+    * @returns {target is HTMLElement} Is `target` a HTMLElement.
     */
    static isHTMLElement(target)
    {
-      if (target?.nodeType !== 1) { return false; }
-
-      if (target instanceof this.#HTMLElement) { return true; }
-
-      const OwnerHTMLElement = target?.ownerDocument?.defaultView?.HTMLElement;
-
-      return OwnerHTMLElement && target instanceof OwnerHTMLElement;
+      return this.#checkDOMInstanceType(target, Node.ELEMENT_NODE, 'HTMLElement');
    }
 
    /**
@@ -221,17 +357,33 @@ class CrossWindow
     *
     * @param {unknown}  target - A potential Node to test.
     *
-    * @returns {boolean} Is `target` a DOM Node.
+    * @returns {target is Node} Is `target` a DOM Node.
     */
    static isNode(target)
    {
       if (typeof target?.nodeType !== 'number') { return false; }
 
-      if (target instanceof this.#Node) { return true; }
+      if (target instanceof globalThis.Node) { return true; }
 
-      const OwnerNode = target?.ownerDocument?.defaultView?.Node;
+      // Must retrieve window by a more thorough duck type via `getWindow` as not all Nodes have `ownerDocument`
+      // defined.
+      const activeWindow = this.getWindow(target, this.#optionsInternalCheckDOM);
 
-      return OwnerNode && target instanceof OwnerNode;
+      const TargetNode = activeWindow?.Node;
+      return TargetNode && target instanceof TargetNode;
+   }
+
+   /**
+    * Provides precise type checking if `target` is a ShadowRoot.
+    *
+    * @param {unknown}  target - A potential ShadowRoot to test.
+    *
+    * @returns {target is ShadowRoot} Is `target` a ShadowRoot.
+    */
+   static isShadowRoot(target)
+   {
+      // ShadowRoot is a specialized type of DocumentFragment.
+      return this.#checkDOMInstanceType(target, Node.DOCUMENT_FRAGMENT_NODE, 'ShadowRoot');
    }
 
    /**
@@ -239,17 +391,11 @@ class CrossWindow
     *
     * @param {unknown}  target - A potential SVGElement to test.
     *
-    * @returns {boolean} Is `target` an SVGElement.
+    * @returns {target is SVGElement} Is `target` a SVGElement.
     */
    static isSVGElement(target)
    {
-      if (target?.nodeType !== 1) { return false; }
-
-      if (target instanceof this.#SVGElement) { return true; }
-
-      const OwnerSVGElement = target?.ownerDocument?.defaultView?.SVGElement;
-
-      return OwnerSVGElement && target instanceof OwnerSVGElement;
+      return this.#checkDOMInstanceType(target, Node.ELEMENT_NODE, 'SVGElement');
    }
 
    // Event typing ---------------------------------------------------------------------------------------------------
@@ -261,7 +407,7 @@ class CrossWindow
     *
     * @param {string | Set<string>} [types] Specific constructor name or Set of constructor names to match.
     *
-    * @returns {boolean} Is `target` an Event with optional constructor name check.
+    * @returns {target is Event} Is `target` an Event with optional constructor name check.
     */
    static isEvent(target, types)
    {
@@ -275,17 +421,43 @@ class CrossWindow
    }
 
    /**
-    * Provides basic duck type checking for `Event` signature for standard input events including `KeyboardEvent`,
-    * `MouseEvent`, and `PointerEvent`. This method is useful when constructing a Set for constructor name testing is
-    * not convenient.
+    * Provides basic duck type checking for `Event` signature for standard mouse / pointer events including
+    * `MouseEvent` and `PointerEvent`.
     *
     * @param {unknown}  target - A potential DOM event to test.
     *
-    * @returns {boolean} Is `target` a Keyboard, MouseEvent, or PointerEvent.
+    * @returns {target is PointerEvent} Is `target` a MouseEvent or PointerEvent.
     */
-   static isInputEvent(target)
+   static isPointerEvent(target)
    {
-      return this.isEvent(target, this.#InputEventSet);
+      return this.isEvent(target, this.#PointerEventSet);
+   }
+
+   /**
+    * Provides basic duck type checking for `Event` signature for all UI events.
+    *
+    * @param {unknown}  target - A potential DOM event to test.
+    *
+    * @returns {target is UIEvent} Is `target` a UIEvent.
+    * @see https://developer.mozilla.org/en-US/docs/Web/API/UIEvent
+    */
+   static isUIEvent(target)
+   {
+      return this.isEvent(target, this.#UIEventSet);
+   }
+
+   /**
+    * Provides basic duck type checking for `Event` signature for standard user input events including `KeyboardEvent`,
+    * `MouseEvent`, and `PointerEvent`.
+    *
+    * @param {unknown}  target - A potential DOM event to test.
+    *
+    * @returns {target is KeyboardEvent | MouseEvent | PointerEvent} Is `target` a Keyboard, MouseEvent, or
+    *          PointerEvent.
+    */
+   static isUserInputEvent(target)
+   {
+      return this.isEvent(target, this.#UserInputEventSet);
    }
 
    // Generic typing -------------------------------------------------------------------------------------------------
@@ -307,6 +479,38 @@ class CrossWindow
       if (typeof types === 'string' && target?.constructor?.name === types) { return true; }
 
       return !!types?.has(target?.constructor?.name);
+   }
+
+   // Internal implementation ----------------------------------------------------------------------------------------
+
+   /**
+    * Internal generic DOM `instanceof` check. First will attempt to find the class name by `globalThis` falling back
+    * to the {@link Window} associated with the DOM node.
+    *
+    * @param {unknown}  target - Target to test.
+    *
+    * @param {number}   nodeType - Node type constant.
+    *
+    * @param {string}   className - DOM class name for instanceof check.
+    *
+    * @returns {boolean} Is the target the given nodeType and instance of class name.
+    */
+   static #checkDOMInstanceType(target, nodeType, className)
+   {
+      if (!isObject(target)) { return false; }
+
+      if (target.nodeType !== nodeType) { return false; }
+
+      const GlobalClass = globalThis[className];
+
+      if (GlobalClass && target instanceof GlobalClass) { return true; }
+
+      const activeWindow = this.#NodesWithOwnerDocument.has(target.nodeType) ? target?.ownerDocument?.defaultView :
+       this.getWindow(target, this.#optionsInternalCheckDOM);
+
+      const TargetClass = activeWindow?.[className];
+
+      return TargetClass && target instanceof TargetClass;
    }
 }
 

@@ -42,51 +42,23 @@ declare class A11yHelper {
    *
    * @param {Element | Document} [element=document] - Optional element to start query.
    *
-   * @param {object}            [options] - Optional parameters.
-   *
-   * @param {Iterable<string>}  [options.ignoreClasses] - Iterable list of classes to ignore elements.
-   *
-   * @param {Set<Element>}      [options.ignoreElements] - Set of elements to ignore.
+   * @param {FocusableElementOptions} [options] - Optional parameters.
    *
    * @returns {FocusableElement} First focusable child element.
    */
-  static getFirstFocusableElement(
-    element?: Element | Document,
-    options?: {
-      ignoreClasses?: Iterable<string>;
-      ignoreElements?: Set<Element>;
-    },
-  ): FocusableElement;
+  static getFirstFocusableElement(element?: Element | Document, options?: FocusableElementOptions): FocusableElement;
   /**
    * Returns all focusable elements within a specified element.
    *
    * @param {Element | Document} [element=document] Optional element to start query.
    *
-   * @param {object}            [options] - Optional parameters.
-   *
-   * @param {boolean}           [options.anchorHref=true] - When true anchors must have an HREF.
-   *
-   * @param {Iterable<string>}  [options.ignoreClasses] - Iterable list of classes to ignore elements.
-   *
-   * @param {Set<Element>}      [options.ignoreElements] - Set of elements to ignore.
-   *
-   * @param {string}            [options.selectors] - Custom list of focusable selectors for `querySelectorAll`.
+   * @param {FocusableElementOptions} [options] - Optional parameters.
    *
    * @returns {Array<FocusableElement>} Child keyboard focusable elements.
    */
   static getFocusableElements(
     element?: Element | Document,
-    {
-      anchorHref,
-      ignoreClasses,
-      ignoreElements,
-      selectors,
-    }?: {
-      anchorHref?: boolean;
-      ignoreClasses?: Iterable<string>;
-      ignoreElements?: Set<Element>;
-      selectors?: string;
-    },
+    { anchorHref, ignoreClasses, ignoreElements, parentHidden, selectors }?: FocusableElementOptions,
   ): Array<FocusableElement>;
   /**
    * Gets a A11yFocusSource object from the given DOM event allowing for optional X / Y screen space overrides.
@@ -138,25 +110,15 @@ declare class A11yHelper {
    *
    * @param {Element | Document} [element=document] - Optional element to start query.
    *
-   * @param {object} [options] - Optional parameters.
-   *
-   * @param {Iterable<string>} [options.ignoreClasses] - Iterable list of classes to ignore elements.
-   *
-   * @param {Set<Element>} [options.ignoreElements] - Set of elements to ignore.
+   * @param {FocusableElementOptions} [options] - Optional parameters.
    *
    * @returns {FocusableElement} Last focusable child element.
    */
-  static getLastFocusableElement(
-    element?: Element | Document,
-    options?: {
-      ignoreClasses?: Iterable<string>;
-      ignoreElements?: Set<Element>;
-    },
-  ): FocusableElement;
+  static getLastFocusableElement(element?: Element | Document, options?: FocusableElementOptions): FocusableElement;
   /**
    * Tests if the given element is focusable.
    *
-   * @param {Element} el - Element to test.
+   * @param {unknown} el - Element to test.
    *
    * @param {object} [options] - Optional parameters.
    *
@@ -167,7 +129,7 @@ declare class A11yHelper {
    * @returns {boolean} Element is focusable.
    */
   static isFocusable(
-    el: Element,
+    el: unknown,
     {
       anchorHref,
       ignoreClasses,
@@ -198,16 +160,55 @@ declare class A11yHelper {
    *
    * @param {Element}  element - An element to match in parent traversal from the active element.
    *
-   * @param {Window}   [activeWindow=globalThis] The active window to use for the current active element.
-   *
    * @returns {boolean} Whether there is focus within the given element.
    */
-  static isFocusWithin(element: Element, activeWindow?: Window): boolean;
+  static isFocusWithin(element: Element): boolean;
+  /**
+   * Traverses the given element's parent elements to check if any parent has `offsetWidth` and `offsetHeight` of 0,
+   * indicating that a parent element is hidden. If a parent element is hidden, the given element is also considered
+   * hidden. This is a reasonably efficient check and can be enabled as a filter step in conjunction with focusable
+   * element detection methods like {@link A11yHelper.getFocusableElements}.
+   *
+   * @param {Element}  element - The starting element to check.
+   *
+   * @param {Element}  [stopElement] - The stopping parent element for traversal. If not defined, `document.body` is
+   *        used as the stopping element.
+   *
+   * @returns {boolean} `true` if a parent element of the given element is hidden; otherwise, `false`.
+   */
+  static isParentHidden(element: Element, stopElement?: Element): boolean;
 }
 /**
  * A focusable element; either HTMLElement or SvgElement.
  */
 type FocusableElement = Element & HTMLOrSVGElement;
+/**
+ * Options for {@link A11yHelper.getFirstFocusableElement},
+ * {@link A11yHelper.getFocusableElements}, and {@link A11yHelper.getLastFocusableElement}.
+ */
+type FocusableElementOptions = {
+  /**
+   * When true anchors must have an HREF; default: `true`.
+   */
+  anchorHref?: boolean;
+  /**
+   * Iterable list of classes to ignore elements.
+   */
+  ignoreClasses?: Iterable<string>;
+  /**
+   * Set of elements to ignore.
+   */
+  ignoreElements?: Set<Element>;
+  /**
+   * When true elements with hidden parents will be removed;
+   * default: `false`.
+   */
+  parentHidden?: boolean;
+  /**
+   * Custom list of focusable selectors for `querySelectorAll`.
+   */
+  selectors?: string;
+};
 /**
  * Provides essential data to return focus to an HTMLElement / SVGElement after a
  * series of UI actions like working with context menus and modal dialogs.
@@ -235,4 +236,4 @@ type A11yFocusSource = {
   y?: number;
 };
 
-export { type A11yFocusSource, A11yHelper, type FocusableElement };
+export { type A11yFocusSource, A11yHelper, type FocusableElement, type FocusableElementOptions };

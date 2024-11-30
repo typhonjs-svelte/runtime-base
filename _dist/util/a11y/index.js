@@ -1,3 +1,4 @@
+import { CrossWindow } from '@typhonjs-svelte/runtime-base/util/browser';
 import { isObject, isIterable } from '@typhonjs-svelte/runtime-base/util/object';
 
 /**
@@ -7,15 +8,6 @@ import { isObject, isIterable } from '@typhonjs-svelte/runtime-base/util/object'
  */
 class A11yHelper
 {
-   /**
-    * Provides the event constructor names to duck type against. This is necessary for when HTML nodes / elements are
-    * moved to another browser window as `instanceof` checks will fail.
-    *
-    * @type {Set<string>}
-    */
-   static #eventTypesAll = new Set(['KeyboardEvent', 'MouseEvent', 'PointerEvent']);
-   static #eventTypesPointer = new Set(['MouseEvent', 'PointerEvent']);
-
    /**
     * You can set global focus debugging enabled by setting `A11yHelper.debug = true`.
     *
@@ -121,11 +113,7 @@ class A11yHelper
     *
     * @param {Element | Document} [element=document] - Optional element to start query.
     *
-    * @param {object}            [options] - Optional parameters.
-    *
-    * @param {Iterable<string>}  [options.ignoreClasses] - Iterable list of classes to ignore elements.
-    *
-    * @param {Set<Element>}      [options.ignoreElements] - Set of elements to ignore.
+    * @param {FocusableElementOptions} [options] - Optional parameters.
     *
     * @returns {FocusableElement} First focusable child element.
     */
@@ -141,19 +129,12 @@ class A11yHelper
     *
     * @param {Element | Document} [element=document] Optional element to start query.
     *
-    * @param {object}            [options] - Optional parameters.
-    *
-    * @param {boolean}           [options.anchorHref=true] - When true anchors must have an HREF.
-    *
-    * @param {Iterable<string>}  [options.ignoreClasses] - Iterable list of classes to ignore elements.
-    *
-    * @param {Set<Element>}      [options.ignoreElements] - Set of elements to ignore.
-    *
-    * @param {string}            [options.selectors] - Custom list of focusable selectors for `querySelectorAll`.
+    * @param {FocusableElementOptions} [options] - Optional parameters.
     *
     * @returns {Array<FocusableElement>} Child keyboard focusable elements.
     */
-   static getFocusableElements(element = document, { anchorHref = true, ignoreClasses, ignoreElements, selectors } = {})
+   static getFocusableElements(element = document, { anchorHref = true, ignoreClasses, ignoreElements,
+    parentHidden = false, selectors } = {})
    {
       if (element?.nodeType !== Node.ELEMENT_NODE && element?.nodeType !== Node.DOCUMENT_NODE)
       {
@@ -170,7 +151,7 @@ class A11yHelper
          throw new TypeError(`'ignoreClasses' is not an iterable list.`);
       }
 
-      if (ignoreElements !== void 0 && !(ignoreElements instanceof Set))
+      if (ignoreElements !== void 0 && !CrossWindow.isSet(ignoreElements))
       {
          throw new TypeError(`'ignoreElements' is not a Set.`);
       }
@@ -182,11 +163,11 @@ class A11yHelper
 
       const selectorQuery = selectors ?? this.#getFocusableSelectors(anchorHref);
 
-      const allElements = [...element.querySelectorAll(selectorQuery)];
+      let allElements = [...element.querySelectorAll(selectorQuery)];
 
       if (ignoreElements && ignoreClasses)
       {
-         return allElements.filter((el) =>
+         allElements = allElements.filter((el) =>
          {
             let hasIgnoreClass = false;
             for (const ignoreClass of ignoreClasses)
@@ -205,7 +186,7 @@ class A11yHelper
       }
       else if (ignoreClasses)
       {
-         return allElements.filter((el) =>
+         allElements = allElements.filter((el) =>
          {
             let hasIgnoreClass = false;
             for (const ignoreClass of ignoreClasses)
@@ -223,7 +204,7 @@ class A11yHelper
       }
       else if (ignoreElements)
       {
-         return allElements.filter((el) =>
+         allElements = allElements.filter((el) =>
          {
             return !ignoreElements.has(el) && el.style.display !== 'none' && el.style.visibility !== 'hidden' &&
              !el.hasAttribute('disabled') && !el.hasAttribute('inert') && el.getAttribute('aria-hidden') !== 'true';
@@ -231,12 +212,22 @@ class A11yHelper
       }
       else
       {
-         return allElements.filter((el) =>
+         allElements = allElements.filter((el) =>
          {
             return el.style.display !== 'none' && el.style.visibility !== 'hidden' && !el.hasAttribute('disabled') &&
              !el.hasAttribute('inert') && el.getAttribute('aria-hidden') !== 'true';
          });
       }
+
+      if (parentHidden)
+      {
+         allElements = allElements.filter((el) =>
+         {
+            return !this.isParentHidden(el, element);
+         });
+      }
+
+      return allElements;
    }
 
    /**
@@ -329,7 +320,7 @@ class A11yHelper
       }
 
       // Perform duck typing on event constructor name.
-      if (!A11yHelper.#eventTypesAll.has(event?.constructor?.name))
+      if (event !== void 0 && !CrossWindow.isUserInputEvent(event))
       {
          throw new TypeError(
           `A11yHelper.getFocusSource error: 'event' is not a KeyboardEvent, MouseEvent, or PointerEvent.`);
@@ -389,9 +380,9 @@ class A11yHelper
       const result = { debug };
 
       // Perform duck typing on event constructor name.
-      if (A11yHelper.#eventTypesPointer.has(event?.constructor?.name))
+      if (CrossWindow.isPointerEvent(event))
       {
-         // Firefox currently (1/23) does not correctly determine the location of a keyboard originated
+         // Firefox currently (11/24) does not correctly determine the location of a keyboard originated
          // context menu location, so calculate position from middle of the event target.
          // Firefox fires a mouse event for the context menu key.
          if (event?.button !== 2 && event.type === 'contextmenu')
@@ -420,13 +411,16 @@ class A11yHelper
       else
       {
          // Always include x / y coordinates and targetEl may not be defined.
-         const rectTarget = targetEl ?? event.target;
+         const rectTarget = targetEl ?? event?.target;
 
-         const rect = rectTarget.getBoundingClientRect();
-         result.source = 'keyboard';
-         result.x = x ?? rect.left + (rect.width / 2);
-         result.y = y ?? rect.top + (rect.height / 2);
-         result.focusEl = targetEl ? [targetEl] : [];
+         if (rectTarget)
+         {
+            const rect = rectTarget.getBoundingClientRect();
+            result.source = 'keyboard';
+            result.x = x ?? rect.left + (rect.width / 2);
+            result.y = y ?? rect.top + (rect.height / 2);
+            result.focusEl = targetEl ? [targetEl] : [];
+         }
 
          if (focusEl) { result.focusEl.push(focusEl); }
       }
@@ -444,11 +438,7 @@ class A11yHelper
     *
     * @param {Element | Document} [element=document] - Optional element to start query.
     *
-    * @param {object} [options] - Optional parameters.
-    *
-    * @param {Iterable<string>} [options.ignoreClasses] - Iterable list of classes to ignore elements.
-    *
-    * @param {Set<Element>} [options.ignoreElements] - Set of elements to ignore.
+    * @param {FocusableElementOptions} [options] - Optional parameters.
     *
     * @returns {FocusableElement} Last focusable child element.
     */
@@ -462,7 +452,7 @@ class A11yHelper
    /**
     * Tests if the given element is focusable.
     *
-    * @param {Element} el - Element to test.
+    * @param {unknown} el - Element to test.
     *
     * @param {object} [options] - Optional parameters.
     *
@@ -497,14 +487,11 @@ class A11yHelper
       const tabindexAttr = globalThis.parseInt(el.getAttribute('tabindex'));
       const tabindexFocusable = Number.isInteger(tabindexAttr) && tabindexAttr >= 0;
 
-      const isAnchor = el instanceof HTMLAnchorElement;
-
-      if (contenteditableFocusable || tabindexFocusable || isAnchor || el instanceof HTMLButtonElement ||
-       el instanceof HTMLDetailsElement || el instanceof HTMLEmbedElement || el instanceof HTMLIFrameElement ||
-        el instanceof HTMLInputElement || el instanceof HTMLObjectElement || el instanceof HTMLSelectElement ||
-         el instanceof HTMLTextAreaElement)
+      if (contenteditableFocusable || tabindexFocusable || CrossWindow.isFocusableHTMLElement(el))
       {
-         if (isAnchor && !tabindexFocusable && anchorHref && typeof el.getAttribute('href') !== 'string')
+         // Ensure that an anchor element has an `href` attribute.
+         if (anchorHref && !tabindexFocusable && CrossWindow.isHTMLAnchorElement(el) &&
+          typeof el.getAttribute('href') !== 'string')
          {
             return false;
          }
@@ -547,17 +534,15 @@ class A11yHelper
     *
     * @param {Element}  element - An element to match in parent traversal from the active element.
     *
-    * @param {Window}   [activeWindow=globalThis] The active window to use for the current active element.
-    *
     * @returns {boolean} Whether there is focus within the given element.
     */
-   static isFocusWithin(element, activeWindow = globalThis)
+   static isFocusWithin(element)
    {
-      if (element === void 0 || element === null || element?.hidden || !element?.isConnected) { return false; }
+      if (!isObject(element) || element?.hidden || !element?.isConnected) { return false; }
 
-      if (Object.prototype.toString.call(activeWindow) !== '[object Window]') { return false; }
+      let active = CrossWindow.getActiveElement(element);
 
-      let active = activeWindow.document.activeElement;
+      if (!active) { return false; }
 
       while (active)
       {
@@ -568,10 +553,65 @@ class A11yHelper
 
       return false;
    }
+
+   /**
+    * Traverses the given element's parent elements to check if any parent has `offsetWidth` and `offsetHeight` of 0,
+    * indicating that a parent element is hidden. If a parent element is hidden, the given element is also considered
+    * hidden. This is a reasonably efficient check and can be enabled as a filter step in conjunction with focusable
+    * element detection methods like {@link A11yHelper.getFocusableElements}.
+    *
+    * @param {Element}  element - The starting element to check.
+    *
+    * @param {Element}  [stopElement] - The stopping parent element for traversal. If not defined, `document.body` is
+    *        used as the stopping element.
+    *
+    * @returns {boolean} `true` if a parent element of the given element is hidden; otherwise, `false`.
+    */
+   static isParentHidden(element, stopElement)
+   {
+      if (!CrossWindow.isElement(element)) { throw new TypeError(`'element' is not an Element.`); }
+
+      // Set `stopElement` to `document.body` if undefined.
+      stopElement = stopElement ?? CrossWindow.getDocument(element)?.body;
+
+      if (!CrossWindow.isElement(stopElement)) { throw new TypeError(`'stopElement' must be an Element.`); }
+
+      let current = element.parentElement;
+
+      while (current)
+      {
+         // Stop traversal if `stopElement` is reached.
+         if (current === stopElement) { break; }
+
+         // Check if the current parent is hidden by its size.
+         if (current.offsetWidth === 0 && current.offsetHeight === 0) { return true; }
+
+         current = current.parentElement;
+      }
+
+      // No parent is hidden.
+      return false;
+   }
 }
 
 /**
  * @typedef {Element & HTMLOrSVGElement} FocusableElement A focusable element; either HTMLElement or SvgElement.
+ */
+
+/**
+ * @typedef {object} FocusableElementOptions Options for {@link A11yHelper.getFirstFocusableElement},
+ * {@link A11yHelper.getFocusableElements}, and {@link A11yHelper.getLastFocusableElement}.
+ *
+ * @property {boolean}           [anchorHref=true] When true anchors must have an HREF; default: `true`.
+ *
+ * @property {Iterable<string>}  [ignoreClasses] Iterable list of classes to ignore elements.
+ *
+ * @property {Set<Element>}      [ignoreElements] Set of elements to ignore.
+ *
+ * @property {boolean}           [parentHidden=false] When true elements with hidden parents will be removed;
+ * default: `false`.
+ *
+ * @property {string}            [selectors] Custom list of focusable selectors for `querySelectorAll`.
  */
 
 /**

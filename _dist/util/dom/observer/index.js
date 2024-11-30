@@ -1,4 +1,5 @@
 import { isWritableStore } from '@typhonjs-svelte/runtime-base/svelte/store/util';
+import { CrossWindow } from '@typhonjs-svelte/runtime-base/util/browser';
 import { StyleParse } from '@typhonjs-svelte/runtime-base/util/dom/style';
 import { isObject } from '@typhonjs-svelte/runtime-base/util/object';
 
@@ -67,7 +68,7 @@ class ResizeObserverManager
     */
    add(el, target)
    {
-      if (!(el instanceof HTMLElement))
+      if (!CrossWindow.isHTMLElement(el))
       {
          throw new TypeError(`ResizeObserverManager.add error: 'el' is not a HTMLElement.`);
       }
