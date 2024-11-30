@@ -602,6 +602,22 @@ export class A11yHelper
  */
 
 /**
+ * @typedef {object} FocusableElementOptions Options for {@link A11yHelper.getFirstFocusableElement},
+ * {@link A11yHelper.getFocusableElements}, and {@link A11yHelper.getLastFocusableElement}.
+ *
+ * @property {boolean}           [anchorHref=true] When true anchors must have an HREF; default: `true`.
+ *
+ * @property {Iterable<string>}  [ignoreClasses] Iterable list of classes to ignore elements.
+ *
+ * @property {Set<Element>}      [ignoreElements] Set of elements to ignore.
+ *
+ * @property {boolean}           [parentHidden=false] When true elements with hidden parents will be removed;
+ * default: `false`.
+ *
+ * @property {string}            [selectors] Custom list of focusable selectors for `querySelectorAll`.
+ */
+
+/**
  * @typedef {object} A11yFocusSource Provides essential data to return focus to an HTMLElement / SVGElement after a
  * series of UI actions like working with context menus and modal dialogs.
  *
@@ -614,19 +630,4 @@ export class A11yHelper
  * @property {number} [x] Potential X coordinate of initial event.
  *
  * @property {number} [y] Potential Y coordinate of initial event.
- */
-
-/**
- * @typedef {object} FocusableElementOptions Options for `getFirstFocusableElement`, `getFocusableElements`,
- * `getLastFocusableElement`.
- *
- * @property {boolean}           [anchorHref=true] When true anchors must have an HREF.
- *
- * @property {Iterable<string>}  [ignoreClasses] Iterable list of classes to ignore elements.
- *
- * @property {Set<Element>}      [ignoreElements] Set of elements to ignore.
- *
- * @property {boolean}           [parentHidden=false] When true elements with hidden parents will be removed.
- *
- * @property {string}            [selectors] Custom list of focusable selectors for `querySelectorAll`.
  */
