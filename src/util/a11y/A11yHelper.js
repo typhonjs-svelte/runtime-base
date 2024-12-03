@@ -277,6 +277,7 @@ export class A11yHelper
     * @see https://bugzilla.mozilla.org/show_bug.cgi?id=1426671
     * @see https://bugzilla.mozilla.org/show_bug.cgi?id=314314
     *
+    * @privateRemarks
     * TODO: Evaluate / test against touch input devices.
     */
    static getFocusSource({ event, x, y, focusEl, debug = false })
