@@ -874,7 +874,8 @@ for (const config of rollupConfigs)
       let fileData = fs.readFileSync(copyDTS, 'utf-8');
 
       // For #runtime from external TRL libraries.
-      fileData = fileData.replaceAll('#runtime/', '@typhonjs-svelte/runtime-base/');
+      // Ignore any `{@link #runtime...}` enclosed references.
+      fileData = fileData.replaceAll(/(?<!\{@link\s*)#runtime\//g, '@typhonjs-svelte/runtime-base/');
 
       // For #svelte from external TRL libraries.
       fileData = fileData.replaceAll('#svelte', 'svelte');
