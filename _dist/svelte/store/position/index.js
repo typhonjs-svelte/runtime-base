@@ -1290,9 +1290,10 @@ class ConvertStringData
     * `10%`. Percentage values are based on the current value, parent element constraints, or constraints of the type
     * of value like rotation being bound by 360 degrees.
     *
-    * TODO: In the future support more specific CSS unit types.
-    *
     * @type {RegExp}
+    *
+    * @privateRemarks
+    * TODO: In the future support more specific CSS unit types.
     */
    static #regexStringData = /^(?<operation>[-+*]=)?(?<value>-?\d*\.?\d+)(?<unit>%|%~|px|rad|turn)?$/;
 
