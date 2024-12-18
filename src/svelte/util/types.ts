@@ -5,11 +5,11 @@ import type {
 /**
  * Defines the TRL / client side configuration object to load a Svelte component.
  */
-export type TJSSvelteConfig = {
+export type TJSSvelteConfig<Component extends SvelteComponent = SvelteComponent> = {
    /**
     * The Svelte component class / constructor function.
     */
-   class: { new(options: ComponentConstructorOptions): SvelteComponent };
+   class: new(options: ComponentConstructorOptions) => Component;
 
    /**
     * A child of `target` to render the component immediately before.
