@@ -43,16 +43,20 @@ class TJSSvelteConfigUtil
    }
 
    /**
-    * Parses a TyphonJS Svelte config object ensuring that classes specified are Svelte components and props are set
-    * correctly.
+    * Parses a TyphonJS Svelte config object ensuring that the class specified is a Svelte component, loads any dynamic
+    * defined `context` or `props` preparing the config object for loading into the Svelte component.
     *
     * @param {import('./types').TJSSvelteConfig}   config - Svelte config object.
     *
-    * @param {any}       [thisArg] - `This` reference to set for invoking any props function.
+    * @param {object}   [options] - Options.
     *
-    * @returns {import('./types').TJSSvelteConfig} The processed Svelte config object.
+    * @param {any}      [options.thisArg] - `This` reference to set for invoking any `context` or `props` defined as
+    *        functions.
+    *
+    * @returns {import('./types').TJSParsedSvelteConfig} The processed Svelte config object turned with parsed `props` &
+    * `context` converted into the format supported by Svelte.
     */
-   static parseConfig(config, thisArg = void 0)
+   static parseConfig(config, { thisArg = void 0 } = {})
    {
       if (!isObject(config))
       {
@@ -94,58 +98,15 @@ class TJSSvelteConfigUtil
           JSON.stringify(config)}.`);
       }
 
-      if (config.context !== void 0 && typeof config.context !== 'function' && !CrossWindow.isMap(config.context) &&
-       !isObject(config.context))
+      if (config.context !== void 0 && typeof config.context !== 'function' && !isObject(config.context))
       {
          throw new TypeError(
-          `TJSSvelteConfigUtil.parseConfig - 'context' is not a Map, function or object for config:\n${
+          `TJSSvelteConfigUtil.parseConfig - 'context' is not a function or object for config:\n${
             JSON.stringify(config)}.`);
       }
 
-      // Validate extra TyphonJS options --------------------------------------------------------------------------------
-
-      // `selectorTarget` optionally stores a target element found in main element.
-      if (config.selectorTarget !== void 0 && typeof config.selectorTarget !== 'string')
-      {
-         throw new TypeError(
-          `TJSSvelteConfigUtil.parseConfig - 'selectorTarget' is not a string for config:\n${JSON.stringify(config)}.`);
-      }
-
-      // `options` stores `injectApp`, `injectEventbus`, and `selectorElement`.
-      if (config.options !== void 0 && !isObject(config.options))
-      {
-         throw new TypeError(
-          `TJSSvelteConfigUtil.parseConfig - 'options' is not an object for config:\n${JSON.stringify(config)}.`);
-      }
-
-      // Validate TyphonJS standard options. // TODO: This will change in `0.3.0`!
-      if (isObject(config.options))
-      {
-         if (config.options.injectApp !== void 0 && typeof config.options.injectApp !== 'boolean')
-         {
-            throw new TypeError(`TJSSvelteConfigUtil.parseConfig - 'options.injectApp' is not a boolean for config:\n${
-             JSON.stringify(config)}.`);
-         }
-
-         if (config.options.injectEventbus !== void 0 && typeof config.options.injectEventbus !== 'boolean')
-         {
-            throw new TypeError(
-             `TJSSvelteConfigUtil.parseConfig - 'options.injectEventbus' is not a boolean for config:\n${
-              JSON.stringify(config)}.`);
-         }
-
-         // `selectorElement` optionally stores a main element selector to be found in a HTMLElement target.
-         if (config.options.selectorElement !== void 0 && typeof config.options.selectorElement !== 'string')
-         {
-            throw new TypeError(`TJSSvelteConfigUtil.parseConfig - 'selectorElement' is not a string for config:\n${
-             JSON.stringify(config)}.`);
-         }
-      }
-
+      /** @type {import('./types').TJSParsedSvelteConfig} */
       const svelteConfig = { ...config };
-
-      // Delete extra Svelte options.
-      delete svelteConfig.options;
 
       let externalContext = {};
 
@@ -168,11 +129,6 @@ class TJSSvelteConfigUtil
               JSON.stringify(config)}`);
          }
       }
-      else if (CrossWindow.isMap(svelteConfig.context))
-      {
-         externalContext = Object.fromEntries(svelteConfig.context);
-         delete svelteConfig.context;
-      }
       else if (isObject(svelteConfig.context))
       {
          externalContext = svelteConfig.context;
@@ -183,52 +139,7 @@ class TJSSvelteConfigUtil
       // If an object is returned set it as the props.
       svelteConfig.props = this.#processProps(svelteConfig.props, thisArg, config);
 
-      // Process children components attaching to external context.
-      if (Array.isArray(svelteConfig.children))
-      {
-         const children = [];
-
-         for (let cntr = 0; cntr < svelteConfig.children.length; cntr++)
-         {
-            const child = svelteConfig.children[cntr];
-
-            if (!TJSSvelteUtil.isComponent(child.class))
-            {
-               throw new Error(`TJSSvelteConfigUtil.parseConfig - 'class' is not a Svelte component for child[${
-                cntr}] for config:\n${JSON.stringify(config)}`);
-            }
-
-            child.props = this.#processProps(child.props, thisArg, config);
-
-            children.push(child);
-         }
-
-         if (children.length > 0)
-         {
-            externalContext.children = children;
-         }
-
-         delete svelteConfig.children;
-      }
-      else if (isObject(svelteConfig.children))
-      {
-         if (!TJSSvelteUtil.isComponent(svelteConfig.children.class))
-         {
-            throw new Error(
-             `TJSSvelteConfigUtil.parseConfig - 'class' is not a Svelte component for children object for config:\n${
-              JSON.stringify(config)}`);
-         }
-
-         svelteConfig.children.props = this.#processProps(svelteConfig.children.props, thisArg, config);
-
-         externalContext.children = [svelteConfig.children];
-         delete svelteConfig.children;
-      }
-
-      if (!CrossWindow.isMap(svelteConfig.context))
-      {
-         svelteConfig.context = new Map();
-      }
+      svelteConfig.context = new Map();
 
       svelteConfig.context.set('#external', externalContext);
 

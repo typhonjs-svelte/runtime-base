@@ -4,6 +4,43 @@ import type {
    SvelteComponent } from 'svelte';
 
 /**
+ * The result of after parsing {@link TJSSvelteConfig} or {@link TJSSvelteConfigDynamic} by
+ * {@link TJSSvelteConfigUtil.parseConfig}.
+ */
+interface TJSParsedSvelteConfig
+{
+   /**
+    * The Svelte component class / constructor function.
+    */
+   class: new(options: ComponentConstructorOptions) => SvelteComponent;
+
+   /**
+    * A child of `target` to render the component immediately before.
+    */
+   anchor?: Element;
+
+   /**
+    * The root-level additional data to add to the context passed to the component.
+    */
+   context: Map<string, any>;
+
+   /**
+    * If true, will play transitions on initial render, rather than waiting for subsequent state changes.
+    */
+   intro?: boolean;
+
+   /**
+    * Props to pass to the component.
+    */
+   props: { [key: string]: any };
+
+   /**
+    * The target to render component to.
+    */
+   target?: Element | Document | ShadowRoot;
+}
+
+/**
  * Provides the TRL / client side configuration object to load a Svelte component.
  *
  * Defines a dynamic config that allows the `context` and `props` properties to also be defined as a function that
@@ -36,12 +73,6 @@ interface TJSSvelteConfigDynamic<Component extends SvelteComponent = SvelteCompo
     * The root-level additional data to add to the context passed to the component.
     */
    context?: NarrowContextObject<Config> | NarrowContextFunction<Config>;
-
-   /**
-    * See description in main Svelte docs
-    * {@link https://svelte.dev/docs/client-side-component-api#creating-a-component | Creating a component.}
-    */
-   hydrate?: boolean;
 
    /**
     * If true, will play transitions on initial render, rather than waiting for subsequent state changes.
@@ -83,7 +114,7 @@ interface TJSSvelteConfig<Component extends SvelteComponent = SvelteComponent, C
    props?: NarrowPropsObject<Component, Config>;
 }
 
-export { TJSSvelteConfig, TJSSvelteConfigDynamic };
+export { TJSParsedSvelteConfig, TJSSvelteConfig, TJSSvelteConfigDynamic };
 
 // Internal Utility Types --------------------------------------------------------------------------------------------
 
