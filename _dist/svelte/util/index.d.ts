@@ -1,5 +1,37 @@
-import { SvelteComponent, ComponentProps, ComponentConstructorOptions } from 'svelte';
+import { ComponentConstructorOptions, SvelteComponent, ComponentProps } from 'svelte';
 
+/**
+ * The result of after parsing {@link TJSSvelteConfig} or {@link TJSSvelteConfigDynamic} by
+ * {@link TJSSvelteConfigUtil.parseConfig}.
+ */
+interface TJSParsedSvelteConfig {
+  /**
+   * The Svelte component class / constructor function.
+   */
+  class: new (options: ComponentConstructorOptions) => SvelteComponent;
+  /**
+   * A child of `target` to render the component immediately before.
+   */
+  anchor?: Element;
+  /**
+   * The root-level additional data to add to the context passed to the component.
+   */
+  context: Map<string, any>;
+  /**
+   * If true, will play transitions on initial render, rather than waiting for subsequent state changes.
+   */
+  intro?: boolean;
+  /**
+   * Props to pass to the component.
+   */
+  props: {
+    [key: string]: any;
+  };
+  /**
+   * The target to render component to.
+   */
+  target?: Element | Document | ShadowRoot;
+}
 /**
  * Provides the TRL / client side configuration object to load a Svelte component.
  *
@@ -39,11 +71,6 @@ interface TJSSvelteConfigDynamic<
    * The root-level additional data to add to the context passed to the component.
    */
   context?: NarrowContextObject<Config> | NarrowContextFunction<Config>;
-  /**
-   * See description in main Svelte docs
-   * {@link https://svelte.dev/docs/client-side-component-api#creating-a-component | Creating a component.}
-   */
-  hydrate?: boolean;
   /**
    * If true, will play transitions on initial render, rather than waiting for subsequent state changes.
    */
@@ -191,16 +218,27 @@ declare class TJSSvelteConfigUtil {
     },
   ): config is TJSSvelteConfig;
   /**
-   * Parses a TyphonJS Svelte config object ensuring that classes specified are Svelte components and props are set
-   * correctly.
+   * Parses a TyphonJS Svelte config object ensuring that the class specified is a Svelte component, loads any dynamic
+   * defined `context` or `props` preparing the config object for loading into the Svelte component.
    *
    * @param {import('./types').TJSSvelteConfig}   config - Svelte config object.
    *
-   * @param {any}       [thisArg] - `This` reference to set for invoking any props function.
+   * @param {object}   [options] - Options.
    *
-   * @returns {import('./types').TJSSvelteConfig} The processed Svelte config object.
+   * @param {any}      [options.thisArg] - `This` reference to set for invoking any `context` or `props` defined as
+   *        functions.
+   *
+   * @returns {import('./types').TJSParsedSvelteConfig} The processed Svelte config object turned with parsed `props` &
+   * `context` converted into the format supported by Svelte.
    */
-  static parseConfig(config: TJSSvelteConfig, thisArg?: any): TJSSvelteConfig;
+  static parseConfig(
+    config: TJSSvelteConfig,
+    {
+      thisArg,
+    }?: {
+      thisArg?: any;
+    },
+  ): TJSParsedSvelteConfig;
 }
 
 /**
@@ -236,4 +274,10 @@ declare class TJSSvelteUtil {
   static outroAndDestroy(instance: any): Promise<any>;
 }
 
-export { type TJSSvelteConfig, type TJSSvelteConfigDynamic, TJSSvelteConfigUtil, TJSSvelteUtil };
+export {
+  type TJSParsedSvelteConfig,
+  type TJSSvelteConfig,
+  type TJSSvelteConfigDynamic,
+  TJSSvelteConfigUtil,
+  TJSSvelteUtil,
+};
