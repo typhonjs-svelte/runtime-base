@@ -1,0 +1,249 @@
+import { CrossWindow }  from '#runtime/util/browser';
+import { isObject }     from '#runtime/util/object';
+
+import { TJSSvelte }    from './TJSSvelte';
+
+/**
+ * Provides utilities to verify and parse {@link TJSSvelte.Config} configuration objects.
+ */
+class APIConfig
+{
+   private constructor() {}
+
+   /**
+    * Validates `config` argument whether it is a valid {@link TJSSvelte.Config.Dynamic} or
+    * {@link TJSSvelte.Config.Standard} configuration object suitable for parsing by
+    * {@link TJSSvelte.API.Config.parseConfig}.
+    *
+    * @param config - The potential config object to validate.
+    *
+    * @param [options] - Options.
+    *
+    * @param [options.raiseException=false] - If validation fails raise an exception.
+    *
+    * @returns Is the config a valid TJSSvelteConfig.
+    *
+    * @throws {TypeError}  Any validation error when `raiseException` is enabled.
+    */
+   static isConfig(config: unknown, { raiseException = false }: { raiseException?: boolean } = {}):
+    config is TJSSvelte.Config.Dynamic | TJSSvelte.Config.Standard
+   {
+      if (!isObject(config))
+      {
+         if (raiseException) { throw new TypeError(`TJSSvelte.config.isConfig error: 'config' is not an object.`); }
+         return false;
+      }
+
+      if (!TJSSvelte.util.isComponent(config.class))
+      {
+         if (raiseException)
+         {
+            throw new TypeError(
+             `TJSSvelte.config.isConfig error: 'config.class' is not a Svelte component constructor.`);
+         }
+         return false;
+      }
+
+      return true;
+   }
+
+   /**
+    * Validates `config` argument whether it is a valid {@link TJSSvelte.Config.Embed} configuration object
+    * suitable for directly mounting via the `<svelte:component>` directive.
+    *
+    * @param config - The potential config object to validate.
+    *
+    * @param [options] - Options.
+    *
+    * @param [options.raiseException=false] - If validation fails raise an exception.
+    *
+    * @returns Is the config a valid TJSSvelte.Config.Embed configuration object.
+    *
+    * @throws {TypeError}  Any validation error when `raiseException` is enabled.
+    */
+   static isConfigEmbed(config: unknown, { raiseException = false }: { raiseException?: boolean } = {}):
+    config is TJSSvelte.Config.Embed
+   {
+      if (!isObject(config))
+      {
+         if (raiseException)
+         {
+            throw new TypeError(`TJSSvelte.config.isConfigEmbed error: 'config' is not an object.`);
+         }
+         return false;
+      }
+
+      if (!TJSSvelte.util.isComponent(config.class))
+      {
+         if (raiseException)
+         {
+            throw new TypeError(
+             `TJSSvelte.config.isConfigEmbed error: 'config.class' is not a Svelte component constructor.`);
+         }
+         return false;
+      }
+
+      if (config.props !== void 0 && !isObject(config.props))
+      {
+         if (raiseException)
+         {
+            throw new TypeError(`TJSSvelte.config.isConfigEmbed error: 'config.props' is not an object.`);
+         }
+         return false;
+      }
+
+      return true;
+   }
+
+   /**
+    * Parses a TyphonJS Svelte config object ensuring that the class specified is a Svelte component, loads any dynamic
+    * defined `context` or `props` preparing the config object for loading into the Svelte component.
+    *
+    * @param config - Svelte config object.
+    *
+    * @param [options] - Options.
+    *
+    * @param [options.thisArg] - `This` reference to set for invoking any `context` or `props` defined as functions.
+    *
+    * @returns The processed Svelte config object turned with parsed `props` & `context` converted into the format
+    *          supported by Svelte.
+    */
+   static parseConfig(config: TJSSvelte.Config.Dynamic | TJSSvelte.Config.Standard, { thisArg = void 0 }:
+    { thisArg?: unknown } = {}): TJSSvelte.Config.Parsed
+   {
+      if (!isObject(config))
+      {
+         throw new TypeError(
+          `TJSSvelte.config.parseConfig - 'config' is not an object:\n${JSON.stringify(config)}.`);
+      }
+
+      if (!TJSSvelte.util.isComponent(config.class))
+      {
+         throw new TypeError(
+          `TJSSvelte.config.parseConfig - 'class' is not a Svelte component constructor for config:\n${
+            JSON.stringify(config)}.`);
+      }
+
+      if (config.hydrate !== void 0 && typeof config.hydrate !== 'boolean')
+      {
+         throw new TypeError(
+          `TJSSvelte.config.parseConfig - 'hydrate' is not a boolean for config:\n${JSON.stringify(config)}.`);
+      }
+
+      if (config.intro !== void 0 && typeof config.intro !== 'boolean')
+      {
+         throw new TypeError(
+          `TJSSvelte.config.parseConfig - 'intro' is not a boolean for config:\n${JSON.stringify(config)}.`);
+      }
+
+      if (config.target !== void 0 && !CrossWindow.isElement(config.target) &&
+       !CrossWindow.isShadowRoot(config.target) && !CrossWindow.isDocumentFragment(config.target))
+      {
+         throw new TypeError(
+          `TJSSvelte.config.parseConfig - 'target' is not a Element, ShadowRoot, or DocumentFragment for config:\n${
+           JSON.stringify(config)}.`);
+      }
+
+      if (config.anchor !== void 0 && !CrossWindow.isElement(config.anchor) &&
+       !CrossWindow.isShadowRoot(config.anchor) && !CrossWindow.isDocumentFragment(config.anchor))
+      {
+         throw new TypeError(`TJSSvelte.config.parseConfig - 'anchor' is not a string, Element for config:\n${
+          JSON.stringify(config)}.`);
+      }
+
+      if (config.context !== void 0 && typeof config.context !== 'function' && !isObject(config.context))
+      {
+         throw new TypeError(
+          `TJSSvelte.config.parseConfig - 'context' is not a function or object for config:\n${
+           JSON.stringify(config)}.`);
+      }
+
+      const svelteConfig: { [key: string]: any } = { ...config };
+
+      let externalContext: { [key: string]: any } = {};
+
+      // If a context callback function is provided then invoke it with `this` being the Foundry app.
+      // If an object is returned it adds the entries to external context.
+      if (typeof svelteConfig.context === 'function')
+      {
+         const contextFunc: Function = svelteConfig.context;
+         delete svelteConfig.context;
+
+         const result: unknown = contextFunc.call(thisArg);
+         if (isObject(result))
+         {
+            externalContext = { ...result };
+         }
+         else
+         {
+            throw new Error(
+             `TJSSvelte.config.parseConfig - 'context' is a function that did not return an object for config:\n${
+              JSON.stringify(config)}`);
+         }
+      }
+      else if (isObject(svelteConfig.context))
+      {
+         externalContext = svelteConfig.context;
+         delete svelteConfig.context;
+      }
+
+      // If a props is a function then invoke it with `this` being the Foundry app.
+      // If an object is returned set it as the props.
+      svelteConfig.props = this.#processProps(svelteConfig.props, thisArg, config);
+
+      svelteConfig.context = new Map();
+
+      svelteConfig.context.set('#external', externalContext);
+
+      return svelteConfig as TJSSvelte.Config.Parsed;
+   }
+
+   // Internal implementation ----------------------------------------------------------------------------------------
+
+   /**
+    * Processes Svelte props. Potentially props can be a function to invoke with `thisArg`.
+    *
+    * @param props - Svelte props.
+    *
+    * @param thisArg - `This` reference to set for invoking any props function.
+    *
+    * @param config - Svelte config
+    *
+    * @returns Svelte props.
+    */
+   static #processProps(props: { [key: string]: any } | Function, thisArg: unknown,
+    config: TJSSvelte.Config.Dynamic | TJSSvelte.Config.Standard): { [key: string]: any }
+   {
+      // If a props is a function then invoke it with `this` being the Foundry app.
+      // If an object is returned set it as the props.
+      if (typeof props === 'function')
+      {
+         const result: unknown = props.call(thisArg);
+         if (isObject(result))
+         {
+            return result;
+         }
+         else
+         {
+            throw new Error(
+             `TJSSvelte.config.parseConfig - 'props' is a function that did not return an object for config:\n${
+              JSON.stringify(config)}`);
+         }
+      }
+      else if (isObject(props))
+      {
+         return props;
+      }
+      else if (props !== void 0)
+      {
+         throw new Error(`TJSSvelte.config.parseConfig - 'props' is not a function or an object for config:\n${
+          JSON.stringify(config)}`);
+      }
+
+      return {};
+   }
+}
+
+Object.seal(APIConfig);
+
+export { APIConfig };

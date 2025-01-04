@@ -1,2 +1,1 @@
-export * from './TJSSvelteConfigUtil';
-export * from './TJSSvelteUtil';
+export * from './TJSSvelte';

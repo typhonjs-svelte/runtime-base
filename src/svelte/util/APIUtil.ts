@@ -1,14 +1,16 @@
 // @ts-ignore
 import { check_outros, group_outros, transition_out } from '#svelte/internal';
 
-import type { SvelteComponent } from 'svelte';
+import type { SvelteComponent }  from 'svelte';
 
 /**
  * Various utilities to duck type / detect Svelte components and run outro transition while destroying a component
  * externally.
  */
-class TJSSvelteUtil
+class APIUtil
 {
+   private constructor() {}
+
    /**
     * Provides basic duck typing to determine if the provided function is a constructor function for a Svelte component.
     *
@@ -91,6 +93,6 @@ class TJSSvelteUtil
    }
 }
 
-Object.seal(TJSSvelteUtil);
+Object.seal(APIUtil);
 
-export { TJSSvelteUtil };
+export { APIUtil };
