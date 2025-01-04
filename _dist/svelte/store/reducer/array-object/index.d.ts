@@ -23,7 +23,7 @@ declare class ObjectEntryStore {
    * @returns {object} The object data tracked by this store.
    * @protected
    */
-  protected get _data(): any;
+  protected get _data(): object;
   /**
    * @returns {string} The ID attribute in object data tracked by this store.
    */

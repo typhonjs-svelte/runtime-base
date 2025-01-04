@@ -1317,7 +1317,7 @@ declare class TJSPosition implements TJSPositionTypes.TJSPositionWritable {
    * @returns {Readonly<import('./transform/types').TransformAPI.TransformOrigin[]>} The supported transform origin
    *          strings.
    */
-  static get transformOrigins(): readonly TransformAPI.TransformOrigin[];
+  static get transformOrigins(): Readonly<TransformAPI.TransformOrigin[]>;
   /**
    * Convenience to copy from source to target of two TJSPositionData like objects. If a target is not supplied a new
    * {@link TJSPositionData} instance is created.
@@ -1386,7 +1386,7 @@ declare class TJSPosition implements TJSPositionTypes.TJSPositionWritable {
    *
    * @returns {HTMLElement | undefined} Current HTMLElement being positioned.
    */
-  get element(): HTMLElement;
+  get element(): HTMLElement | undefined;
   /**
    * Returns a promise that is resolved on the next element update with the time of the update.
    *
@@ -1399,7 +1399,7 @@ declare class TJSPosition implements TJSPositionTypes.TJSPositionWritable {
    * @param {import('./types').TJSPositionTypes.PositionParent | undefined} parent - A PositionParent instance or
    *        undefined to disassociate
    */
-  set parent(parent: TJSPositionTypes.PositionParent);
+  set parent(parent: TJSPositionTypes.PositionParent | undefined);
   /**
    * Returns the associated {@link TJSPositionTypes.PositionParent} instance.
    *
@@ -1433,99 +1433,99 @@ declare class TJSPosition implements TJSPositionTypes.TJSPositionWritable {
   /**
    * @param {number | 'auto' | 'inherit' | null} height -
    */
-  set height(height: number | 'auto' | 'inherit');
+  set height(height: number | 'auto' | 'inherit' | null);
   /**
    * @returns {number | 'auto' | 'inherit' | null} height
    */
-  get height(): number | 'auto' | 'inherit';
+  get height(): number | 'auto' | 'inherit' | null;
   /**
    * @param {number | string | null} left -
    */
-  set left(left: string | number);
+  set left(left: number | string | null);
   /**
    * @returns {number | null} left
    */
-  get left(): number;
+  get left(): number | null;
   /**
    * @param {number | string | null} maxHeight -
    */
-  set maxHeight(maxHeight: string | number);
+  set maxHeight(maxHeight: number | string | null);
   /**
    * @returns {number | null} maxHeight
    */
-  get maxHeight(): number;
+  get maxHeight(): number | null;
   /**
    * @param {number | string | null} maxWidth -
    */
-  set maxWidth(maxWidth: string | number);
+  set maxWidth(maxWidth: number | string | null);
   /**
    * @returns {number | null} maxWidth
    */
-  get maxWidth(): number;
+  get maxWidth(): number | null;
   /**
    * @param {number | string | null} minHeight -
    */
-  set minHeight(minHeight: string | number);
+  set minHeight(minHeight: number | string | null);
   /**
    * @returns {number | null} minHeight
    */
-  get minHeight(): number;
+  get minHeight(): number | null;
   /**
    * @param {number | string | null} minWidth -
    */
-  set minWidth(minWidth: string | number);
+  set minWidth(minWidth: number | string | null);
   /**
    * @returns {number | null} minWidth
    */
-  get minWidth(): number;
+  get minWidth(): number | null;
   /**
    * @param {number | string | null} rotateX -
    */
-  set rotateX(rotateX: string | number);
+  set rotateX(rotateX: number | string | null);
   /**
    * @returns {number | null} rotateX
    */
-  get rotateX(): number;
+  get rotateX(): number | null;
   /**
    * @param {number | string | null} rotateY -
    */
-  set rotateY(rotateY: string | number);
+  set rotateY(rotateY: number | string | null);
   /**
    * @returns {number | null} rotateY
    */
-  get rotateY(): number;
+  get rotateY(): number | null;
   /**
    * @param {number | string | null} rotateZ -
    */
-  set rotateZ(rotateZ: string | number);
+  set rotateZ(rotateZ: number | string | null);
   /**
    * @returns {number | null} rotateZ
    */
-  get rotateZ(): number;
+  get rotateZ(): number | null;
   /**
    * @param {number | string | null} rotateZ - alias for rotateZ
    */
-  set rotation(rotateZ: string | number);
+  set rotation(rotateZ: number | string | null);
   /**
    * @returns {number | null} alias for rotateZ
    */
-  get rotation(): number;
+  get rotation(): number | null;
   /**
    * @param {number | string | null} scale -
    */
-  set scale(scale: string | number);
+  set scale(scale: number | string | null);
   /**
    * @returns {number | null} scale
    */
-  get scale(): number;
+  get scale(): number | null;
   /**
    * @param {number | string | null} top -
    */
-  set top(top: string | number);
+  set top(top: number | string | null);
   /**
    * @returns {number | null} top
    */
-  get top(): number;
+  get top(): number | null;
   /**
    * @param {import('./transform/types').TransformAPI.TransformOrigin} transformOrigin -
    */
@@ -1533,47 +1533,47 @@ declare class TJSPosition implements TJSPositionTypes.TJSPositionWritable {
   /**
    * @returns {import('./transform/types').TransformAPI.TransformOrigin | null} transformOrigin
    */
-  get transformOrigin(): TransformAPI.TransformOrigin;
+  get transformOrigin(): TransformAPI.TransformOrigin | null;
   /**
    * @param {number | string | null} translateX -
    */
-  set translateX(translateX: string | number);
+  set translateX(translateX: number | string | null);
   /**
    * @returns {number | null} translateX
    */
-  get translateX(): number;
+  get translateX(): number | null;
   /**
    * @param {number | string | null} translateY -
    */
-  set translateY(translateY: string | number);
+  set translateY(translateY: number | string | null);
   /**
    * @returns {number | null} translateY
    */
-  get translateY(): number;
+  get translateY(): number | null;
   /**
    * @param {number | string | null} translateZ -
    */
-  set translateZ(translateZ: string | number);
+  set translateZ(translateZ: number | string | null);
   /**
    * @returns {number | null} translateZ
    */
-  get translateZ(): number;
+  get translateZ(): number | null;
   /**
    * @param {number | 'auto' | 'inherit' | null} width -
    */
-  set width(width: number | 'auto' | 'inherit');
+  set width(width: number | 'auto' | 'inherit' | null);
   /**
    * @returns {number | 'auto' | 'inherit' | null} width
    */
-  get width(): number | 'auto' | 'inherit';
+  get width(): number | 'auto' | 'inherit' | null;
   /**
    * @param {number | string | null} zIndex -
    */
-  set zIndex(zIndex: string | number);
+  set zIndex(zIndex: number | string | null);
   /**
    * @returns {number | null} z-index
    */
-  get zIndex(): number;
+  get zIndex(): number | null;
   /**
    * Assigns current position data to given object `data` object. By default, `null` position data is not assigned.
    * Other options allow configuration of the data assigned including setting default numeric values for any properties

@@ -66,6 +66,9 @@ declare namespace TJSSvelte {
        *
        * @param [options] - Options.
        *
+       * @param [options.contextExternal] - When true any context data provided will be loaded into `#external`
+       *        context separating it from any internal context created by the component.
+       *
        * @param [options.thisArg] - `This` reference to set for invoking any `context` or `props` defined as
        *        functions for {@link Config.Dynamic} configuration objects.
        *

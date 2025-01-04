@@ -18,7 +18,7 @@ class APIConfig {
      *
      * @param [options.raiseException=false] - If validation fails raise an exception.
      *
-     * @returns Is the config a valid TJSSvelteConfig.
+     * @returns Is the config a valid TJSSvelte.Config.Dynamic or TJSSvelte.Config.Standard configuration object.
      *
      * @throws {TypeError}  Any validation error when `raiseException` is enabled.
      */
@@ -73,19 +73,24 @@ class APIConfig {
         return true;
     }
     /**
-     * Parses a TyphonJS Svelte config object ensuring that the class specified is a Svelte component, loads any dynamic
-     * defined `context` or `props` preparing the config object for loading into the Svelte component.
+     * Parses a TyphonJS Svelte dynamic or standard config object ensuring that the class specified is a Svelte
+     * component, loads any dynamic defined `context` or `props` preparing the config object for loading into the
+     * Svelte component.
      *
      * @param config - Svelte config object.
      *
      * @param [options] - Options.
      *
-     * @param [options.thisArg] - `This` reference to set for invoking any `context` or `props` defined as functions.
+     * @param [options.contextExternal] - When true any context data provided will be loaded into `#external`
+     *        context separating it from any internal context created by the component.
+     *
+     * @param [options.thisArg] - `This` reference to set for invoking any `context` or `props` defined as
+     *        functions for {@link Config.Dynamic} configuration objects.
      *
      * @returns The processed Svelte config object turned with parsed `props` & `context` converted into the format
      *          supported by Svelte.
      */
-    static parseConfig(config, { thisArg = void 0 } = {}) {
+    static parseConfig(config, { contextExternal = false, thisArg = void 0 } = {}) {
         if (!isObject(config)) {
             throw new TypeError(`TJSSvelte.config.parseConfig - 'config' is not an object:\n${JSON.stringify(config)}.`);
         }
@@ -110,7 +115,7 @@ class APIConfig {
             throw new TypeError(`TJSSvelte.config.parseConfig - 'context' is not a function or object for config:\n${JSON.stringify(config)}.`);
         }
         const svelteConfig = { ...config };
-        let externalContext = {};
+        let context = {};
         // If a context callback function is provided then invoke it with `this` being the Foundry app.
         // If an object is returned it adds the entries to external context.
         if (typeof svelteConfig.context === 'function') {
@@ -118,21 +123,26 @@ class APIConfig {
             delete svelteConfig.context;
             const result = contextFunc.call(thisArg);
             if (isObject(result)) {
-                externalContext = { ...result };
+                context = { ...result };
             }
             else {
                 throw new Error(`TJSSvelte.config.parseConfig - 'context' is a function that did not return an object for config:\n${JSON.stringify(config)}`);
             }
         }
         else if (isObject(svelteConfig.context)) {
-            externalContext = svelteConfig.context;
+            context = svelteConfig.context;
             delete svelteConfig.context;
         }
         // If a props is a function then invoke it with `this` being the Foundry app.
         // If an object is returned set it as the props.
         svelteConfig.props = this.#processProps(svelteConfig.props, thisArg, config);
-        svelteConfig.context = new Map();
-        svelteConfig.context.set('#external', externalContext);
+        if (contextExternal) {
+            svelteConfig.context = new Map();
+            svelteConfig.context.set('#external', context);
+        }
+        else {
+            svelteConfig.context = new Map(Object.entries(context));
+        }
         return svelteConfig;
     }
     // Internal implementation ----------------------------------------------------------------------------------------
@@ -178,7 +188,8 @@ Object.seal(APIConfig);
 class APIUtil {
     constructor() { }
     /**
-     * Provides basic duck typing to determine if the provided function is a constructor function for a Svelte component.
+     * Provides basic duck typing to determine if the provided function is a constructor function for a Svelte
+     * component.
      *
      * @param comp - Data to check as a Svelte component.
      *

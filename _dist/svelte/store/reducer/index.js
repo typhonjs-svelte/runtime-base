@@ -45,10 +45,6 @@ class DynReducerUtils {
      * @returns Hash code.
      */
     static hashString(str, seed = 0) {
-        /* c8 ignore next */
-        if (str === void 0 || str === null) {
-            return 0;
-        }
         let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
         for (let ch, i = 0; i < str.length; i++) {
             ch = str.charCodeAt(i);
@@ -62,7 +58,7 @@ class DynReducerUtils {
     /**
      * Converts an unknown value for hashing purposes in {@link AdapterIndexer.calcHashUpdate}.
      *
-     * Currently, objects / Map w/ object keys is not supported. Potentially can include `object-hash` to handle this
+     * Currently objects / Map w/ object keys is not supported. Potentially can include `object-hash` to handle this
      * case, but it is not common to use objects as keys in Maps.
      *
      * @param value - An unknown value to convert to a number.
@@ -135,6 +131,8 @@ class DynReducerUtils {
 
 /**
  * Provides the `derived` API for all dynamic reducers.
+ *
+ * @template D, K, T
  */
 class AdapterDerived {
     #hostData;
@@ -143,11 +141,11 @@ class AdapterDerived {
     #derived = new Map();
     #destroyed = false;
     /**
-     * @param hostData - Hosted data structure.
+     * @param {DynDataHost<D>} hostData - Hosted data structure.
      *
-     * @param parentIndex - Any associated parent index API.
+     * @param {IndexerAPI<K, T>}  parentIndex - Any associated parent index API.
      *
-     * @param DerivedReducerCtor - The default derived reducer constructor function.
+     * @param {DynDerivedReducerCtor<T>} DerivedReducerCtor - The default derived reducer constructor function.
      */
     constructor(hostData, parentIndex, DerivedReducerCtor) {
         this.#hostData = hostData;
@@ -158,12 +156,12 @@ class AdapterDerived {
     /**
      * Creates a new derived reducer.
      *
-     * @param options - Options defining the new derived reducer.
+     * @param {DynOptionsDerivedCreate<T>} options - Options defining the new derived reducer.
      *
-     * @returns Newly created derived reducer.
+     * @returns {DynDerivedReducer<D, K, T>} Newly created derived reducer.
      */
     create(options) {
-        if (this.#destroyed || this.#hostData === null) {
+        if (this.#destroyed) {
             throw Error(`AdapterDerived.create error: this instance has been destroyed.`);
         }
         let name;
@@ -192,11 +190,6 @@ class AdapterDerived {
         }
         const derivedReducer = new ctor(this.#hostData, this.#parentIndex, rest);
         this.#derived.set(name, derivedReducer);
-        // If the instantiated derived reducer has an `initialize` method then invoke it.
-        if (this.#hasInitialize(derivedReducer)) {
-            const { filters, sort, ...optionsRest } = rest;
-            derivedReducer.initialize(optionsRest);
-        }
         return derivedReducer;
     }
     /**
@@ -214,9 +207,10 @@ class AdapterDerived {
     /**
      * Deletes and destroys a derived reducer by name.
      *
-     * @param name - Name of the derived reducer.
+     * @param {string}   name - Name of the derived reducer.
      *
-     * @returns true if an element in the Map existed and has been removed, or false if the element does not exist.
+     * @returns {boolean} true if an element in the Map existed and has been removed, or false if the element does not
+     *          exist.
      */
     delete(name) {
         if (this.#destroyed) {
@@ -236,16 +230,16 @@ class AdapterDerived {
             return;
         }
         this.clear();
-        this.#hostData = null;
+        this.#hostData = [null];
         this.#parentIndex = null;
         this.#destroyed = true;
     }
     /**
      * Returns an existing derived reducer.
      *
-     * @param name - Name of derived reducer.
+     * @param {string}   name - Name of derived reducer.
      *
-     * @returns Any associated derived reducer.
+     * @returns {DynDerivedReducer<D, K, T>} Any associated derived reducer.
      */
     get(name) {
         if (this.#destroyed) {
@@ -254,17 +248,9 @@ class AdapterDerived {
         return this.#derived.get(name);
     }
     /**
-     * Type guard to check for presence of `initialize` method.
-     *
-     * @param instance - Instance to check.
-     */
-    #hasInitialize(instance) {
-        return typeof instance?.initialize === 'function';
-    }
-    /**
      * Updates all managed derived reducer indexes.
      *
-     * @param [force=false] - Force an update to subscribers.
+     * @param {boolean}  [force=false] - Force an update to subscribers.
      */
     update(force = false) {
         if (this.#destroyed) {
@@ -304,8 +290,8 @@ class AdapterFilters {
             if (filterType !== 'function' && (filterType !== 'object' || filter === null)) {
                 throw new TypeError(`AdapterFilters error: 'filter' is not a function or object.`);
             }
-            let data;
-            let subscribeFn;
+            let data = void 0;
+            let subscribeFn = void 0;
             if (filterType === 'function') {
                 data = {
                     id: void 0,
@@ -319,8 +305,8 @@ class AdapterFilters {
                     if (typeof filter.filter !== 'function') {
                         throw new TypeError(`AdapterFilters error: 'filter' attribute is not a function.`);
                     }
-                    if (filter.weight !== void 0 && (typeof filter.weight !== 'number' ||
-                        filter.weight < 0 || filter.weight > 1)) {
+                    if (filter.weight !== void 0 && typeof filter.weight !== 'number' ||
+                        (filter.weight < 0 || filter.weight > 1)) {
                         throw new TypeError(`AdapterFilters error: 'weight' attribute is not a number between '0 - 1' inclusive.`);
                     }
                     data = {
@@ -333,10 +319,6 @@ class AdapterFilters {
                 else {
                     throw new TypeError(`AdapterFilters error: 'filter' attribute is not a function.`);
                 }
-                /* c8 ignore next 5 */ // TS type guard for `else` conditional.
-            }
-            else {
-                throw new TypeError(`AdapterFilters error: 'filter' is not defined.`);
             }
             // Find the index to insert where data.weight is less than existing values weight.
             const index = this.#filtersData.filters.findIndex((value) => {
@@ -395,7 +377,7 @@ class AdapterFilters {
                 if (this.#filtersData.filters[cntr].filter === actualFilter) {
                     this.#filtersData.filters.splice(cntr, 1);
                     // Invoke any unsubscribe function for given filter then remove from tracking.
-                    let unsubscribe;
+                    let unsubscribe = void 0;
                     if (typeof (unsubscribe = this.#mapUnsubscribe.get(actualFilter)) === 'function') {
                         unsubscribe();
                         this.#mapUnsubscribe.delete(actualFilter);
@@ -461,6 +443,8 @@ class AdapterFilters {
 /**
  * Provides construction and management of indexed data when there are parent indexes or filter / sort functions
  * applied.
+ *
+ * @template D, K, T
  */
 class AdapterIndexer {
     derivedAdapter;
@@ -472,11 +456,11 @@ class AdapterIndexer {
     sortFn;
     destroyed = false;
     /**
-     * @param hostData - Hosted data structure.
+     * @param {DynDataHost<D>}       hostData - Hosted data structure.
      *
-     * @param hostUpdate - Host update function invoked on index updates.
+     * @param {Function}             hostUpdate - Host update function invoked on index updates.
      *
-     * @param [parentIndexer] - Any associated parent index API.
+     * @param {DynIndexerAPI<K, T>} [parentIndexer] - Any associated parent index API.
      *
      * @returns Indexer adapter instance.
      */
@@ -498,6 +482,16 @@ class AdapterIndexer {
     get length() {
         return this.indexData.index ? this.indexData.index.length : 0;
     }
+    /* c8 ignore start */
+    /**
+     * @returns Returns reversed state.
+     */
+    get reversed() { return this.indexData.reversed; }
+    /* c8 ignore end */
+    /**
+     * @param reversed - New reversed state.
+     */
+    set reversed(reversed) { this.indexData.reversed = reversed; }
     // -------------------------------------------------------------------------------------------------------------------
     /**
      * Calculates a new hash value for the new index array if any. If the new index array is null then the hash value
@@ -534,10 +528,9 @@ class AdapterIndexer {
         if (this.destroyed) {
             return;
         }
-        this.hostData = null;
         this.indexData.index = null;
         this.indexData.hash = null;
-        this.indexData.reversed = false;
+        this.indexData.reversed = null;
         this.indexData.parent = null;
         this.destroyed = true;
     }
@@ -584,8 +577,8 @@ class AdapterSort {
             this.#unsubscribe();
             this.#unsubscribe = void 0;
         }
-        let compareFn;
-        let subscribeFn;
+        let compareFn = void 0;
+        let subscribeFn = void 0;
         switch (typeof sort) {
             case 'function':
                 compareFn = sort;
@@ -680,19 +673,32 @@ class IndexerAPI {
 }
 
 /**
+ * Provides a public API for managing derived reducers.
+ */
+class DerivedAPI {
+    clear;
+    create;
+    delete;
+    destroy;
+    get;
+    constructor(adapterDerived) {
+        this.clear = adapterDerived.clear.bind(adapterDerived);
+        this.create = adapterDerived.create.bind(adapterDerived);
+        this.delete = adapterDerived.delete.bind(adapterDerived);
+        this.destroy = adapterDerived.destroy.bind(adapterDerived);
+        this.get = adapterDerived.get.bind(adapterDerived);
+        Object.freeze(this);
+    }
+}
+
+/**
  */
 class ArrayIndexer extends AdapterIndexer {
     /**
      * @inheritDoc
      */
     createSortFn() {
-        return (a, b) => {
-            const data = this.hostData?.[0];
-            const dataA = data?.[a];
-            const dataB = data?.[b];
-            /* c8 ignore next */
-            return dataA && dataB ? this.sortData.compareFn(dataA, dataB) : 0;
-        };
+        return (a, b) => this.sortData.compareFn(this.hostData[0][a], this.hostData[0][b]);
     }
     /**
      * Provides the custom filter / reduce step that is ~25-40% faster than implementing with `Array.reduce`.
@@ -700,11 +706,11 @@ class ArrayIndexer extends AdapterIndexer {
      * Note: Other loop unrolling techniques like Duff's Device gave a slight faster lower bound on large data sets,
      * but the maintenance factor is not worth the extra complication.
      *
-     * @returns New filtered index array.
+     * @returns {number[]} New filtered index array.
      */
     reduceImpl() {
         const data = [];
-        const array = this.hostData?.[0];
+        const array = this.hostData[0];
         if (!array) {
             return data;
         }
@@ -747,7 +753,7 @@ class ArrayIndexer extends AdapterIndexer {
      * Update the reducer indexes. If there are changes subscribers are notified. If data order is changed externally
      * pass in true to force an update to subscribers.
      *
-     * @param [force=false] - When true forces an update to subscribers.
+     * @param {boolean} [force=false] - When true forces an update to subscribers.
      */
     update(force = false) {
         if (this.destroyed) {
@@ -755,7 +761,7 @@ class ArrayIndexer extends AdapterIndexer {
         }
         const oldIndex = this.indexData.index;
         const oldHash = this.indexData.hash;
-        const array = this.hostData?.[0];
+        const array = this.hostData[0];
         const parentIndex = this.indexData.parent;
         // Clear index if there are no filters and no sort function or the index length doesn't match the item length.
         if ((this.filtersData.filters.length === 0 && !this.sortData.compareFn) ||
@@ -784,31 +790,12 @@ class ArrayIndexer extends AdapterIndexer {
 }
 
 /**
- * Provides a public API for managing derived reducers.
- */
-class DerivedListAPI {
-    clear;
-    create;
-    delete;
-    destroy;
-    get;
-    constructor(adapterDerived) {
-        this.clear = adapterDerived.clear.bind(adapterDerived);
-        this.create = adapterDerived.create.bind(adapterDerived);
-        this.delete = adapterDerived.delete.bind(adapterDerived);
-        this.destroy = adapterDerived.destroy.bind(adapterDerived);
-        this.get = adapterDerived.get.bind(adapterDerived);
-        Object.freeze(this);
-    }
-}
-
-/**
  * Provides the base implementation derived reducer for arrays / DynArrayReducer.
  *
  * Note: That you should never directly create an instance of a derived reducer, but instead use the
- * {@link DynArrayReducerDerived.initialize} function to set up any initial state in a custom derived reducer.
+ * {@link DynArrayReducerDerived.initialize} callback to set up any initial state in a custom derived reducer.
  *
- * @typeParam T `unknown` - Type of data. Defaults to `unknown` to enforce type safety when no type is specified.
+ * @template T
  */
 class DynArrayReducerDerived {
     #array;
@@ -818,20 +805,17 @@ class DynArrayReducerDerived {
     #filtersData = { filters: [] };
     #index;
     #indexPublicAPI;
+    #reversed = false;
     #sort;
     #sortData = { compareFn: null };
-    #subscribers = [];
+    #subscriptions = [];
     #destroyed = false;
     /**
-     * @param array - Data host array.
+     * @param {DynDataHost<T[]>}           array - Data host array.
      *
-     * @param parentIndex - Parent indexer.
+     * @param {DynIndexerAPI<number, T>}  parentIndex - Parent indexer.
      *
-     * @param options - Any filters and sort functions to apply.
-     *
-     * @typeParam T `unknown` - Type of data.
-     *
-     * @private
+     * @param {DynDataOptions<T>}          options - Any filters and sort functions to apply.
      */
     constructor(array, parentIndex, options) {
         this.#array = array;
@@ -840,9 +824,9 @@ class DynArrayReducerDerived {
         this.#filters = new AdapterFilters(this.#indexPublicAPI.update, this.#filtersData);
         this.#sort = new AdapterSort(this.#indexPublicAPI.update, this.#sortData);
         this.#derived = new AdapterDerived(this.#array, this.#indexPublicAPI, DynArrayReducerDerived);
-        this.#derivedPublicAPI = new DerivedListAPI(this.#derived);
+        this.#derivedPublicAPI = new DerivedAPI(this.#derived);
         this.#index.initAdapters(this.#filtersData, this.#sortData, this.#derived);
-        const { filters, sort } = options;
+        const { filters, sort, ...optionsRest } = options;
         if (filters !== void 0) {
             if (!DynReducerUtils.isIterable(filters)) {
                 throw new TypeError(`DerivedArrayReducer error (DataDerivedOptions): 'filters' attribute is not iterable.`);
@@ -855,7 +839,19 @@ class DynArrayReducerDerived {
             }
             this.sort.set(sort);
         }
+        // Invoke a custom initialization for child classes.
+        this.initialize(optionsRest);
     }
+    /**
+     * Returns the internal data of this instance. Be careful!
+     *
+     * Note: if an array is set as initial data then that array is used as the internal data. If any changes are
+     * performed to the data externally do invoke {@link DynIndexerAPI.update} with `true` to recalculate the index and
+     * notify all subscribers.
+     *
+     * @returns The internal data.
+     */
+    get data() { return this.#array[0]; }
     /**
      * @returns Derived public API.
      */
@@ -865,25 +861,27 @@ class DynArrayReducerDerived {
      */
     get filters() { return this.#filters; }
     /**
-     * @returns Returns the Indexer public API; is also iterable.
+     * Returns the Indexer public API.
+     *
+     * @returns Indexer API - is also iterable.
      */
     get index() { return this.#indexPublicAPI; }
     /**
-     * @returns Returns whether this derived reducer is destroyed.
+     * Returns whether this derived reducer is destroyed.
      */
     get destroyed() { return this.#destroyed; }
     /**
-     * @returns Returns the main data items or indexed items length.
+     * @returns Main data / items length or indexed length.
      */
     get length() {
-        const array = this.#array?.[0];
+        const array = this.#array[0];
         return this.#index.active ? this.index.length :
             array ? array.length : 0;
     }
     /**
-     * @returns Returns current reversed state.
+     * @returns Gets current reversed state.
      */
-    get reversed() { return this.#index.indexData.reversed; }
+    get reversed() { return this.#reversed; }
     /**
      * @returns The sort adapter.
      */
@@ -897,7 +895,8 @@ class DynArrayReducerDerived {
         if (typeof reversed !== 'boolean') {
             throw new TypeError(`DerivedArrayReducer.reversed error: 'reversed' is not a boolean.`);
         }
-        this.#index.indexData.reversed = reversed;
+        this.#reversed = reversed;
+        this.#index.reversed = reversed;
         // Recalculate index and force an update to any subscribers.
         this.index.update(true);
     }
@@ -907,10 +906,10 @@ class DynArrayReducerDerived {
     destroy() {
         this.#destroyed = true;
         // Remove any external data reference and perform a final update.
-        this.#array = null;
-        this.index.update(true);
+        this.#array = [null];
+        this.#index.update(true);
         // Remove all subscriptions.
-        this.#subscribers.length = 0;
+        this.#subscriptions.length = 0;
         this.#derived.destroy();
         this.#index.destroy();
         this.#filters.clear();
@@ -920,18 +919,19 @@ class DynArrayReducerDerived {
      * Provides a callback for custom derived reducers to initialize any data / custom configuration. This allows
      * child classes to avoid implementing the constructor.
      *
-     * @param [optionsRest] - Any additional custom options passed beyond {@link DynReducer.Options.Common}.
+     * @param [optionsRest] - Any additional custom options passed beyond {@link DynDataOptions}.
      *
      * @protected
      */
     initialize(optionsRest) { }
     /**
-     * Provides an iterator for data stored in DynArrayReducerDerived.
+     * Provides an iterator for data stored in DerivedArrayReducer.
      *
-     * @returns Iterator for data stored in DynArrayReducerDerived.
+     * @returns {IterableIterator<T>}
+     * @yields {T}
      */
     *[Symbol.iterator]() {
-        const array = this.#array?.[0] ?? null;
+        const array = this.#array[0];
         if (this.#destroyed || array === null || array?.length === 0) {
             return;
         }
@@ -962,16 +962,13 @@ class DynArrayReducerDerived {
      * @returns Unsubscribe function.
      */
     subscribe(handler) {
-        const currentIdx = this.#subscribers.findIndex((entry) => entry === handler);
-        if (currentIdx === -1) {
-            this.#subscribers.push(handler);
-            handler(this); // call handler with current value
-        }
+        this.#subscriptions.push(handler); // add handler to the array of subscribers
+        handler(this); // call handler with current value
         // Return unsubscribe function.
         return () => {
-            const existingIdx = this.#subscribers.findIndex((entry) => entry === handler);
-            if (existingIdx !== -1) {
-                this.#subscribers.splice(existingIdx, 1);
+            const index = this.#subscriptions.findIndex((sub) => sub === handler);
+            if (index >= 0) {
+                this.#subscriptions.splice(index, 1);
             }
         };
     }
@@ -979,8 +976,8 @@ class DynArrayReducerDerived {
      * Updates subscribers on changes.
      */
     #updateSubscribers() {
-        for (let cntr = 0; cntr < this.#subscribers.length; cntr++) {
-            this.#subscribers[cntr](this);
+        for (let cntr = 0; cntr < this.#subscriptions.length; cntr++) {
+            this.#subscriptions[cntr](this);
         }
     }
 }
@@ -989,40 +986,7 @@ class DynArrayReducerDerived {
  * Provides a managed array with non-destructive reducing / filtering / sorting capabilities with subscription /
  * Svelte store support.
  *
- * _Note:_ In constructing a DynArrayReducer instance that arrays are treated as a special case. When an array is passed
- * in as `data` in the constructor it will be used as the host array and not copied. All non-array iterables otherwise
- * create a new array / copy.
- *
- * _Note:_
- * - The default type `unknown` ensures stricter type checking, preventing unintended operations on the data.
- * - If the type of data is known, explicitly specify the generic type to improve clarity and maintainability:
- *
- * @example
- * ```ts
- * // Using external array data as reducer host data.
- * const data = ['a', 'b', 'c'];
- * const reducer = new DynArrayReducer<string>(data);
- *
- * // Add new data externally.
- * data.push('d');
- *
- * // Update the index.
- * reducer.index.update();
- * ```
- *
- * @example
- * ```ts
- * // Explicit type specification.
- * const reducer = new DynArrayReducer<string>(['a', 'b', 'c']);
- * ```
- *
- * @example
- * ```ts
- * // Using the default type.
- * const reducer = new DynArrayReducer(); // Defaults to DynArrayReducer<unknown>
- * ```
- *
- * @typeParam T `unknown` - Type of data. Defaults to `unknown` to enforce type safety when no type is specified.
+ * @template T
  */
 class DynArrayReducer {
     #array = [null];
@@ -1032,22 +996,21 @@ class DynArrayReducer {
     #filtersData = { filters: [] };
     #index;
     #indexPublicAPI;
+    #reversed = false;
     #sort;
     #sortData = { compareFn: null };
-    #subscribers = [];
+    #subscriptions = [];
     #destroyed = false;
     /**
      * Initializes DynArrayReducer. Any iterable is supported for initial data. Take note that if `data` is an array it
      * will be used as the host array and not copied. All non-array iterables otherwise create a new array / copy.
      *
      * @param [data] - Data iterable to store if array or copy otherwise.
-     *
-     * @typeParam T `unknown` - Type of data.
      */
     constructor(data) {
-        let dataIterable;
-        let filters;
-        let sort;
+        let dataIterable = void 0;
+        let filters = void 0;
+        let sort = void 0;
         if (data === null) {
             throw new TypeError(`DynArrayReducer error: 'data' is not iterable.`);
         }
@@ -1091,7 +1054,7 @@ class DynArrayReducer {
         this.#filters = new AdapterFilters(this.#indexPublicAPI.update, this.#filtersData);
         this.#sort = new AdapterSort(this.#indexPublicAPI.update, this.#sortData);
         this.#derived = new AdapterDerived(this.#array, this.#indexPublicAPI, DynArrayReducerDerived);
-        this.#derivedPublicAPI = new DerivedListAPI(this.#derived);
+        this.#derivedPublicAPI = new DerivedAPI(this.#derived);
         this.#index.initAdapters(this.#filtersData, this.#sortData, this.#derived);
         // Add any filters and sort function defined by DataDynArray.
         if (filters) {
@@ -1100,6 +1063,8 @@ class DynArrayReducer {
         if (sort) {
             this.sort.set(sort);
         }
+        // Invoke custom initialization for child classes.
+        this.initialize();
     }
     /**
      * Returns the internal data of this instance. Be careful!
@@ -1108,11 +1073,11 @@ class DynArrayReducer {
      * performed to the data externally do invoke `update` via {@link DynArrayReducer.index} with `true` to recalculate
      * the index and notify all subscribers.
      *
-     * @returns The internal data.
+     * @returns {T[]|null} The internal data.
      */
     get data() { return this.#array[0]; }
     /**
-     * @returns Derived public API.
+     * @returns {DynDerivedAPI<T[], number, T>} Derived public API.
      */
     get derived() { return this.#derivedPublicAPI; }
     /**
@@ -1120,15 +1085,17 @@ class DynArrayReducer {
      */
     get filters() { return this.#filters; }
     /**
-     * @returns Returns the Indexer public API; is also iterable.
+     * @returns {DynIndexerAPI<number, T>} Returns the Indexer public API.
      */
     get index() { return this.#indexPublicAPI; }
     /**
-     * @returns Returns whether this instance is destroyed.
+     * @returns {boolean} Returns whether this instance is destroyed.
      */
     get destroyed() { return this.#destroyed; }
     /**
-     * @returns Returns the main data items or indexed items length.
+     * Gets the main data / items length.
+     *
+     * @returns {number} Main data / items length.
      */
     get length() {
         const array = this.#array[0];
@@ -1136,23 +1103,26 @@ class DynArrayReducer {
             array ? array.length : 0;
     }
     /**
-     * @returns Returns current reversed state.
+     * Gets current reversed state.
+     *
+     * @returns {boolean} Reversed state.
      */
-    get reversed() { return this.#index.indexData.reversed; }
+    get reversed() { return this.#reversed; }
     /**
-     * @returns The sort adapter.
+     * @returns {DynAdapterSort<T>} The sort adapter.
      */
     get sort() { return this.#sort; }
     /**
      * Sets reversed state and notifies subscribers.
      *
-     * @param reversed - New reversed state.
+     * @param {boolean}  reversed - New reversed state.
      */
     set reversed(reversed) {
         if (typeof reversed !== 'boolean') {
             throw new TypeError(`DynArrayReducer.reversed error: 'reversed' is not a boolean.`);
         }
-        this.#index.indexData.reversed = reversed;
+        this.#reversed = reversed;
+        this.#index.reversed = reversed;
         // Recalculate index and force an update to any subscribers.
         this.index.update(true);
     }
@@ -1169,28 +1139,25 @@ class DynArrayReducer {
         this.#array = [null];
         this.index.update(true);
         // Remove all subscriptions.
-        this.#subscribers.length = 0;
+        this.#subscriptions.length = 0;
+        this.#index.destroy();
         this.#filters.clear();
         this.#sort.clear();
-        this.#index.destroy();
     }
     /**
-     * Provides a callback for custom reducers to initialize any data / custom configuration. Depending on the consumer
-     * of `dynamic-reducer` this may be utilized allowing child classes to avoid implementing the constructor.
-     *
-     * @param [optionsRest] - Any additional custom options passed beyond {@link DynReducer.Options.Common}.
+     * Provides a callback for custom reducers to initialize any data / custom configuration. This allows
+     * child classes to avoid implementing the constructor.
      *
      * @protected
      */
-    /* c8 ignore next */
-    initialize(optionsRest) { }
+    initialize() { }
     /**
      * Removes internal data and pushes new data. This does not destroy any initial array set to internal data unless
      * `replace` is set to true.
      *
-     * @param data - New data to set to internal data.
+     * @param {T[] | Iterable<T> | null}   data - New data to set to internal data.
      *
-     * @param [replace=false] - New data to set to internal data.
+     * @param {boolean} [replace=false] - New data to set to internal data.
      */
     setData(data, replace = false) {
         if (data !== null && !DynReducerUtils.isIterable(data)) {
@@ -1218,29 +1185,25 @@ class DynArrayReducer {
                 this.#array[0] = null;
             }
         }
-        // Force clear the index and always rebuild.
-        this.#index.indexData.index = null;
         // Recalculate index and force an update to any subscribers.
         this.index.update(true);
     }
     /**
      * Add a subscriber to this DynArrayReducer instance.
      *
-     * @param handler - Callback function that is invoked on update / changes. Receives `this` reference.
+     * @param {(value: DynArrayReducer<T>) => void} handler - Callback function that is invoked on update / changes.
+     *        Receives `this` reference.
      *
-     * @returns Unsubscribe function.
+     * @returns {() => void} Unsubscribe function.
      */
     subscribe(handler) {
-        const currentIdx = this.#subscribers.findIndex((entry) => entry === handler);
-        if (currentIdx === -1) {
-            this.#subscribers.push(handler);
-            handler(this); // call handler with current value
-        }
+        this.#subscriptions.push(handler); // add handler to the array of subscribers
+        handler(this); // call handler with current value
         // Return unsubscribe function.
         return () => {
-            const existingIdx = this.#subscribers.findIndex((entry) => entry === handler);
-            if (existingIdx !== -1) {
-                this.#subscribers.splice(existingIdx, 1);
+            const index = this.#subscriptions.findIndex((sub) => sub === handler);
+            if (index >= 0) {
+                this.#subscriptions.splice(index, 1);
             }
         };
     }
@@ -1248,14 +1211,15 @@ class DynArrayReducer {
      * Updates subscribers on changes.
      */
     #updateSubscribers() {
-        for (let cntr = 0; cntr < this.#subscribers.length; cntr++) {
-            this.#subscribers[cntr](this);
+        for (let cntr = 0; cntr < this.#subscriptions.length; cntr++) {
+            this.#subscriptions[cntr](this);
         }
     }
     /**
      * Provides an iterator for data stored in DynArrayReducer.
      *
-     * @returns Iterator for data stored in DynArrayReducer.
+     * @yields {T}
+     * @returns {IterableIterator<T>} Iterator for data stored in DynArrayReducer.
      */
     *[Symbol.iterator]() {
         const array = this.#array[0];
@@ -1283,19 +1247,14 @@ class DynArrayReducer {
 }
 
 /**
+ * @template K, T
  */
 class MapIndexer extends AdapterIndexer {
     /**
      * @inheritDoc
      */
     createSortFn() {
-        return (a, b) => {
-            const data = this.hostData?.[0];
-            const dataA = data?.get(a);
-            const dataB = data?.get(b);
-            /* c8 ignore next */
-            return dataA && dataB ? this.sortData.compareFn(dataA, dataB) : 0;
-        };
+        return (a, b) => this.sortData.compareFn(this.hostData[0].get(a), this.hostData[0].get(b));
     }
     /**
      * Provides the custom filter / reduce step that is ~25-40% faster than implementing with `Array.reduce`.
@@ -1303,11 +1262,11 @@ class MapIndexer extends AdapterIndexer {
      * Note: Other loop unrolling techniques like Duff's Device gave a slight faster lower bound on large data sets,
      * but the maintenance factor is not worth the extra complication.
      *
-     * @returns New filtered index array.
+     * @returns {K[]} New filtered index array.
      */
     reduceImpl() {
         const data = [];
-        const map = this.hostData?.[0];
+        const map = this.hostData[0];
         if (!map) {
             return data;
         }
@@ -1319,10 +1278,6 @@ class MapIndexer extends AdapterIndexer {
             for (const key of parentIndex) {
                 const value = map.get(key);
                 include = true;
-                /* c8 ignore next */
-                if (value === undefined) {
-                    continue;
-                }
                 for (let filCntr = 0, filLength = filters.length; filCntr < filLength; filCntr++) {
                     if (!filters[filCntr].filter(value)) {
                         include = false;
@@ -1338,10 +1293,6 @@ class MapIndexer extends AdapterIndexer {
             for (const key of map.keys()) {
                 include = true;
                 const value = map.get(key);
-                /* c8 ignore next */
-                if (value === void 0) {
-                    continue;
-                }
                 for (let filCntr = 0, filLength = filters.length; filCntr < filLength; filCntr++) {
                     if (!filters[filCntr].filter(value)) {
                         include = false;
@@ -1359,7 +1310,7 @@ class MapIndexer extends AdapterIndexer {
      * Update the reducer indexes. If there are changes subscribers are notified. If data order is changed externally
      * pass in true to force an update to subscribers.
      *
-     * @param [force=false] - When true forces an update to subscribers.
+     * @param {boolean}  [force=false] - When true forces an update to subscribers.
      */
     update(force = false) {
         if (this.destroyed) {
@@ -1367,7 +1318,7 @@ class MapIndexer extends AdapterIndexer {
         }
         const oldIndex = this.indexData.index;
         const oldHash = this.indexData.hash;
-        const map = this.hostData?.[0];
+        const map = this.hostData[0];
         const parentIndex = this.indexData.parent;
         // Clear index if there are no filters and no sort function or the index length doesn't match the item length.
         if ((this.filtersData.filters.length === 0 && !this.sortData.compareFn) ||
@@ -1385,7 +1336,7 @@ class MapIndexer extends AdapterIndexer {
         if (this.sortData.compareFn && map instanceof Map) {
             // If there is no index then create one with keys matching host item length.
             if (!this.indexData.index) {
-                this.indexData.index = [...map.keys()];
+                this.indexData.index = this.indexData.index = [...map.keys()];
             }
             this.indexData.index.sort(this.sortFn);
         }
@@ -1396,33 +1347,12 @@ class MapIndexer extends AdapterIndexer {
 }
 
 /**
- * Provides a public API for managing derived reducers.
- */
-class DerivedMapAPI {
-    clear;
-    create;
-    delete;
-    destroy;
-    get;
-    constructor(adapterDerived) {
-        this.clear = adapterDerived.clear.bind(adapterDerived);
-        this.create = adapterDerived.create.bind(adapterDerived);
-        this.delete = adapterDerived.delete.bind(adapterDerived);
-        this.destroy = adapterDerived.destroy.bind(adapterDerived);
-        this.get = adapterDerived.get.bind(adapterDerived);
-        Object.freeze(this);
-    }
-}
-
-/**
  * Provides the base implementation derived reducer for Maps / DynMapReducer.
  *
  * Note: That you should never directly create an instance of a derived reducer, but instead use the
- * {@link DynMapReducerDerived.initialize} function to set up any initial state in a custom derived reducer.
+ * {@link DynMapReducerDerived.initialize} callback to set up any initial state in a custom derived reducer.
  *
- * @typeParam K `unknown` - Key type. Defaults to `unknown` to enforce type safety when no type is specified.
- *
- * @typeParam T `unknown` - Type of data. Defaults to `unknown` to enforce type safety when no type is specified.
+ * @template K, T
  */
 class DynMapReducerDerived {
     #map;
@@ -1432,22 +1362,17 @@ class DynMapReducerDerived {
     #filtersData = { filters: [] };
     #index;
     #indexPublicAPI;
+    #reversed = false;
     #sort;
     #sortData = { compareFn: null };
-    #subscribers = [];
+    #subscriptions = [];
     #destroyed = false;
     /**
-     * @param map - Data host Map.
+     * @param {DynDataHost<Map<K, T>>}  map - Data host Map.
      *
-     * @param parentIndex - Parent indexer.
+     * @param {DynIndexerAPI<K, T>}    parentIndex - Parent indexer.
      *
-     * @param options - Any filters and sort functions to apply.
-     *
-     * @typeParam K `unknown` - Key type.
-     *
-     * @typeParam T `unknown` - Type of data.
-     *
-     * @private
+     * @param {DynDataOptions<T>}       options - Any filters and sort functions to apply.
      */
     constructor(map, parentIndex, options) {
         this.#map = map;
@@ -1456,9 +1381,9 @@ class DynMapReducerDerived {
         this.#filters = new AdapterFilters(this.#indexPublicAPI.update, this.#filtersData);
         this.#sort = new AdapterSort(this.#indexPublicAPI.update, this.#sortData);
         this.#derived = new AdapterDerived(this.#map, this.#indexPublicAPI, DynMapReducerDerived);
-        this.#derivedPublicAPI = new DerivedMapAPI(this.#derived);
+        this.#derivedPublicAPI = new DerivedAPI(this.#derived);
         this.#index.initAdapters(this.#filtersData, this.#sortData, this.#derived);
-        const { filters, sort } = options;
+        const { filters, sort, ...optionsRest } = options;
         if (filters !== void 0) {
             if (!DynReducerUtils.isIterable(filters)) {
                 throw new TypeError(`DerivedMapReducer error (DataDerivedOptions): 'filters' attribute is not iterable.`);
@@ -1471,7 +1396,19 @@ class DynMapReducerDerived {
             }
             this.sort.set(sort);
         }
+        // Invoke custom initialization for child classes.
+        this.initialize(optionsRest);
     }
+    /**
+     * Returns the internal data of this instance. Be careful!
+     *
+     * Note: The returned map is the same map set by the main reducer. If any changes are performed to the data
+     * externally do invoke {@link DynIndexerAPI.update} with `true` to recalculate the index and notify all
+     * subscribers.
+     *
+     * @returns The internal data.
+     */
+    get data() { return this.#map[0]; }
     /**
      * @returns Derived public API.
      */
@@ -1481,27 +1418,29 @@ class DynMapReducerDerived {
      */
     get filters() { return this.#filters; }
     /**
-     * @returns Returns the Indexer public API; is also iterable.
+     * Returns the Indexer public API.
+     *
+     * @returns Indexer API - is also iterable.
      */
     get index() { return this.#indexPublicAPI; }
     /**
-     * @returns Returns whether this derived reducer is destroyed.
+     * Returns whether this derived reducer is destroyed.
      */
     get destroyed() { return this.#destroyed; }
     /**
-     * @returns Returns the main data items or indexed items length.
+     * @returns Main data / items length or indexed length.
      */
     get length() {
-        const map = this.#map?.[0];
+        const map = this.#map[0];
         return this.#index.active ? this.index.length :
             map ? map.size : 0;
     }
     /**
-     * @returns Returns current reversed state.
+     * @returns Gets current reversed state.
      */
-    get reversed() { return this.#index.indexData.reversed; }
+    get reversed() { return this.#reversed; }
     /**
-     * @returns Returns the sort adapter.
+     * @returns The sort adapter.
      */
     get sort() { return this.#sort; }
     /**
@@ -1513,7 +1452,8 @@ class DynMapReducerDerived {
         if (typeof reversed !== 'boolean') {
             throw new TypeError(`DerivedMapReducer.reversed error: 'reversed' is not a boolean.`);
         }
-        this.#index.indexData.reversed = reversed;
+        this.#reversed = reversed;
+        this.#index.reversed = reversed;
         // Recalculate index and force an update to any subscribers.
         this.index.update(true);
     }
@@ -1526,7 +1466,7 @@ class DynMapReducerDerived {
         this.#map = [null];
         this.#index.update(true);
         // Remove all subscriptions.
-        this.#subscribers.length = 0;
+        this.#subscriptions.length = 0;
         this.#derived.destroy();
         this.#index.destroy();
         this.#filters.clear();
@@ -1542,12 +1482,13 @@ class DynMapReducerDerived {
      */
     initialize(optionsRest) { }
     /**
-     * Provides an iterator for data stored in DynMapReducerDerived.
+     * Provides an iterator for data stored in DerivedMapReducer.
      *
-     * @returns Iterator for data stored in DynMapReducerDerived.
+     * @returns {IterableIterator<T>}
+     * @yields {T}
      */
     *[Symbol.iterator]() {
-        const map = this.#map?.[0] ?? null;
+        const map = this.#map[0];
         if (this.#destroyed || map === null || map?.size === 0) {
             return;
         }
@@ -1580,16 +1521,13 @@ class DynMapReducerDerived {
      * @returns Unsubscribe function.
      */
     subscribe(handler) {
-        const currentIdx = this.#subscribers.findIndex((entry) => entry === handler);
-        if (currentIdx === -1) {
-            this.#subscribers.push(handler);
-            handler(this); // call handler with current value
-        }
+        this.#subscriptions.push(handler); // add handler to the array of subscribers
+        handler(this); // call handler with current value
         // Return unsubscribe function.
         return () => {
-            const existingIdx = this.#subscribers.findIndex((entry) => entry === handler);
-            if (existingIdx !== -1) {
-                this.#subscribers.splice(existingIdx, 1);
+            const index = this.#subscriptions.findIndex((sub) => sub === handler);
+            if (index >= 0) {
+                this.#subscriptions.splice(index, 1);
             }
         };
     }
@@ -1597,41 +1535,17 @@ class DynMapReducerDerived {
      * Updates subscribers on changes.
      */
     #updateSubscribers() {
-        for (let cntr = 0; cntr < this.#subscribers.length; cntr++) {
-            this.#subscribers[cntr](this);
+        for (let cntr = 0; cntr < this.#subscriptions.length; cntr++) {
+            this.#subscriptions[cntr](this);
         }
     }
 }
 
 /**
- * Provides a managed {@link Map} with non-destructive reducing / filtering / sorting capabilities with subscription /
- * Svelte store support allowing for a {@link Map} to be treated like an iterable list.
+ * Provides a managed Map with non-destructive reducing / filtering / sorting capabilities with subscription /
+ * Svelte store support.
  *
- * _Note:_
- * - The default type `unknown` ensures stricter type checking, preventing unintended operations on the data.
- * - If the type of data is known, explicitly specify the generic type to improve clarity and maintainability:
- *
- * @example
- * ```ts
- * const mapReducer = new DynMapReducer<number, string>(
- *     new Map([
- *         [1, 'banana'],
- *         [2, 'apple'],
- *         [3, 'cherry'],
- *     ])
- * );
- *
- * console.log([...mapReducer]); // Output: ['banana', 'apple', 'cherry']
- *
- * // Sort values alphabetically.
- * mapReducer.sort.set((a, b) => a.localeCompare(b));
- *
- * console.log([...mapReducer]); // Output: ['apple', 'banana', 'cherry']
- * ```
- *
- * @typeParam K `unknown` - Key type. Defaults to `unknown` to enforce type safety when no type is specified.
- *
- * @typeParam T `unknown` - Type of data. Defaults to `unknown` to enforce type safety when no type is specified.
+ * @template K, T
  */
 class DynMapReducer {
     #map = [null];
@@ -1641,24 +1555,21 @@ class DynMapReducer {
     #filtersData = { filters: [] };
     #index;
     #indexPublicAPI;
+    #reversed = false;
     #sort;
     #sortData = { compareFn: null };
-    #subscribers = [];
+    #subscriptions = [];
     #destroyed = false;
     /**
      * Initializes DynMapReducer. Any iterable is supported for initial data. Take note that if `data` is an array it
      * will be used as the host array and not copied. All non-array iterables otherwise create a new array / copy.
      *
-     * @param [data] - Data iterable to store if array or copy otherwise.
-     *
-     * @typeParam K `unknown` - Key type.
-     *
-     * @typeParam T `unknown` - Type of data.
+     * @param {Map<K, T> | DynMapData<K, T>} [data] - Data iterable to store if array or copy otherwise.
      */
     constructor(data) {
-        let dataMap;
-        let filters;
-        let sort;
+        let dataMap = void 0;
+        let filters = void 0;
+        let sort = void 0;
         if (data === null) {
             throw new TypeError(`DynMapReducer error: 'data' is not an object or Map.`);
         }
@@ -1672,9 +1583,7 @@ class DynMapReducer {
             if (data.data !== void 0 && !(data.data instanceof Map)) {
                 throw new TypeError(`DynMapReducer error (DataDynMap): 'data' attribute is not a Map.`);
             }
-            if (data.data instanceof Map) {
-                dataMap = data.data;
-            }
+            dataMap = data.data;
             if (data.filters !== void 0) {
                 if (DynReducerUtils.isIterable(data.filters)) {
                     filters = data.filters;
@@ -1704,7 +1613,7 @@ class DynMapReducer {
         this.#filters = new AdapterFilters(this.#indexPublicAPI.update, this.#filtersData);
         this.#sort = new AdapterSort(this.#indexPublicAPI.update, this.#sortData);
         this.#derived = new AdapterDerived(this.#map, this.#indexPublicAPI, DynMapReducerDerived);
-        this.#derivedPublicAPI = new DerivedMapAPI(this.#derived);
+        this.#derivedPublicAPI = new DerivedAPI(this.#derived);
         this.#index.initAdapters(this.#filtersData, this.#sortData, this.#derived);
         // Add any filters and sort function defined by DataDynMap.
         if (filters) {
@@ -1713,6 +1622,8 @@ class DynMapReducer {
         if (sort) {
             this.sort.set(sort);
         }
+        // Invoke an custom initialization for child classes.
+        this.initialize();
     }
     /**
      * Returns the internal data of this instance. Be careful!
@@ -1721,27 +1632,29 @@ class DynMapReducer {
      * data externally do invoke `update` via {@link DynMapReducer.index} with `true` to recalculate the  index and
      * notify all subscribers.
      *
-     * @returns The internal data.
+     * @returns {Map<K, T> | null} The internal data.
      */
     get data() { return this.#map[0]; }
     /**
-     * @returns Derived public API.
+     * @returns {DynDerivedAPI<Map<K, T>, K, T>} Derived public API.
      */
     get derived() { return this.#derivedPublicAPI; }
     /**
-     * @returns The filters adapter.
+     * @returns {DynAdapterFilters<T>} The filters adapter.
      */
     get filters() { return this.#filters; }
     /**
-     * @returns Returns the Indexer public API; is also iterable.
+     * @returns {DynIndexerAPI<K, T>} Returns the Indexer public API.
      */
     get index() { return this.#indexPublicAPI; }
     /**
-     * @returns Returns whether this instance is destroyed.
+     * @returns {boolean} Returns whether this instance is destroyed.
      */
     get destroyed() { return this.#destroyed; }
     /**
-     * @returns Returns the main data items or indexed items length.
+     * Gets the main data / items length.
+     *
+     * @returns {number} Main data / items length.
      */
     get length() {
         const map = this.#map[0];
@@ -1749,23 +1662,26 @@ class DynMapReducer {
             map ? map.size : 0;
     }
     /**
-     * @returns Returns current reversed state.
+     * Gets current reversed state.
+     *
+     * @returns {boolean} Reversed state.
      */
-    get reversed() { return this.#index.indexData.reversed; }
+    get reversed() { return this.#reversed; }
     /**
-     * @returns The sort adapter.
+     * @returns {DynAdapterSort<T>} The sort adapter.
      */
     get sort() { return this.#sort; }
     /**
      * Sets reversed state and notifies subscribers.
      *
-     * @param reversed - New reversed state.
+     * @param {boolean} reversed - New reversed state.
      */
     set reversed(reversed) {
         if (typeof reversed !== 'boolean') {
             throw new TypeError(`DynMapReducer.reversed error: 'reversed' is not a boolean.`);
         }
-        this.#index.indexData.reversed = reversed;
+        this.#reversed = reversed;
+        this.#index.reversed = reversed;
         // Recalculate index and force an update to any subscribers.
         this.index.update(true);
     }
@@ -1782,28 +1698,25 @@ class DynMapReducer {
         this.#map = [null];
         this.index.update(true);
         // Remove all subscriptions.
-        this.#subscribers.length = 0;
+        this.#subscriptions.length = 0;
+        this.#index.destroy();
         this.#filters.clear();
         this.#sort.clear();
-        this.#index.destroy();
     }
     /**
-     * Provides a callback for custom reducers to initialize any data / custom configuration. Depending on the consumer
-     * of `dynamic-reducer` this may be utilized allowing child classes to avoid implementing the constructor.
-     *
-     * @param [optionsRest] - Any additional custom options passed beyond {@link DynReducer.Options.Common}.
+     * Provides a callback for custom reducers to initialize any data / custom configuration. This allows
+     * child classes to avoid implementing the constructor.
      *
      * @protected
      */
-    /* c8 ignore next */
-    initialize(optionsRest) { }
+    initialize() { }
     /**
      * Removes internal data and pushes new data. This does not destroy any initial array set to internal data unless
      * `replace` is set to true.
      *
-     * @param data - New data to set to internal data.
+     * @param {Map<K, T> | null}  data - New data to set to internal data.
      *
-     * @param [replace=false] - New data to set to internal data.
+     * @param {boolean} [replace=false] - New data to set to internal data.
      */
     setData(data, replace = false) {
         if (data !== null && !(data instanceof Map)) {
@@ -1835,29 +1748,25 @@ class DynMapReducer {
         else if (data === null) {
             this.#map[0] = null;
         }
-        // Force clear the index and always rebuild.
-        this.#index.indexData.index = null;
         // Recalculate index and force an update to any subscribers.
         this.index.update(true);
     }
     /**
      * Add a subscriber to this DynMapReducer instance.
      *
-     * @param handler - Callback function that is invoked on update / changes. Receives `this` reference.
+     * @param {(value: DynMapReducer<K, T>) => void} handler - Callback function that is invoked on update / changes.
+     *        Receives `this` reference.
      *
-     * @returns Unsubscribe function.
+     * @returns {() => void} Unsubscribe function.
      */
     subscribe(handler) {
-        const currentIdx = this.#subscribers.findIndex((entry) => entry === handler);
-        if (currentIdx === -1) {
-            this.#subscribers.push(handler);
-            handler(this); // call handler with current value
-        }
+        this.#subscriptions.push(handler); // add handler to the array of subscribers
+        handler(this); // call handler with current value
         // Return unsubscribe function.
         return () => {
-            const existingIdx = this.#subscribers.findIndex((entry) => entry === handler);
-            if (existingIdx !== -1) {
-                this.#subscribers.splice(existingIdx, 1);
+            const index = this.#subscriptions.findIndex((sub) => sub === handler);
+            if (index >= 0) {
+                this.#subscriptions.splice(index, 1);
             }
         };
     }
@@ -1865,14 +1774,15 @@ class DynMapReducer {
      * Updates subscribers on changes.
      */
     #updateSubscribers() {
-        for (let cntr = 0; cntr < this.#subscribers.length; cntr++) {
-            this.#subscribers[cntr](this);
+        for (let cntr = 0; cntr < this.#subscriptions.length; cntr++) {
+            this.#subscriptions[cntr](this);
         }
     }
     /**
      * Provides an iterator for data stored in DynMapReducer.
      *
-     * @returns Iterator for data stored in DynMapReducer.
+     * @returns {IterableIterator<T>}
+     * @yields {T}
      */
     *[Symbol.iterator]() {
         const map = this.#map[0];
