@@ -29,6 +29,8 @@ export { TJSSvelte };
 declare namespace TJSSvelte {
    export namespace API {
       export abstract class Config {
+         private constructor();
+
          /**
           * Validates `config` argument whether it is a valid {@link TJSSvelte.Config.Dynamic} or
           * {@link TJSSvelte.Config.Standard} configuration object suitable for parsing by
@@ -84,6 +86,8 @@ declare namespace TJSSvelte {
       }
 
       export abstract class Util {
+         private constructor();
+
          /**
           * Provides basic duck typing to determine if the provided function is a constructor function for a Svelte
           * component.
@@ -118,21 +122,6 @@ declare namespace TJSSvelte {
 
    export namespace Config {
       /**
-       * Defines the TRL / client side common base configuration object to load a Svelte component.
-       */
-      interface Base<Component extends SvelteComponent = SvelteComponent> {
-         /**
-          * The Svelte component class / constructor function.
-          */
-         class: new(options: ComponentConstructorOptions<ComponentProps<Component>>) => Component;
-
-         /**
-          * If true, will play transitions on initial render, rather than waiting for subsequent state changes.
-          */
-         intro?: boolean;
-      }
-
-      /**
        * Provides the TRL / client side configuration object to load a Svelte component that is suitable to use
        * with {@link TJSSvelte.API.Config.parseConfig}.
        *
@@ -152,16 +141,26 @@ declare namespace TJSSvelte {
          ContextOmit?: keyof NonNullable<Config['ContextShape']>;
          ContextShape?: { [key: string]: any };
          PropsOmit?: keyof ComponentProps<Component>;
-      } = { ContextOmit: never, ContextShape: {}, PropsOmit: never }> extends Base<Component> {
+      } = { ContextOmit: never, ContextShape: {}, PropsOmit: never }> {
          /**
           * A child of `target` to render the component immediately before.
           */
          anchor?: Element;
 
          /**
+          * The Svelte component class / constructor function.
+          */
+         class: new(options: ComponentConstructorOptions<ComponentProps<Component>>) => Component;
+
+         /**
           * The root-level additional data to add to the context passed to the component.
           */
          context?: NarrowContextObject<Config> | NarrowContextFunction<Config>;
+
+         /**
+          * If true, will play transitions on initial render, rather than waiting for subsequent state changes.
+          */
+         intro?: boolean;
 
          /**
           * Props to pass to the component. You may define props as an `object` or a function returning an `object`.
@@ -185,8 +184,17 @@ declare namespace TJSSvelte {
        */
       interface Embed<Component extends SvelteComponent = SvelteComponent, Config extends {
          PropsOmit?: keyof ComponentProps<Component>;
-      } = { PropsOmit: never }> extends Base<Component>
-      {
+      } = { PropsOmit: never }> {
+         /**
+          * The Svelte component class / constructor function.
+          */
+         class: new(options: ComponentConstructorOptions<ComponentProps<Component>>) => Component;
+
+         /**
+          * If true, will play transitions on initial render, rather than waiting for subsequent state changes.
+          */
+         intro?: boolean;
+
          /**
           * Props to pass to the component. You may define props as an `object`.
           */
@@ -205,17 +213,26 @@ declare namespace TJSSvelte {
          ContextOmit?: keyof NonNullable<Config['ContextShape']>;
          ContextShape?: { [key: string]: any };
          PropsOmit?: keyof ComponentProps<Component>;
-      } = { ContextOmit: never, ContextShape: {}, PropsOmit: never }> extends Base<Component> {
-
+      } = { ContextOmit: never, ContextShape: {}, PropsOmit: never }> {
          /**
           * A child of `target` to render the component immediately before.
           */
          anchor?: Element;
 
          /**
+          * The Svelte component class / constructor function.
+          */
+         class: new(options: ComponentConstructorOptions<ComponentProps<Component>>) => Component;
+
+         /**
           * The root-level additional data to add to the context passed to the component.
           */
          context?: NarrowContextObject<Config>;
+
+         /**
+          * If true, will play transitions on initial render, rather than waiting for subsequent state changes.
+          */
+         intro?: boolean;
 
          /**
           * Props to pass to the component. You may define props as an `object`.
