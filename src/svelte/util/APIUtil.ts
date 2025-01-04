@@ -12,7 +12,8 @@ class APIUtil
    private constructor() {}
 
    /**
-    * Provides basic duck typing to determine if the provided function is a constructor function for a Svelte component.
+    * Provides basic duck typing to determine if the provided function is a constructor function for a Svelte
+    * component.
     *
     * @param comp - Data to check as a Svelte component.
     *

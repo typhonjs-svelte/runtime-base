@@ -21,7 +21,7 @@ class APIConfig
     *
     * @param [options.raiseException=false] - If validation fails raise an exception.
     *
-    * @returns Is the config a valid TJSSvelteConfig.
+    * @returns Is the config a valid TJSSvelte.Config.Dynamic or TJSSvelte.Config.Standard configuration object.
     *
     * @throws {TypeError}  Any validation error when `raiseException` is enabled.
     */
@@ -96,20 +96,26 @@ class APIConfig
    }
 
    /**
-    * Parses a TyphonJS Svelte config object ensuring that the class specified is a Svelte component, loads any dynamic
-    * defined `context` or `props` preparing the config object for loading into the Svelte component.
+    * Parses a TyphonJS Svelte dynamic or standard config object ensuring that the class specified is a Svelte
+    * component, loads any dynamic defined `context` or `props` preparing the config object for loading into the
+    * Svelte component.
     *
     * @param config - Svelte config object.
     *
     * @param [options] - Options.
     *
-    * @param [options.thisArg] - `This` reference to set for invoking any `context` or `props` defined as functions.
+    * @param [options.contextExternal] - When true any context data provided will be loaded into `#external`
+    *        context separating it from any internal context created by the component.
+    *
+    * @param [options.thisArg] - `This` reference to set for invoking any `context` or `props` defined as
+    *        functions for {@link Config.Dynamic} configuration objects.
     *
     * @returns The processed Svelte config object turned with parsed `props` & `context` converted into the format
     *          supported by Svelte.
     */
-   static parseConfig(config: TJSSvelte.Config.Dynamic | TJSSvelte.Config.Standard, { thisArg = void 0 }:
-    { thisArg?: unknown } = {}): TJSSvelte.Config.Parsed
+   static parseConfig(config: TJSSvelte.Config.Dynamic | TJSSvelte.Config.Standard,
+    { contextExternal = false, thisArg = void 0 }: { contextExternal?: boolean, thisArg?: unknown } = {}):
+     TJSSvelte.Config.Parsed
    {
       if (!isObject(config))
       {
@@ -160,7 +166,7 @@ class APIConfig
 
       const svelteConfig: { [key: string]: any } = { ...config };
 
-      let externalContext: { [key: string]: any } = {};
+      let context: { [key: string]: any } = {};
 
       // If a context callback function is provided then invoke it with `this` being the Foundry app.
       // If an object is returned it adds the entries to external context.
@@ -172,7 +178,7 @@ class APIConfig
          const result: unknown = contextFunc.call(thisArg);
          if (isObject(result))
          {
-            externalContext = { ...result };
+            context = { ...result };
          }
          else
          {
@@ -183,7 +189,7 @@ class APIConfig
       }
       else if (isObject(svelteConfig.context))
       {
-         externalContext = svelteConfig.context;
+         context = svelteConfig.context;
          delete svelteConfig.context;
       }
 
@@ -191,9 +197,16 @@ class APIConfig
       // If an object is returned set it as the props.
       svelteConfig.props = this.#processProps(svelteConfig.props, thisArg, config);
 
-      svelteConfig.context = new Map();
 
-      svelteConfig.context.set('#external', externalContext);
+      if (contextExternal)
+      {
+         svelteConfig.context = new Map();
+         svelteConfig.context.set('#external', context);
+      }
+      else
+      {
+         svelteConfig.context = new Map(Object.entries(context));
+      }
 
       return svelteConfig as TJSSvelte.Config.Parsed;
    }
