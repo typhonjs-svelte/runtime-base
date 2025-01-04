@@ -1,4 +1,53 @@
-import { ComponentConstructorOptions, SvelteComponent, ComponentProps } from 'svelte';
+import { ComponentConstructorOptions, ComponentProps, SvelteComponent } from 'svelte';
+
+/**
+ * Provides utilities to verify and parse {@link TJSSvelteConfig} configuration objects.
+ */
+declare class TJSSvelteConfigUtil {
+  #private;
+  /**
+   * Validates `config` argument whether it is a valid {@link TJSSvelteConfig}.
+   *
+   * @param config - The potential config object to validate.
+   *
+   * @param [options] - Options.
+   *
+   * @param [options.raiseException=false] - If validation fails raise an exception.
+   *
+   * @returns Is the config a valid TJSSvelteConfig.
+   *
+   * @throws {TypeError}  Any validation error when `raiseException` is enabled.
+   */
+  static isConfig(
+    config: unknown,
+    {
+      raiseException,
+    }?: {
+      raiseException?: boolean;
+    },
+  ): config is TJSSvelteConfig;
+  /**
+   * Parses a TyphonJS Svelte config object ensuring that the class specified is a Svelte component, loads any dynamic
+   * defined `context` or `props` preparing the config object for loading into the Svelte component.
+   *
+   * @param config - Svelte config object.
+   *
+   * @param [options] - Options.
+   *
+   * @param [options.thisArg] - `This` reference to set for invoking any `context` or `props` defined as functions.
+   *
+   * @returns The processed Svelte config object turned with parsed `props` & `context` converted into the format
+   *          supported by Svelte.
+   */
+  static parseConfig(
+    config: TJSSvelteConfig,
+    {
+      thisArg,
+    }?: {
+      thisArg?: unknown;
+    },
+  ): TJSParsedSvelteConfig;
+}
 
 /**
  * The result of after parsing {@link TJSSvelteConfig} or {@link TJSSvelteConfigDynamic} by
@@ -8,7 +57,7 @@ interface TJSParsedSvelteConfig {
   /**
    * The Svelte component class / constructor function.
    */
-  class: new (options: ComponentConstructorOptions) => SvelteComponent;
+  class: new (options: ComponentConstructorOptions<ComponentProps<SvelteComponent>>) => SvelteComponent;
   /**
    * A child of `target` to render the component immediately before.
    */
@@ -193,55 +242,6 @@ type NarrowPropsFunction<
 }>;
 
 /**
- * Provides utilities to verify and parse {@link TJSSvelteConfig} configuration objects.
- */
-declare class TJSSvelteConfigUtil {
-  /**
-   * Validates `config` argument whether it is a valid {@link TJSSvelteConfig}.
-   *
-   * @param {unknown}  config - The potential config object to validate.
-   *
-   * @param {object}   [options] - Options.
-   *
-   * @param {boolean}  [options.raiseException=false] - If validation fails raise an exception.
-   *
-   * @returns {config is import('./types').TJSSvelteConfig} Is the config a valid TJSSvelteConfig.
-   *
-   * @throws {TypeError}  Any validation error when `raiseException` is enabled.
-   */
-  static isConfig(
-    config: unknown,
-    {
-      raiseException,
-    }?: {
-      raiseException?: boolean;
-    },
-  ): config is TJSSvelteConfig;
-  /**
-   * Parses a TyphonJS Svelte config object ensuring that the class specified is a Svelte component, loads any dynamic
-   * defined `context` or `props` preparing the config object for loading into the Svelte component.
-   *
-   * @param {import('./types').TJSSvelteConfig}   config - Svelte config object.
-   *
-   * @param {object}   [options] - Options.
-   *
-   * @param {any}      [options.thisArg] - `This` reference to set for invoking any `context` or `props` defined as
-   *        functions.
-   *
-   * @returns {import('./types').TJSParsedSvelteConfig} The processed Svelte config object turned with parsed `props` &
-   * `context` converted into the format supported by Svelte.
-   */
-  static parseConfig(
-    config: TJSSvelteConfig,
-    {
-      thisArg,
-    }?: {
-      thisArg?: any;
-    },
-  ): TJSParsedSvelteConfig;
-}
-
-/**
  * Various utilities to duck type / detect Svelte components and run outro transition while destroying a component
  * externally.
  */
@@ -249,9 +249,9 @@ declare class TJSSvelteUtil {
   /**
    * Provides basic duck typing to determine if the provided function is a constructor function for a Svelte component.
    *
-   * @param {unknown}  comp - Data to check as a Svelte component.
+   * @param comp - Data to check as a Svelte component.
    *
-   * @returns {boolean} Whether basic duck typing succeeds.
+   * @returns Whether basic duck typing succeeds.
    */
   static isComponent(comp: unknown): boolean;
   /**
@@ -267,11 +267,11 @@ declare class TJSSvelteUtil {
    *
    * Workaround for https://github.com/sveltejs/svelte/issues/4056
    *
-   * @param {*}  instance - A Svelte component.
+   * @param instance - A Svelte component.
    *
-   * @returns {Promise} Promise returned after outro transition completed and component destroyed.
+   * @returns Promise returned after outro transition completed and component destroyed.
    */
-  static outroAndDestroy(instance: any): Promise<any>;
+  static outroAndDestroy(instance: SvelteComponent): Promise<void>;
 }
 
 export {
