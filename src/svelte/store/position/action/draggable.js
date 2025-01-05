@@ -13,10 +13,11 @@ import {
  *
  * @param {HTMLElement}       node - The node associated with the action.
  *
- * @param {import('./types').Action.DraggableOptions} options - Draggable action options.
+ * @param {import('../types').TJSPositionNS.Action.DraggableOptions} options - Draggable action options.
  *
- * @returns {import('svelte/action').ActionReturn<Partial<import('./types').Action.DraggableOptions>>} Action lifecycle
- *          functions.
+ * @returns {(import('svelte/action').ActionReturn<
+ *    Partial<import('../types').TJSPositionNS.Action.DraggableOptions>
+ * >)} Action lifecycle functions.
  */
 function draggable(node, { position, enabled = true, button = 0, storeDragging = void 0, tween = false,
  tweenOptions = { duration: 1, ease: 'cubicOut' }, hasTargetClassList, ignoreTargetClassList })
@@ -70,7 +71,7 @@ function draggable(node, { position, enabled = true, button = 0, storeDragging =
    /**
     * Stores the quickTo callback to use for optimized tweening when easing is enabled.
     *
-    * @type {import('../animation/types').AnimationAPI.QuickToCallback}
+    * @type {import('../types').TJSPositionNS.API.Animation.QuickToCallback}
     */
    let quickTo = actualPosition.animate.quickTo(['top', 'left'], tweenOptions);
 
@@ -299,7 +300,7 @@ function draggable(node, { position, enabled = true, button = 0, storeDragging =
  * draggable options much easier. When subscribing to the options instance returned by {@link draggable.options} the
  * Subscriber handler receives the entire instance.
  *
- * @implements {import('./types').Action.DraggableOptionsStore}
+ * @implements {import('../types').TJSPositionNS.Action.DraggableOptionsStore}
  */
 class DraggableOptionsStore
 {
@@ -307,7 +308,7 @@ class DraggableOptionsStore
    #initialTween;
 
    /**
-    * @type {import('../animation/types').AnimationAPI.QuickTweenOptions}
+    * @type {import('../types').TJSPositionNS.API.Animation.QuickTweenOptions}
     */
    #initialTweenOptions;
 
@@ -315,14 +316,14 @@ class DraggableOptionsStore
    #tween;
 
    /**
-    * @type {import('../animation/types').AnimationAPI.QuickTweenOptions}
+    * @type {import('../types').TJSPositionNS.API.Animation.QuickTweenOptions}
     */
    #tweenOptions = { duration: 1, ease: 'cubicOut' };
 
    /**
     * Stores the subscribers.
     *
-    * @type {import('svelte/store').Subscriber<import('./types').Action.DraggableOptionsStore>[]}
+    * @type {import('svelte/store').Subscriber<import('../types').TJSPositionNS.Action.DraggableOptionsStore>[]}
     */
    #subscriptions = [];
 
@@ -331,7 +332,7 @@ class DraggableOptionsStore
     *
     * @param {boolean}  [opts.tween = false] - Tween enabled.
     *
-    * @param {import('../animation/types').AnimationAPI.QuickTweenOptions}   [opts.tweenOptions] - Quick tween options.
+    * @param {import('../types').TJSPositionNS.API.Animation.QuickTweenOptions}   [opts.tweenOptions] - Quick tween options.
     */
    constructor({ tween = false, tweenOptions } = {})
    {
@@ -473,8 +474,9 @@ class DraggableOptionsStore
    /**
     * Store subscribe method.
     *
-    * @param {import('svelte/store').Subscriber<import('./types').Action.DraggableOptionsStore>} handler - Callback
-    *        function that is invoked on update / changes. Receives the DraggableOptionsStore instance.
+    * @param {(import('svelte/store').Subscriber<
+    *    import('../types').TJSPositionNS.Action.DraggableOptionsStore
+    * >)} handler - Callback function that is invoked on update / changes. Receives the DraggableOptionsStore instance.
     *
     * @returns {import('svelte/store').Unsubscriber} Unsubscribe function.
     */
@@ -509,10 +511,10 @@ class DraggableOptionsStore
  *
  * @param {({
  *    tween?: boolean,
- *    tweenOptions?: import('../animation/types').AnimationAPI.QuickTweenOptions
+ *    tweenOptions?: import('../types').TJSPositionNS.API.Animation.QuickTweenOptions
  * })} options - Initial options for DraggableOptionsStore.
  *
- * @returns {import('./types').Action.DraggableOptionsStore} A new options instance.
+ * @returns {import('../types').TJSPositionNS.Action.DraggableOptionsStore} A new options instance.
  */
 draggable.options = (options) => new DraggableOptionsStore(options);
 

@@ -8,7 +8,6 @@ import {
    isObject,
    isPlainObject }               from '#runtime/util/object';
 
-
 import {
    AnimationAPI,
    AnimationGroupAPI }           from './animation';
@@ -42,14 +41,14 @@ import { TJSPositionStyleCache } from './util';
  * an associated element. Essential tweening / animation is supported in addition to a validation API to constrain
  * positional updates.
  *
- * @implements {import('./types').TJSPositionTypes.TJSPositionWritable}
+ * @implements {import('./types').TJSPositionNS.WritableExt}
  */
 export class TJSPosition
 {
    /**
     * Public API for {@link TJSPosition.Initial}.
     *
-    * @type {Readonly<import('./types').TJSPositionTypes.PositionInitial>}
+    * @type {Readonly<import('./types').TJSPositionNS.API.Initial>}
     */
    static #positionInitial = Object.freeze({
       browserCentered: new Centered({ lock: true }),
@@ -59,7 +58,7 @@ export class TJSPosition
    /**
     * Public API for {@link TJSPosition.Validators}
     *
-    * @type {Readonly<import('./types').TJSPositionTypes.PositionValidators>}
+    * @type {Readonly<import('./types').TJSPositionNS.System.Validator.APIs>}
     */
    static #positionValidators = Object.freeze({
       TransformBounds,
@@ -76,7 +75,7 @@ export class TJSPosition
    /**
     * Provides the animation API.
     *
-    * @type {import('./animation/types').AnimationAPI}
+    * @type {import('./types').TJSPositionNS.API.Animation}
     */
    #animate = new AnimationAPI(this, this.#data);
 
@@ -102,7 +101,7 @@ export class TJSPosition
    /**
     * The associated parent for positional data tracking. Used in validators.
     *
-    * @type {import('./types').TJSPositionTypes.PositionParent}
+    * @type {import('../types').TJSPositionNS.PositionParent}
     */
    #parent;
 
@@ -122,7 +121,7 @@ export class TJSPosition
    #resizeObservable = false;
 
    /**
-    * @type {import('./types').TJSPositionTypes.Stores}
+    * @type {import('./types').TJSPositionNS.API.Stores}
     */
    #stores;
 
@@ -136,7 +135,7 @@ export class TJSPosition
    /**
     * Stores the subscribers.
     *
-    * @type {import('svelte/store').Subscriber<import('./data/types').Data.TJSPositionData>[]}
+    * @type {import('svelte/store').Subscriber<import('./types').TJSPositionNS.Data.TJSPositionData>[]}
     */
    #subscribers = [];
 
@@ -163,7 +162,7 @@ export class TJSPosition
    #validators;
 
    /**
-    * @type {import('./system/validators/types').ValidatorAPI.ValidatorData[]}
+    * @type {import('./types').TJSPositionNS.System.Validator.API.ValidatorData[]}
     */
    #validatorData;
 
@@ -173,29 +172,29 @@ export class TJSPosition
    #state = new PositionStateAPI(this, this.#data, this.#transforms);
 
    /**
-    * @returns {import('./animation/types').AnimationGroupAPI} Public Animation API.
+    * @returns {import('./types').TJSPositionNS.API.AnimationGroup} Public Animation API.
     */
    static get Animate() { return AnimationGroupAPI; }
 
    /**
-    * @returns {import('./data/types').Data.TJSPositionDataConstructor} TJSPositionData constructor.
+    * @returns {import('./types').TJSPositionNS.Data.TJSPositionDataConstructor} TJSPositionData constructor.
     */
    static get Data() { return TJSPositionData; }
 
    /**
-    * @returns {Readonly<import('./types').TJSPositionTypes.PositionInitial>} TJSPosition default initial helpers.
+    * @returns {Readonly<import('./types').TJSPositionNS.API.Initial>} TJSPosition default initial helpers.
     */
    static get Initial() { return this.#positionInitial; }
 
    /**
-    * @returns {import('./system/types').System.SystemBaseConstructor} `SystemBase` constructor.
+    * @returns {import('./types').TJSPositionNS.System.SystemBaseConstructor} `SystemBase` constructor.
     */
    static get SystemBase() { return SystemBase; }
 
    /**
     * Returns TJSTransformData class / constructor.
     *
-    * @returns {import('./transform/types').TransformAPI.TransformDataConstructor} TransformData class /
+    * @returns {import('./types').TJSPositionNS.API.Transform.TransformDataConstructor} TransformData class /
     *          constructor.
     */
    static get TransformData() { return TJSTransformData; }
@@ -203,14 +202,14 @@ export class TJSPosition
    /**
     * Returns default validators.
     *
-    * @returns {Readonly<import('./types').TJSPositionTypes.PositionValidators>} Available validators.
+    * @returns {Readonly<import('./types').TJSPositionNS.API.Validators>} Available validators.
     */
    static get Validators() { return this.#positionValidators; }
 
    /**
     * Returns a list of supported transform origins.
     *
-    * @returns {Readonly<import('./transform/types').TransformAPI.TransformOrigin[]>} The supported transform origin
+    * @returns {Readonly<import('./types').TJSPositionNS.API.Transform.TransformOrigin[]>} The supported transform origin
     *          strings.
     */
    static get transformOrigins()
@@ -222,12 +221,12 @@ export class TJSPosition
     * Convenience to copy from source to target of two TJSPositionData like objects. If a target is not supplied a new
     * {@link TJSPositionData} instance is created.
     *
-    * @param {Partial<import('./data/types').Data.TJSPositionData>}  source - The source instance to copy from.
+    * @param {Partial<import('./types').TJSPositionNS.Data.TJSPositionData>}  source - The source instance to copy from.
     *
-    * @param {import('./data/types').Data.TJSPositionData}  [target] - Target TJSPositionData like object; if one is not
+    * @param {import('./types').TJSPositionNS.Data.TJSPositionData}  [target] - Target TJSPositionData like object; if one is not
     *        provided a new instance is created.
     *
-    * @returns {import('./data/types').Data.TJSPositionData} The target instance with all TJSPositionData fields.
+    * @returns {import('./types').TJSPositionNS.Data.TJSPositionData} The target instance with all TJSPositionData fields.
     */
    static copyData(source, target)
    {
@@ -240,7 +239,7 @@ export class TJSPosition
     *
     * @param {TJSPosition} position - A position instance.
     *
-    * @param {import('./types').TJSPositionTypes.OptionsCtorAll}   [options] - Unique new options to set.
+    * @param {import('./types').TJSPositionNS.Options.ConfigAll}   [options] - Unique new options to set.
     *
     * @returns {TJSPosition} A duplicate position instance.
     */
@@ -260,12 +259,12 @@ export class TJSPosition
 
    /**
     * @param {(
-    *    import('./types').TJSPositionTypes.PositionParent |
-    *    import('./types').TJSPositionTypes.OptionsCtorAll
+    *    import('../types').TJSPositionNS.PositionParent |
+    *    import('./types').TJSPositionNS.Options.ConfigAll
     * )} [parentOrOptions] - A  potential parent element or object w/ `elementTarget` accessor. You may also forego
     *    setting the parent and pass in the options object.
     *
-    * @param {import('./types').TJSPositionTypes.OptionsCtorAll}  [options] - The options object.
+    * @param {import('./types').TJSPositionNS.Options.ConfigAll}  [options] - The options object.
     */
    constructor(parentOrOptions, options)
    {
@@ -276,7 +275,7 @@ export class TJSPosition
       }
       else
       {
-         this.#parent = /** @type {import('./types').TJSPositionTypes.PositionParent} */ parentOrOptions;
+         this.#parent = /** @type {import('../types').TJSPositionNS.PositionParent} */ parentOrOptions;
       }
 
       this.#styleCache = new TJSPositionStyleCache();
@@ -387,8 +386,8 @@ export class TJSPosition
          {
             /**
              * @type {(
-             *    import('./system/validators/types').ValidatorAPI.ValidatorFn |
-             *    import('./system/validators/types').ValidatorAPI.ValidatorData
+             *    import('./types').TJSPositionNS.System.Validator.API.ValidatorFn |
+             *    import('./types').TJSPositionNS.System.Validator.API.ValidatorData
              * )}
              */
             const validatorFn = options.validator;
@@ -405,7 +404,7 @@ export class TJSPosition
    /**
     * Returns the animation API.
     *
-    * @returns {import('./animation/types').AnimationAPI} Animation API.
+    * @returns {import('./types').TJSPositionNS.API.Animation} Animation API.
     */
    get animate()
    {
@@ -453,30 +452,30 @@ export class TJSPosition
    }
 
    /**
-    * Returns the associated {@link TJSPositionTypes.PositionParent} instance.
+    * Returns the associated {@link TJSPositionNS.PositionParent} instance.
     *
-    * @returns {import('./types').TJSPositionTypes.PositionParent} The current position parent instance.
+    * @returns {import('../types').TJSPositionNS.PositionParent} The current position parent instance.
     */
    get parent() { return this.#parent; }
 
    /**
     * Returns the state API.
     *
-    * @returns {import('./state/types').PositionStateAPI} TJSPosition state API.
+    * @returns {import('./types').TJSPositionNS.API.State} TJSPosition state API.
     */
    get state() { return this.#state; }
 
    /**
     * Returns the derived writable stores for individual data variables.
     *
-    * @returns {import('./types').TJSPositionTypes.Stores} Derived / writable stores.
+    * @returns {import('./types').TJSPositionNS.API.Stores} Derived / writable stores.
     */
    get stores() { return this.#stores; }
 
    /**
     * Returns the transform data for the readable store.
     *
-    * @returns {import('./transform/types').TransformAPI.TransformData} Transform Data.
+    * @returns {import('./types').TJSPositionNS.API.Transform.TransformData} Transform Data.
     */
    get transform()
    {
@@ -486,7 +485,7 @@ export class TJSPosition
    /**
     * Returns the validators.
     *
-    * @returns {import('./system/validators/types').ValidatorAPI} validators.
+    * @returns {import('./types').TJSPositionNS.System.Validator.API} validators.
     */
    get validators() { return this.#validators; }
 
@@ -506,9 +505,9 @@ export class TJSPosition
    }
 
    /**
-    * Sets the associated {@link TJSPositionTypes.PositionParent} instance. Resets the style cache and default data.
+    * Sets the associated {@link TJSPositionNS.PositionParent} instance. Resets the style cache and default data.
     *
-    * @param {import('./types').TJSPositionTypes.PositionParent | undefined} parent - A PositionParent instance or
+    * @param {import('../types').TJSPositionNS.PositionParent | undefined} parent - A PositionParent instance or
     *        undefined to disassociate
     */
    set parent(parent)
@@ -591,7 +590,7 @@ export class TJSPosition
    get top() { return this.#data.top; }
 
    /**
-    * @returns {import('./transform/types').TransformAPI.TransformOrigin | null} transformOrigin
+    * @returns {import('./types').TJSPositionNS.API.Transform.TransformOrigin | null} transformOrigin
     */
    get transformOrigin() { return this.#data.transformOrigin; }
 
@@ -717,7 +716,7 @@ export class TJSPosition
    }
 
    /**
-    * @param {import('./transform/types').TransformAPI.TransformOrigin} transformOrigin -
+    * @param {import('./types').TJSPositionNS.API.Transform.TransformOrigin} transformOrigin -
     */
    set transformOrigin(transformOrigin)
    {
@@ -774,10 +773,10 @@ export class TJSPosition
     *
     * @param {object}  [data] - Target to assign current position data.
     *
-    * @param {import('./types').TJSPositionTypes.OptionsGet}   [options] - Defines options for specific keys and
+    * @param {import('./types').TJSPositionNS.Options.Get}   [options] - Defines options for specific keys and
     *        substituting null for numeric default values. By default, nullable keys are included.
     *
-    * @returns {Partial<import('./data/types').Data.TJSPositionData>} Passed in object with current position data.
+    * @returns {Partial<import('./types').TJSPositionNS.Data.TJSPositionData>} Passed in object with current position data.
     */
    get(data = {}, options)
    {
@@ -831,7 +830,7 @@ export class TJSPosition
    }
 
    /**
-    * @returns {import('./data/types').Data.TJSPositionData} Current position data.
+    * @returns {import('./types').TJSPositionNS.Data.TJSPositionData} Current position data.
     */
    toJSON()
    {
@@ -859,9 +858,9 @@ export class TJSPosition
     * the current value of the given property. Please see {@link Data.TJSPositionDataRelative} for a detailed
     * description.
     *
-    * @param {import('./data/types').Data.TJSPositionDataRelative} [position] - TJSPosition data to set.
+    * @param {import('./types').TJSPositionNS.Data.TJSPositionDataRelative} [position] - TJSPosition data to set.
     *
-    * @param {import('./types').TJSPositionTypes.OptionsSet} [options] - Additional options.
+    * @param {import('./types').TJSPositionNS.Options.Set} [options] - Additional options.
     *
     * @returns {TJSPosition} This TJSPosition instance.
     */
@@ -1113,7 +1112,7 @@ export class TJSPosition
    }
 
    /**
-    * @param {import('svelte/store').Subscriber<Readonly<import('./data/types').Data.TJSPositionData>>} handler -
+    * @param {import('svelte/store').Subscriber<Readonly<import('./types').TJSPositionNS.Data.TJSPositionData>>} handler -
     *        Callback function that is invoked on update / changes. Receives a readonly copy of the TJSPositionData.
     *
     * @returns {import('svelte/store').Unsubscriber} Unsubscribe function.
@@ -1137,7 +1136,7 @@ export class TJSPosition
     * update the position state. You may manipulate numeric properties by providing relative adjustments described in
     * {@link TJSPositionDataRelative}.
     *
-    * @param {import('svelte/store').Updater<import('./data/types').Data.TJSPositionDataRelative>} updater -
+    * @param {import('svelte/store').Updater<import('./types').TJSPositionNS.Data.TJSPositionDataRelative>} updater -
     */
    update(updater)
    {
@@ -1160,7 +1159,7 @@ export class TJSPosition
    /**
     * Temporary data storage for `TJSPosition.#updatePosition`.
     *
-    * @type {import('./system/validators/types').ValidatorAPI.ValidationData}
+    * @type {import('./types').TJSPositionNS.System.Validator.API.ValidationData}
     */
    static #validationData = Object.seal({
       position: void 0,
@@ -1180,7 +1179,7 @@ export class TJSPosition
    });
 
    /**
-    * @param {import('./data/types').Data.TJSPositionDataRelative} data -
+    * @param {import('./types').TJSPositionNS.Data.TJSPositionDataRelative} data -
     *
     * @param {object} parent -
     *
@@ -1188,7 +1187,7 @@ export class TJSPosition
     *
     * @param {TJSPositionStyleCache} styleCache -
     *
-    * @returns {null | import('./data/types').Data.TJSPositionData} Updated position data or null if validation fails.
+    * @returns {null | import('./types').TJSPositionNS.Data.TJSPositionData} Updated position data or null if validation fails.
     */
    #updatePosition({
       // Directly supported parameters

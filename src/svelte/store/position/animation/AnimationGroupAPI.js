@@ -19,7 +19,7 @@ import { TJSPositionDataUtil }   from '../data/index.js';
  *
  * @see AnimationAPI
  *
- * @implements {import('./types').AnimationGroupAPI}
+ * @implements {import('../types').TJSPositionNS.API.AnimationGroup}
  */
 class AnimationGroupAPI
 {
@@ -27,7 +27,7 @@ class AnimationGroupAPI
     * Returns the TJSPosition instance for the possible given positionable by checking the instance by checking for
     * AnimationAPI.
     *
-    * @param {import('../').TJSPosition | import('../types').TJSPositionTypes.Positionable} positionable - Possible
+    * @param {import('../').TJSPosition | import('../types').TJSPositionNS.Positionable} positionable - Possible
     *        position group entry.
     *
     * @returns {import('../').TJSPosition | null} Returns actual TJSPosition instance.
@@ -46,7 +46,7 @@ class AnimationGroupAPI
    /**
     * Cancels any animation for given PositionGroup data.
     *
-    * @param {import('../types').TJSPositionTypes.PositionGroup} positionGroup - The position group to cancel.
+    * @param {import('../types').TJSPositionNS.PositionGroup} positionGroup - The position group to cancel.
     */
    static cancel(positionGroup)
    {
@@ -91,11 +91,11 @@ class AnimationGroupAPI
    /**
     * Gets all animation controls for the given position group data.
     *
-    * @param {import('../types').TJSPositionTypes.PositionGroup} positionGroup - A position group.
+    * @param {import('../types').TJSPositionNS.PositionGroup} positionGroup - A position group.
     *
     * @returns {{
     *    position: import('../').TJSPosition,
-    *    entry: import('../types').TJSPositionTypes.Positionable | undefined,
+    *    entry: import('../types').TJSPositionNS.Positionable | undefined,
     *    controls: import('#runtime/util/animate').BasicAnimation[]
     * }[]} Results array.
     */
@@ -153,7 +153,7 @@ class AnimationGroupAPI
     *
     * @param {unknown}  key - A key value to test.
     *
-    * @returns {key is import('./types').AnimationAPI.AnimationKey} Whether the given key is an animation key.
+    * @returns {key is import('../types').TJSPositionNS.API.Animation.AnimationKey} Whether the given key is an animation key.
     */
    static isAnimationKey(key)
    {
@@ -163,9 +163,9 @@ class AnimationGroupAPI
    /**
     * Returns the status _for the entire position group_ specified if all position instances of the group are scheduled.
     *
-    * @param {import('../types').TJSPositionTypes.PositionGroup} positionGroup - A position group.
+    * @param {import('../types').TJSPositionNS.PositionGroup} positionGroup - A position group.
     *
-    * @param {import('./types').AnimationAPI.ScheduleOptions} [options] - Options.
+    * @param {import('../types').TJSPositionNS.API.Animation.ScheduleOptions} [options] - Options.
     *
     * @returns {boolean} True if all are scheduled / false if just one position instance in the group is not scheduled.
     */
@@ -210,17 +210,17 @@ class AnimationGroupAPI
    /**
     * Provides the `from` animation tween for one or more positionable instances as a group.
     *
-    * @param {import('../types').TJSPositionTypes.PositionGroup} positionGroup - A position group.
+    * @param {import('../types').TJSPositionNS.PositionGroup} positionGroup - A position group.
     *
     * @param {(
-    *    import('../data/types').Data.TJSPositionDataRelative |
-    *    import('./types').AnimationAPI.GroupDataCallback
+    *    import('../types').TJSPositionNS.Data.TJSPositionDataRelative |
+    *    import('../types').TJSPositionNS.API.Animation.GroupDataCallback
     * )} fromData - A position data object assigned to all positionable instances or a callback function invoked for
     *        unique data for each instance.
     *
     * @param {(
-    *    import('./types').AnimationAPI.TweenOptions |
-    *    import('./types').AnimationAPI.GroupTweenOptionsCallback
+    *    import('../types').TJSPositionNS.API.Animation.TweenOptions |
+    *    import('../types').TJSPositionNS.API.Animation.GroupTweenOptionsCallback
     * )} [options] - Tween options assigned to all positionable instances or a callback function invoked for unique
     *        options for each instance.
     *
@@ -246,7 +246,7 @@ class AnimationGroupAPI
 
       let index = -1;
 
-      /** @type {import('./types').AnimationAPI.GroupCallbackOptions} */
+      /** @type {import('../types').TJSPositionNS.API.Animation.GroupCallbackOptions} */
       let callbackOptions;
 
       const hasDataCallback = typeof fromData === 'function';
@@ -366,23 +366,23 @@ class AnimationGroupAPI
    /**
     * Provides the `fromTo` animation tween for one or more positionable instances as a group.
     *
-    * @param {import('../types').TJSPositionTypes.PositionGroup} positionGroup - A position group.
+    * @param {import('../types').TJSPositionNS.PositionGroup} positionGroup - A position group.
     *
     * @param {(
-    *    import('../data/types').Data.TJSPositionDataRelative |
-    *    import('./types').AnimationAPI.GroupDataCallback
+    *    import('../types').TJSPositionNS.Data.TJSPositionDataRelative |
+    *    import('../types').TJSPositionNS.API.Animation.GroupDataCallback
     * )} fromData - A position data object assigned to all positionable instances or a callback function invoked for
     *        unique data for each instance.
     *
     * @param {(
-    *    import('../data/types').Data.TJSPositionDataRelative |
-    *    import('./types').AnimationAPI.GroupDataCallback
+    *    import('../types').TJSPositionNS.Data.TJSPositionDataRelative |
+    *    import('../types').TJSPositionNS.API.Animation.GroupDataCallback
     * )} toData - A position data object assigned to all positionable instances or a callback function invoked for
     *        unique data for each instance.
     *
     * @param {(
-    *    import('./types').AnimationAPI.TweenOptions |
-    *    import('./types').AnimationAPI.GroupTweenOptionsCallback
+    *    import('../types').TJSPositionNS.API.Animation.TweenOptions |
+    *    import('../types').TJSPositionNS.API.Animation.GroupTweenOptionsCallback
     * )} [options] - Tween options assigned to all positionable instances or a callback function invoked for unique
     *        options for each instance.
     *
@@ -413,7 +413,7 @@ class AnimationGroupAPI
 
       let index = -1;
 
-      /** @type {import('./types').AnimationAPI.GroupCallbackOptions} */
+      /** @type {import('../types').TJSPositionNS.API.Animation.GroupCallbackOptions} */
       let callbackOptions;
 
       const hasFromCallback = typeof fromData === 'function';
@@ -567,17 +567,17 @@ class AnimationGroupAPI
    /**
     * Provides the `to` animation tween for one or more positionable instances as a group.
     *
-    * @param {import('../types').TJSPositionTypes.PositionGroup} positionGroup - A position group.
+    * @param {import('../types').TJSPositionNS.PositionGroup} positionGroup - A position group.
     *
     * @param {(
-    *    import('../data/types').Data.TJSPositionDataRelative |
-    *    import('./types').AnimationAPI.GroupDataCallback
+    *    import('../types').TJSPositionNS.Data.TJSPositionDataRelative |
+    *    import('../types').TJSPositionNS.API.Animation.GroupDataCallback
     * )} toData - A position data object assigned to all positionable instances or a callback function invoked for
     *        unique data for each instance.
     *
     * @param {(
-    *    import('./types').AnimationAPI.TweenOptions |
-    *    import('./types').AnimationAPI.GroupTweenOptionsCallback
+    *    import('../types').TJSPositionNS.API.Animation.TweenOptions |
+    *    import('../types').TJSPositionNS.API.Animation.GroupTweenOptionsCallback
     * )} [options] - Tween options assigned to all positionable instances or a callback function invoked for unique
     *        options for each instance.
     *
@@ -603,7 +603,7 @@ class AnimationGroupAPI
 
       let index = -1;
 
-      /** @type {import('./types').AnimationAPI.GroupCallbackOptions} */
+      /** @type {import('../types').TJSPositionNS.API.Animation.GroupCallbackOptions} */
       let callbackOptions;
 
       const hasDataCallback = typeof toData === 'function';
@@ -723,17 +723,17 @@ class AnimationGroupAPI
    /**
     * Provides the `quickTo` animation tweening function for one or more positionable instances as a group.
     *
-    * @param {import('../types').TJSPositionTypes.PositionGroup} positionGroup - A position group.
+    * @param {import('../types').TJSPositionNS.PositionGroup} positionGroup - A position group.
     *
-    * @param {Iterable<import('./types').AnimationAPI.AnimationKey>}  keys - Animation keys to target.
+    * @param {Iterable<import('../types').TJSPositionNS.API.Animation.AnimationKey>}  keys - Animation keys to target.
     *
     * @param {(
-    *    import('./types').AnimationAPI.QuickTweenOptions |
-    *    import('./types').AnimationAPI.GroupQuickTweenOptionsCallback
+    *    import('../types').TJSPositionNS.API.Animation.QuickTweenOptions |
+    *    import('../types').TJSPositionNS.API.Animation.GroupQuickTweenOptionsCallback
     * )} [options] - Quick tween options assigned to all positionable instances or a callback function invoked for
     *        unique options for each instance.
     *
-    * @returns {import('./types').AnimationAPI.GroupQuickToCallback | undefined} quick-to tween function.
+    * @returns {import('../types').TJSPositionNS.API.Animation.GroupQuickToCallback | undefined} quick-to tween function.
     */
    static quickTo(positionGroup, keys, options)
    {
@@ -748,7 +748,7 @@ class AnimationGroupAPI
       }
 
       /**
-       * @type {import('./types').AnimationAPI.QuickToCallback[]}
+       * @type {import('../types').TJSPositionNS.API.Animation.QuickToCallback[]}
        */
       const quickToCallbacks = [];
 
@@ -928,9 +928,9 @@ class AnimationGroupAPI
       /**
        * Sets options of quickTo tween.
        *
-       * @param {import('./types').AnimationAPI.QuickTweenOptions}   [options] - Optional parameters.
+       * @param {import('../types').TJSPositionNS.API.Animation.QuickTweenOptions}   [options] - Optional parameters.
        *
-       * @returns {import('./types').AnimationAPI.QuickToCallback} The quickTo callback.
+       * @returns {import('../types').TJSPositionNS.API.Animation.QuickToCallback} The quickTo callback.
        */
       quickToCB.options = (options) => // eslint-disable-line no-shadow
       {

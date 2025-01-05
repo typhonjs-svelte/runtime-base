@@ -3,15 +3,15 @@ import {
    isObject }     from '#runtime/util/object';
 
 /**
- * @implements {import('./types').PositionStateAPI}
+ * @implements {import('../types').TJSPositionNS.API.State}
  */
 export class PositionStateAPI
 {
-   /** @type {import('../data/types').Data.TJSPositionData} */
+   /** @type {import('../types').TJSPositionNS.Data.TJSPositionData} */
    #data;
 
    /**
-    * @type {Map<string, import('../data/types').Data.TJSPositionDataExtra>}
+    * @type {Map<string, import('../types').TJSPositionNS.Data.TJSPositionDataExtra>}
     */
    #dataSaved = new Map();
 
@@ -48,7 +48,7 @@ export class PositionStateAPI
     *
     * @param {string}   options.name - Saved data name.
     *
-    * @returns {import('../data/types').Data.TJSPositionDataExtra | undefined} Any saved position data.
+    * @returns {import('../types').TJSPositionNS.Data.TJSPositionDataExtra | undefined} Any saved position data.
     */
    get({ name })
    {
@@ -60,7 +60,7 @@ export class PositionStateAPI
    /**
     * Returns any associated default position data.
     *
-    * @returns {import('../data/types').Data.TJSPositionDataExtra | undefined} Any saved default position data.
+    * @returns {import('../types').TJSPositionNS.Data.TJSPositionDataExtra | undefined} Any saved default position data.
     */
    getDefault()
    {
@@ -82,7 +82,7 @@ export class PositionStateAPI
     *
     * @param {string}   options.name - Name to remove and retrieve.
     *
-    * @returns {import('../data/types').Data.TJSPositionDataExtra | undefined} Any saved position data.
+    * @returns {import('../types').TJSPositionNS.Data.TJSPositionDataExtra | undefined} Any saved position data.
     */
    remove({ name })
    {
@@ -165,8 +165,8 @@ export class PositionStateAPI
     *        function.
     *
     * @returns {(
-    *    import('../data/types').Data.TJSPositionDataExtra |
-    *    Promise<import('../data/types').Data.TJSPositionDataExtra | undefined> |
+    *    import('../types').TJSPositionNS.Data.TJSPositionDataExtra |
+    *    Promise<import('../types').TJSPositionNS.Data.TJSPositionDataExtra | undefined> |
     *    undefined
     * )} Any saved position data.
     */
@@ -232,10 +232,10 @@ export class PositionStateAPI
     *
     * @param {string}   options.name - name to index this saved data.
     *
-    * @param {import('../types').TJSPositionTypes.OptionsGet} [optionsGet] - Additional options for
+    * @param {import('../types').TJSPositionNS.Options.Get} [optionsGet] - Additional options for
     *        {@link TJSPosition.get} when serializing position state. By default, `nullable` values are included.
     *
-    * @returns {import('../data/types').Data.TJSPositionDataExtra} Current position data plus any extra data stored.
+    * @returns {import('../types').TJSPositionNS.Data.TJSPositionDataExtra} Current position data plus any extra data stored.
     */
    save({ name, ...extra }, optionsGet)
    {

@@ -1,8 +1,8 @@
-import { Writable }        from 'svelte/store';
+import { Writable }           from 'svelte/store';
 
-import type { Mat4, Vec3 } from '#runtime/math/gl-matrix';
+import type { Mat4, Vec3 }    from '#runtime/math/gl-matrix';
 
-import type { Data }       from '../data/types';
+import type { TJSPositionNS } from '../types';
 
 interface TransformAPI
 {
@@ -117,7 +117,7 @@ interface TransformAPI
     * Collects all data including a bounding rect, transform matrix, and points array of the given
     * {@link TJSPositionData} instance with the applied local transform data.
     *
-    * @param {Data.TJSPositionData} position - The position data to process.
+    * @param {TJSPositionNS.Data.TJSPositionData} position - The position data to process.
     *
     * @param {TransformAPI.TransformData} [output] - Optional TransformAPI.Data output instance.
     *
@@ -125,7 +125,7 @@ interface TransformAPI
     *
     * @returns {TransformAPI.TransformData} The output TransformAPI.Data instance.
     */
-   getData(position: Data.TJSPositionData, output?: TransformAPI.TransformData, validationData?: object):
+   getData(position: TJSPositionNS.Data.TJSPositionData, output?: TransformAPI.TransformData, validationData?: object):
     TransformAPI.TransformData;
 
    /**
@@ -181,7 +181,7 @@ interface TransformAPI
 /**
  * Provides additional interfaces and type aliases for the transform API.
  */
-namespace TransformAPI {
+declare namespace TransformAPI {
    /**
     * Describes the constructor function for {@link TransformData}.
     */

@@ -314,7 +314,7 @@ export class AnimationManager
     *
     * @param {import('../index.js').TJSPosition} position - TJSPosition instance.
     *
-    * @param {import('./types').AnimationAPI.ScheduleOptions} [options] - Scheduling options.
+    * @param {import('../types').TJSPositionNS.API.Animation.ScheduleOptions} [options] - Scheduling options.
     *
     * @returns {boolean} True if scheduled / false if not.
     */

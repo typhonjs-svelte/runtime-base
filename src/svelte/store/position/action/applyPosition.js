@@ -5,12 +5,12 @@ import { hasSetter } from '#runtime/util/object';
  *
  * @param {HTMLElement}       node - The node associated with the action.
  *
- * @param {import('..').TJSPosition | import('../types').TJSPositionTypes.Positionable}   position - A position or
+ * @param {import('..').TJSPosition | import('../types').TJSPositionNS.Positionable}   position - A position or
  *        positionable instance.
  *
  * @returns {(import('svelte/action').ActionReturn<
  *    import('..').TJSPosition |
- *    import('../types').TJSPositionTypes.Positionable
+ *    import('../types').TJSPositionNS.Positionable
  * >)} The action lifecycle methods.
  */
 export function applyPosition(node, position)

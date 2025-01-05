@@ -3,7 +3,7 @@ import { SystemBase } from '../SystemBase.js';
 /**
  * Provides a {@link System.Initial.InitialSystem} implementation to center an element being positioned.
  *
- * @implements {import('../types').System.Initial.InitialSystem}
+ * @implements {import('../../types').TJSPositionNS.System.Initial.InitialSystem}
  */
 export class Centered extends SystemBase
 {

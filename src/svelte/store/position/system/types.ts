@@ -1,13 +1,13 @@
 import type {
    Invalidator,
    Subscriber,
-   Unsubscriber}                 from 'svelte/store';
+   Unsubscriber}              from 'svelte/store';
 
-import type { ValidatorAPI }    from './validators/types';
+import type { ValidatorAPI }  from './validators/types';
 
-import type { Data }             from '../data/types';
+import type { TJSPosition }   from '../TJSPosition';
 
-import type { TJSPosition }      from '../TJSPosition';
+import type { TJSPositionNS } from '../types';
 
 /**
  * Defines the extension points that are available to provide custom implementations for initial positioning and
@@ -15,7 +15,7 @@ import type { TJSPosition }      from '../TJSPosition';
  * via {@link TJSPosition.Initial} and browser window / element bounds validation with and without transform support
  * available via {@link TJSPosition.Validators}.
  */
-namespace System {
+declare namespace System {
    /**
     * Defines the initial position extension point for positioning elements. The default implementation for initial
     * `Centered` positioning is available via {@link TJSPosition.Initial}. To
@@ -85,6 +85,8 @@ namespace System {
     * interface.
     */
    export namespace Validator {
+      export { ValidatorAPI as API };
+
       /**
        * Provides a system to validate positional changes.
        */
@@ -93,11 +95,12 @@ namespace System {
           * Provides a validator that respects transforms in positional data constraining the position to within the
           * target elements bounds.
           *
-          * @param {ValidatorAPI.ValidationData}   valData - The associated validation data for position updates.
+          * @param {TJSPositionNS.System.Validator.API.ValidationData}   valData - The associated validation data for position
+          *        updates.
           *
           * @returns {Data.TJSPositionData} Potentially adjusted position data.
           */
-         validate: ValidatorAPI.ValidatorFn;
+         validate: TJSPositionNS.System.Validator.API.ValidatorFn;
 
          /**
           * An ID associated with this validator. Can be used to remove the validator; default: `undefined`.

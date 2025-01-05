@@ -53,13 +53,13 @@ export class ConvertStringData
    /**
     * Converts any relative string values for animatable keys to actual updates performed against current data.
     *
-    * @param {import('../data/types').Data.TJSPositionDataRelative}  data - position data.
+    * @param {import('../../types').TJSPositionNS.Data.TJSPositionDataRelative}  data - position data.
     *
-    * @param {import('../data/types').Data.TJSPositionData}   position - The source position data.
+    * @param {import('../../types').TJSPositionNS.Data.TJSPositionData}   position - The source position data.
     *
     * @param {HTMLElement} el - Target positioned element.
     *
-    * @returns {import('../data/types').Data.TJSPositionDataRelative} Converted data.
+    * @returns {import('../../types').TJSPositionNS.Data.TJSPositionDataRelative} Converted data.
     */
    static process(data, position, el)
    {
@@ -78,7 +78,7 @@ export class ConvertStringData
             // Ignore 'auto' and 'inherit' string values.
             if (value === 'auto' || value === 'inherit') { continue; }
 
-            /** @type {import('../animation/types').AnimationAPI.AnimationKey} */
+            /** @type {import('../types').TJSPositionNS.API.Animation.AnimationKey} */
             const animKey = key;
 
             const regexResults = this.#regexStringData.exec(value);
@@ -170,11 +170,11 @@ export class ConvertStringData
     * Provides the common update to source data after `results.value` has been converted to the proper value
     * respectively.
     *
-    * @param {import('../animation/types').AnimationAPI.AnimationKey} key - Animation key.
+    * @param {import('../types').TJSPositionNS.API.Animation.AnimationKey} key - Animation key.
     *
     * @param {number}   current - Current value
     *
-    * @param {import('../data/types').Data.TJSPositionDataRelative}  data - Source data to convert.
+    * @param {import('../types').TJSPositionNS.Data.TJSPositionDataRelative}  data - Source data to convert.
     *
     * @param {import('./types-local').StringMatch}  results - Match results.
     *
@@ -213,13 +213,13 @@ export class ConvertStringData
     * Handles the `%` unit type where values are adjusted against the parent element client width / height or in the
     * case of rotation the percentage of 360 degrees.
     *
-    * @param {import('../animation/types').AnimationAPI.AnimationKey} key - Animation key.
+    * @param {import('../types').TJSPositionNS.API.Animation.AnimationKey} key - Animation key.
     *
     * @param {number}   current - Current value
     *
-    * @param {import('../data/types').Data.TJSPositionDataRelative}  data - Source data to convert.
+    * @param {import('../types').TJSPositionNS.Data.TJSPositionDataRelative}  data - Source data to convert.
     *
-    * @param {import('../data/types').Data.TJSPositionData} position - Current position data.
+    * @param {import('../types').TJSPositionNS.Data.TJSPositionData} position - Current position data.
     *
     * @param {HTMLElement} el - Positioned element.
     *
@@ -271,13 +271,13 @@ export class ConvertStringData
    /**
     * Handles the `%~` unit type where values are adjusted against the current value for the given key.
     *
-    * @param {import('../animation/types').AnimationAPI.AnimationKey} key - Animation key.
+    * @param {import('../types').TJSPositionNS.API.Animation.AnimationKey} key - Animation key.
     *
     * @param {number}   current - Current value
     *
-    * @param {import('../data/types').Data.TJSPositionDataRelative}  data - Source data to convert.
+    * @param {import('../types').TJSPositionNS.Data.TJSPositionDataRelative}  data - Source data to convert.
     *
-    * @param {import('../data/types').Data.TJSPositionData} position - Current position data.
+    * @param {import('../types').TJSPositionNS.Data.TJSPositionData} position - Current position data.
     *
     * @param {HTMLElement} el - Positioned element.
     *
@@ -320,13 +320,13 @@ export class ConvertStringData
    /**
     * Handles the `rad` / `turn` unit types for rotation animation keys.
     *
-    * @param {import('../animation/types').AnimationAPI.AnimationKey} key - Animation key.
+    * @param {import('../types').TJSPositionNS.API.Animation.AnimationKey} key - Animation key.
     *
     * @param {number}   current - Current value
     *
-    * @param {import('../data/types').Data.TJSPositionDataRelative}  data - Source data to convert.
+    * @param {import('../types').TJSPositionNS.Data.TJSPositionDataRelative}  data - Source data to convert.
     *
-    * @param {import('../data/types').Data.TJSPositionData} position - Current position data.
+    * @param {import('../types').TJSPositionNS.Data.TJSPositionData} position - Current position data.
     *
     * @param {HTMLElement} el - Positioned element.
     *

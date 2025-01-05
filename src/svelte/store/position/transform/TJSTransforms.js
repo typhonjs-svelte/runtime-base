@@ -4,14 +4,14 @@ import { Mat4, Vec3 }         from '#runtime/math/gl-matrix';
 import { TJSTransformData }   from './TJSTransformData.js';
 
 /**
- * @implements {import('./types').TransformAPI}
+ * @implements {import('../types').TJSPositionNS.API.Transform}
  */
 export class TJSTransforms
 {
    /**
     * Stores transform data.
     *
-    * @type {Partial<import('../data/types').Data.TJSPositionData>}
+    * @type {Partial<import('../types').TJSPositionNS.Data.TJSPositionData>}
     */
    #data = {};
 
@@ -49,14 +49,14 @@ export class TJSTransforms
    /**
     * Defines the default transform origin.
     *
-    * @type {Readonly<import('./types').TransformAPI.TransformOrigin>}
+    * @type {Readonly<import('../types').TJSPositionNS.API.Transform.TransformOrigin>}
     */
    static #transformOriginDefault = 'top left';
 
    /**
     * Defines the valid transform origins.
     *
-    * @type {Readonly<import('./types').TransformAPI.TransformOrigin[]>}
+    * @type {Readonly<import('../types').TJSPositionNS.API.Transform.TransformOrigin[]>}
     */
    static #transformOrigins = Object.freeze(['top left', 'top center', 'top right', 'center left', 'center',
     'center right', 'bottom left', 'bottom center', 'bottom right']);
@@ -64,7 +64,7 @@ export class TJSTransforms
    /**
     * Defines a valid Set of transform origins.
     *
-    * @type {ReadonlySet<import('./types').TransformAPI.TransformOrigin>}
+    * @type {ReadonlySet<import('../types').TJSPositionNS.API.Transform.TransformOrigin>}
     */
    static #transformOriginsSet = Object.freeze(new Set(this.#transformOrigins));
 
@@ -88,7 +88,7 @@ export class TJSTransforms
    /**
     * Returns a list of supported transform origins.
     *
-    * @returns {Readonly<import('./types').TransformAPI.TransformOrigin[]>} The supported transform origin strings.
+    * @returns {Readonly<import('../types').TJSPositionNS.API.Transform.TransformOrigin[]>} The supported transform origin strings.
     */
    static get transformOrigins()
    {
@@ -100,7 +100,7 @@ export class TJSTransforms
     *
     * @param {unknown}  origin - A potential transform origin string.
     *
-    * @returns {origin is import('./types').TransformAPI.TransformOrigin}
+    * @returns {origin is import('../types').TJSPositionNS.API.Transform.TransformOrigin}
     */
    static isTransformOrigin(origin)
    {
@@ -354,13 +354,13 @@ export class TJSTransforms
     * Collects all data including a bounding rect, transform matrix, and points array of the given
     * {@link TJSPositionData} instance with the applied local transform data.
     *
-    * @param {import('../data/types').Data.TJSPositionData} position - The position data to process.
+    * @param {import('../types').TJSPositionNS.Data.TJSPositionData} position - The position data to process.
     *
-    * @param {import('./types').TransformAPI.TransformData} [output] - Optional TJSTransformData output instance.
+    * @param {import('../types').TJSPositionNS.API.Transform.TransformData} [output] - Optional TJSTransformData output instance.
     *
     * @param {object} [validationData] - Optional validation data for adjustment parameters.
     *
-    * @returns {import('./types').TransformAPI.TransformData} The output TJSTransformData instance.
+    * @returns {import('../types').TJSPositionNS.API.Transform.TransformData} The output TJSTransformData instance.
     */
    getData(position, output = new TJSTransformData(), validationData = {})
    {
@@ -474,7 +474,7 @@ export class TJSTransforms
     * then the stored local transform order is applied then all remaining transform keys are applied. This allows the
     * construction of a transform matrix in advance of setting local data and is useful in collision detection.
     *
-    * @param {import('../data/types').Data.TJSPositionData}   [data] - TJSPositionData instance or local transform data.
+    * @param {import('../types').TJSPositionNS.Data.TJSPositionData}   [data] - TJSPositionData instance or local transform data.
     *
     * @param {import('#runtime/math/gl-matrix').Mat4}  [output] - The output mat4 instance.
     *
@@ -609,7 +609,7 @@ export class TJSTransforms
     * then the stored local transform order is applied then all remaining transform keys are applied. This allows the
     * construction of a transform matrix in advance of setting local data and is useful in collision detection.
     *
-    * @param {Partial<import('../data/types').Data.TJSPositionData>}   [data] - TJSPositionData instance or local
+    * @param {Partial<import('../types').TJSPositionNS.Data.TJSPositionData>}   [data] - TJSPositionData instance or local
     *        transform data.
     *
     * @param {import('#runtime/math/gl-matrix').Mat4}  [output] - The output mat4 instance.
@@ -702,7 +702,7 @@ export class TJSTransforms
    /**
     * Tests an object if it contains transform keys and the values are finite numbers.
     *
-    * @param {import('../data/types').Data.TJSPositionData} data - An object to test for transform data.
+    * @param {import('../types').TJSPositionNS.Data.TJSPositionData} data - An object to test for transform data.
     *
     * @returns {boolean} Whether the given TJSPositionData has transforms.
     */

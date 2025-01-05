@@ -4,9 +4,8 @@ import type {
    Unsubscriber }                   from 'svelte/store';
 
 import type { TJSPosition }         from '../../TJSPosition.js';
-import type { TJSPositionTypes }   from '../../types';
-import type { Data }                from '../../data/types';
-import type { TransformAPI }        from '../../transform/types';
+
+import type { TJSPositionNS }       from '../../types';
 
 /**
  * Provides the validator API implementation for {@link TJSPosition.validators}. You may add one or more validator
@@ -77,7 +76,7 @@ interface ValidatorAPI
 /**
  * Provides a namespace for all type aliases related to the validator API.
  */
-namespace ValidatorAPI {
+declare namespace ValidatorAPI {
    /**
     * The data passed to validator functions to determine if the new `position` / TJSPosition data is valid.
     */
@@ -85,12 +84,12 @@ namespace ValidatorAPI {
       /**
        * New position data to evaluate.
        */
-      position: Data.TJSPositionData;
+      position: TJSPositionNS.Data.TJSPositionData;
 
       /**
        * Associated position parent instance.
        */
-      parent: TJSPositionTypes.PositionParent;
+      parent: TJSPositionNS.PositionParent;
 
       /**
        * Associated element being positioned.
@@ -105,7 +104,7 @@ namespace ValidatorAPI {
       /**
        * Current applies transforms / transform tracking & conversion utility.
        */
-      transforms: TransformAPI;
+      transforms: TJSPositionNS.API.Transform;
 
       /**
        * Current height
@@ -204,7 +203,7 @@ namespace ValidatorAPI {
        *
        * @returns {Data.TJSPositionData | null} The validated position data or null to cancel position update.
        */
-      (data: ValidationData): Data.TJSPositionData | null;
+      (data: ValidationData): TJSPositionNS.Data.TJSPositionData | null;
 
       /**
        * Optional subscribe function following the Svelte store / subscribe pattern. On updates validation will

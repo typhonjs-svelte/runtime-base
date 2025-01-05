@@ -67,7 +67,7 @@ export class UpdateElementData
       this.transformData = new TJSTransformData();
 
       /**
-       * @type {import('svelte/store').Subscriber<import('../data/types').Data.TJSPositionData>[]}
+       * @type {import('svelte/store').Subscriber<import('../types').TJSPositionNS.Data.TJSPositionData>[]}
        */
       this.subscribers = void 0;
 
@@ -79,7 +79,7 @@ export class UpdateElementData
       // When there are subscribers set option to calculate transform updates; set to false when no subscribers.
 
       /**
-       * @type {import('svelte/store').Writable<import('../transform/types').TransformAPI.TransformData>}
+       * @type {import('svelte/store').Writable<import('../types').TJSPositionNS.API.Transform.TransformData>}
        */
       this.storeTransform = writable(this.transformData, () =>
       {

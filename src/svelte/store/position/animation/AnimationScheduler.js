@@ -20,7 +20,7 @@ export class AnimationScheduler
    /**
     * Used to copy data from a TJSPosition instance.
     *
-    * @type {import('../data/types').Data.TJSPositionData}
+    * @type {import('../types').TJSPositionNS.Data.TJSPositionData}
     */
    static #data = {};
 
@@ -45,9 +45,9 @@ export class AnimationScheduler
     *
     * @param {import('#runtime/math/interpolate').InterpolateFunction}    [interpolate=lerp] -
     *
-    * @param {import('../transform/types').TransformAPI.TransformOrigin}  [transformOrigin] -
+    * @param {import('../types').TJSPositionNS.API.Transform.TransformOrigin}  [transformOrigin] -
     *
-    * @param {import('../transform/types').TransformAPI.TransformOrigin}  [transformOriginInitial] -
+    * @param {import('../types').TJSPositionNS.API.Transform.TransformOrigin}  [transformOriginInitial] -
     *
     * @param {import('./types-local').AnimationCleanupFunction} [cleanup] -
     *
@@ -119,9 +119,9 @@ export class AnimationScheduler
     *
     * @param {import('../').TJSPosition} position - The target position instance.
     *
-    * @param {import('../data/types').Data.TJSPositionDataRelative} fromData - The starting position.
+    * @param {import('../types').TJSPositionNS.Data.TJSPositionDataRelative} fromData - The starting position.
     *
-    * @param {import('./types').AnimationAPI.TweenOptions} options - Tween options.
+    * @param {import('../types').TJSPositionNS.API.Animation.TweenOptions} options - Tween options.
     *
     * @param {import('./types-local').AnimationCleanupFunction} [cleanup] - Custom animation cleanup function.
     *
@@ -210,11 +210,11 @@ export class AnimationScheduler
     *
     * @param {import('../').TJSPosition} position - The target position instance.
     *
-    * @param {import('../data/types').Data.TJSPositionDataRelative} fromData - The starting position.
+    * @param {import('../types').TJSPositionNS.Data.TJSPositionDataRelative} fromData - The starting position.
     *
-    * @param {import('../data/types').Data.TJSPositionDataRelative} toData - The ending position.
+    * @param {import('../types').TJSPositionNS.Data.TJSPositionDataRelative} toData - The ending position.
     *
-    * @param {import('./types').AnimationAPI.TweenOptions} options - Tween options.
+    * @param {import('../types').TJSPositionNS.API.Animation.TweenOptions} options - Tween options.
     *
     * @param {import('./types-local').AnimationCleanupFunction} [cleanup] - Custom animation cleanup function.
     *
@@ -317,9 +317,9 @@ export class AnimationScheduler
     *
     * @param {import('../').TJSPosition} position - The target position instance.
     *
-    * @param {import('../data/types').Data.TJSPositionDataRelative} toData - The destination position.
+    * @param {import('../types').TJSPositionNS.Data.TJSPositionDataRelative} toData - The destination position.
     *
-    * @param {import('./types').AnimationAPI.TweenOptions} options - Tween options.
+    * @param {import('../types').TJSPositionNS.API.Animation.TweenOptions} options - Tween options.
     *
     * @param {import('./types-local').AnimationCleanupFunction} [cleanup] - Custom animation cleanup function.
     *
@@ -411,7 +411,7 @@ export class AnimationScheduler
     *
     * @param {import('../').TJSPosition} position - The target position instance.
     *
-    * @param {import('./types').AnimationAPI.TweenOptions.strategy} strategy - A scheduling strategy to apply.
+    * @param {import('../types').TJSPositionNS.API.Animation.TweenOptions.strategy} strategy - A scheduling strategy to apply.
     *
     * @returns {undefined | null} Returns null to abort scheduling current animation.
     */

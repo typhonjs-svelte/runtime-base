@@ -1,12 +1,14 @@
-import type { AnimationAPI } from '../animation/types';
-import type { ValidatorAPI } from '../system/validators/types';
-import type { TransformAPI } from '../transform/types';
 import type { TJSPosition }   from '../TJSPosition';
+
+// import type { TJSPositionNS } from '../types';
+
+import type { TransformAPI } from "../transform/types";
+import type { AnimationAPI } from "../animation/types";
 
 /**
  * Defines the data objects / interfaces used by various TJSPosition APIs.
  */
-namespace Data {
+declare namespace Data {
    /**
     * Defines the primary TJSPosition data object used by various TJSPosition APIs. To externally create a new instance
     * use the static accessor {@link TJSPosition.Data}.
@@ -85,14 +87,17 @@ namespace Data {
     * ```
     *
     * Additional properties may be added that are not specified by {@link TJSPositionData} and are forwarded through
-    * {@link ValidatorAPI.ValidationData} as the `rest` property allowing extra data to be sent to any custom validator.
+    * {@link TJSPositionNS.System.Validator.API.ValidationData} as the `rest` property allowing extra data to be sent to any
+    * custom validator.
     */
    export type TJSPositionDataRelative = Partial<{
       // Map only the keys that are animatable to either their original type or as a string.
-      [P in keyof TJSPositionData as P extends AnimationAPI.AnimationKey ? P : never]: TJSPositionData[P] | string;
+      [P in keyof TJSPositionData as P extends AnimationAPI.AnimationKey ? P : never]:
+       TJSPositionData[P] | string;
    } & {
       // Include all other keys from TJSPositionData unchanged.
-      [P in keyof TJSPositionData as P extends AnimationAPI.AnimationKey ? never : P]: TJSPositionData[P];
+      [P in keyof TJSPositionData as P extends AnimationAPI.AnimationKey ? never : P]:
+       TJSPositionData[P];
    }> & {
       // Allow any additional properties not originally part of TJSPositionData that are forwarded through
       // validation.

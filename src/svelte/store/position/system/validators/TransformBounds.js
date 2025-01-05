@@ -11,10 +11,10 @@ export class TransformBounds extends SystemBase
     * Provides a validator that respects transforms in positional data constraining the position to within the target
     * elements bounds.
     *
-    * @param {import('./types').ValidatorAPI.ValidationData}   valData - The associated validation data for position
+    * @param {import('../../types').TJSPositionNS.System.Validator.API.ValidationData}   valData - The associated validation data for position
     *        updates.
     *
-    * @returns {import('../../data/types').Data.TJSPositionData} Potentially adjusted position data.
+    * @returns {import('../../types').TJSPositionNS.Data.TJSPositionData} Potentially adjusted position data.
     */
    validate(valData)
    {

@@ -5,11 +5,10 @@ import type {
 import type { EasingReference }  from '#runtime/svelte/easing';
 
 import type { TJSPosition }      from '../TJSPosition';
-import type { TJSPositionTypes } from '../types';
 
-import type { AnimationAPI }     from '../animation/types';
+import type { TJSPositionNS }    from '../types';
 
-namespace Action {
+declare namespace Action {
    /**
     * Defines the options for the {@link draggable} action.
     */
@@ -17,7 +16,7 @@ namespace Action {
       /**
        * A position or positionable instance.
        */
-      position: TJSPosition | TJSPositionTypes.Positionable;
+      position: TJSPosition | TJSPositionNS.Positionable;
 
       /**
        * MouseEvent button that activates dragging; default: 0
@@ -54,7 +53,7 @@ namespace Action {
       /**
        * Quick tween options.
        */
-      tweenOptions?: AnimationAPI.QuickTweenOptions;
+      tweenOptions?: TJSPositionNS.API.Animation.QuickTweenOptions;
    }
 
    /**
@@ -72,7 +71,7 @@ namespace Action {
       /**
        * Quick tween options for easing function and duration.
        */
-      tweenOptions: AnimationAPI.QuickTweenOptions;
+      tweenOptions: TJSPositionNS.API.Animation.QuickTweenOptions;
 
       /**
        * @returns {number} Get tween duration.

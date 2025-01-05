@@ -17,13 +17,13 @@ import {
    TJSPositionDataUtil }         from '../data';
 
 /**
- * @implements {import('./types').AnimationAPI}
+ * @implements {import('../types').TJSPositionNS.API.Animation}
  */
 export class AnimationAPI
 {
    static #getEaseOptions = Object.freeze({ default: false });
 
-   /** @type {import('../data/types').Data.TJSPositionData} */
+   /** @type {import('../types').TJSPositionNS.Data.TJSPositionData} */
    #data;
 
    /** @type {import('../').TJSPosition} */
@@ -32,7 +32,7 @@ export class AnimationAPI
    /**
     * @param {import('../').TJSPosition}       position -
     *
-    * @param {import('../data/types').Data.TJSPositionData}   data -
+    * @param {import('../types').TJSPositionNS.Data.TJSPositionData}   data -
     */
    constructor(position, data)
    {
@@ -74,9 +74,9 @@ export class AnimationAPI
    /**
     * Provides a tween from given position data to the current position.
     *
-    * @param {import('../data/types').Data.TJSPositionDataRelative} fromData - The starting position.
+    * @param {import('../types').TJSPositionNS.Data.TJSPositionDataRelative} fromData - The starting position.
     *
-    * @param {import('./types').AnimationAPI.TweenOptions} [options] - Optional tween parameters.
+    * @param {import('../types').TJSPositionNS.API.Animation.TweenOptions} [options] - Optional tween parameters.
     *
     * @returns {import('#runtime/util/animate').BasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
@@ -90,11 +90,11 @@ export class AnimationAPI
    /**
     * Provides a tween from given position data to the given position.
     *
-    * @param {import('../data/types').Data.TJSPositionDataRelative} fromData - The starting position.
+    * @param {import('../types').TJSPositionNS.Data.TJSPositionDataRelative} fromData - The starting position.
     *
-    * @param {import('../data/types').Data.TJSPositionDataRelative} toData - The ending position.
+    * @param {import('../types').TJSPositionNS.Data.TJSPositionDataRelative} toData - The ending position.
     *
-    * @param {import('./types').AnimationAPI.TweenOptions} [options] - Optional tween parameters.
+    * @param {import('../types').TJSPositionNS.API.Animation.TweenOptions} [options] - Optional tween parameters.
     *
     * @returns {import('#runtime/util/animate').BasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
@@ -108,9 +108,9 @@ export class AnimationAPI
    /**
     * Provides a tween to given position data from the current position.
     *
-    * @param {import('../data/types').Data.TJSPositionDataRelative} toData - The destination position.
+    * @param {import('../types').TJSPositionNS.Data.TJSPositionDataRelative} toData - The destination position.
     *
-    * @param {import('./types').AnimationAPI.TweenOptions} [options] - Optional tween parameters.
+    * @param {import('../types').TJSPositionNS.API.Animation.TweenOptions} [options] - Optional tween parameters.
     *
     * @returns {import('#runtime/util/animate').BasicAnimation}  A control object that can cancel animation and
     *          provides a `finished` Promise.
@@ -124,11 +124,11 @@ export class AnimationAPI
    /**
     * Returns a function that provides an optimized way to constantly update a to-tween.
     *
-    * @param {Iterable<import('./types').AnimationAPI.AnimationKey>}  keys - The keys for quickTo.
+    * @param {Iterable<import('../types').TJSPositionNS.API.Animation.AnimationKey>}  keys - The keys for quickTo.
     *
-    * @param {import('./types').AnimationAPI.QuickTweenOptions} [options] - Optional quick tween parameters.
+    * @param {import('../types').TJSPositionNS.API.Animation.QuickTweenOptions} [options] - Optional quick tween parameters.
     *
-    * @returns {import('./types').AnimationAPI.QuickToCallback} quick-to tween function.
+    * @returns {import('../types').TJSPositionNS.API.Animation.QuickToCallback} quick-to tween function.
     */
    quickTo(keys, options = {})
    {
@@ -217,7 +217,7 @@ export class AnimationAPI
          quickTo: true
       };
 
-      const quickToCB = /** @type {import('./types').AnimationAPI.QuickToCallback} */ (...args) =>
+      const quickToCB = /** @type {import('../types').TJSPositionNS.API.Animation.QuickToCallback} */ (...args) =>
       {
          const argsLength = args.length;
 

@@ -5,7 +5,7 @@ import { A11yHelper } from '#runtime/util/a11y';
  *
  * @implements {import('svelte/store').Readable}
  *
- * @implements {import('./types').System.SystemBase}
+ * @implements {import('../types').TJSPositionNS.System.SystemBase}
  */
 export class SystemBase
 {

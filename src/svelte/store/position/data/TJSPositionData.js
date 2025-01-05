@@ -1,7 +1,7 @@
 /**
  * Defines stored positional data.
  *
- * @implements {import('./types').Data.TJSPositionData}
+ * @implements {import('../types').TJSPositionNS.Data.TJSPositionData}
  */
 export class TJSPositionData
 {
@@ -36,7 +36,7 @@ export class TJSPositionData
     *
     * @param {number | null} [opts.top] -
     *
-    * @param {import('../transform/types').TransformAPI.TransformOrigin | null} [opts.transformOrigin] -
+    * @param {import('../types').TJSPositionNS.API.Transform.TransformOrigin | null} [opts.transformOrigin] -
     *
     * @param {number | 'auto' | 'inherit' | null} [opts.width] -
     *
@@ -82,7 +82,7 @@ export class TJSPositionData
       /** @type {number | null} */
       this.top = top;
 
-      /** @type {import('../transform/types').TransformAPI.TransformOrigin | null} */
+      /** @type {import('../types').TJSPositionNS.API.Transform.TransformOrigin | null} */
       this.transformOrigin = transformOrigin;
 
       /** @type {number | null} */

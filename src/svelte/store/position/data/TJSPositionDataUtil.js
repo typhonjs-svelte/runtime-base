@@ -60,12 +60,12 @@ export class TJSPositionDataUtil
     * Convenience to copy from source to target of two TJSPositionData like objects. If a target is not supplied a new
     * {@link TJSPositionData} instance is created.
     *
-    * @param {Partial<import('./types').Data.TJSPositionData>}  source - The source instance to copy from.
+    * @param {Partial<import('../types').TJSPositionNS.Data.TJSPositionData>}  source - The source instance to copy from.
     *
-    * @param {import('./types').Data.TJSPositionData}  [target] - Target TJSPositionData like object; if one
+    * @param {import('../types').TJSPositionNS.Data.TJSPositionData}  [target] - Target TJSPositionData like object; if one
     *        is not provided a new instance is created.
     *
-    * @returns {import('./types').Data.TJSPositionData} The target instance with all TJSPositionData fields.
+    * @returns {import('../types').TJSPositionNS.Data.TJSPositionData} The target instance with all TJSPositionData fields.
     */
    static copyData(source, target = new TJSPositionData())
    {
@@ -93,9 +93,9 @@ export class TJSPositionDataUtil
    /**
     * Returns the non-aliased animation key.
     *
-    * @param {import('../animation/types').AnimationAPI.AnimationKey} key - Animation key / possibly aliased key.
+    * @param {import('../types').TJSPositionNS.API.Animation.AnimationKey} key - Animation key / possibly aliased key.
     *
-    * @returns {import('../animation/types').AnimationAPI.AnimationKey} Actual non-aliased animation key.
+    * @returns {import('../types').TJSPositionNS.API.Animation.AnimationKey} Actual non-aliased animation key.
     */
    static getAnimationKey(key)
    {
@@ -107,7 +107,7 @@ export class TJSPositionDataUtil
     *
     * @param {object}   data - An object to query for the given animation key.
     *
-    * @param {import('../animation/types').AnimationAPI.AnimationKey}   key - Animation key.
+    * @param {import('../types').TJSPositionNS.API.Animation.AnimationKey}   key - Animation key.
     *
     * @param {boolean}  [aliased=false] - When use non-aliased key.
     *
@@ -125,7 +125,7 @@ export class TJSPositionDataUtil
     *
     * @param {unknown}   key - A potential animation key.
     *
-    * @returns {key is import('../animation/types').AnimationAPI.AnimationKey} Is animation key.
+    * @returns {key is import('../types').TJSPositionNS.API.Animation.AnimationKey} Is animation key.
     */
    static isAnimationKey(key)
    {

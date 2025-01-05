@@ -1,7 +1,6 @@
 import type { EasingReference }  from '#runtime/svelte/easing';
 
-import type { TJSPositionTypes } from '../types';
-import type { Data }             from '../data/types';
+import type { TJSPositionNS }    from '../types';
 
 interface PositionStateAPI {
    /**
@@ -18,14 +17,14 @@ interface PositionStateAPI {
     *
     * @returns {Data.TJSPositionDataExtra | undefined} Any saved position data.
     */
-   get({ name }: { name: string }): Data.TJSPositionDataExtra | undefined;
+   get({ name }: { name: string }): TJSPositionNS.Data.TJSPositionDataExtra | undefined;
 
    /**
     * Returns any associated default position data.
     *
     * @returns {Data.TJSPositionDataExtra | undefined} Any saved default position data.
     */
-   getDefault(): Data.TJSPositionDataExtra | undefined;
+   getDefault(): TJSPositionNS.Data.TJSPositionDataExtra | undefined;
 
    /**
     * @returns {IterableIterator<string>} The saved position data names / keys.
@@ -41,7 +40,7 @@ interface PositionStateAPI {
     *
     * @returns {Data.TJSPositionDataExtra | undefined} Any saved position data.
     */
-   remove({ name }: { name: string }): Data.TJSPositionDataExtra | undefined;
+   remove({ name }: { name: string }): TJSPositionNS.Data.TJSPositionDataExtra | undefined;
 
    /**
     * Resets position instance to default data and invokes set.
@@ -54,7 +53,7 @@ interface PositionStateAPI {
     *
     * @returns {boolean} Operation successful.
     */
-   reset({ keepZIndex, invokeSet }?: { keepZIndex?: boolean, invokeSet?: boolean }): boolean;
+   reset({ keepZIndex, invokeSet }: { keepZIndex?: boolean, invokeSet?: boolean }): boolean;
 
    /**
     * Restores a saved positional state returning the data. Several optional parameters are available to control
@@ -93,7 +92,8 @@ interface PositionStateAPI {
       animateTo?: boolean,
       duration?: number,
       ease?: EasingReference,
-   }): Data.TJSPositionDataExtra | Promise<Data.TJSPositionDataExtra | undefined> | undefined;
+   }): TJSPositionNS.Data.TJSPositionDataExtra | Promise<TJSPositionNS.Data.TJSPositionDataExtra | undefined> |
+    undefined;
 
    /**
     * Saves current position state with the opportunity to add extra data to the saved state. Simply include
@@ -103,7 +103,7 @@ interface PositionStateAPI {
     *
     * @param {string}   options.name - name to index this saved data.
     *
-    * @param {import('../types').TJSPositionTypes.OptionsGet} [optionsGet] - Additional options for
+    * @param {import('../types').TJSPositionNS.Options.Get} [optionsGet] - Additional options for
     *        {@link TJSPosition.get} when serializing position state. By default, `nullable` values are included.
     *
     * @returns {Data.TJSPositionDataExtra} Current position data
@@ -111,7 +111,7 @@ interface PositionStateAPI {
    save({ name, ...extra }: {
       name: string;
       [key: string]: any;
-   }, optionsGet: TJSPositionTypes.OptionsGet): Data.TJSPositionDataExtra;
+   }, optionsGet: TJSPositionNS.Options.Get): TJSPositionNS.Data.TJSPositionDataExtra;
 
    /**
     * Directly sets a saved position state. Simply include extra properties in `options` to set extra data.

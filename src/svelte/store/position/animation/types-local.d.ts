@@ -3,12 +3,11 @@
 import type { InterpolateFunction } from '#runtime/math/interpolate';
 import type { EasingFunction }      from '#runtime/svelte/easing';
 
-import type { AnimationAPI }        from './types';
-
 import type { AnimationControl }    from './AnimationControl';
 
-import type { TransformAPI }        from '../transform/types';
 import type { TJSPosition }         from '../TJSPosition.js';
+
+import type { TJSPositionNS }       from '../types';
 
 /**
  * Internal data structure tracking an animation.
@@ -42,7 +41,7 @@ export type AnimationData = {
    /**
     * Target destination for animation.
     */
-   destination: { [key: AnimationAPI.AnimationKey]: number } | undefined;
+   destination: { [key: TJSPositionNS.API.Animation.AnimationKey]: number } | undefined;
 
    /**
     * Duration of animation in milliseconds.
@@ -67,7 +66,7 @@ export type AnimationData = {
    /**
     * Initial position data.
     */
-   initial: { [key: AnimationAPI.AnimationKey]: number };
+   initial: { [key: TJSPositionNS.API.Animation.AnimationKey]: number };
 
    /**
     * Interpolation function; default lerp.
@@ -82,7 +81,7 @@ export type AnimationData = {
    /**
     * Copy of initial data. Used as temporary storage.
     */
-   newData: { [key: AnimationAPI.AnimationKey]: number };
+   newData: { [key: TJSPositionNS.API.Animation.AnimationKey]: number };
 
    /**
     * Associated TJSPosition instance.
@@ -107,12 +106,12 @@ export type AnimationData = {
    /**
     * A transform origin for the animation.
     */
-   transformOrigin: TransformAPI.TransformOrigin | undefined;
+   transformOrigin: TJSPositionNS.API.Transform.TransformOrigin | undefined;
 
    /**
     * The initial transform origin to set after the animation finishes.
     */
-   transformOriginInitial: TransformAPI.TransformOrigin | undefined;
+   transformOriginInitial: TJSPositionNS.API.Transform.TransformOrigin | undefined;
 }
 
 /**
