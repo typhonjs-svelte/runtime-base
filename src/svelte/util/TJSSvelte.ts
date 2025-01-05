@@ -14,12 +14,12 @@ class TJSSvelte
 {
    private constructor() {}
 
-   static get config(): typeof TJSSvelte.API.Config { return APIConfig; }
+   static get config(): TJSSvelte.API.Config { return APIConfig; }
 
    /**
     * @returns The utility API.
     */
-   static get util(): typeof TJSSvelte.API.Util { return APIUtil; }
+   static get util(): TJSSvelte.API.Util { return APIUtil; }
 }
 
 Object.seal(TJSSvelte);
@@ -28,9 +28,7 @@ export { TJSSvelte };
 
 declare namespace TJSSvelte {
    export namespace API {
-      export abstract class Config {
-         private constructor();
-
+      export interface Config {
          /**
           * Validates `config` argument whether it is a valid {@link TJSSvelte.Config.Dynamic} or
           * {@link TJSSvelte.Config.Standard} configuration object suitable for parsing by
@@ -46,7 +44,7 @@ declare namespace TJSSvelte {
           *
           * @throws {TypeError}  Any validation error when `raiseException` is enabled.
           */
-         static isConfig(config: unknown, options?: { raiseException?: boolean }):
+         isConfig(config: unknown, options?: { raiseException?: boolean }):
           config is TJSSvelte.Config.Dynamic | TJSSvelte.Config.Standard;
 
          /**
@@ -63,7 +61,7 @@ declare namespace TJSSvelte {
           *
           * @throws {TypeError}  Any validation error when `raiseException` is enabled.
           */
-         static isConfigEmbed(config: unknown, options?: { raiseException?: boolean }):
+         isConfigEmbed(config: unknown, options?: { raiseException?: boolean }):
           config is TJSSvelte.Config.Embed;
 
          /**
@@ -84,13 +82,11 @@ declare namespace TJSSvelte {
           * @returns The processed Svelte config object turned with parsed `props` & `context` converted into the format
           *          supported by Svelte.
           */
-         static parseConfig(config: TJSSvelte.Config.Dynamic | TJSSvelte.Config.Standard, options?:
-          { thisArg?: unknown }): TJSSvelte.Config.Parsed;
+         parseConfig(config: TJSSvelte.Config.Dynamic | TJSSvelte.Config.Standard, options?: { thisArg?: unknown }):
+          TJSSvelte.Config.Parsed;
       }
 
-      export abstract class Util {
-         private constructor();
-
+      export interface Util {
          /**
           * Provides basic duck typing to determine if the provided function is a constructor function for a Svelte
           * component.
@@ -99,7 +95,7 @@ declare namespace TJSSvelte {
           *
           * @returns Whether basic duck typing succeeds.
           */
-         static isComponent(comp: unknown): boolean;
+         isComponent(comp: unknown): boolean;
 
          /**
           * Provides basic duck typing to determine if the provided object is a HMR ProxyComponent instance or class.
@@ -108,7 +104,7 @@ declare namespace TJSSvelte {
           *
           * @returns {boolean} Whether basic duck typing succeeds.
           */
-         static isHMRProxy(comp: unknown): boolean;
+         isHMRProxy(comp: unknown): boolean;
 
          /**
           * Runs outro transition then destroys Svelte component.
@@ -119,7 +115,7 @@ declare namespace TJSSvelte {
           *
           * @returns Promise returned after outro transition completed and component destroyed.
           */
-         static outroAndDestroy(instance: SvelteComponent): Promise<void>;
+         outroAndDestroy(instance: SvelteComponent): Promise<void>;
       }
    }
 
