@@ -105,7 +105,7 @@ export class UpdateElementManager
          // If calculate transform options is enabled then update the transform data and set the readable store.
          if (updateData.options.calculateTransform || updateData.options.transformSubscribed)
          {
-            UpdateElementManager.#updateTransform(el, updateData);
+            UpdateElementManager.#updateTransform(updateData);
          }
 
          // Update all subscribers with changed data.
@@ -142,7 +142,7 @@ export class UpdateElementManager
       // If calculate transform options is enabled then update the transform data and set the readable store.
       if (updateData.options.calculateTransform || updateData.options.transformSubscribed)
       {
-         UpdateElementManager.#updateTransform(el, updateData);
+         UpdateElementManager.#updateTransform(updateData);
       }
 
       // Update all subscribers with changed data.
@@ -289,21 +289,19 @@ export class UpdateElementManager
    }
 
    /**
-    * Updates the applied transform data and sets the readble `transform` store.
+    * Updates the applied transform data and sets the readable `transform` store.
     *
-    * @param {HTMLElement} el - The target HTMLElement.
-    *
-    * @param {import('./').UpdateElementData} updateData - Update element data.
+    * @param updateData - Update element data.
     */
-   static #updateTransform(el: HTMLElement, updateData: UpdateElementData): void
+   static #updateTransform(updateData: UpdateElementData): void
    {
       const validationData = this.#validationData;
 
       validationData.height = updateData.data.height !== 'auto' && updateData.data.height !== 'inherit' ?
        updateData.data.height : updateData.styleCache.offsetHeight;
 
-      validationData.width = updateData.data.width !== 'auto' && updateData.data.height !== 'inherit' ?
-       updateData.data.width as number : updateData.styleCache.offsetWidth;
+      validationData.width = updateData.data.width !== 'auto' && updateData.data.width !== 'inherit' ?
+       updateData.data.width : updateData.styleCache.offsetWidth;
 
       validationData.marginLeft = updateData.styleCache.marginLeft;
 
