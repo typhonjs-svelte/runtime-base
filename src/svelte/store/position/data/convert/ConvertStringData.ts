@@ -66,8 +66,10 @@ export class ConvertStringData
    static process(data: TJSPositionNS.Data.TJSPositionDataRelative,
     position: Partial<TJSPositionNS.Data.TJSPositionData>, el: Element): TJSPositionNS.Data.TJSPositionData
    {
-      let parentClientHeight: number = 0;
-      let parentClientWidth: number = 0;
+      // Used in `%` calculations. The first `%` conversion that requires parent element height and width will attempt
+      // to cache the parent element client height & width of the given element.
+      let parentClientHeight: number = Number.NaN;
+      let parentClientWidth: number = Number.NaN;
 
       for (const key in data)
       {
@@ -105,16 +107,19 @@ export class ConvertStringData
                   case '%':
                   {
                      // Cache parent client width / height on first parent percent based key.
-                     if (this.#animKeyTypes.percentParent.has(key))
+                     if (this.#animKeyTypes.percentParent.has(key) && (Number.isNaN(parentClientHeight) ||
+                      Number.isNaN(parentClientWidth)))
                      {
-                        if (!Number.isFinite(parentClientHeight) && el?.parentElement?.isConnected)
+                        if (el?.parentElement?.isConnected)
                         {
                            parentClientHeight = el.parentElement.clientHeight;
                            parentClientWidth = el.parentElement.clientWidth;
                         }
-
-                        if (parentClientHeight === void 0 || parentClientWidth === void 0)
+                        else
                         {
+                           parentClientHeight = 0;
+                           parentClientWidth = 0;
+
                            console.warn(
                             `TJSPosition - ConvertStringData warning: could not determine parent constraints for key '${
                              key}' with value '${value}'.`);
