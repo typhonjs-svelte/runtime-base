@@ -1,3 +1,6 @@
+/**
+ * Provides type guards for `Number`.
+ */
 export class MathGuard {
    private constructor() {}
 
