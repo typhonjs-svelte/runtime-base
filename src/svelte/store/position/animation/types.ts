@@ -407,7 +407,7 @@ declare namespace AnimationAPI {
        *
        * @returns This quickTo callback function.
        */
-      options: (options: QuickTweenOptions) => QuickToCallback;
+      readonly options: (options: QuickTweenOptions) => QuickToCallback;
    }
 }
 

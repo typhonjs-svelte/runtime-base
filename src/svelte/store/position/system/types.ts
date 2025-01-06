@@ -151,68 +151,68 @@ declare namespace System {
 
    export interface SystemBase {
       /**
-       * @returns {boolean} The current constrain state.
+       * @returns The current constrain state.
        */
       get constrain(): boolean;
 
       /**
-       * @returns {HTMLElement | undefined | null} Target element.
+       * @returns Target element.
        */
       get element(): HTMLElement | undefined | null;
 
       /**
-       * @returns {boolean} Get enabled state.
+       * @returns Get enabled state.
        */
       get enabled(): boolean;
 
       /**
-       * @returns {number} Get manual height.
+       * @returns Get manual height.
        */
-      get height(): number;
+      get height(): number | undefined;
 
       /**
-       * @return {boolean} Get locked state.
+       * @return Get locked state.
        */
       get locked(): boolean;
 
       /**
-       * @returns {number} Get manual width.
+       * @returns Get manual width.
        */
-      get width(): number
+      get width(): number | undefined
 
       /**
-       * @param {boolean}  constrain - Set constrain state.
+       * @param constrain - Set constrain state.
        */
       set constrain(constrain: boolean);
 
       /**
-       * @param {HTMLElement | undefined | null} element - Set target element.
+       * @param element - Set target element.
        */
       set element(element: HTMLElement | undefined | null);
 
       /**
-       * @param {boolean}  enabled - Set enabled state.
+       * @param enabled - Set enabled state.
        */
       set enabled(enabled: boolean);
 
       /**
-       * @param {number}   height - Set manual height.
+       * @param height - Set manual height.
        */
-      set height(height: number);
+      set height(height: number | undefined);
 
       /**
-       * @param {number}   width - Set manual width.
+       * @param width - Set manual width.
        */
-      set width(width: number);
+      set width(width: number | undefined);
 
       /**
        * Set manual width & height.
        *
-       * @param {number}   width - New manual width.
+       * @param width - New manual width.
        *
-       * @param {number}   height - New manual height.
+       * @param height - New manual height.
        */
-      setDimension(width: number, height: number): void;
+      setDimension(width: number | undefined, height: number | undefined): void;
    }
 
    /**

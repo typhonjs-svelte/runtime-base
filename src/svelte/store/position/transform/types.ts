@@ -12,86 +12,86 @@ interface TransformAPI
    get isActive(): boolean;
 
    /**
-    * @returns {number | undefined} Any local `rotateX` data.
+    * @returns {number | null} Any local `rotateX` data.
     */
-   get rotateX(): number | undefined;
+   get rotateX(): number | null | undefined;
 
    /**
-    * @returns {number | undefined} Any local `rotateY` data.
+    * @returns {number | null} Any local `rotateY` data.
     */
-   get rotateY(): number | undefined;
+   get rotateY(): number | null | undefined;
 
    /**
-    * @returns {number | undefined} Any local `rotateZ` data.
+    * @returns {number | null} Any local `rotateZ` data.
     */
-   get rotateZ(): number | undefined;
+   get rotateZ(): number | null | undefined;
 
    /**
-    * @returns {number | undefined} Any local `scale` data.
+    * @returns {number | null} Any local `scale` data.
     */
-   get scale(): number | undefined;
+   get scale(): number | null | undefined;
 
    /**
-    * @returns {number | undefined} Any local `translateX` data.
+    * @returns {number | null} Any local `translateX` data.
     */
-   get translateX(): number | undefined;
+   get translateX(): number | null | undefined;
 
    /**
-    * @returns {number | undefined} Any local `translateY` data.
+    * @returns {number | null} Any local `translateY` data.
     */
-   get translateY(): number | undefined;
+   get translateY(): number | null | undefined;
 
    /**
-    * @returns {number | undefined} Any local `translateZ` data.
+    * @returns {number | null} Any local `translateZ` data.
     */
-   get translateZ(): number | undefined;
+   get translateZ(): number | null | undefined;
 
    /**
     * Sets the local `rotateX` data if the value is a finite number otherwise removes the local data.
     *
-    * @param {number | null | undefined}   value - A value to set.
+    * @param {number | null}   value - A value to set.
     */
    set rotateX(value: number | null | undefined);
 
    /**
     * Sets the local `rotateY` data if the value is a finite number otherwise removes the local data.
     *
-    * @param {number | null | undefined}   value - A value to set.
+    * @param {number | null}   value - A value to set.
     */
    set rotateY(value: number | null | undefined);
 
    /**
     * Sets the local `rotateZ` data if the value is a finite number otherwise removes the local data.
     *
-    * @param {number | null | undefined}   value - A value to set.
+    * @param {number | null}   value - A value to set.
     */
    set rotateZ(value: number | null | undefined);
 
    /**
     * Sets the local `scale` data if the value is a finite number otherwise removes the local data.
     *
-    * @param {number | null | undefined}   value - A value to set.
+    * @param {number | null}   value - A value to set.
     */
    set scale(value: number | null | undefined);
 
    /**
     * Sets the local `translateX` data if the value is a finite number otherwise removes the local data.
     *
-    * @param {number | null | undefined}   value - A value to set.
+    * @param {number | null}   value - A value to set.
     */
    set translateX(value: number | null | undefined);
 
    /**
     * Sets the local `translateY` data if the value is a finite number otherwise removes the local data.
     *
-    * @param {number | null | undefined}   value - A value to set.
+    * @param {number | null}   value - A value to set.
     */
    set translateY(value: number | null | undefined);
 
    /**
     * Sets the local `translateZ` data if the value is a finite number otherwise removes the local data.
     *
-    * @param {number | null | undefined}   value - A value to set.
+    * @param {number | null}   value - A value to set.
     */
    set translateZ(value: number | null | undefined);
 

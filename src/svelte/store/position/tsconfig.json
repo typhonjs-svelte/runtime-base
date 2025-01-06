@@ -1,0 +1,16 @@
+{
+  "compilerOptions" : {
+    "baseUrl": ".",
+    "lib": ["ES2022", "DOM"],
+    "module": "ES2022",
+    "moduleResolution" : "Bundler",
+    "target": "ES2022",
+    "strict": false,
+    "strictNullChecks": false,
+
+    "allowJs": true
+  },
+  "include": [
+    "./**/*"
+  ]
+}

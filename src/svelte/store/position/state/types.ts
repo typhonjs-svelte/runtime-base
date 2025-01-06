@@ -126,6 +126,100 @@ interface PositionStateAPI {
    }): void;
 }
 
+declare namespace PositionStateAPI {
+   export namespace Options {
+      /**
+       * Options for `TJSPosition.state.reset`.
+       */
+      export type Reset = {
+         /**
+          * When true keeps current z-index.
+          * @defaultValue `false`
+          */
+         keepZIndex?: boolean;
+
+         /**
+          * When true invokes set method.
+          * @defaultValue `true`
+          */
+         invokeSet?: boolean;
+      }
+
+      /**
+       * Options for `TJSPosition.state.restore`.
+       */
+      export type Restore = {
+         /**
+          * Saved data name.
+          */
+         name: string;
+
+         /**
+          * Deletes data set.
+          * @defaultValue `false`
+          */
+         remove?: boolean;
+
+         /**
+          * Specific properties to set / animate.
+          */
+         properties?: Iterable<string>;
+
+         /**
+          * Set position data directly; no store or style updates.
+          */
+         silent?: boolean;
+
+         /**
+          * If animating return a Promise that resolves with any saved data.
+          * @defaultValue `false`
+          */
+         async?: boolean;
+
+         /**
+          * Animate to restore data.
+          * @defaultValue `false`
+          */
+         animateTo?: boolean;
+
+         /**
+          * Duration in seconds.
+          */
+         duration?: number;
+
+         /**
+          * Easing function name or function.
+          * @defaultValue `linear`
+          */
+         ease?: EasingReference;
+      }
+
+      /**
+       * Options for `TJSPosition.state.save`. You may include extra data that is serialized with position state.
+       */
+      export type Save = {
+         /**
+          * Name to index this saved data.
+          */
+         name: string;
+
+         [key: string]: any;
+      }
+
+      /**
+       * Options for `TJSPosition.state.set`. You may include extra data that is serialized with position state.
+       */
+      export type Set = {
+         /**
+          * Name to index this saved data.
+          */
+         name: string;
+
+         [key: string]: any;
+      }
+   }
+}
+
 export {
    PositionStateAPI
 }

@@ -275,7 +275,7 @@ export declare namespace TJSPositionNS {
           * element. This is useful if set is called from requestAnimationFrame / rAF. Library integrations like GSAP
           * invoke set from rAF.
           */
-         immediateElementUpdate: boolean;
+         immediateElementUpdate?: boolean;
       }
    }
 

@@ -159,8 +159,8 @@ declare namespace ValidatorAPI {
     */
    export type ValidatorData = {
       /**
-       * TJSPosition validator function that takes a {@link Data.TJSPositionData} instance potentially modifying it or
-       * returning null if invalid.
+       * TJSPosition validator function that takes a {@link TJSPositionNS.Data.TJSPositionData} instance potentially
+       * modifying it or returning null if invalid.
        */
       validate: ValidatorFn;
 

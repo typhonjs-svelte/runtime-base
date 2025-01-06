@@ -21,7 +21,7 @@ export type AnimationData = {
    /**
     * Associated cleanup function.
     */
-   cleanup: AnimationCleanupFunction;
+   cleanup?: AnimationCleanupFunction;
 
    /**
     * Animation cancelled state.
@@ -54,9 +54,9 @@ export type AnimationData = {
    ease: EasingFunction;
 
    /**
-    * Associated HTMLElement.
+    * Associated Element.
     */
-   el: HTMLElement | undefined;
+   el: Element | undefined;
 
    /**
     * Animation finished state.
@@ -106,12 +106,12 @@ export type AnimationData = {
    /**
     * A transform origin for the animation.
     */
-   transformOrigin: TJSPositionNS.API.Transform.TransformOrigin | undefined;
+   transformOrigin?: TJSPositionNS.API.Transform.TransformOrigin;
 
    /**
     * The initial transform origin to set after the animation finishes.
     */
-   transformOriginInitial: TJSPositionNS.API.Transform.TransformOrigin | undefined;
+   transformOriginInitial?: TJSPositionNS.API.Transform.TransformOrigin;
 }
 
 /**
