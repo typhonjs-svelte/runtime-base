@@ -77,8 +77,8 @@ export class TransformBounds extends SystemBase
          data.boundingRect.x += Math.abs(data.boundingRect.left - marginLeft);
       }
 
-      valData.position.left -= initialX - data.boundingRect.x;
-      valData.position.top -= initialY - data.boundingRect.y;
+      valData.position.left! -= initialX - data.boundingRect.x;
+      valData.position.top! -= initialY - data.boundingRect.y;
 
       return valData.position;
    }
