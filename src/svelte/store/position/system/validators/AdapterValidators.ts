@@ -151,7 +151,7 @@ export class AdapterValidators implements TJSPositionNS.System.Validator.API
                   }
 
                   if (validator.weight !== void 0 && typeof validator.weight !== 'number' ||
-                     (validator.weight < 0 || validator.weight > 1))
+                   (validator?.weight! < 0 || validator?.weight! > 1))
                   {
                      throw new TypeError(
                         `AdapterValidator error: 'weight' attribute is not a number between '0 - 1' inclusive.`);
@@ -174,10 +174,8 @@ export class AdapterValidators implements TJSPositionNS.System.Validator.API
          }
 
          // Find the index to insert where data.weight is less than existing values weight.
-         const index = this.#validatorData.findIndex((value) =>
-         {
-            return data.weight < value.weight;
-         });
+         const index: number = this.#validatorData.findIndex(
+          (value: TJSPositionNS.System.Validator.API.ValidatorData): boolean => data.weight! < value.weight!);
 
          // If an index was found insert at that location.
          if (index >= 0)
