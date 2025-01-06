@@ -2,6 +2,7 @@ import { degToRad }              from '#runtime/math/util';
 import { Mat4, Vec3 }            from '#runtime/math/gl-matrix';
 
 import { TJSTransformData }      from './TJSTransformData';
+import { MathGuard }             from '../util';
 
 import type {
    Mat4Like,
@@ -29,9 +30,19 @@ export class TJSTransforms implements TJSPositionNS.API.Transform
    /**
     * Defines the keys of TJSPositionData that are transform keys.
     */
-   static #transformKeys: Readonly<Array<keyof TJSPositionNS.Data.TJSPositionData>> = Object.freeze([
-    'rotateX', 'rotateY', 'rotateZ', 'scale', 'translateX', 'translateY', 'translateZ'
+   static #transformKeys: Readonly<Array<TJSPositionNS.Data.TransformKeys>> = Object.freeze([
+      'rotateX', 'rotateY', 'rotateZ', 'scale', 'translateX', 'translateY', 'translateZ'
    ]);
+
+   /**
+    * Validates that a given key is a transform key.
+    *
+    * @param key - A potential transform key.
+    */
+   static #isTransformKey(key: string): key is TJSPositionNS.Data.TransformKeys
+   {
+      return this.#transformKeys.includes(key as TJSPositionNS.Data.TransformKeys);
+   }
 
    /**
     * Defines bitwise keys for transforms used in {@link TJSTransforms.getMat4}.
@@ -364,19 +375,19 @@ export class TJSTransforms implements TJSPositionNS.API.Transform
     * @returns The output TJSTransformData instance.
     */
    getData(position: TJSPositionNS.Data.TJSPositionData,
-    output: TJSPositionNS.API.Transform.TransformData = new TJSTransformData(), validationData: ValidationData = {}):
+    output: TJSPositionNS.API.Transform.TransformData = new TJSTransformData(), validationData?: ValidationData):
      TJSPositionNS.API.Transform.TransformData
    {
-      const valWidth: number = validationData.width ?? 0;
-      const valHeight: number = validationData.height ?? 0;
-      const valOffsetTop: number = validationData.offsetTop ?? validationData.marginTop ?? 0;
-      const valOffsetLeft: number = validationData.offsetLeft ?? validationData.marginLeft ?? 0;
+      const valWidth: number = validationData?.width ?? 0;
+      const valHeight: number = validationData?.height ?? 0;
+      const valOffsetTop: number = validationData?.offsetTop ?? validationData?.marginTop ?? 0;
+      const valOffsetLeft: number = validationData?.offsetLeft ?? validationData?.marginLeft ?? 0;
 
-      position.top += valOffsetTop;
-      position.left += valOffsetLeft;
+      position.top! += valOffsetTop;
+      position.left! += valOffsetLeft;
 
-      const width: number = (Number.isFinite(position.width) ? position.width : valWidth) as number;
-      const height: number = (Number.isFinite(position.height) ? position.height : valHeight) as number;
+      const width: number = MathGuard.isFinite(position.width) ? position.width : valWidth;
+      const height: number = MathGuard.isFinite(position.height) ? position.height : valHeight;
 
       const rect: Vec3[] = output.corners;
 
@@ -394,7 +405,7 @@ export class TJSTransforms implements TJSPositionNS.API.Transform
 
          const matrix: Mat4Like = this.getMat4(position, output.mat4);
 
-         const translate = TJSTransforms.#getOriginTranslation(position.transformOrigin, width, height,
+         const translate: Mat4[] = TJSTransforms.#getOriginTranslation(position.transformOrigin, width, height,
           output.originTranslations);
 
          if (TJSTransforms.#transformOriginDefault === position.transformOrigin)
@@ -423,25 +434,25 @@ export class TJSTransforms implements TJSPositionNS.API.Transform
             Vec3.transformMat4(rect[3], rect[3], translate[1]);
          }
 
-         rect[0][0] = position.left + rect[0][0];
-         rect[0][1] = position.top + rect[0][1];
-         rect[1][0] = position.left + rect[1][0];
-         rect[1][1] = position.top + rect[1][1];
-         rect[2][0] = position.left + rect[2][0];
-         rect[2][1] = position.top + rect[2][1];
-         rect[3][0] = position.left + rect[3][0];
-         rect[3][1] = position.top + rect[3][1];
+         rect[0][0] = position.left! + rect[0][0];
+         rect[0][1] = position.top! + rect[0][1];
+         rect[1][0] = position.left! + rect[1][0];
+         rect[1][1] = position.top! + rect[1][1];
+         rect[2][0] = position.left! + rect[2][0];
+         rect[2][1] = position.top! + rect[2][1];
+         rect[3][0] = position.left! + rect[3][0];
+         rect[3][1] = position.top! + rect[3][1];
       }
       else
       {
-         rect[0][0] = position.left;
-         rect[0][1] = position.top;
-         rect[1][0] = position.left + width;
-         rect[1][1] = position.top;
-         rect[2][0] = position.left + width;
-         rect[2][1] = position.top + height;
-         rect[3][0] = position.left;
-         rect[3][1] = position.top + height;
+         rect[0][0] = position.left!;
+         rect[0][1] = position.top!;
+         rect[1][0] = position.left! + width;
+         rect[1][1] = position.top!;
+         rect[2][0] = position.left! + width;
+         rect[2][1] = position.top! + height;
+         rect[3][0] = position.left!;
+         rect[3][1] = position.top! + height;
 
          Mat4.identity(output.mat4);
       }
@@ -465,8 +476,8 @@ export class TJSTransforms implements TJSPositionNS.API.Transform
       boundingRect.width = maxX - minX;
       boundingRect.height = maxY - minY;
 
-      position.top -= valOffsetTop;
-      position.left -= valOffsetLeft;
+      position.top! -= valOffsetTop;
+      position.left! -= valOffsetLeft;
 
       return output;
    }
@@ -666,17 +677,17 @@ export class TJSTransforms implements TJSPositionNS.API.Transform
          {
             case 'rotateX':
                seenKeys |= TJSTransforms.#transformKeysBitwise.rotateX;
-               Mat4.multiply(matrix, matrix, Mat4.fromXRotation(TJSTransforms.#mat4Temp, degToRad(data[key])));
+               Mat4.multiply(matrix, matrix, Mat4.fromXRotation(TJSTransforms.#mat4Temp, degToRad(data[key] ?? 0)));
                break;
 
             case 'rotateY':
                seenKeys |= TJSTransforms.#transformKeysBitwise.rotateY;
-               Mat4.multiply(matrix, matrix, Mat4.fromYRotation(TJSTransforms.#mat4Temp, degToRad(data[key])));
+               Mat4.multiply(matrix, matrix, Mat4.fromYRotation(TJSTransforms.#mat4Temp, degToRad(data[key] ?? 0)));
                break;
 
             case 'rotateZ':
                seenKeys |= TJSTransforms.#transformKeysBitwise.rotateZ;
-               Mat4.multiply(matrix, matrix, Mat4.fromZRotation(TJSTransforms.#mat4Temp, degToRad(data[key])));
+               Mat4.multiply(matrix, matrix, Mat4.fromZRotation(TJSTransforms.#mat4Temp, degToRad(data[key] ?? 0)));
                break;
          }
       }
@@ -684,9 +695,9 @@ export class TJSTransforms implements TJSPositionNS.API.Transform
       // Now apply any new keys not set in local transform data that have not been applied yet.
       if (data !== this.#data)
       {
-         for (let cntr = 0; cntr < TJSTransforms.#transformKeys.length; cntr++)
+         for (let cntr: number = 0; cntr < TJSTransforms.#transformKeys.length; cntr++)
          {
-            const key = TJSTransforms.#transformKeys[cntr];
+            const key: keyof TJSPositionNS.Data.TJSPositionData = TJSTransforms.#transformKeys[cntr];
 
             // Reject bad / no data or if the key has already been applied.
             if (data[key] === null || (seenKeys & TJSTransforms.#transformKeysBitwise[key]) > 0) { continue; }
@@ -694,15 +705,15 @@ export class TJSTransforms implements TJSPositionNS.API.Transform
             switch (key)
             {
                case 'rotateX':
-                  Mat4.multiply(matrix, matrix, Mat4.fromXRotation(TJSTransforms.#mat4Temp, degToRad(data[key])));
+                  Mat4.multiply(matrix, matrix, Mat4.fromXRotation(TJSTransforms.#mat4Temp, degToRad(data[key] ?? 0)));
                   break;
 
                case 'rotateY':
-                  Mat4.multiply(matrix, matrix, Mat4.fromYRotation(TJSTransforms.#mat4Temp, degToRad(data[key])));
+                  Mat4.multiply(matrix, matrix, Mat4.fromYRotation(TJSTransforms.#mat4Temp, degToRad(data[key] ?? 0)));
                   break;
 
                case 'rotateZ':
-                  Mat4.multiply(matrix, matrix, Mat4.fromZRotation(TJSTransforms.#mat4Temp, degToRad(data[key])));
+                  Mat4.multiply(matrix, matrix, Mat4.fromZRotation(TJSTransforms.#mat4Temp, degToRad(data[key] ?? 0)));
                   break;
             }
          }
@@ -731,21 +742,23 @@ export class TJSTransforms implements TJSPositionNS.API.Transform
    /**
     * Resets internal data from the given object containing valid transform keys.
     *
-    * @param {object}   data - An object with transform data.
+    * @param data - An object with transform data.
     */
-   reset(data: object)
+   reset(data: { [key: string]: any } & Partial<TJSPositionNS.Data.TJSPositionData>): void
    {
       for (const key in data)
       {
-         if (TJSTransforms.#transformKeys.includes(key as keyof TJSPositionNS.Data.TJSPositionData))
+         if (TJSTransforms.#isTransformKey(key))
          {
-            if (Number.isFinite(data[key]))
+            const value: any = data[key];
+
+            if (MathGuard.isFinite(value))
             {
-               this.#data[key] = data[key];
+               this.#data[key] = value;
             }
             else
             {
-               const index = this.#orderList.findIndex((entry) => entry === key);
+               const index: number = this.#orderList.findIndex((entry: string): boolean => entry === key);
                if (index >= 0) { this.#orderList.splice(index, 1); }
 
                delete this.#data[key];

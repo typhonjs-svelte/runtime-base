@@ -117,16 +117,16 @@ interface TransformAPI
     * Collects all data including a bounding rect, transform matrix, and points array of the given
     * {@link TJSPositionData} instance with the applied local transform data.
     *
-    * @param {TJSPositionNS.Data.TJSPositionData} position - The position data to process.
+    * @param position - The position data converted to numeric values to process.
     *
-    * @param {TransformAPI.TransformData} [output] - Optional TransformAPI.Data output instance.
+    * @param [output] - Optional TransformAPI.Data output instance.
     *
-    * @param {object} [validationData] - Optional validation data for adjustment parameters.
+    * @param [validationData] - Optional validation data for adjustment parameters.
     *
-    * @returns {TransformAPI.TransformData} The output TransformAPI.Data instance.
+    * @returns The output TransformAPI.Data instance.
     */
-   getData(position: TJSPositionNS.Data.TJSPositionData, output?: TransformAPI.TransformData, validationData?: object):
-    TransformAPI.TransformData;
+   getData(position: TJSPositionNS.Data.TJSPositionData, output?: TransformAPI.TransformData,
+    validationData?: object): TransformAPI.TransformData;
 
    /**
     * Creates a transform matrix based on local data applied in order it was added.
