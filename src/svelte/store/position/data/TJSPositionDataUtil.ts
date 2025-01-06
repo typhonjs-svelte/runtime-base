@@ -110,7 +110,7 @@ export class TJSPositionDataUtil
     *
     * @returns Data at key or numeric default.
     */
-   static getDataOrDefault(data: { [key: string]: any }, key: TJSPositionNS.API.Animation.AnimationKey,
+   static getDataOrDefault(data: { [key: string]: any }, key: keyof TJSPositionNS.Data.TJSPositionData,
     aliased: boolean = false): number
    {
       if (aliased) { key = this.#animateKeyAliases.get(key) ?? key; }

@@ -61,6 +61,11 @@ declare namespace Data {
    }
 
    /**
+    * Defines the keys in `TJSPositionData` that are transform keys.
+    */
+   type TransformKeys = 'rotateX' | 'rotateY' | 'rotateZ' | 'scale' | 'translateX' | 'translateY' | 'translateZ';
+
+   /**
     * Defines an extension to {@link Data.TJSPositionData} where each animatable property defined by
     * {@link AnimationAPI.AnimationKey} can also be a string. Relative adjustments to animatable properties should be
     * a string the form of '+=', '-=', or '*=' and float / numeric value. IE '+=0.2'. {@link TJSPosition.set} will
