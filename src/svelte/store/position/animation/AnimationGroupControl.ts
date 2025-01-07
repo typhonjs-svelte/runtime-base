@@ -13,11 +13,11 @@ export class AnimationGroupControl implements BasicAnimation
 {
    /**
     */
-   readonly #animationControls: Set<AnimationControl>;
+   readonly #animationControls: Set<AnimationControl> | null;
 
    /**
     */
-   #finishedPromise: Promise<BasicAnimationState>;
+   #finishedPromise: Promise<BasicAnimationState> | undefined;
 
    /**
     * Defines a static empty / void animation control.
@@ -32,7 +32,7 @@ export class AnimationGroupControl implements BasicAnimation
    /**
     * @param animationControls - A Set of AnimationControl instances.
     */
-   constructor(animationControls: Set<AnimationControl>)
+   constructor(animationControls: Set<AnimationControl> | null)
    {
       this.#animationControls = animationControls;
    }
@@ -44,7 +44,7 @@ export class AnimationGroupControl implements BasicAnimation
     */
    get finished(): Promise<BasicAnimationState>
    {
-      const animationControls: Set<AnimationControl> = this.#animationControls;
+      const animationControls: Set<AnimationControl> | null = this.#animationControls;
 
       if (!CrossWindow.isPromise(this.#finishedPromise))
       {
@@ -83,7 +83,7 @@ export class AnimationGroupControl implements BasicAnimation
     */
    get isActive(): boolean
    {
-      const animationControls: Set<AnimationControl> = this.#animationControls;
+      const animationControls: Set<AnimationControl> | null = this.#animationControls;
 
       if (animationControls === null || animationControls === void 0 || animationControls.size === 0) { return false; }
 
@@ -102,7 +102,7 @@ export class AnimationGroupControl implements BasicAnimation
     */
    get isFinished(): boolean
    {
-      const animationControls: Set<AnimationControl> = this.#animationControls;
+      const animationControls: Set<AnimationControl> | null = this.#animationControls;
 
       if (animationControls === null || animationControls === void 0 || animationControls.size === 0) { return true; }
 
@@ -119,7 +119,7 @@ export class AnimationGroupControl implements BasicAnimation
     */
    cancel(): void
    {
-      const animationControls: Set<AnimationControl> = this.#animationControls;
+      const animationControls: Set<AnimationControl> | null = this.#animationControls;
 
       if (animationControls === null || animationControls === void 0 || animationControls.size === 0) { return; }
 

@@ -199,7 +199,7 @@ export class PositionStateAPI implements StateAPI
          {
             for (const property in data)
             {
-               if (property in this.#data) { this.#data[property as keyof Data.TJSPositionData] = data[property]; }
+               if (property in this.#data) { this.#data[property] = data[property]; }
             }
             return dataSaved;
          }

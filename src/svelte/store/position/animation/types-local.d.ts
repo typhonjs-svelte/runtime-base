@@ -42,7 +42,7 @@ export type AnimationData = {
    /**
     * Target destination for animation.
     */
-   destination: { [key: AnimationAPI.AnimationKey]: number } | undefined;
+   destination: Partial<Record<AnimationAPI.AnimationKey, number>> | undefined;
 
    /**
     * Duration of animation in milliseconds.
@@ -67,7 +67,7 @@ export type AnimationData = {
    /**
     * Initial position data.
     */
-   initial: { [key: AnimationAPI.AnimationKey]: number };
+   initial: Partial<Record<AnimationAPI.AnimationKey, number>>;
 
    /**
     * Interpolation function; default lerp.
@@ -82,7 +82,7 @@ export type AnimationData = {
    /**
     * Copy of initial data. Used as temporary storage.
     */
-   newData: { [key: AnimationAPI.AnimationKey]: number };
+   newData: Partial<Record<AnimationAPI.AnimationKey, number>>;
 
    /**
     * Associated TJSPosition instance.
@@ -97,7 +97,7 @@ export type AnimationData = {
    /**
     * Any Promise resolve function; added when `finished` is accessed on AnimationControl.
     */
-   resolve: Function;
+   resolve: Function | undefined;
 
    /**
     * Starting time of animation.

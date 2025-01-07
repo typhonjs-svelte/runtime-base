@@ -65,7 +65,7 @@ export class ConvertStringData
     * @returns Converted data.
     */
    static process(data: Data.TJSPositionDataRelative,
-                  position: Partial<Data.TJSPositionData>, el: Element): Data.TJSPositionData
+    position: Partial<Data.TJSPositionData>, el: Element): Data.TJSPositionData
    {
       // Used in `%` calculations. The first `%` conversion that requires parent element height and width will attempt
       // to cache the parent element client height & width of the given element.

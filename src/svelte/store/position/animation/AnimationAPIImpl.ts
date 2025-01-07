@@ -16,12 +16,16 @@ import {
    ConvertStringData,
    TJSPositionDataUtil }         from '../data';
 
+import { NumberGuard }           from '../util';
+
 import type { BasicAnimation }   from '#runtime/util/animate';
 
 import type { AnimationAPI }     from './types';
 
 import type { TJSPosition }      from '../TJSPosition';
 import type { Data }             from '../data/types';
+
+import type { AnimationData }    from './types-local';
 
 /**
  */
@@ -88,7 +92,7 @@ export class AnimationAPIImpl implements AnimationAPI
    from(fromData: Data.TJSPositionDataRelative, options: AnimationAPI.TweenOptions):
     BasicAnimation
    {
-      const animationControl: AnimationControl = AnimationScheduler.from(this.#position, fromData, options);
+      const animationControl: AnimationControl | null = AnimationScheduler.from(this.#position, fromData, options);
       return animationControl ? animationControl : AnimationControl.voidControl;
    }
 
@@ -106,7 +110,9 @@ export class AnimationAPIImpl implements AnimationAPI
    fromTo(fromData: Data.TJSPositionDataRelative, toData: Data.TJSPositionDataRelative,
           options: AnimationAPI.TweenOptions): BasicAnimation
    {
-      const animationControl: AnimationControl = AnimationScheduler.fromTo(this.#position, fromData, toData, options);
+      const animationControl: AnimationControl | null = AnimationScheduler.fromTo(this.#position, fromData, toData,
+       options);
+
       return animationControl ? animationControl : AnimationControl.voidControl;
    }
 
@@ -122,7 +128,7 @@ export class AnimationAPIImpl implements AnimationAPI
    to(toData: Data.TJSPositionDataRelative, options: AnimationAPI.TweenOptions):
     BasicAnimation
    {
-      const animationControl: AnimationControl = AnimationScheduler.to(this.#position, toData, options);
+      const animationControl: AnimationControl | null = AnimationScheduler.to(this.#position, toData, options);
       return animationControl ? animationControl : AnimationControl.voidControl;
    }
 
@@ -172,7 +178,7 @@ export class AnimationAPIImpl implements AnimationAPI
       const initial = {};
       const destination = {};
 
-      const data = this.#data;
+      const data: Data.TJSPositionData = this.#data;
 
       // Set initial data if the key / data is defined and the end position is not equal to current data.
       for (const key of keys)
@@ -203,8 +209,7 @@ export class AnimationAPIImpl implements AnimationAPI
 
       const newData = Object.assign({}, initial);
 
-      /** @type {import('./types-local').AnimationData} */
-      const animationData = {
+      const animationData: AnimationData = {
          active: true,
          cancelled: false,
          control: void 0,
@@ -220,7 +225,7 @@ export class AnimationAPIImpl implements AnimationAPI
          newData,
          position: this.#position,
          resolve: void 0,
-         start: void 0,
+         start: 0,
          quickTo: true
       };
 
@@ -267,7 +272,7 @@ export class AnimationAPIImpl implements AnimationAPI
          const targetEl: Element = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
          animationData.el = A11yHelper.isFocusTarget(targetEl) && targetEl.isConnected ? targetEl : void 0;
 
-         ConvertStringData.process(destination, data, animationData.el);
+         ConvertStringData.process(destination, data, animationData.el!);
 
          // Reschedule the quickTo animation with AnimationManager as it is finished.
          if (animationData.finished)
@@ -281,7 +286,7 @@ export class AnimationAPIImpl implements AnimationAPI
          }
          else // QuickTo animation is currently scheduled w/ AnimationManager so reset start and current time.
          {
-            const now = globalThis.performance.now();
+            const now: number = globalThis.performance.now();
 
             animationData.cancelled = false;
             animationData.current = 0;
@@ -309,7 +314,7 @@ export class AnimationAPIImpl implements AnimationAPI
                throw new TypeError(`AnimationAPI.quickTo.options error: 'duration' is not a positive number.`);
             }
 
-            ease = getEasingFunc(ease, AnimationAPIImpl.#getEaseOptions);
+            ease = getEasingFunc(ease!, AnimationAPIImpl.#getEaseOptions);
 
             if (ease !== void 0 && typeof ease !== 'function')
             {
@@ -319,7 +324,7 @@ export class AnimationAPIImpl implements AnimationAPI
 
             // TODO: In the future potentially support more interpolation functions besides `lerp`.
 
-            if (duration >= 0) { animationData.duration = duration * 1000; }
+            if (NumberGuard.isFinite(duration) && duration >= 0) { animationData.duration = duration * 1000; }
             if (ease) { animationData.ease = ease; }
 
             return quickToCB as AnimationAPI.QuickToCallback;

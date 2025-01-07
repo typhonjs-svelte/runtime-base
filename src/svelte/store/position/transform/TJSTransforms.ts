@@ -111,13 +111,13 @@ export class TJSTransforms implements TransformAPI
    /**
     * Returns whether the given string is a {@link TransformAPI.TransformOrigin}.
     *
-    * @param {string}  origin - A potential transform origin string.
+    * @param origin - A potential transform origin string.
     *
     * @returns True if origin is a TransformOrigin string.
     */
-   static isTransformOrigin(origin: string): origin is TransformAPI.TransformOrigin
+   static isTransformOrigin(origin: unknown): origin is TransformAPI.TransformOrigin
    {
-      return this.#transformOriginsSet.has(origin);
+      return this.#transformOriginsSet.has(origin as string);
    }
 
    /**

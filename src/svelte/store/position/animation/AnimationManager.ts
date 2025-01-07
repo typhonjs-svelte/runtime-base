@@ -16,7 +16,7 @@ export class AnimationManager
    /**
     * Cancels all animations except `quickTo` animations.
     */
-   static cancelFn: AnimationCancelFunction = (data: AnimationData): boolean => data.quickTo !== true;
+   static cancelFn: AnimationCancelFunction = (data?: AnimationData): boolean => data?.quickTo !== true;
 
    /**
     * Cancels all animations.
@@ -290,13 +290,13 @@ export class AnimationManager
       for (let cntr: number = AnimationManager.#activeList.length; --cntr >= 0;)
       {
          const data: AnimationData = AnimationManager.#activeList[cntr];
-         if (data.position === position) { results.push(data.control); }
+         if (data.position === position && data.control) { results.push(data.control); }
       }
 
       for (let cntr: number = AnimationManager.#pendingList.length; --cntr >= 0;)
       {
          const data: AnimationData = AnimationManager.#pendingList[cntr];
-         if (data.position === position) { results.push(data.control); }
+         if (data.position === position && data.control) { results.push(data.control); }
       }
 
       return results;

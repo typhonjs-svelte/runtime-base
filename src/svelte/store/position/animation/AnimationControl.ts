@@ -14,11 +14,11 @@ export class AnimationControl implements BasicAnimation
 {
    /**
     */
-   readonly #animationData: AnimationData;
+   readonly #animationData: AnimationData | null;
 
    /**
     */
-   #finishedPromise: Promise<BasicAnimationState>;
+   #finishedPromise: Promise<BasicAnimationState> | undefined;
 
    /**
     */
@@ -57,7 +57,7 @@ export class AnimationControl implements BasicAnimation
    {
       if (!CrossWindow.isPromise(this.#finishedPromise))
       {
-         this.#finishedPromise = this.#willFinish ? new Promise((resolve) => this.#animationData.resolve = resolve) :
+         this.#finishedPromise = this.#willFinish ? new Promise<BasicAnimationState>((resolve) => this.#animationData!.resolve = resolve) :
           Promise.resolve({ cancelled: false });
       }
 
@@ -72,21 +72,21 @@ export class AnimationControl implements BasicAnimation
     *
     * @returns Animation active state.
     */
-   get isActive(): boolean { return this.#animationData.active; }
+   get isActive(): boolean { return this.#animationData?.active ?? false; }
 
    /**
     * Returns whether this animation is completely finished.
     *
     * @returns Animation finished state.
     */
-   get isFinished(): boolean { return this.#animationData.finished; }
+   get isFinished(): boolean { return this.#animationData?.finished ?? true; }
 
    /**
     * Cancels the animation.
     */
    cancel(): void
    {
-      const animationData: AnimationData = this.#animationData;
+      const animationData: AnimationData | null = this.#animationData;
 
       if (animationData === null || animationData === void 0) { return; }
 

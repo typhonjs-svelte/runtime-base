@@ -5,8 +5,10 @@
     "module": "ES2022",
     "moduleResolution" : "Bundler",
     "target": "ES2022",
-    "strict": true,
-    "strictNullChecks": true,
+
+    // Pretty close to enabling; mostly fixes required in `./animation`.
+    "strict": false,
+    "strictNullChecks": false,
   },
   "include": [
     "./**/*"

@@ -166,7 +166,8 @@ export class AnimationScheduler
 
       // Cache any target element allowing AnimationManager to stop animation if it becomes disconnected from DOM.
       const targetEl: FocusableElement = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
-      const el: FocusableElement = A11yHelper.isFocusTarget(targetEl) && targetEl.isConnected ? targetEl : void 0;
+      const el: FocusableElement | undefined = A11yHelper.isFocusTarget(targetEl) && targetEl.isConnected ? targetEl :
+       void 0;
 
       if (!Number.isFinite(delay) || delay < 0)
       {
@@ -197,7 +198,8 @@ export class AnimationScheduler
       transformOrigin = TJSTransforms.isTransformOrigin(transformOrigin) ? transformOrigin : void 0;
 
       // Given a valid transform origin store the initial transform origin to be restored.
-      const transformOriginInitial = transformOrigin !== void 0 ? this.#data.transformOrigin : void 0;
+      const transformOriginInitial: TransformAPI.TransformOrigin | null | undefined = transformOrigin !== void 0 ?
+       this.#data.transformOrigin : void 0;
 
       // Set initial data if the key / data is defined and the end position is not equal to current data.
       for (const key in fromData)
@@ -267,7 +269,8 @@ export class AnimationScheduler
 
       // Cache any target element allowing AnimationManager to stop animation if it becomes disconnected from DOM.
       const targetEl: FocusableElement = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
-      const el: FocusableElement = A11yHelper.isFocusTarget(targetEl) && targetEl.isConnected ? targetEl : void 0;
+      const el: FocusableElement | undefined = A11yHelper.isFocusTarget(targetEl) && targetEl.isConnected ? targetEl :
+       void 0;
 
       if (!Number.isFinite(delay) || delay < 0)
       {
@@ -298,7 +301,7 @@ export class AnimationScheduler
       transformOrigin = TJSTransforms.isTransformOrigin(transformOrigin) ? transformOrigin : void 0;
 
       // Given a valid transform origin store the initial transform origin to be restored.
-      const transformOriginInitial: TransformAPI.TransformOrigin = transformOrigin !== void 0 ?
+      const transformOriginInitial: TransformAPI.TransformOrigin | null | undefined = transformOrigin !== void 0 ?
        this.#data.transformOrigin : void 0;
 
       // Set initial data if the key / data is defined and the end position is not equal to current data.
@@ -401,7 +404,7 @@ export class AnimationScheduler
       transformOrigin = TJSTransforms.isTransformOrigin(transformOrigin) ? transformOrigin : void 0;
 
       // Given a valid transform origin store the initial transform origin to be restored.
-      const transformOriginInitial: TransformAPI.TransformOrigin = transformOrigin !== void 0 ?
+      const transformOriginInitial: TransformAPI.TransformOrigin | null | undefined = transformOrigin !== void 0 ?
        this.#data.transformOrigin : void 0;
 
       // Set initial data if the key / data is defined and the end position is not equal to current data.
