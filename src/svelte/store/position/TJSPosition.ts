@@ -277,25 +277,25 @@ class TJSPosition implements TJSPosition.WritableExt
 
       this.#stores = Object.freeze({
          // The main properties for manipulating TJSPosition.
-         height: propertyStore(this, 'height'),
-         left: propertyStore(this, 'left'),
-         rotateX: propertyStore(this, 'rotateX'),
-         rotateY: propertyStore(this, 'rotateY'),
-         rotateZ: propertyStore(this, 'rotateZ'),
-         scale: propertyStore(this, 'scale'),
-         top: propertyStore(this, 'top'),
-         transformOrigin: propertyStore(this, 'transformOrigin'),
-         translateX: propertyStore(this, 'translateX'),
-         translateY: propertyStore(this, 'translateY'),
-         translateZ: propertyStore(this, 'translateZ'),
-         width: propertyStore(this, 'width'),
-         zIndex: propertyStore(this, 'zIndex'),
+         height: propertyStore<TJSPositionData, 'height'>(this, 'height'),
+         left: propertyStore<TJSPositionData, 'left'>(this, 'left'),
+         rotateX: propertyStore<TJSPositionData, 'rotateX'>(this, 'rotateX'),
+         rotateY: propertyStore<TJSPositionData, 'rotateY'>(this, 'rotateY'),
+         rotateZ: propertyStore<TJSPositionData, 'rotateZ'>(this, 'rotateZ'),
+         scale: propertyStore<TJSPositionData, 'scale'>(this, 'scale'),
+         top: propertyStore<TJSPositionData, 'top'>(this, 'top'),
+         transformOrigin: propertyStore(this, 'transformOrigin') as TransformAPI.TransformOriginWritable,
+         translateX: propertyStore<TJSPositionData, 'translateX'>(this, 'translateX'),
+         translateY: propertyStore<TJSPositionData, 'translateY'>(this, 'translateY'),
+         translateZ: propertyStore<TJSPositionData, 'translateZ'>(this, 'translateZ'),
+         width: propertyStore<TJSPositionData, 'width'>(this, 'width'),
+         zIndex: propertyStore<TJSPositionData, 'zIndex'>(this, 'zIndex'),
 
          // Stores that control validation when width / height is not `auto`.
-         maxHeight: propertyStore(this, 'maxHeight'),
-         maxWidth: propertyStore(this, 'maxWidth'),
-         minHeight: propertyStore(this, 'minHeight'),
-         minWidth: propertyStore(this, 'minWidth'),
+         maxHeight: propertyStore<TJSPositionData, 'maxHeight'>(this, 'maxHeight'),
+         maxWidth: propertyStore<TJSPositionData, 'maxWidth'>(this, 'maxWidth'),
+         minHeight: propertyStore<TJSPositionData, 'minHeight'>(this, 'minHeight'),
+         minWidth: propertyStore<TJSPositionData, 'minWidth'>(this, 'minWidth'),
 
          // Readable stores based on updates or from resize observer changes.
          dimension: { subscribe: updateData.storeDimension.subscribe },
