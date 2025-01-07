@@ -510,7 +510,7 @@ export class A11yHelper
    /**
     * Convenience method to check if the given data is a valid focus source.
     *
-    * @param {Element | string}   data - Either an HTMLElement, SVGElement, or selector string.
+    * @param {Element | EventTarget | string}   data - Either an HTMLElement, SVGElement, or selector string.
     *
     * @returns {boolean} Is valid focus source.
     */
@@ -522,9 +522,9 @@ export class A11yHelper
    /**
     * Tests if the given `element` is a Element node and has a `focus` method.
     *
-    * @param {Element}  element - Element to test for focus method.
+    * @param {unknown}  element - Element to test for focus method.
     *
-    * @returns {boolean} Whether the element has a focus method.
+    * @returns {element is FocusableElement} Whether the element has a focus method.
     */
    static isFocusTarget(element)
    {
