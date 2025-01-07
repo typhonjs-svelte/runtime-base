@@ -33,43 +33,43 @@ export class TJSPositionData implements Data.TJSPositionData
    rotation: number | null
 
    /**
-    * @param {object} [opts] - Options.
+    * @param [opts] - Options.
     *
-    * @param {number | 'auto' | 'inherit' | null} [opts.height] -
+    * @param [opts.height] -
     *
-    * @param {number | null} [opts.left] -
+    * @param [opts.left] -
     *
-    * @param {number | null} [opts.maxHeight] -
+    * @param [opts.maxHeight] -
     *
-    * @param {number | null} [opts.maxWidth] -
+    * @param [opts.maxWidth] -
     *
-    * @param {number | null} [opts.minHeight] -
+    * @param [opts.minHeight] -
     *
-    * @param {number | null} [opts.minWidth] -
+    * @param [opts.minWidth] -
     *
-    * @param {number | null} [opts.rotateX] -
+    * @param [opts.rotateX] -
     *
-    * @param {number | null} [opts.rotateY] -
+    * @param [opts.rotateY] -
     *
-    * @param {number | null} [opts.rotateZ] -
+    * @param [opts.rotateZ] -
     *
-    * @param {number | null} [opts.scale] -
+    * @param [opts.scale] -
     *
-    * @param {number | null} [opts.translateX] -
+    * @param [opts.translateX] -
     *
-    * @param {number | null} [opts.translateY] -
+    * @param [opts.translateY] -
     *
-    * @param {number | null} [opts.translateZ] -
+    * @param [opts.translateZ] -
     *
-    * @param {number | null} [opts.top] -
+    * @param [opts.top] -
     *
     * @param [opts.transformOrigin] -
     *
-    * @param {number | 'auto' | 'inherit' | null} [opts.width] -
+    * @param [opts.width] -
     *
-    * @param {number | null} [opts.zIndex] -
+    * @param [opts.zIndex] -
     *
-    * @param {number | null} [opts.rotation] - Alias for `rotateZ`.
+    * @param [opts.rotation] - Alias for `rotateZ`.
     */
    constructor({ height = null, left = null, maxHeight = null, maxWidth = null, minHeight = null,
     minWidth = null, rotateX = null, rotateY = null, rotateZ = null, scale = null, translateX = null,

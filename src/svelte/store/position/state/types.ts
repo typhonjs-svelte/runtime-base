@@ -106,7 +106,7 @@ interface StateAPI {
     * @param [optionsGet] - Additional options for
     *        {@link TJSPosition.get} when serializing position state. By default, `nullable` values are included.
     *
-    * @returns {Data.TJSPositionDataExtra} Current position data
+    * @returns Current position data.
     */
    save({ name, ...extra }: {
       name: string;
@@ -116,9 +116,9 @@ interface StateAPI {
    /**
     * Directly sets a saved position state. Simply include extra properties in `options` to set extra data.
     *
-    * @param {object}   options - Options.
+    * @param options - Options.
     *
-    * @param {string}   options.name - name to index this saved data.
+    * @param options.name - name to index this saved data.
     */
    set({ name, ...data }: {
       name: string;

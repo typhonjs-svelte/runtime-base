@@ -236,9 +236,9 @@ export class PositionStateAPI implements StateAPI
     * Saves current position state with the opportunity to add extra data to the saved state. Simply include
     * extra properties in `options` to save extra data.
     *
-    * @param {object}   options - Options.
+    * @param options - Options.
     *
-    * @param {string}   options.name - name to index this saved data.
+    * @param options.name - name to index this saved data.
     *
     * @param [optionsGet] - Additional options for {@link TJSPosition.get} when serializing position state. By default,
     *        `nullable` values are included.
@@ -260,9 +260,9 @@ export class PositionStateAPI implements StateAPI
    /**
     * Directly sets a saved position state. Simply include extra properties in `options` to set extra data.
     *
-    * @param {object}   opts - Options.
+    * @param opts - Options.
     *
-    * @param {string}   opts.name - name to index this saved data.
+    * @param opts.name - name to index this saved data.
     */
    set({ name, ...data }: StateAPI.Options.Set): void
    {

@@ -28,18 +28,18 @@ declare namespace System {
          /**
           * Get the left constraint.
           *
-          * @param {number}   width - Target width.
+          * @param width - Target width.
           *
-          * @returns {number} Calculated left constraint.
+          * @returns Calculated left constraint.
           */
          getLeft(width: number): number;
 
          /**
           * Get the top constraint.
           *
-          * @param {number}   height - Target height.
+          * @param height - Target height.
           *
-          * @returns {number} Calculated top constraint.
+          * @returns Calculated top constraint.
           */
          getTop(height: number): number;
       }
@@ -49,19 +49,19 @@ declare namespace System {
        */
       export interface InitialSystemConstructor {
          /**
-          * @param {object}      [options] - Initial options.
+          * @param [options] - Initial options.
           *
-          * @param {boolean}     [options.constrain=true] - Constrain state.
+          * @param [options.constrain=true] - Constrain state.
           *
-          * @param {HTMLElement} [options.element] - Target element.
+          * @param [options.element] - Target element.
           *
-          * @param {boolean}     [options.enabled=true] - Enabled state.
+          * @param [options.enabled=true] - Enabled state.
           *
-          * @param {boolean}     [options.lock=false] - Lock parameters from being set.
+          * @param [options.lock=false] - Lock parameters from being set.
           *
-          * @param {number}      [options.width] - Manual width.
+          * @param [options.width] - Manual width.
           *
-          * @param {number}      [options.height] - Manual height.
+          * @param [options.height] - Manual height.
           */
          new ({ constrain, element, enabled, lock, width, height }?: {
             constrain?: boolean,
@@ -89,10 +89,6 @@ declare namespace System {
          /**
           * Provides a validator that respects transforms in positional data constraining the position to within the
           * target elements bounds.
-          *
-          * @param valData - The associated validation data for position updates.
-          *
-          * @returns {Data.TJSPositionData} Potentially adjusted position data.
           */
          validate: ValidatorAPI.ValidatorFn;
 
@@ -118,19 +114,19 @@ declare namespace System {
        */
       export interface ValidatorSystemConstructor {
          /**
-          * @param {object}      [options] - Initial options.
+          * @param [options] - Initial options.
           *
-          * @param {boolean}     [options.constrain=true] - Constrain state.
+          * @param [options.constrain=true] - Constrain state.
           *
-          * @param {HTMLElement} [options.element] - Target element.
+          * @param [options.element] - Target element.
           *
-          * @param {boolean}     [options.enabled=true] - Enabled state.
+          * @param [options.enabled=true] - Enabled state.
           *
-          * @param {boolean}     [options.lock=false] - Lock parameters from being set.
+          * @param [options.lock=false] - Lock parameters from being set.
           *
-          * @param {number}      [options.width] - Manual width.
+          * @param [options.width] - Manual width.
           *
-          * @param {number}      [options.height] - Manual height.
+          * @param [options.height] - Manual height.
           */
          new ({ constrain, element, enabled, lock, width, height }?: {
             constrain?: boolean,
@@ -214,19 +210,19 @@ declare namespace System {
     */
    export interface SystemBaseConstructor {
       /**
-       * @param {object}      [options] - Initial options.
+       * @param [options] - Initial options.
        *
-       * @param {boolean}     [options.constrain=true] - Constrain state.
+       * @param [options.constrain=true] - Constrain state.
        *
-       * @param {HTMLElement} [options.element] - Target element.
+       * @param [options.element] - Target element.
        *
-       * @param {boolean}     [options.enabled=true] - Enabled state.
+       * @param [options.enabled=true] - Enabled state.
        *
-       * @param {boolean}     [options.lock=false] - Lock parameters from being set.
+       * @param [options.lock=false] - Lock parameters from being set.
        *
-       * @param {number}      [options.width] - Manual width.
+       * @param [options.width] - Manual width.
        *
-       * @param {number}      [options.height] - Manual height.
+       * @param [options.height] - Manual height.
        */
       new ({ constrain, element, enabled, lock, width, height }?: {
          constrain?: boolean,

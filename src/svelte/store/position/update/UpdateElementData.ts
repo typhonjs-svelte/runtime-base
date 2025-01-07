@@ -58,8 +58,6 @@ export class UpdateElementData
 
       /**
        * Provides a copy of local data sent to subscribers.
-       *
-       * @type {TJSPositionData}
        */
       this.dataSubscribers = Object.seal(new TJSPositionData());
 

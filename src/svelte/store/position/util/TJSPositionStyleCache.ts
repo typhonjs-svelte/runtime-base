@@ -80,7 +80,7 @@ export class TJSPositionStyleCache
     * the element directly. The more optimized path is using `resizeObserver` as getting it from the element
     * directly is more expensive and alters the execution order of an animation frame.
     *
-    * @returns {number} The element offsetHeight.
+    * @returns The element offsetHeight.
     */
    get offsetHeight(): number
    {

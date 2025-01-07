@@ -49,19 +49,19 @@ export class SystemBase implements Readable<SystemBase>, System.SystemBase
    #width: number | undefined;
 
    /**
-    * @param {object}      [options] - Initial options.
+    * @param [options] - Initial options.
     *
-    * @param {boolean}     [options.constrain=true] - Initial constrained state.
+    * @param [options.constrain=true] - Initial constrained state.
     *
-    * @param {HTMLElement} [options.element] - Target element.
+    * @param [options.element] - Target element.
     *
-    * @param {boolean}     [options.enabled=true] - Enabled state.
+    * @param [options.enabled=true] - Enabled state.
     *
-    * @param {boolean}     [options.lock=false] - Lock parameters from being set.
+    * @param [options.lock=false] - Lock parameters from being set.
     *
-    * @param {number}      [options.width] - Manual width.
+    * @param [options.width] - Manual width.
     *
-    * @param {number}      [options.height] - Manual height.
+    * @param [options.height] - Manual height.
     */
    constructor({ constrain = true, element, enabled = true, lock = false, width, height }: {
       constrain?: boolean; element?: HTMLElement; enabled?: boolean; lock?: boolean; width?: number; height?: number;
@@ -110,7 +110,7 @@ export class SystemBase implements Readable<SystemBase>, System.SystemBase
    get width(): number | undefined { return this.#width; }
 
    /**
-    * @param {boolean}  constrain - New constrain state.
+    * @param constrain - New constrain state.
     */
    set constrain(constrain: boolean)
    {
@@ -124,7 +124,7 @@ export class SystemBase implements Readable<SystemBase>, System.SystemBase
    }
 
    /**
-    * @param {HTMLElement | undefined | null} element - Set target element.
+    * @param element - Set target element.
     */
    set element(element: HTMLElement | undefined | null)
    {

@@ -143,7 +143,7 @@ interface AnimationGroupAPI
     * @param [options] - Tween options assigned to all positionable instances or a callback function invoked for unique
     *        options for each instance.
     *
-    * @returns {BasicAnimation} Basic animation control.
+    * @returns Basic animation control.
     */
    from(positionGroup: TJSPosition.PositionGroup, fromData: Data.TJSPositionDataRelative |
     AnimationAPI.GroupDataCallback, options?: AnimationAPI.TweenOptions | AnimationAPI.GroupTweenOptionsCallback):
@@ -197,7 +197,7 @@ interface AnimationGroupAPI
     *        options assigned to all positionable instances or a callback function invoked for unique options for each
     *        instance.
     *
-    * @returns {AnimationAPI.GroupQuickToCallback | undefined} quick-to tween function.
+    * @returns quick-to tween function.
     */
    quickTo(positionGroup: TJSPosition.PositionGroup, keys: Iterable<AnimationAPI.AnimationKey>,
     options?: AnimationAPI.QuickTweenOptions | AnimationAPI.GroupQuickTweenOptionsCallback):
@@ -299,10 +299,10 @@ declare namespace AnimationAPI {
    export interface GroupQuickTweenOptionsCallback
    {
       /**
-       * @param {GroupCallbackOptions} options - The group callback options defining the order of the current
+       * @param options - The group callback options defining the order of the current
        *        position / positionable being processed.
        *
-       * @returns {QuickTweenOptions} - The unique quick tween options to set for this position / positionable instance.
+       * @returns The unique quick tween options to set for this position / positionable instance.
        *          When null or undefined is returned the current position / positionable is removed from the animation.
        */
       (options?: GroupCallbackOptions): QuickTweenOptions | null | undefined;

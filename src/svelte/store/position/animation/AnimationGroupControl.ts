@@ -50,8 +50,7 @@ export class AnimationGroupControl implements BasicAnimation
       {
          if (animationControls === null || animationControls === void 0 || animationControls.size === 0)
          {
-            this.#finishedPromise = /** @type {Promise<import('#runtime/util/animate').BasicAnimationState>} */
-             Promise.resolve({ cancelled: false });
+            this.#finishedPromise = Promise.resolve({ cancelled: false });
          }
          else
          {

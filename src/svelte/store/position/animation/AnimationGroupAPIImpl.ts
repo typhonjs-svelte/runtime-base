@@ -408,7 +408,7 @@ class AnimationGroupAPIImpl
     * @param [options] - Tween options assigned to all positionable instances or a callback function invoked for unique
     *        options for each instance.
     *
-    * @returns {import('#runtime/util/animate').BasicAnimation} Basic animation control.
+    * @returns Basic animation control.
     */
    static fromTo(positionGroup: TJSPosition.PositionGroup, fromData: Data.TJSPositionDataRelative |
     AnimationAPI.GroupDataCallback, toData: Data.TJSPositionDataRelative |
@@ -604,7 +604,7 @@ class AnimationGroupAPIImpl
     * @param [options] - Tween options assigned to all positionable instances or a callback function invoked for unique
     *        options for each instance.
     *
-    * @returns {import('#runtime/util/animate').BasicAnimation} Basic animation control.
+    * @returns Basic animation control.
     */
    static to(positionGroup: TJSPosition.PositionGroup, toData: Data.TJSPositionDataRelative |
     AnimationAPI.GroupDataCallback, options?: AnimationAPI.TweenOptions |

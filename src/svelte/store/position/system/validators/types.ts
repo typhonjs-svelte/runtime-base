@@ -16,32 +16,31 @@ import type { TransformAPI }        from '../../transform/types';
 interface ValidatorAPI
 {
    /**
-    * @returns {boolean} Returns the enabled state.
+    * @returns Returns the enabled state.
     */
    get enabled(): boolean;
 
    /**
-    * @returns {number} Returns the length of the validators array.
+    * @returns Returns the length of the validators array.
     */
    get length(): number;
 
    /**
-    * @param {boolean}  enabled - Sets enabled state.
+    * @param enabled - Sets enabled state.
     */
    set enabled(enabled: boolean);
 
    /**
     * Provides an iterator for validators.
     *
-    * @yields {ValidatorAPI.ValidatorData}
-    * @returns {IterableIterator<ValidatorAPI.ValidatorData>} iterator.
+    * @returns iterator.
     */
    [Symbol.iterator](): IterableIterator<ValidatorAPI.ValidatorData>;
 
    /**
     * Adds the given validators.
     *
-    * @param {...(ValidatorAPI.ValidatorFn | ValidatorAPI.ValidatorData)}   validators - Validators to add.
+    * @param validators - Validators to add.
     */
    add(...validators: (ValidatorAPI.ValidatorFn | ValidatorAPI.ValidatorData)[]): void;
 
@@ -53,7 +52,7 @@ interface ValidatorAPI
    /**
     * Removes one or more given validators.
     *
-    * @param {...(ValidatorAPI.ValidatorFn | ValidatorAPI.ValidatorData)}   validators - Validators to remove.
+    * @param validators - Validators to remove.
     */
    remove(...validators: (ValidatorAPI.ValidatorFn | ValidatorAPI.ValidatorData)[]): void;
 
@@ -61,14 +60,14 @@ interface ValidatorAPI
     * Remove validators by the provided callback. The callback takes 3 parameters: `id`, `validator`, and `weight`.
     * Any truthy value returned will remove that validator.
     *
-    * @param {ValidatorAPI.RemoveByCallback} callback - Callback function to evaluate each validator entry.
+    * @param callback - Callback function to evaluate each validator entry.
     */
    removeBy(callback: ValidatorAPI.RemoveByCallback): void;
 
    /**
     * Removes any validators with matching IDs.
     *
-    * @param {...any} ids - IDs to remove.
+    * @param ids - IDs to remove.
     */
    removeById(...ids: any[]): void;
 }
@@ -189,7 +188,7 @@ declare namespace ValidatorAPI {
    /**
     * Callback function to evaluate each validator entry. Return true to remove.
     *
-    * @param {ValidatorData} data - ValidatorData instance to potentially filter / remove.
+    * @param data - ValidatorData instance to potentially filter / remove.
     */
    export type RemoveByCallback = (data: ValidatorData) => boolean;
 
@@ -199,9 +198,9 @@ declare namespace ValidatorAPI {
        * TJSPosition validator function that takes a {@link ValidationData} instance potentially modifying `position`
        * data or returning null if invalid.
        *
-       * @param {ValidationData} data - Validation data to handle.
+       * @param data - Validation data to handle.
        *
-       * @returns {Data.TJSPositionData | null} The validated position data or null to cancel position update.
+       * @returns The validated position data or null to cancel position update.
        */
       (data: ValidationData): Data.TJSPositionData | null;
 

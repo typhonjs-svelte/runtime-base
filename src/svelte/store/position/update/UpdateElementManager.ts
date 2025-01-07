@@ -15,8 +15,6 @@ import type { ValidationData }      from '../transform/types-local';
  * on the returned promise that is resolved with the current render time via `nextAnimationFrame` /
  * `requestAnimationFrame`. This allows the underlying data model to be updated immediately while updates to the
  * element are in sync with the browser and potentially in the future be further throttled.
- *
- * @param {HTMLElement} el - The target HTMLElement.
  */
 export class UpdateElementManager
 {

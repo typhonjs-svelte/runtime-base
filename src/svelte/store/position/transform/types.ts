@@ -7,109 +7,109 @@ import type { Data }          from '../data/types';
 interface TransformAPI
 {
    /**
-    * @returns {boolean} Whether there are active transforms in local data.
+    * @returns Whether there are active transforms in local data.
     */
    get isActive(): boolean;
 
    /**
-    * @returns {number | null} Any local `rotateX` data.
+    * @returns Any local `rotateX` data.
     */
    get rotateX(): number | null | undefined;
 
    /**
-    * @returns {number | null} Any local `rotateY` data.
+    * @returns Any local `rotateY` data.
     */
    get rotateY(): number | null | undefined;
 
    /**
-    * @returns {number | null} Any local `rotateZ` data.
+    * @returns Any local `rotateZ` data.
     */
    get rotateZ(): number | null | undefined;
 
    /**
-    * @returns {number | null} Any local `scale` data.
+    * @returns Any local `scale` data.
     */
    get scale(): number | null | undefined;
 
    /**
-    * @returns {number | null} Any local `translateX` data.
+    * @returns Any local `translateX` data.
     */
    get translateX(): number | null | undefined;
 
    /**
-    * @returns {number | null} Any local `translateY` data.
+    * @returns Any local `translateY` data.
     */
    get translateY(): number | null | undefined;
 
    /**
-    * @returns {number | null} Any local `translateZ` data.
+    * @returns Any local `translateZ` data.
     */
    get translateZ(): number | null | undefined;
 
    /**
     * Sets the local `rotateX` data if the value is a finite number otherwise removes the local data.
     *
-    * @param {number | null}   value - A value to set.
+    * @param value - A value to set.
     */
    set rotateX(value: number | null | undefined);
 
    /**
     * Sets the local `rotateY` data if the value is a finite number otherwise removes the local data.
     *
-    * @param {number | null}   value - A value to set.
+    * @param value - A value to set.
     */
    set rotateY(value: number | null | undefined);
 
    /**
     * Sets the local `rotateZ` data if the value is a finite number otherwise removes the local data.
     *
-    * @param {number | null}   value - A value to set.
+    * @param value - A value to set.
     */
    set rotateZ(value: number | null | undefined);
 
    /**
     * Sets the local `scale` data if the value is a finite number otherwise removes the local data.
     *
-    * @param {number | null}   value - A value to set.
+    * @param value - A value to set.
     */
    set scale(value: number | null | undefined);
 
    /**
     * Sets the local `translateX` data if the value is a finite number otherwise removes the local data.
     *
-    * @param {number | null}   value - A value to set.
+    * @param value - A value to set.
     */
    set translateX(value: number | null | undefined);
 
    /**
     * Sets the local `translateY` data if the value is a finite number otherwise removes the local data.
     *
-    * @param {number | null}   value - A value to set.
+    * @param value - A value to set.
     */
    set translateY(value: number | null | undefined);
 
    /**
     * Sets the local `translateZ` data if the value is a finite number otherwise removes the local data.
     *
-    * @param {number | null}   value - A value to set.
+    * @param value - A value to set.
     */
    set translateZ(value: number | null | undefined);
 
    /**
     * Returns the `matrix3d` CSS transform for the given position / transform data.
     *
-    * @param {object} [data] - Optional position data otherwise use local stored transform data.
+    * @param [data] - Optional position data otherwise use local stored transform data.
     *
-    * @returns {string} The CSS `matrix3d` string.
+    * @returns The CSS `matrix3d` string.
     */
    getCSS(data?: object): string;
 
    /**
     * Returns the `matrix3d` CSS transform for the given position / transform data.
     *
-    * @param {object} [data] - Optional position data otherwise use local stored transform data.
+    * @param [data] - Optional position data otherwise use local stored transform data.
     *
-    * @returns {string} The CSS `matrix3d` string.
+    * @returns The CSS `matrix3d` string.
     */
    getCSSOrtho(data?: object): string;
 
@@ -126,7 +126,7 @@ interface TransformAPI
     * @returns The output TransformAPI.Data instance.
     */
    getData(position: Data.TJSPositionData, output?: TransformAPI.TransformData,
-           validationData?: object): TransformAPI.TransformData;
+    validationData?: object): TransformAPI.TransformData;
 
    /**
     * Creates a transform matrix based on local data applied in order it was added.
@@ -135,11 +135,11 @@ interface TransformAPI
     * then the stored local transform order is applied then all remaining transform keys are applied. This allows the
     * construction of a transform matrix in advance of setting local data and is useful in collision detection.
     *
-    * @param {Data.TJSPositionData}   [data] - TJSPositionData instance or local transform data.
+    * @param [data] - TJSPositionData instance or local transform data.
     *
-    * @param {Mat4}  [output] - The output mat4 instance.
+    * @param [output] - The output mat4 instance.
     *
-    * @returns {Mat4} Transform matrix.
+    * @returns Transform matrix.
     */
    getMat4(data?: object, output?: Mat4): Mat4;
 
@@ -153,27 +153,27 @@ interface TransformAPI
     * then the stored local transform order is applied then all remaining transform keys are applied. This allows the
     * construction of a transform matrix in advance of setting local data and is useful in collision detection.
     *
-    * @param {Data.TJSPositionData}   [data] - TJSPositionData instance or local transform data.
+    * @param [data] - TJSPositionData instance or local transform data.
     *
-    * @param {Mat4}  [output] - The output mat4 instance.
+    * @param [output] - The output mat4 instance.
     *
-    * @returns {Mat4} Transform matrix.
+    * @returns Transform matrix.
     */
    getMat4Ortho(data?: object, output?: Mat4): Mat4;
 
    /**
     * Tests an object if it contains transform keys and the values are finite numbers.
     *
-    * @param {Data.TJSPositionData} data - An object to test for transform data.
+    * @param data - An object to test for transform data.
     *
-    * @returns {boolean} Whether the given TJSPositionData has transforms.
+    * @returns Whether the given TJSPositionData has transforms.
     */
    hasTransform(data: object): boolean;
 
    /**
     * Resets internal data from the given object containing valid transform keys.
     *
-    * @param {object}   data - An object with transform data.
+    * @param data - An object with transform data.
     */
    reset(data: object): void;
 }
@@ -194,27 +194,27 @@ declare namespace TransformAPI {
     */
    export interface TransformData {
       /**
-       * @returns {DOMRect} The bounding rectangle.
+       * @returns The bounding rectangle.
        */
       get boundingRect(): DOMRect;
 
       /**
-       * @returns {Vec3[]} The transformed corner points as Vec3 in screen space.
+       * @returns The transformed corner points as Vec3 in screen space.
        */
       get corners(): Vec3[]
 
       /**
-       * @returns {string} Returns the CSS style string for the transform matrix.
+       * @returns Returns the CSS style string for the transform matrix.
        */
       get css(): string;
 
       /**
-       * @returns {Mat4} The transform matrix.
+       * @returns The transform matrix.
        */
       get mat4(): Mat4;
 
       /**
-       * @returns {Mat4[]} The pre / post translation matrices for origin translation.
+       * @returns The pre / post translation matrices for origin translation.
        */
       get originTranslations(): Mat4[]
    }

@@ -316,7 +316,7 @@ export class AdapterValidators implements ValidatorAPI
    /**
     * Removes any validators with matching IDs.
     *
-    * @param {...any}   ids - IDs to remove.
+    * @param ids - IDs to remove.
     */
    removeById(...ids: any[])
    {

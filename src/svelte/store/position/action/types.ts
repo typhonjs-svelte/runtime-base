@@ -74,22 +74,22 @@ declare namespace Action {
       tweenOptions: AnimationAPI.QuickTweenOptions;
 
       /**
-       * @returns {number} Get tween duration.
+       * @returns Get tween duration.
        */
       get tweenDuration(): number;
 
       /**
-       * @returns {EasingReference} Get easing function or easing function name.
+       * @returns Get easing function or easing function name.
        */
       get tweenEase(): EasingReference;
 
       /**
-       * @param {number}   duration - Set tween duration.
+       * @param duration - Set tween duration.
        */
       set tweenDuration(duration: number);
 
       /**
-       * @param {EasingReference} ease - Set easing function by name or direct function.
+       * @param ease - Set easing function by name or direct function.
        */
       set tweenEase(ease: EasingReference);
 
