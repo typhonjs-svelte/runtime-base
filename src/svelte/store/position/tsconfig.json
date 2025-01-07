@@ -7,8 +7,6 @@
     "target": "ES2022",
     "strict": false,
     "strictNullChecks": false,
-
-    "allowJs": true
   },
   "include": [
     "./**/*"
