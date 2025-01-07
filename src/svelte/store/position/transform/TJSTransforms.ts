@@ -8,19 +8,20 @@ import type {
    Mat4Like,
    Vec3Like }                    from '#runtime/math/gl-matrix';
 
-import type { TJSPositionNS }    from '../types';
-
+import type { TransformAPI }     from "./types";
 import type { ValidationData }   from './types-local';
+
+import type { DataAPI }             from '../data/types';
 
 /**
  *
  */
-export class TJSTransforms implements TJSPositionNS.API.Transform
+export class TJSTransforms implements TransformAPI
 {
    /**
     * Stores transform data.
     */
-   #data: Partial<TJSPositionNS.Data.TJSPositionData> = {};
+   #data: Partial<DataAPI.TJSPositionData> = {};
 
    /**
     * Stores the transform keys in the order added.
@@ -30,7 +31,7 @@ export class TJSTransforms implements TJSPositionNS.API.Transform
    /**
     * Defines the keys of TJSPositionData that are transform keys.
     */
-   static #transformKeys: Readonly<Array<TJSPositionNS.Data.TransformKeys>> = Object.freeze([
+   static #transformKeys: Readonly<Array<DataAPI.TransformKeys>> = Object.freeze([
       'rotateX', 'rotateY', 'rotateZ', 'scale', 'translateX', 'translateY', 'translateZ'
    ]);
 
@@ -39,9 +40,9 @@ export class TJSTransforms implements TJSPositionNS.API.Transform
     *
     * @param key - A potential transform key.
     */
-   static #isTransformKey(key: string): key is TJSPositionNS.Data.TransformKeys
+   static #isTransformKey(key: string): key is DataAPI.TransformKeys
    {
-      return this.#transformKeys.includes(key as TJSPositionNS.Data.TransformKeys);
+      return this.#transformKeys.includes(key as DataAPI.TransformKeys);
    }
 
    /**
@@ -60,12 +61,12 @@ export class TJSTransforms implements TJSPositionNS.API.Transform
    /**
     * Defines the default transform origin.
     */
-   static #transformOriginDefault: Readonly<TJSPositionNS.API.Transform.TransformOrigin> = 'top left';
+   static #transformOriginDefault: Readonly<TransformAPI.TransformOrigin> = 'top left';
 
    /**
     * Defines the valid transform origins.
     */
-   static #transformOrigins: readonly TJSPositionNS.API.Transform.TransformOrigin[] = Object.freeze([
+   static #transformOrigins: readonly TransformAPI.TransformOrigin[] = Object.freeze([
       'top left', 'top center', 'top right', 'center left', 'center', 'center right', 'bottom left', 'bottom center',
        'bottom right'
    ]);
@@ -102,7 +103,7 @@ export class TJSTransforms implements TJSPositionNS.API.Transform
     *
     * @returns The supported transform origin strings.
     */
-   static get transformOrigins(): readonly TJSPositionNS.API.Transform.TransformOrigin[]
+   static get transformOrigins(): readonly TransformAPI.TransformOrigin[]
    {
       return this.#transformOrigins;
    }
@@ -114,7 +115,7 @@ export class TJSTransforms implements TJSPositionNS.API.Transform
     *
     * @returns True if origin is a TransformOrigin string.
     */
-   static isTransformOrigin(origin: string): origin is TJSPositionNS.API.Transform.TransformOrigin
+   static isTransformOrigin(origin: string): origin is TransformAPI.TransformOrigin
    {
       return this.#transformOriginsSet.has(origin);
    }
@@ -345,7 +346,7 @@ export class TJSTransforms implements TJSPositionNS.API.Transform
     *
     * @returns The CSS `matrix3d` string.
     */
-   getCSS(data: Partial<TJSPositionNS.Data.TJSPositionData> = this.#data): string
+   getCSS(data: Partial<DataAPI.TJSPositionData> = this.#data): string
    {
       return `matrix3d(${this.getMat4(data, TJSTransforms.#mat4Result).join(',')})`;
    }
@@ -357,7 +358,7 @@ export class TJSTransforms implements TJSPositionNS.API.Transform
     *
     * @returns The CSS `matrix3d` string.
     */
-   getCSSOrtho(data: Partial<TJSPositionNS.Data.TJSPositionData> = this.#data): string
+   getCSSOrtho(data: Partial<DataAPI.TJSPositionData> = this.#data): string
    {
       return `matrix3d(${this.getMat4Ortho(data, TJSTransforms.#mat4Result).join(',')})`;
    }
@@ -374,9 +375,9 @@ export class TJSTransforms implements TJSPositionNS.API.Transform
     *
     * @returns The output TJSTransformData instance.
     */
-   getData(position: TJSPositionNS.Data.TJSPositionData,
-    output: TJSPositionNS.API.Transform.TransformData = new TJSTransformData(), validationData?: ValidationData):
-     TJSPositionNS.API.Transform.TransformData
+   getData(position: DataAPI.TJSPositionData,
+    output: TransformAPI.TransformData = new TJSTransformData(), validationData?: ValidationData):
+     TransformAPI.TransformData
    {
       const valWidth: number = validationData?.width ?? 0;
       const valHeight: number = validationData?.height ?? 0;
@@ -495,7 +496,7 @@ export class TJSTransforms implements TJSPositionNS.API.Transform
     *
     * @returns Transform matrix.
     */
-   getMat4(data: Partial<TJSPositionNS.Data.TJSPositionData> = this.#data, output: Mat4 = Mat4.create()): Mat4
+   getMat4(data: Partial<DataAPI.TJSPositionData> = this.#data, output: Mat4 = Mat4.create()): Mat4
    {
       const matrix: Mat4 = Mat4.identity(output) as Mat4;
 
@@ -566,7 +567,7 @@ export class TJSTransforms implements TJSPositionNS.API.Transform
       {
          for (let cntr: number = 0; cntr < TJSTransforms.#transformKeys.length; cntr++)
          {
-            const key: keyof TJSPositionNS.Data.TJSPositionData = TJSTransforms.#transformKeys[cntr];
+            const key: keyof DataAPI.TJSPositionData = TJSTransforms.#transformKeys[cntr];
 
             // Reject bad / no data or if the key has already been applied.
             // if (data[key] === null || (seenKeys & TJSTransforms.#transformKeysBitwise[key]) > 0) { continue; }
@@ -639,7 +640,7 @@ export class TJSTransforms implements TJSPositionNS.API.Transform
     *
     * @returns Transform matrix.
     */
-   getMat4Ortho(data: Partial<TJSPositionNS.Data.TJSPositionData> = this.#data, output: Mat4 = Mat4.create()): Mat4
+   getMat4Ortho(data: Partial<DataAPI.TJSPositionData> = this.#data, output: Mat4 = Mat4.create()): Mat4
    {
       const matrix: Mat4 = Mat4.identity(output) as Mat4;
 
@@ -697,7 +698,7 @@ export class TJSTransforms implements TJSPositionNS.API.Transform
       {
          for (let cntr: number = 0; cntr < TJSTransforms.#transformKeys.length; cntr++)
          {
-            const key: keyof TJSPositionNS.Data.TJSPositionData = TJSTransforms.#transformKeys[cntr];
+            const key: keyof DataAPI.TJSPositionData = TJSTransforms.#transformKeys[cntr];
 
             // Reject bad / no data or if the key has already been applied.
             if (data[key] === null || (seenKeys & TJSTransforms.#transformKeysBitwise[key]) > 0) { continue; }
@@ -729,7 +730,7 @@ export class TJSTransforms implements TJSPositionNS.API.Transform
     *
     * @returns Whether the given TJSPositionData has transforms.
     */
-   hasTransform(data: Partial<TJSPositionNS.Data.TJSPositionData>): boolean
+   hasTransform(data: Partial<DataAPI.TJSPositionData>): boolean
    {
       for (const key of TJSTransforms.#transformKeys)
       {
@@ -744,7 +745,7 @@ export class TJSTransforms implements TJSPositionNS.API.Transform
     *
     * @param data - An object with transform data.
     */
-   reset(data: { [key: string]: any } & Partial<TJSPositionNS.Data.TJSPositionData>): void
+   reset(data: { [key: string]: any } & Partial<DataAPI.TJSPositionData>): void
    {
       for (const key in data)
       {

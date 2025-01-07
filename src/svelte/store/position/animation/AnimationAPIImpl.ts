@@ -18,18 +18,20 @@ import {
 
 import type { BasicAnimation }   from '#runtime/util/animate';
 
+import type { AnimationAPI }     from './types';
+
 import type { TJSPosition }      from '../TJSPosition';
-import type { TJSPositionNS }    from '../types';
+import type { DataAPI }             from '../data/types';
 
 /**
  */
-export class AnimationAPI implements TJSPositionNS.API.Animation
+export class AnimationAPIImpl implements AnimationAPI
 {
    static #getEaseOptions: Readonly<{ default: false }> = Object.freeze({ default: false });
 
    /**
     */
-   readonly #data: TJSPositionNS.Data.TJSPositionData;
+   readonly #data: DataAPI.TJSPositionData;
 
    readonly #position: TJSPosition;
 
@@ -38,7 +40,7 @@ export class AnimationAPI implements TJSPositionNS.API.Animation
     *
     * @param data -
     */
-   constructor(position: TJSPosition, data: TJSPositionNS.Data.TJSPositionData)
+   constructor(position: TJSPosition, data: DataAPI.TJSPositionData)
    {
       this.#position = position;
       this.#data = data;
@@ -83,7 +85,7 @@ export class AnimationAPI implements TJSPositionNS.API.Animation
     *
     * @returns A control object that can cancel animation and provides a `finished` Promise.
     */
-   from(fromData: TJSPositionNS.Data.TJSPositionDataRelative, options: TJSPositionNS.API.Animation.TweenOptions):
+   from(fromData: DataAPI.TJSPositionDataRelative, options: AnimationAPI.TweenOptions):
     BasicAnimation
    {
       const animationControl: AnimationControl = AnimationScheduler.from(this.#position, fromData, options);
@@ -101,8 +103,8 @@ export class AnimationAPI implements TJSPositionNS.API.Animation
     *
     * @returns A control object that can cancel animation and provides a `finished` Promise.
     */
-   fromTo(fromData: TJSPositionNS.Data.TJSPositionDataRelative, toData: TJSPositionNS.Data.TJSPositionDataRelative,
-    options: TJSPositionNS.API.Animation.TweenOptions): BasicAnimation
+   fromTo(fromData: DataAPI.TJSPositionDataRelative, toData: DataAPI.TJSPositionDataRelative,
+          options: AnimationAPI.TweenOptions): BasicAnimation
    {
       const animationControl: AnimationControl = AnimationScheduler.fromTo(this.#position, fromData, toData, options);
       return animationControl ? animationControl : AnimationControl.voidControl;
@@ -117,7 +119,7 @@ export class AnimationAPI implements TJSPositionNS.API.Animation
     *
     * @returns A control object that can cancel animation and provides a `finished` Promise.
     */
-   to(toData: TJSPositionNS.Data.TJSPositionDataRelative, options: TJSPositionNS.API.Animation.TweenOptions):
+   to(toData: DataAPI.TJSPositionDataRelative, options: AnimationAPI.TweenOptions):
     BasicAnimation
    {
       const animationControl: AnimationControl = AnimationScheduler.to(this.#position, toData, options);
@@ -133,15 +135,15 @@ export class AnimationAPI implements TJSPositionNS.API.Animation
     *
     * @returns quick-to tween function.
     */
-   quickTo(keys: Iterable<TJSPositionNS.API.Animation.AnimationKey>, options:
-    TJSPositionNS.API.Animation.QuickTweenOptions = {}): TJSPositionNS.API.Animation.QuickToCallback
+   quickTo(keys: Iterable<AnimationAPI.AnimationKey>, options:
+    AnimationAPI.QuickTweenOptions = {}): AnimationAPI.QuickToCallback
    {
       if (!isIterable(keys))
       {
          throw new TypeError(`AnimationAPI.quickTo error: 'keys' is not an iterable list.`);
       }
 
-      // TJSPositionNS.PositionParent
+      // TJSPosition.PositionParent
       const parent: any = this.#position.parent;
 
       // Early out if the application is not positionable.
@@ -157,7 +159,7 @@ export class AnimationAPI implements TJSPositionNS.API.Animation
          throw new TypeError(`AnimationAPI.quickTo error: 'duration' is not a positive number.`);
       }
 
-      ease = getEasingFunc(ease, AnimationAPI.#getEaseOptions);
+      ease = getEasingFunc(ease, AnimationAPIImpl.#getEaseOptions);
 
       if (typeof ease !== 'function')
       {
@@ -195,7 +197,7 @@ export class AnimationAPI implements TJSPositionNS.API.Animation
          }
       }
 
-      const keysArray: TJSPositionNS.API.Animation.AnimationKey[] = [...keys];
+      const keysArray: AnimationAPI.AnimationKey[] = [...keys];
 
       Object.freeze(keysArray);
 
@@ -230,10 +232,10 @@ export class AnimationAPI implements TJSPositionNS.API.Animation
 
          for (let cntr: number = keysArray.length; --cntr >= 0;)
          {
-            const key: TJSPositionNS.API.Animation.AnimationKey = keysArray[cntr];
+            const key: AnimationAPI.AnimationKey = keysArray[cntr];
 
             // Must use actual key from any aliases.
-            const animKey: TJSPositionNS.API.Animation.AnimationKey = TJSPositionDataUtil.getAnimationKey(key);
+            const animKey: AnimationAPI.AnimationKey = TJSPositionDataUtil.getAnimationKey(key);
 
             if (data[animKey] !== void 0) { initial[key] = data[animKey]; }
          }
@@ -252,7 +254,7 @@ export class AnimationAPI implements TJSPositionNS.API.Animation
          {
             for (let cntr: number = 0; cntr < argsLength && cntr < keysArray.length; cntr++)
             {
-               const key: TJSPositionNS.API.Animation.AnimationKey = keysArray[cntr];
+               const key: AnimationAPI.AnimationKey = keysArray[cntr];
                if (destination[key] !== void 0) { destination[key] = args[cntr]; }
             }
          }
@@ -297,8 +299,8 @@ export class AnimationAPI implements TJSPositionNS.API.Animation
       });
 
       Object.defineProperty(quickToCB, 'options', {
-         value: (optionsCB: TJSPositionNS.API.Animation.QuickTweenOptions):
-          TJSPositionNS.API.Animation.QuickToCallback =>
+         value: (optionsCB: AnimationAPI.QuickTweenOptions):
+          AnimationAPI.QuickToCallback =>
          {
             let { duration, ease } = optionsCB;
 
@@ -307,7 +309,7 @@ export class AnimationAPI implements TJSPositionNS.API.Animation
                throw new TypeError(`AnimationAPI.quickTo.options error: 'duration' is not a positive number.`);
             }
 
-            ease = getEasingFunc(ease, AnimationAPI.#getEaseOptions);
+            ease = getEasingFunc(ease, AnimationAPIImpl.#getEaseOptions);
 
             if (ease !== void 0 && typeof ease !== 'function')
             {
@@ -320,12 +322,12 @@ export class AnimationAPI implements TJSPositionNS.API.Animation
             if (duration >= 0) { animationData.duration = duration * 1000; }
             if (ease) { animationData.ease = ease; }
 
-            return quickToCB as TJSPositionNS.API.Animation.QuickToCallback;
+            return quickToCB as AnimationAPI.QuickToCallback;
          },
          writable: false,
          configurable: false
       });
 
-      return quickToCB as TJSPositionNS.API.Animation.QuickToCallback;
+      return quickToCB as AnimationAPI.QuickToCallback;
    }
 }

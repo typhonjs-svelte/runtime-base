@@ -1,6 +1,7 @@
 import { TJSPositionData }    from './TJSPositionData';
 
-import type { TJSPositionNS } from '../types';
+import type { DataAPI }       from './types';
+import type { AnimationAPI }  from '../animation/types';
 
 /**
  * Various internal utilities to work with {@link TJSPositionData}.
@@ -22,8 +23,8 @@ export class TJSPositionDataUtil
    /**
     * Stores the TJSPositionData property aliases that can be animated.
     */
-   static #animateKeyAliases: ReadonlyMap<string, TJSPositionNS.API.Animation.AnimationKey> = Object.freeze(
-    new Map([['rotation', 'rotateZ' as TJSPositionNS.API.Animation.AnimationKey]]));
+   static #animateKeyAliases: ReadonlyMap<string, AnimationAPI.AnimationKey> = Object.freeze(
+    new Map([['rotation', 'rotateZ' as AnimationAPI.AnimationKey]]));
 
    /**
     * Provides numeric defaults for all parameters. This is used by {@link TJSPosition.get} to optionally
@@ -63,8 +64,8 @@ export class TJSPositionDataUtil
     *
     * @returns The target instance with all TJSPositionData fields.
     */
-   static copyData(source: Partial<TJSPositionNS.Data.TJSPositionData>,
-    target: TJSPositionNS.Data.TJSPositionData = new TJSPositionData()): TJSPositionData
+   static copyData(source: Partial<DataAPI.TJSPositionData>,
+    target: DataAPI.TJSPositionData = new TJSPositionData()): TJSPositionData
    {
       target.height = source.height ?? null;
       target.left = source.left ?? null;
@@ -94,7 +95,7 @@ export class TJSPositionDataUtil
     *
     * @returns Actual non-aliased animation key.
     */
-   static getAnimationKey(key: TJSPositionNS.API.Animation.AnimationKey): TJSPositionNS.API.Animation.AnimationKey
+   static getAnimationKey(key: AnimationAPI.AnimationKey): AnimationAPI.AnimationKey
    {
       return this.#animateKeyAliases.get(key) ?? key;
    }
@@ -110,7 +111,7 @@ export class TJSPositionDataUtil
     *
     * @returns Data at key or numeric default.
     */
-   static getDataOrDefault(data: { [key: string]: any }, key: keyof TJSPositionNS.Data.TJSPositionData,
+   static getDataOrDefault(data: { [key: string]: any }, key: keyof DataAPI.TJSPositionData,
     aliased: boolean = false): number
    {
       if (aliased) { key = this.#animateKeyAliases.get(key) ?? key; }
@@ -125,7 +126,7 @@ export class TJSPositionDataUtil
     *
     * @returns Is animation key.
     */
-   static isAnimationKey(key: string): key is TJSPositionNS.API.Animation.AnimationKey
+   static isAnimationKey(key: string): key is AnimationAPI.AnimationKey
    {
       return this.#animateKeys.has(key);
    }

@@ -2,9 +2,10 @@ import { radToDeg }              from '#runtime/math/util';
 
 import { TJSPositionDataUtil }   from '../TJSPositionDataUtil';
 
-import type { TJSPositionNS }    from '../../types';
-
 import type { StringMatch }      from './types-local';
+
+import type { DataAPI }             from '../types';
+import type { AnimationAPI }     from '../../animation/types';
 
 /**
  * Converts {@link TJSPositionData} properties defined as strings to number values. The string values can be defined
@@ -63,8 +64,8 @@ export class ConvertStringData
     *
     * @returns Converted data.
     */
-   static process(data: TJSPositionNS.Data.TJSPositionDataRelative,
-    position: Partial<TJSPositionNS.Data.TJSPositionData>, el: Element): TJSPositionNS.Data.TJSPositionData
+   static process(data: DataAPI.TJSPositionDataRelative,
+                  position: Partial<DataAPI.TJSPositionData>, el: Element): DataAPI.TJSPositionData
    {
       // Used in `%` calculations. The first `%` conversion that requires parent element height and width will attempt
       // to cache the parent element client height & width of the given element.
@@ -83,7 +84,7 @@ export class ConvertStringData
             // Ignore 'auto' and 'inherit' string values.
             if (value === 'auto' || value === 'inherit') { continue; }
 
-            const animKey: TJSPositionNS.API.Animation.AnimationKey = key;
+            const animKey: AnimationAPI.AnimationKey = key;
 
             const regexResults: RegExpExecArray | null = this.#regexStringData.exec(value);
 
@@ -168,7 +169,7 @@ export class ConvertStringData
          }
       }
 
-      return data as TJSPositionNS.Data.TJSPositionData;
+      return data as DataAPI.TJSPositionData;
    }
 
    // Internal implementation ----------------------------------------------------------------------------------------
@@ -187,8 +188,8 @@ export class ConvertStringData
     *
     * @returns Adjustment successful.
     */
-   static #applyResultsValue(key: TJSPositionNS.API.Animation.AnimationKey, current: number,
-    data: TJSPositionNS.Data.TJSPositionDataRelative, results: StringMatch): boolean
+   static #applyResultsValue(key: AnimationAPI.AnimationKey, current: number,
+                             data: DataAPI.TJSPositionDataRelative, results: StringMatch): boolean
    {
       if (!results.operation)
       {
@@ -239,9 +240,9 @@ export class ConvertStringData
     *
     * @returns Adjustment successful.
     */
-   static #handlePercent(key: TJSPositionNS.API.Animation.AnimationKey, current: number,
-    data: TJSPositionNS.Data.TJSPositionDataRelative, position: Partial<TJSPositionNS.Data.TJSPositionData>,
-     el: Element, results: StringMatch, parentClientHeight: number, parentClientWidth: number): boolean
+   static #handlePercent(key: AnimationAPI.AnimationKey, current: number,
+                         data: DataAPI.TJSPositionDataRelative, position: Partial<DataAPI.TJSPositionData>,
+                         el: Element, results: StringMatch, parentClientHeight: number, parentClientWidth: number): boolean
    {
       switch (key)
       {
@@ -295,9 +296,9 @@ export class ConvertStringData
     *
     * @returns Adjustment successful.
     */
-   static #handleRelativePercent(key: TJSPositionNS.API.Animation.AnimationKey, current: number,
-    data: TJSPositionNS.Data.TJSPositionDataRelative, position: Partial<TJSPositionNS.Data.TJSPositionData>,
-     el: Element, results: StringMatch): boolean
+   static #handleRelativePercent(key: AnimationAPI.AnimationKey, current: number,
+                                 data: DataAPI.TJSPositionDataRelative, position: Partial<DataAPI.TJSPositionData>,
+                                 el: Element, results: StringMatch): boolean
    {
       // Normalize percentage.
       results.value = results.value / 100;
@@ -346,9 +347,9 @@ export class ConvertStringData
     *
     * @returns Adjustment successful.
     */
-   static #handleRotationRadTurn(key: TJSPositionNS.API.Animation.AnimationKey, current: number,
-    data: TJSPositionNS.Data.TJSPositionDataRelative, position: Partial<TJSPositionNS.Data.TJSPositionData>,
-     el: Element, results: StringMatch): boolean
+   static #handleRotationRadTurn(key: AnimationAPI.AnimationKey, current: number,
+                                 data: DataAPI.TJSPositionDataRelative, position: Partial<DataAPI.TJSPositionData>,
+                                 el: Element, results: StringMatch): boolean
    {
       // Convert radians / turn into degrees.
       switch (results.unit)

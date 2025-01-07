@@ -15,7 +15,12 @@ import type {
 import type { EasingReference }  from '#runtime/svelte/easing';
 
 import type { TJSPosition }      from '../TJSPosition';
-import type { TJSPositionNS }    from '../types';
+
+import type { Action }           from './types';
+
+import type { AnimationAPI }     from '../animation/types';
+import type { DataAPI }             from '../data/types';
+import type { Positionable }     from '../types';
 
 /**
  * Provides an action to enable pointer dragging of an HTMLElement and invoke `position.set` on a given
@@ -30,7 +35,7 @@ import type { TJSPositionNS }    from '../types';
  */
 function draggable(node: HTMLElement, { position, enabled = true, button = 0, storeDragging = void 0, tween = false,
  tweenOptions = { duration: 1, ease: 'cubicOut' }, hasTargetClassList, ignoreTargetClassList }:
-  TJSPositionNS.Action.DraggableOptions): ActionReturn<Partial<TJSPositionNS.Action.DraggableOptions>>
+  Action.DraggableOptions): ActionReturn<Partial<Action.DraggableOptions>>
 {
    if (hasTargetClassList !== void 0 && !isIterable(hasTargetClassList))
    {
@@ -50,12 +55,12 @@ function draggable(node: HTMLElement, { position, enabled = true, button = 0, st
    /**
     * Find actual position instance checking for a Positionable instance.
     */
-   let actualPosition: TJSPosition = ((position as TJSPositionNS.Positionable)?.position ?? position) as TJSPosition;
+   let actualPosition: TJSPosition = ((position as Positionable)?.position ?? position) as TJSPosition;
 
    /**
     * Duplicate the app / Positionable starting position to track differences.
     */
-   let initialPosition: Partial<TJSPositionNS.Data.TJSPositionData> = null;
+   let initialPosition: Partial<DataAPI.TJSPositionData> = null;
 
    /**
     * Stores the initial X / Y on drag down.
@@ -71,7 +76,7 @@ function draggable(node: HTMLElement, { position, enabled = true, button = 0, st
    /**
     * Stores the quickTo callback to use for optimized tweening when easing is enabled.
     */
-   let quickTo: TJSPositionNS.API.Animation.QuickToCallback = actualPosition.animate.quickTo(['top', 'left'],
+   let quickTo: AnimationAPI.QuickToCallback = actualPosition.animate.quickTo(['top', 'left'],
     tweenOptions);
 
    /**
@@ -228,13 +233,13 @@ function draggable(node: HTMLElement, { position, enabled = true, button = 0, st
 
    return {
       // The default of enabled being true won't automatically add listeners twice.
-      update: (options: Partial<TJSPositionNS.Action.DraggableOptions>): void =>
+      update: (options: Partial<Action.DraggableOptions>): void =>
       {
          if (options.position !== void 0)
          {
             // Find actual position instance checking for a Positionable instance.
             const newPosition: TJSPosition =
-             ((options.position as TJSPositionNS.Positionable)?.position ?? options.position) as TJSPosition;
+             ((options.position as Positionable)?.position ?? options.position) as TJSPosition;
 
             if (newPosition !== actualPosition)
             {
@@ -297,27 +302,27 @@ function draggable(node: HTMLElement, { position, enabled = true, button = 0, st
  * draggable options much easier. When subscribing to the options instance returned by {@link draggable.options} the
  * Subscriber handler receives the entire instance.
  */
-class DraggableOptionsStore implements TJSPositionNS.Action.DraggableOptionsStore
+class DraggableOptionsStore implements Action.DraggableOptionsStore
 {
    tween: boolean;
-   tweenOptions: TJSPositionNS.API.Animation.QuickTweenOptions;
+   tweenOptions: AnimationAPI.QuickTweenOptions;
 
    readonly #initialTween: boolean;
 
    /**
     */
-   readonly #initialTweenOptions: TJSPositionNS.API.Animation.QuickTweenOptions;
+   readonly #initialTweenOptions: AnimationAPI.QuickTweenOptions;
 
    #tween: boolean;
 
    /**
     */
-   #tweenOptions: TJSPositionNS.API.Animation.QuickTweenOptions = { duration: 1, ease: 'cubicOut' };
+   #tweenOptions: AnimationAPI.QuickTweenOptions = { duration: 1, ease: 'cubicOut' };
 
    /**
     * Stores the subscribers.
     */
-   #subscriptions: Subscriber<TJSPositionNS.Action.DraggableOptionsStore>[] = [];
+   #subscriptions: Subscriber<Action.DraggableOptionsStore>[] = [];
 
    /**
     * @param [opts] - Optional parameters.
@@ -327,7 +332,7 @@ class DraggableOptionsStore implements TJSPositionNS.Action.DraggableOptionsStor
     * @param [opts.tweenOptions] - Quick tween options.
     */
    constructor({ tween = false, tweenOptions }: { tween?: boolean,
-    tweenOptions?: TJSPositionNS.API.Animation.QuickTweenOptions } = {})
+    tweenOptions?: AnimationAPI.QuickTweenOptions } = {})
    {
       // Define the following getters directly on this instance and make them enumerable. This allows them to be
       // picked up w/ `Object.assign`.
@@ -344,8 +349,8 @@ class DraggableOptionsStore implements TJSPositionNS.Action.DraggableOptionsStor
       });
 
       Object.defineProperty(this, 'tweenOptions', {
-         get: (): TJSPositionNS.API.Animation.QuickTweenOptions => { return this.#tweenOptions; },
-         set: (newTweenOptions: TJSPositionNS.API.Animation.QuickTweenOptions): void =>
+         get: (): AnimationAPI.QuickTweenOptions => { return this.#tweenOptions; },
+         set: (newTweenOptions: AnimationAPI.QuickTweenOptions): void =>
          {
             if (!isObject(newTweenOptions))
             {
@@ -471,7 +476,7 @@ class DraggableOptionsStore implements TJSPositionNS.Action.DraggableOptionsStor
     *
     * @returns Unsubscribe function.
     */
-   subscribe(handler: Subscriber<TJSPositionNS.Action.DraggableOptionsStore>): Unsubscriber
+   subscribe(handler: Subscriber<Action.DraggableOptionsStore>): Unsubscriber
    {
       this.#subscriptions.push(handler); // add handler to the array of subscribers
 
@@ -500,13 +505,13 @@ class DraggableOptionsStore implements TJSPositionNS.Action.DraggableOptionsStor
 /**
  * Define a function to get a DraggableOptionsStore instance.
  *
- * @param {({
- *    tween?: boolean,
- *    tweenOptions?: import('../types').TJSPositionNS.API.Animation.QuickTweenOptions
- * })} options - Initial options for DraggableOptionsStore.
+ * @param options - Initial options for DraggableOptionsStore.
  *
- * @returns {import('../types').TJSPositionNS.Action.DraggableOptionsStore} A new options instance.
+ * @returns A new options instance.
  */
-draggable.options = (options) => new DraggableOptionsStore(options);
+draggable.options = (options: {
+   tween?: boolean,
+   tweenOptions?: AnimationAPI.QuickTweenOptions
+}): Action.DraggableOptionsStore => new DraggableOptionsStore(options);
 
 export { draggable };

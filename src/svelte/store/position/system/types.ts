@@ -7,8 +7,6 @@ import type { ValidatorAPI }  from './validators/types';
 
 import type { TJSPosition }   from '../TJSPosition';
 
-import type { TJSPositionNS } from '../types';
-
 /**
  * Defines the extension points that are available to provide custom implementations for initial positioning and
  * validation of positional movement. There are default implementations for initial `Centered` positioning available
@@ -95,12 +93,11 @@ declare namespace System {
           * Provides a validator that respects transforms in positional data constraining the position to within the
           * target elements bounds.
           *
-          * @param {TJSPositionNS.System.Validator.API.ValidationData}   valData - The associated validation data for position
-          *        updates.
+          * @param valData - The associated validation data for position updates.
           *
           * @returns {Data.TJSPositionData} Potentially adjusted position data.
           */
-         validate: TJSPositionNS.System.Validator.API.ValidatorFn;
+         validate: System.Validator.API.ValidatorFn;
 
          /**
           * An ID associated with this validator. Can be used to remove the validator; default: `undefined`.

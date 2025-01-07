@@ -1,11 +1,11 @@
 import { Mat4, Vec3 }   from '#runtime/math/gl-matrix';
 
-import type { TJSPositionNS } from '../types';
+import { TransformAPI } from './types';
 
 /**
  * Provides the output data for {@link TransformAPI.getData}.
  */
-export class TJSTransformData implements TJSPositionNS.API.Transform.TransformData
+export class TJSTransformData implements TransformAPI.TransformData
 {
    constructor()
    {

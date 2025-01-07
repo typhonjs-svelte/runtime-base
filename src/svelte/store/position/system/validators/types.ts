@@ -3,9 +3,9 @@ import type {
    Subscriber,
    Unsubscriber }                   from 'svelte/store';
 
-import type { TJSPosition }         from '../../TJSPosition.js';
-
-import type { TJSPositionNS }       from '../../types';
+import type { TJSPosition }         from '../../TJSPosition';
+import type { DataAPI }                from '../../data/types';
+import type { TransformAPI }        from '../../transform/types';
 
 /**
  * Provides the validator API implementation for {@link TJSPosition.validators}. You may add one or more validator
@@ -84,12 +84,12 @@ declare namespace ValidatorAPI {
       /**
        * New position data to evaluate.
        */
-      position: TJSPositionNS.Data.TJSPositionData;
+      position: DataAPI.TJSPositionData;
 
       /**
        * Associated position parent instance.
        */
-      parent: TJSPositionNS.PositionParent;
+      parent: TJSPosition.PositionParent;
 
       /**
        * Associated element being positioned.
@@ -104,7 +104,7 @@ declare namespace ValidatorAPI {
       /**
        * Current applies transforms / transform tracking & conversion utility.
        */
-      transforms: TJSPositionNS.API.Transform;
+      transforms: TransformAPI;
 
       /**
        * Current height
@@ -159,7 +159,7 @@ declare namespace ValidatorAPI {
     */
    export type ValidatorData = {
       /**
-       * TJSPosition validator function that takes a {@link TJSPositionNS.Data.TJSPositionData} instance potentially
+       * TJSPosition validator function that takes a {@link DataAPI.TJSPositionData} instance potentially
        * modifying it or returning null if invalid.
        */
       validate: ValidatorFn;
@@ -201,9 +201,9 @@ declare namespace ValidatorAPI {
        *
        * @param {ValidationData} data - Validation data to handle.
        *
-       * @returns {Data.TJSPositionData | null} The validated position data or null to cancel position update.
+       * @returns {DataAPI.TJSPositionData | null} The validated position data or null to cancel position update.
        */
-      (data: ValidationData): TJSPositionNS.Data.TJSPositionData | null;
+      (data: ValidationData): DataAPI.TJSPositionData | null;
 
       /**
        * Optional subscribe function following the Svelte store / subscribe pattern. On updates validation will

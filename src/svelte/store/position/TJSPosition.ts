@@ -9,8 +9,8 @@ import {
    isPlainObject }               from '#runtime/util/object';
 
 import {
-   AnimationAPI,
-   AnimationGroupAPI }           from './animation';
+   AnimationAPIImpl,
+   AnimationGroupAPIImpl }       from './animation';
 
 import {
    ConvertStringData,
@@ -43,21 +43,23 @@ import type {
    Updater,
    Unsubscriber }                from 'svelte/store';
 
-import type { TJSPositionNS }    from './types';
-
 import type { OptionsInternal }  from './types-local';
+
+import type {
+   AnimationAPI,
+   AnimationGroupAPI }           from './animation/types';
 
 /**
  * Provides an advanced compound store for positioning elements dynamically including an optimized pipeline for updating
  * an associated element. Essential tweening / animation is supported in addition to a validation API to constrain
  * positional updates.
  */
-export class TJSPosition implements TJSPositionNS.WritableExt
+class TJSPosition implements TJSPosition.WritableExt
 {
    /**
     * Public API for {@link TJSPosition.Initial}.
     */
-   static #positionInitial: Readonly<TJSPositionNS.API.Initial> = Object.freeze({
+   static #positionInitial: Readonly<TJSPosition.API.DefaultInitial> = Object.freeze({
       browserCentered: new Centered({ lock: true }),
       Centered
    });
@@ -65,7 +67,7 @@ export class TJSPosition implements TJSPositionNS.WritableExt
    /**
     * Public API for {@link TJSPosition.Validators}
     */
-   static #positionValidators: Readonly<TJSPositionNS.API.Validators> = Object.freeze({
+   static #positionValidators: Readonly<TJSPosition.API.DefaultValidators> = Object.freeze({
       TransformBounds,
       transformWindow: new TransformBounds({ lock: true })
    });
@@ -78,7 +80,7 @@ export class TJSPosition implements TJSPositionNS.WritableExt
    /**
     * Provides the animation API.
     */
-   #animate: TJSPositionNS.API.Animation = new AnimationAPI(this, this.#data);
+   #animate: AnimationAPIImpl = new AnimationAPIImpl(this, this.#data);
 
    /**
     * Provides a way to turn on / off the position handling.
@@ -98,7 +100,7 @@ export class TJSPosition implements TJSPositionNS.WritableExt
    /**
     * The associated parent for positional data tracking. Used in validators.
     */
-   #parent: TJSPositionNS.PositionParent;
+   #parent: TJSPosition.PositionParent;
 
    /**
     * Stores the style attributes that changed on update.
@@ -113,7 +115,7 @@ export class TJSPosition implements TJSPositionNS.WritableExt
 
    /**
     */
-   readonly #stores: TJSPositionNS.API.Stores;
+   readonly #stores: TJSPosition.API.Stores;
 
    /**
     * Stores an instance of the computer styles for the target element.
@@ -123,7 +125,7 @@ export class TJSPosition implements TJSPositionNS.WritableExt
    /**
     * Stores the subscribers.
     */
-   #subscribers: Subscriber<TJSPositionNS.Data.TJSPositionData>[] = [];
+   #subscribers: Subscriber<DataAPI.TJSPositionData>[] = [];
 
    /**
     */
@@ -144,7 +146,7 @@ export class TJSPosition implements TJSPositionNS.WritableExt
 
    /**
     */
-   #validatorData: TJSPositionNS.System.Validator.API.ValidatorData[];
+   #validatorData: System.Validator.API.ValidatorData[];
 
    /**
     */
@@ -153,43 +155,43 @@ export class TJSPosition implements TJSPositionNS.WritableExt
    /**
     * @returns Public Animation Group API.
     */
-   static get Animate(): TJSPositionNS.API.AnimationGroup { return AnimationGroupAPI; }
+   static get Animate(): AnimationGroupAPI { return AnimationGroupAPIImpl; }
 
    /**
     * @returns TJSPositionData constructor.
     */
-   static get Data(): TJSPositionNS.Data.TJSPositionDataConstructor { return TJSPositionData; }
+   static get Data(): DataAPI.TJSPositionDataConstructor { return TJSPositionData; }
 
    /**
     * @returns TJSPosition default initial systems.
     */
-   static get Initial(): Readonly<TJSPositionNS.API.DefaultInitial> { return this.#positionInitial; }
+   static get Initial(): Readonly<TJSPosition.API.DefaultInitial> { return this.#positionInitial; }
 
    /**
     * @returns `SystemBase` constructor.
     */
-   static get SystemBase(): TJSPositionNS.System.SystemBaseConstructor { return SystemBase; }
+   static get SystemBase(): System.SystemBaseConstructor { return SystemBase; }
 
    /**
     * Returns TJSTransformData class / constructor.
     *
     * @returns TransformData class / constructor.
     */
-   static get TransformData(): TJSPositionNS.API.Transform.TransformDataConstructor { return TJSTransformData; }
+   static get TransformData(): TransformAPI.TransformDataConstructor { return TJSTransformData; }
 
    /**
     * Returns default validator systems.
     *
     * @returns Available validators.
     */
-   static get Validators(): Readonly<TJSPositionNS.API.DefaultValidators> { return this.#positionValidators; }
+   static get Validators(): Readonly<TJSPosition.API.DefaultValidators> { return this.#positionValidators; }
 
    /**
     * Returns a list of supported transform origins.
     *
     * @returns The supported transform origin strings.
     */
-   static get transformOrigins(): Readonly<TJSPositionNS.API.Transform.TransformOrigin[]>
+   static get transformOrigins(): Readonly<TransformAPI.TransformOrigin[]>
    {
       return TJSTransforms.transformOrigins;
    }
@@ -204,8 +206,8 @@ export class TJSPosition implements TJSPositionNS.WritableExt
     *
     * @returns The target instance with all TJSPositionData fields.
     */
-   static copyData(source: Partial<TJSPositionNS.Data.TJSPositionData>, target: TJSPositionNS.Data.TJSPositionData):
-    TJSPositionNS.Data.TJSPositionData
+   static copyData(source: Partial<DataAPI.TJSPositionData>, target: DataAPI.TJSPositionData):
+    DataAPI.TJSPositionData
    {
       return TJSPositionDataUtil.copyData(source, target);
    }
@@ -220,7 +222,7 @@ export class TJSPosition implements TJSPositionNS.WritableExt
     *
     * @returns A duplicate position instance.
     */
-   static duplicate(position: TJSPosition, options: TJSPositionNS.Options.ConfigAll = {}): TJSPosition
+   static duplicate(position: TJSPosition, options: TJSPosition.Options.ConfigAll = {}): TJSPosition
    {
       if (!(position instanceof TJSPosition)) { throw new TypeError(`'position' is not an instance of TJSPosition.`); }
 
@@ -240,8 +242,8 @@ export class TJSPosition implements TJSPositionNS.WritableExt
     *
     * @param [options] - The options object.
     */
-   constructor(parentOrOptions?: TJSPositionNS.PositionParent | TJSPositionNS.Options.ConfigAll,
-    options?: TJSPositionNS.Options.ConfigAll)
+   constructor(parentOrOptions?: TJSPosition.PositionParent | TJSPosition.Options.ConfigAll,
+    options?: TJSPosition.Options.ConfigAll)
    {
       // Test if `parent` is a plain object; if so treat as options object.
       if (isPlainObject(parentOrOptions))
@@ -250,7 +252,7 @@ export class TJSPosition implements TJSPositionNS.WritableExt
       }
       else
       {
-         this.#parent = parentOrOptions as TJSPositionNS.PositionParent;
+         this.#parent = parentOrOptions as TJSPosition.PositionParent;
       }
 
       this.#styleCache = new TJSPositionStyleCache();
@@ -311,7 +313,7 @@ export class TJSPosition implements TJSPositionNS.WritableExt
        * Define 'values' getter to retrieve static transform origins.
        */
       Object.defineProperty(this.#stores.transformOrigin, 'values', {
-         get: (): Readonly<TJSPositionNS.API.Transform.TransformOrigin[]> => TJSPosition.transformOrigins
+         get: (): Readonly<TransformAPI.TransformOrigin[]> => TJSPosition.transformOrigins
       });
 
       // When resize change from any applied `resizeObserver` action automatically set data for new validation run.
@@ -319,7 +321,7 @@ export class TJSPosition implements TJSPositionNS.WritableExt
       // to monitor for changes. This should only be used on elements that have 'auto' or `inherit` for width or height.
       subscribeIgnoreFirst(this.#stores.resizeObserved, (resizeData): void =>
       {
-         const parent: TJSPositionNS.PositionParent = this.#parent;
+         const parent: TJSPosition.PositionParent = this.#parent;
          const el: HTMLElement = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
 
          // Only invoke set if there is a target element and the resize data has a valid offset width & height.
@@ -334,7 +336,7 @@ export class TJSPosition implements TJSPositionNS.WritableExt
 
       if (options?.initial)
       {
-         const initial: TJSPositionNS.System.Initial.InitialSystem = options.initial;
+         const initial: System.Initial.InitialSystem = options.initial;
 
          if (typeof initial?.getLeft !== 'function' || typeof initial?.getTop !== 'function')
          {
@@ -355,8 +357,8 @@ export class TJSPosition implements TJSPositionNS.WritableExt
          {
             /**
              */
-            const validatorFn: TJSPositionNS.System.Validator.API.ValidatorFn |
-             TJSPositionNS.System.Validator.API.ValidatorData = options.validator;
+            const validatorFn: System.Validator.API.ValidatorFn |
+             System.Validator.API.ValidatorData = options.validator;
 
             this.validators.add(validatorFn);
          }
@@ -373,7 +375,7 @@ export class TJSPosition implements TJSPositionNS.WritableExt
     *
     * @returns Animation instance API.
     */
-   get animate(): TJSPositionNS.API.Animation
+   get animate(): AnimationAPI
    {
       return this.#animate;
    }
@@ -419,32 +421,32 @@ export class TJSPosition implements TJSPositionNS.WritableExt
    }
 
    /**
-    * Returns the associated {@link TJSPositionNS.PositionParent} instance.
+    * Returns the associated {@link TJSPosition.PositionParent} instance.
     *
     * @returns The current position parent instance.
     */
-   get parent(): TJSPositionNS.PositionParent { return this.#parent; }
+   get parent(): TJSPosition.PositionParent { return this.#parent; }
 
    /**
     * Returns the state API.
     *
     * @returns TJSPosition state API.
     */
-   get state(): TJSPositionNS.API.State { return this.#state; }
+   get state(): PositionStateAPI { return this.#state; }
 
    /**
     * Returns the derived writable stores for individual data variables.
     *
     * @returns Derived / writable stores.
     */
-   get stores(): TJSPositionNS.API.Stores { return this.#stores; }
+   get stores(): TJSPosition.API.Stores { return this.#stores; }
 
    /**
     * Returns the transform data for the readable store.
     *
     * @returns Transform Data.
     */
-   get transform(): TJSPositionNS.API.Transform.TransformData
+   get transform(): TransformAPI.TransformData
    {
       return this.#updateElementData.transformData;
    }
@@ -454,7 +456,7 @@ export class TJSPosition implements TJSPositionNS.WritableExt
     *
     * @returns Validators API
     */
-   get validators(): TJSPositionNS.System.Validator.API { return this.#validators; }
+   get validators(): System.Validator.API { return this.#validators; }
 
    /**
     * Sets the enabled state.
@@ -472,11 +474,11 @@ export class TJSPosition implements TJSPositionNS.WritableExt
    }
 
    /**
-    * Sets the associated {@link TJSPositionNS.PositionParent} instance. Resets the style cache and default data.
+    * Sets the associated {@link TJSPosition.PositionParent} instance. Resets the style cache and default data.
     *
     * @param parent - A PositionParent instance or undefined to disassociate
     */
-   set parent(parent: TJSPositionNS.PositionParent | undefined)
+   set parent(parent: TJSPosition.PositionParent | undefined)
    {
       if (parent !== void 0 && !A11yHelper.isFocusTarget(parent) && !isObject(parent))
       {
@@ -558,7 +560,7 @@ export class TJSPosition implements TJSPositionNS.WritableExt
    /**
     * @returns transformOrigin
     */
-   get transformOrigin(): TJSPositionNS.API.Transform.TransformOrigin | null { return this.#data.transformOrigin; }
+   get transformOrigin(): TransformAPI.TransformOrigin | null { return this.#data.transformOrigin; }
 
    /**
     * @returns translateX
@@ -684,7 +686,7 @@ export class TJSPosition implements TJSPositionNS.WritableExt
    /**
     * @param transformOrigin -
     */
-   set transformOrigin(transformOrigin: TJSPositionNS.API.Transform.TransformOrigin)
+   set transformOrigin(transformOrigin: TransformAPI.TransformOrigin)
    {
       if (TJSTransforms.transformOrigins.includes(transformOrigin))
       {
@@ -744,11 +746,11 @@ export class TJSPosition implements TJSPositionNS.WritableExt
     *
     * @returns Passed in object with current position data.
     */
-   get(data: { [key: string]: any } = {}, options: TJSPositionNS.Options.Get = {}):
-    Partial<TJSPositionNS.Data.TJSPositionData>
+   get(data: { [key: string]: any } = {}, options: TJSPosition.Options.Get = {}):
+    Partial<DataAPI.TJSPositionData>
    {
-      const keys: Iterable<keyof TJSPositionData> = options?.keys;
-      const excludeKeys: Iterable<keyof TJSPositionData> = options?.exclude;
+      const keys: Iterable<keyof DataAPI.TJSPositionData> = options?.keys;
+      const excludeKeys: Iterable<keyof DataAPI.TJSPositionData> = options?.exclude;
       const nullable: boolean = options?.nullable ?? true;
       const numeric: boolean = options?.numeric ?? false;
 
@@ -799,7 +801,7 @@ export class TJSPosition implements TJSPositionNS.WritableExt
    /**
     * @returns Current position data.
     */
-   toJSON(): TJSPositionNS.Data.TJSPositionData
+   toJSON(): DataAPI.TJSPositionData
    {
       return Object.assign({}, this.#data);
    }
@@ -831,11 +833,11 @@ export class TJSPosition implements TJSPositionNS.WritableExt
     *
     * @returns This TJSPosition instance.
     */
-   set(position: TJSPositionNS.Data.TJSPositionDataRelative = {}, options: TJSPositionNS.Options.Set = {}): this
+   set(position: DataAPI.TJSPositionDataRelative = {}, options: TJSPosition.Options.Set = {}): this
    {
       if (!isObject(position)) { throw new TypeError(`TJSPosition - set error: 'position' is not an object.`); }
 
-      // TJSPositionNS.PositionParent
+      // TJSPosition.PositionParent
       const parent: any = this.#parent;
 
       // An early out to prevent `set` from taking effect if not enabled.
@@ -853,8 +855,8 @@ export class TJSPosition implements TJSPositionNS.WritableExt
 
       const immediateElementUpdate = options?.immediateElementUpdate ?? false;
 
-      const data: TJSPositionNS.Data.TJSPositionData = this.#data;
-      const transforms: TJSPositionNS.API.Transform = this.#transforms;
+      const data: DataAPI.TJSPositionData = this.#data;
+      const transforms: TransformAPI = this.#transforms;
 
       // Find the target HTML element and verify that it is connected storing it in `el`.
       const targetEl: HTMLElement = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
@@ -1059,7 +1061,7 @@ export class TJSPosition implements TJSPositionNS.WritableExt
 
       if (el)
       {
-         const defaultData: TJSPositionNS.Data.TJSPositionDataExtra = this.#state.getDefault();
+         const defaultData: DataAPI.TJSPositionDataExtra = this.#state.getDefault();
 
          // Set default data after first set operation that has a target element.
          if (!isObject(defaultData)) { this.#state.save({ name: '#defaultData', ...Object.assign({}, data) }); }
@@ -1092,7 +1094,7 @@ export class TJSPosition implements TJSPositionNS.WritableExt
     *
     * @returns Unsubscribe function.
     */
-   subscribe(handler: Subscriber<Readonly<TJSPositionNS.Data.TJSPositionData>>): Unsubscriber
+   subscribe(handler: Subscriber<Readonly<DataAPI.TJSPositionData>>): Unsubscriber
    {
       this.#subscribers.push(handler); // add handler to the array of subscribers
 
@@ -1111,11 +1113,11 @@ export class TJSPosition implements TJSPositionNS.WritableExt
     * update the position state. You may manipulate numeric properties by providing relative adjustments described in
     * {@link TJSPositionDataRelative}.
     *
-    * @param {Updater<TJSPositionNS.Data.TJSPositionDataRelative>} updater -
+    * @param updater -
     */
-   update(updater: Updater<TJSPositionNS.Data.TJSPositionDataRelative>): void
+   update(updater: Updater<DataAPI.TJSPositionDataRelative>): void
    {
-      const result: TJSPositionNS.Data.TJSPositionDataRelative = updater(this.get());
+      const result: DataAPI.TJSPositionDataRelative = updater(this.get());
 
       if (!isObject(result)) { throw new TypeError(`'result' of 'updater' is not an object.`); }
 
@@ -1132,7 +1134,7 @@ export class TJSPosition implements TJSPositionNS.WritableExt
    /**
     * Temporary data storage for `TJSPosition.#updatePosition`.
     */
-   static #validationData: TJSPositionNS.System.Validator.API.ValidationData = Object.seal({
+   static #validationData: System.Validator.API.ValidationData = Object.seal({
       position: void 0,
       parent: void 0,
       el: void 0,
@@ -1169,8 +1171,8 @@ export class TJSPosition implements TJSPositionNS.WritableExt
       rotation,
 
       ...rest
-   }: TJSPositionNS.Data.TJSPositionData, parent: TJSPositionNS.PositionParent, el: HTMLElement,
-    styleCache: TJSPositionStyleCache): TJSPositionData | null
+   }: DataAPI.TJSPositionData, parent: TJSPosition.PositionParent, el: HTMLElement,
+                   styleCache: TJSPositionStyleCache): TJSPositionData | null
    {
       let currentPosition: TJSPositionData = TJSPositionDataUtil.copyData(this.#data, TJSPosition.#updateDataCopy);
 
@@ -1361,3 +1363,321 @@ export class TJSPosition implements TJSPositionNS.WritableExt
       return currentPosition;
    }
 }
+
+import {
+   Readable,
+   // Updater,
+   Writable }                       from 'svelte/store';
+
+import type { ResizeObserverData }  from '#runtime/util/dom/observer';
+
+// import type { TJSPosition }         from './TJSPosition';
+
+import type { Action }              from './action/types';
+
+import type { DataAPI }                from './data/types';
+
+import type { StateAPI }            from './state/types';
+
+import type { System }              from './system/types';
+
+import type { TransformAPI }        from './transform/types';
+
+declare namespace TJSPosition {
+   export { Action };
+
+   export namespace API {
+      export {
+         AnimationAPI as Animation,
+         AnimationGroupAPI as AnimationGroup,
+         StateAPI as State,
+         TransformAPI as Transform
+      }
+
+      /**
+       * Provides the default {@link System.Initial.InitialSystem} implementations available.
+       */
+      export type DefaultInitial = {
+         /**
+          * A locked instance of the `Centered` initial helper suitable for displaying elements in the browser window.
+          */
+         browserCentered: System.Initial.InitialSystem,
+
+         /**
+          * The `Centered` class constructor to instantiate a new instance.
+          * @constructor
+          */
+         Centered: System.Initial.InitialSystemConstructor
+      }
+
+      /**
+       * Provides the default {@link System.Validator.ValidatorSystem} implementations available.
+       */
+      export type DefaultValidators = {
+         /**
+          * The `TransformBounds` class constructor to instantiate a new instance.
+          */
+         TransformBounds: System.Validator.ValidatorSystemConstructor,
+
+         /**
+          * A locked instance of the `TransformBounds` validator suitable for transformed bounds checking against the
+          * browser window.
+          */
+         transformWindow: System.Validator.ValidatorSystem
+      };
+
+      /**
+       * Defines all derived stores for positional properties. These property stores can be used to update the position
+       * state.
+       *
+       * There are several readable stores for additional derived data.
+       */
+      export interface Stores {
+         // Writable stores for main position properties ----------------------------------------------------------------
+
+         /**
+          * Derived store for `left` updates.
+          */
+         left: WritablePos<number | string | null, number | null>;
+
+         /**
+          * Derived store for `top` updates.
+          */
+         top: WritablePos<number | string | null, number | null>;
+
+         /**
+          * Derived store for `width` updates.
+          */
+         width: WritablePos<number | string | null, number | 'auto' | 'inherit' | null>;
+
+         /**
+          * Derived store for `height` updates.
+          */
+         height: WritablePos<number | string | null, number | 'auto' | 'inherit' | null>;
+
+         /**
+          * Derived store for `maxHeight` updates.
+          */
+         maxHeight: WritablePos<number | string | null, number | null>;
+
+         /**
+          * Derived store for `maxWidth` updates.
+          */
+         maxWidth: WritablePos<number | string | null, number | null>;
+
+         /**
+          * Derived store for `minHeight` updates.
+          */
+         minHeight: WritablePos<number | string | null, number | null>;
+
+         /**
+          * Derived store for `minWidth` updates.
+          */
+         minWidth: WritablePos<number | string | null, number | null>;
+
+         /**
+          * Derived store for `rotateX` updates.
+          */
+         rotateX: WritablePos<number | string | null, number | null>;
+
+         /**
+          * Derived store for `rotateY` updates.
+          */
+         rotateY: WritablePos<number | string | null, number | null>;
+
+         /**
+          * Derived store for `rotateZ` updates.
+          */
+         rotateZ: WritablePos<number | string | null, number | null>;
+
+         /**
+          * Derived store for `scale` updates.
+          */
+         scale: Writable<number | null>;
+
+         /**
+          * Derived store for `transformOrigin` updates.
+          */
+         transformOrigin: API.Transform.TransformOriginWritable;
+
+         /**
+          * Derived store for `translateX` updates.
+          */
+         translateX: WritablePos<number | string | null, number | null>;
+
+         /**
+          * Derived store for `translateY` updates.
+          */
+         translateY: WritablePos<number | string | null, number | null>;
+
+         /**
+          * Derived store for `translateZ` updates.
+          */
+         translateZ: WritablePos<number | string | null, number | null>;
+
+         /**
+          * Derived store for `zIndex` updates.
+          */
+         zIndex: Writable<number | null>;
+
+         // Readable stores for derived data ----------------------------------------------------------------------------
+
+         /**
+          * Readable store for dimension data.
+          */
+         dimension: Readable<{ width: number | 'auto' | 'inherit', height: number | 'auto' | 'inherit' }>;
+
+         /**
+          * Readable store for current element.
+          */
+         element: Readable<HTMLElement>;
+
+         /**
+          * Readable store for `contentHeight`.
+          */
+         resizeContentHeight: Readable<number | undefined>;
+
+         /**
+          * Readable store for `contentWidth`.
+          */
+         resizeContentWidth: Readable<number | undefined>;
+
+         /**
+          * Readable store indicating when `width` or `height` is `auto` or `inherit` indicating that this position
+          * instance is a good candidate for the {@link #runtime/svelte/action/dom/observer!resizeObserver} action.
+          */
+         resizeObservable: Readable<boolean>;
+
+         /**
+          * Readable store for `offsetHeight`.
+          */
+         resizeOffsetHeight: Readable<number | undefined>;
+
+         /**
+          * Readable store for `offsetWidth`.
+          */
+         resizeOffsetWidth: Readable<number | undefined>;
+
+         /**
+          * Protected store for resize observer updates.
+          */
+         resizeObserved: Writable<ResizeObserverData.ResizeObject>;
+
+         /**
+          * Readable store for transform data.
+          */
+         transform: Readable<TransformAPI.TransformData>;
+      }
+   }
+
+   export { DataAPI as Data };
+
+   export namespace Options {
+      /**
+       * Defines the unique options available for setting in the constructor of {@link TJSPosition}.
+       */
+      export type Config = {
+         /**
+          * When true always calculate transform data.
+          */
+         calculateTransform: boolean;
+
+         /**
+          * Provides a helper for setting initial position location.
+          */
+         initial: System.Initial.InitialSystem;
+
+         /**
+          * Sets TJSPosition to orthographic mode using just `transform` / `matrix3d` CSS for positioning.
+          */
+         ortho: boolean;
+
+         /**
+          * Provides an initial validator or list of validators.
+          */
+         validator: System.Validator.API.ValidatorOption;
+      }
+
+      /**
+       * Provides the complete options object including unique {@link TJSPosition} options in addition to positional
+       * data that is available to set in the constructor.
+       */
+      export type ConfigAll = Partial<Config & DataAPI.TJSPositionDataExtra>;
+
+      /**
+       * Options for {@link TJSPosition.get}.
+       */
+      export type Get = {
+         /**
+          * When provided only these keys are copied.
+          */
+         keys?: Iterable<keyof DataAPI.TJSPositionData>;
+
+         /**
+          * When provided these keys are excluded.
+          */
+         exclude?: Iterable<keyof DataAPI.TJSPositionData>;
+
+         /**
+          * When true all `nullable` values are included.
+          */
+         nullable?: boolean;
+
+         /**
+          * When true any `null` values are converted into default numeric values.
+          */
+         numeric?: boolean;
+      }
+
+      /**
+       * Options for {@link TJSPosition.set}.
+       */
+      export type Set = {
+         /**
+          * Perform the update to position state immediately. Callers can specify to immediately update the associated
+          * element. This is useful if set is called from requestAnimationFrame / rAF. Library integrations like GSAP
+          * invoke set from rAF.
+          */
+         immediateElementUpdate?: boolean;
+      }
+   }
+
+   export { System };
+
+   // Local declarations ---------------------------------------------------------------------------------------------
+
+   /**
+    * Defines the TJSPosition parent element. Provide either an HTMLElement directly or an object with an
+    * `elementTarget` property / accessor defining the parent HTMLElement.
+    */
+   export type PositionParent = HTMLElement | { elementTarget?: HTMLElement };
+
+   /**
+    * Provides an overloaded {@link Writable} store interface for {@link TJSPosition.set}.
+    */
+   export interface WritableExt extends Writable<DataAPI.TJSPositionDataRelative>
+   {
+      set(this: void, value: DataAPI.TJSPositionDataRelative, options?: Options.Set): TJSPosition;
+   }
+
+   /**
+    * Extends Writable to allow type differentiation between writing and reading data. TJSPosition allows flexible
+    * formats for writing data that is converted to specific data for reading after validation.
+    */
+   export interface WritablePos<W, R> extends Readable<R>
+   {
+      /**
+       * Set value and inform subscribers.
+       * @param value to set
+       */
+      set(this: void, value: W): void;
+
+      /**
+       * Update value using callback and inform subscribers.
+       * @param updater callback
+       */
+      update(this: void, updater: Updater<W>): void;
+   }
+}
+
+export { TJSPosition };

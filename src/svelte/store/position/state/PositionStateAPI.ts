@@ -2,22 +2,26 @@ import {
    isIterable,
    isObject }     from '#runtime/util/object';
 
-import type { TJSPosition }   from '../TJSPosition';
+import type { TJSPosition }      from '../TJSPosition';
 
-import type { TJSPositionNS } from '../types';
+import type { StateAPI }         from './types';
+
+import type { DataAPI }             from '../data/types';
+import type { TransformAPI }     from '../transform/types';
+import type { PositionGroup }    from '../types';
 
 /**
  *
  */
-export class PositionStateAPI implements TJSPositionNS.API.State
+export class PositionStateAPI implements StateAPI
 {
    /**
     */
-   readonly #data: TJSPositionNS.Data.TJSPositionData;
+   readonly #data: DataAPI.TJSPositionData;
 
    /**
     */
-   #dataSaved: Map<string, TJSPositionNS.Data.TJSPositionDataExtra> = new Map();
+   #dataSaved: Map<string, DataAPI.TJSPositionDataExtra> = new Map();
 
    /**
     */
@@ -25,9 +29,9 @@ export class PositionStateAPI implements TJSPositionNS.API.State
 
    /**
     */
-   #transforms: TJSPositionNS.API.Transform;
+   #transforms: TransformAPI;
 
-   constructor(position: TJSPosition, data: TJSPositionNS.Data.TJSPositionData, transforms: TJSPositionNS.API.Transform)
+   constructor(position: TJSPosition, data: DataAPI.TJSPositionData, transforms: TransformAPI)
    {
       this.#position = position;
       this.#data = data;
@@ -56,7 +60,7 @@ export class PositionStateAPI implements TJSPositionNS.API.State
     *
     * @returns Any saved position data.
     */
-   get({ name }: { name: string }): TJSPositionNS.Data.TJSPositionDataExtra | undefined
+   get({ name }: { name: string }): DataAPI.TJSPositionDataExtra | undefined
    {
       if (typeof name !== 'string') { throw new TypeError(`TJSPosition - get error: 'name' is not a string.`); }
 
@@ -68,7 +72,7 @@ export class PositionStateAPI implements TJSPositionNS.API.State
     *
     * @returns Any saved default position data.
     */
-   getDefault(): TJSPositionNS.Data.TJSPositionDataExtra | undefined
+   getDefault(): DataAPI.TJSPositionDataExtra | undefined
    {
       return this.#dataSaved.get('#defaultData');
    }
@@ -90,7 +94,7 @@ export class PositionStateAPI implements TJSPositionNS.API.State
     *
     * @returns Any saved position data.
     */
-   remove({ name }: { name: string }): TJSPositionNS.Data.TJSPositionDataExtra | undefined
+   remove({ name }: { name: string }): DataAPI.TJSPositionDataExtra | undefined
    {
       if (typeof name !== 'string') { throw new TypeError(`TJSPosition - remove: 'name' is not a string.`); }
 
@@ -111,7 +115,7 @@ export class PositionStateAPI implements TJSPositionNS.API.State
     *
     * @returns Operation successful.
     */
-   reset({ keepZIndex = false, invokeSet = true }: TJSPositionNS.API.State.Options.Reset = {}): boolean
+   reset({ keepZIndex = false, invokeSet = true }: StateAPI.Options.Reset = {}): boolean
    {
       const defaultData = this.#dataSaved.get('#defaultData');
 
@@ -171,8 +175,8 @@ export class PositionStateAPI implements TJSPositionNS.API.State
     * @returns Any saved position data.
     */
    restore({ name, remove = false, properties, silent = false, async = false, animateTo = false, duration = 0.1,
-    ease = 'linear' }: TJSPositionNS.API.State.Options.Restore): TJSPositionNS.Data.TJSPositionDataExtra |
-     Promise<TJSPositionNS.Data.TJSPositionDataExtra | undefined>  | undefined
+    ease = 'linear' }: StateAPI.Options.Restore): DataAPI.TJSPositionDataExtra |
+     Promise<DataAPI.TJSPositionDataExtra | undefined>  | undefined
    {
       if (typeof name !== 'string') { throw new TypeError(`TJSPosition - restore error: 'name' is not a string.`); }
 
@@ -201,7 +205,7 @@ export class PositionStateAPI implements TJSPositionNS.API.State
             // Provide special handling to potentially change transform origin as this parameter is not animated.
             if (data.transformOrigin !== this.#position.transformOrigin)
             {
-               this.#position.transformOrigin = data.transformOrigin as TJSPositionNS.API.Transform.TransformOrigin;
+               this.#position.transformOrigin = data.transformOrigin as TransformAPI.TransformOrigin;
             }
 
             // Return a Promise with saved data that resolves after animation ends.
@@ -238,8 +242,8 @@ export class PositionStateAPI implements TJSPositionNS.API.State
     *
     * @returns Current position data plus any extra data stored.
     */
-   save({ name, ...extra }: TJSPositionNS.API.State.Options.Save, optionsGet?: TJSPositionNS.Options.Get):
-    TJSPositionNS.Data.TJSPositionDataExtra
+   save({ name, ...extra }: StateAPI.Options.Save, optionsGet?: TJSPosition.Options.Get):
+    DataAPI.TJSPositionDataExtra
    {
       if (typeof name !== 'string') { throw new TypeError(`TJSPosition - save error: 'name' is not a string.`); }
 
@@ -257,7 +261,7 @@ export class PositionStateAPI implements TJSPositionNS.API.State
     *
     * @param {string}   opts.name - name to index this saved data.
     */
-   set({ name, ...data }: TJSPositionNS.API.State.Options.Set): void
+   set({ name, ...data }: StateAPI.Options.Set): void
    {
       if (typeof name !== 'string') { throw new TypeError(`TJSPosition - set error: 'name' is not a string.`); }
 

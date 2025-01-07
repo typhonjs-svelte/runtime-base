@@ -1,11 +1,12 @@
 import type { BasicAnimation }   from '#runtime/util/animate';
 
 import type { TJSPosition }      from '../TJSPosition';
-import type { TJSPositionNS }    from '../types';
 
 import type {
    AnimationCancelFunction,
    AnimationData }               from './types-local';
+
+import type { AnimationAPI }     from './types';
 
 /**
  * Provides animation management and scheduling allowing all TJSPosition instances to utilize one micro-task.
@@ -311,7 +312,7 @@ export class AnimationManager
     * @returns True if scheduled / false if not.
     */
    static isScheduled(position: TJSPosition, { active = true, pending = true }:
-    TJSPositionNS.API.Animation.ScheduleOptions = {}): boolean
+    AnimationAPI.ScheduleOptions = {}): boolean
    {
       if (active)
       {

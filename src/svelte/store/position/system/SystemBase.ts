@@ -5,12 +5,12 @@ import type {
    Subscriber,
    Unsubscriber }             from 'svelte/store';
 
-import type { TJSPositionNS } from '../types';
+import type { System }        from './types';
 
 /**
  * Provides a base {@link System.SystemBase} implementation.
  */
-export class SystemBase implements Readable<SystemBase>, TJSPositionNS.System.SystemBase
+export class SystemBase implements Readable<SystemBase>, System.SystemBase
 {
    /**
     * When true constrains the min / max width or height to element.

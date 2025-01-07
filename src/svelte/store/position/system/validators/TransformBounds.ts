@@ -3,7 +3,9 @@ import { clamp }              from '#runtime/math/util';
 import { SystemBase }         from '../SystemBase';
 import { TJSTransformData }   from '../../transform';
 
-import type { TJSPositionNS } from '../../types';
+import type { System }        from '../types';
+import type { DataAPI }          from '../../data/types';
+import type { TransformAPI }  from '../../transform/types';
 
 export class TransformBounds extends SystemBase
 {
@@ -17,7 +19,7 @@ export class TransformBounds extends SystemBase
     *
     * @returns Potentially adjusted position data.
     */
-   validate(valData: TJSPositionNS.System.Validator.API.ValidationData): TJSPositionNS.Data.TJSPositionData
+   validate(valData: System.Validator.API.ValidationData): DataAPI.TJSPositionData
    {
       // Early out if element is undefined or local enabled state is false.
       if (!this.enabled) { return valData.position; }
@@ -44,7 +46,7 @@ export class TransformBounds extends SystemBase
 
       // Get transform data. First set constraints including any margin top / left as offsets and width / height. Used
       // when position width / height is 'auto'.
-      const data: TJSPositionNS.API.Transform.TransformData = valData.transforms.getData(valData.position,
+      const data: TransformAPI.TransformData = valData.transforms.getData(valData.position,
        TransformBounds.#TRANSFORM_DATA, valData);
 
       // Check the bounding rectangle against browser height / width. Adjust position based on how far the overlap of

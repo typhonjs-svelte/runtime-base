@@ -1,17 +1,13 @@
-import type { TJSPosition }   from '../TJSPosition';
-
-// import type { TJSPositionNS } from '../types';
-
-import type { TransformAPI } from "../transform/types";
-import type { AnimationAPI } from "../animation/types";
+import type { TransformAPI } from '../transform/types';
+import type { AnimationAPI } from '../animation/types';
 
 /**
  * Defines the data objects / interfaces used by various TJSPosition APIs.
  */
-declare namespace Data {
+declare namespace DataAPI {
    /**
     * Defines the primary TJSPosition data object used by various TJSPosition APIs. To externally create a new instance
-    * use the static accessor {@link TJSPosition.Data}.
+    * use the static accessor `TJSPosition.Data`.
     */
    export interface TJSPositionData {
       height: number | 'auto' | 'inherit' | null;
@@ -66,7 +62,7 @@ declare namespace Data {
    type TransformKeys = 'rotateX' | 'rotateY' | 'rotateZ' | 'scale' | 'translateX' | 'translateY' | 'translateZ';
 
    /**
-    * Defines an extension to {@link Data.TJSPositionData} where each animatable property defined by
+    * Defines an extension to {@link DataAPI.TJSPositionData} where each animatable property defined by
     * {@link AnimationAPI.AnimationKey} can also be a string. Relative adjustments to animatable properties should be
     * a string the form of '+=', '-=', or '*=' and float / numeric value. IE '+=0.2'. {@link TJSPosition.set} will
     * apply the `addition`, `subtraction`, or `multiplication` operation specified against the current value of the
@@ -92,7 +88,7 @@ declare namespace Data {
     * ```
     *
     * Additional properties may be added that are not specified by {@link TJSPositionData} and are forwarded through
-    * {@link TJSPositionNS.System.Validator.API.ValidationData} as the `rest` property allowing extra data to be sent to any
+    * {@link System.Validator.API.ValidationData} as the `rest` property allowing extra data to be sent to any
     * custom validator.
     */
    export type TJSPositionDataRelative = Partial<{
@@ -137,4 +133,4 @@ declare namespace Data {
    }
 }
 
-export { Data };
+export { DataAPI };

@@ -1,9 +1,10 @@
-import type { TJSPositionNS } from '../types';
+import { DataAPI }         from './types';
+import { TransformAPI } from '../transform/types';
 
 /**
  * Defines stored positional data.
  */
-export class TJSPositionData implements TJSPositionNS.Data.TJSPositionData
+export class TJSPositionData implements DataAPI.TJSPositionData
 {
    height: number | 'auto' | 'inherit' | null;
    left: number | null;
@@ -18,7 +19,7 @@ export class TJSPositionData implements TJSPositionNS.Data.TJSPositionData
 
    top: number | null;
 
-   transformOrigin: TJSPositionNS.API.Transform.TransformOrigin | null;
+   transformOrigin: TransformAPI.TransformOrigin | null;
 
    translateX: number | null;
    translateY: number | null;
@@ -62,7 +63,7 @@ export class TJSPositionData implements TJSPositionNS.Data.TJSPositionData
     *
     * @param {number | null} [opts.top] -
     *
-    * @param {import('../types').TJSPositionNS.API.Transform.TransformOrigin | null} [opts.transformOrigin] -
+    * @param [opts.transformOrigin] -
     *
     * @param {number | 'auto' | 'inherit' | null} [opts.width] -
     *
@@ -78,7 +79,7 @@ export class TJSPositionData implements TJSPositionNS.Data.TJSPositionData
       maxWidth?: number | null; minHeight?: number | null; minWidth?: number | null; rotateX?: number | null;
        rotateY?: number | null; rotateZ?: number | null; scale?: number | null; translateX?: number | null;
         translateY?: number | null; translateZ?: number | null; top?: number | null;
-         transformOrigin?: TJSPositionNS.API.Transform.TransformOrigin | null;
+         transformOrigin?: TransformAPI.TransformOrigin | null;
           width?: number | 'auto' | 'inherit' | null; zIndex?: number | null; rotation?: number | null
    } = {})
    {

@@ -1,2 +1,2 @@
-export * from './AnimationAPI';
-export * from './AnimationGroupAPI';
+export * from './AnimationAPIImpl';
+export * from './AnimationGroupAPIImpl';

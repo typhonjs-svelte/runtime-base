@@ -17,18 +17,21 @@ import type { EasingFunction }      from '#runtime/svelte/easing';
 import type { FocusableElement }    from '#runtime/util/a11y';
 
 import type { TJSPosition }         from '../TJSPosition';
-import type { TJSPositionNS }       from '../types';
 
 import type {
    AnimationCleanupFunction,
    AnimationData }                  from './types-local';
+
+import type { AnimationAPI }        from './types';
+import type { DataAPI }                from '../data/types';
+import type { TransformAPI }        from '../transform/types';
 
 export class AnimationScheduler
 {
    /**
     * Used to copy data from a TJSPosition instance.
     */
-   static #data: Partial<TJSPositionNS.Data.TJSPositionData> = {};
+   static #data: Partial<DataAPI.TJSPositionData> = {};
 
    static #getEaseOptions: Readonly<{ default: false }> = Object.freeze({ default: false });
 
@@ -61,8 +64,8 @@ export class AnimationScheduler
     */
    static #addAnimation(position: TJSPosition, initial: object, destination: object, duration: number, el: Element,
     delay: number, ease: EasingFunction, interpolate: InterpolateFunction<number> = lerp,
-     transformOrigin: TJSPositionNS.API.Transform.TransformOrigin,
-      transformOriginInitial: TJSPositionNS.API.Transform.TransformOrigin, cleanup: AnimationCleanupFunction):
+     transformOrigin: TransformAPI.TransformOrigin,
+      transformOriginInitial: TransformAPI.TransformOrigin, cleanup: AnimationCleanupFunction):
        AnimationControl | null
    {
       // Set initial data for transform values that are often null by default.
@@ -136,8 +139,8 @@ export class AnimationScheduler
     *
     * @returns An AnimationControl instance or null if none created.
     */
-   static from(position: TJSPosition, fromData: TJSPositionNS.Data.TJSPositionDataRelative,
-    options: TJSPositionNS.API.Animation.TweenOptions = {}, cleanup?: AnimationCleanupFunction): AnimationControl | null
+   static from(position: TJSPosition, fromData: DataAPI.TJSPositionDataRelative,
+    options: AnimationAPI.TweenOptions = {}, cleanup?: AnimationCleanupFunction): AnimationControl | null
    {
       if (!isObject(fromData))
       {
@@ -200,8 +203,8 @@ export class AnimationScheduler
       for (const key in fromData)
       {
          // Must use actual key from any aliases.
-         const animKey: TJSPositionNS.API.Animation.AnimationKey = TJSPositionDataUtil.getAnimationKey(
-          key as TJSPositionNS.API.Animation.AnimationKey);
+         const animKey: AnimationAPI.AnimationKey = TJSPositionDataUtil.getAnimationKey(
+          key as AnimationAPI.AnimationKey);
 
          if (this.#data[animKey] !== void 0 && fromData[key] !== this.#data[animKey])
          {
@@ -231,9 +234,9 @@ export class AnimationScheduler
     *
     * @returns An AnimationControl instance or null if none created.
     */
-   static fromTo(position: TJSPosition, fromData: TJSPositionNS.Data.TJSPositionDataRelative,
-    toData: TJSPositionNS.Data.TJSPositionDataRelative, options: TJSPositionNS.API.Animation.TweenOptions = {},
-     cleanup?: AnimationCleanupFunction): AnimationControl | null
+   static fromTo(position: TJSPosition, fromData: DataAPI.TJSPositionDataRelative,
+                 toData: DataAPI.TJSPositionDataRelative, options: AnimationAPI.TweenOptions = {},
+                 cleanup?: AnimationCleanupFunction): AnimationControl | null
    {
       if (!isObject(fromData))
       {
@@ -295,7 +298,7 @@ export class AnimationScheduler
       transformOrigin = TJSTransforms.isTransformOrigin(transformOrigin) ? transformOrigin : void 0;
 
       // Given a valid transform origin store the initial transform origin to be restored.
-      const transformOriginInitial: TJSPositionNS.API.Transform.TransformOrigin = transformOrigin !== void 0 ?
+      const transformOriginInitial: TransformAPI.TransformOrigin = transformOrigin !== void 0 ?
        this.#data.transformOrigin : void 0;
 
       // Set initial data if the key / data is defined and the end position is not equal to current data.
@@ -310,8 +313,8 @@ export class AnimationScheduler
          }
 
          // Must use actual key from any aliases.
-         const animKey: TJSPositionNS.API.Animation.AnimationKey = TJSPositionDataUtil.getAnimationKey(
-          key as TJSPositionNS.API.Animation.AnimationKey);
+         const animKey: AnimationAPI.AnimationKey = TJSPositionDataUtil.getAnimationKey(
+          key as AnimationAPI.AnimationKey);
 
          if (this.#data[animKey] !== void 0)
          {
@@ -340,8 +343,8 @@ export class AnimationScheduler
     *
     * @returns An AnimationControl instance or null if none created.
     */
-   static to(position: TJSPosition, toData: TJSPositionNS.Data.TJSPositionDataRelative,
-    options: TJSPositionNS.API.Animation.TweenOptions, cleanup?: AnimationCleanupFunction): AnimationControl | null
+   static to(position: TJSPosition, toData: DataAPI.TJSPositionDataRelative,
+    options: AnimationAPI.TweenOptions, cleanup?: AnimationCleanupFunction): AnimationControl | null
    {
       if (!isObject(toData))
       {
@@ -398,15 +401,15 @@ export class AnimationScheduler
       transformOrigin = TJSTransforms.isTransformOrigin(transformOrigin) ? transformOrigin : void 0;
 
       // Given a valid transform origin store the initial transform origin to be restored.
-      const transformOriginInitial: TJSPositionNS.API.Transform.TransformOrigin = transformOrigin !== void 0 ?
+      const transformOriginInitial: TransformAPI.TransformOrigin = transformOrigin !== void 0 ?
        this.#data.transformOrigin : void 0;
 
       // Set initial data if the key / data is defined and the end position is not equal to current data.
       for (const key in toData)
       {
          // Must use actual key from any aliases.
-         const animKey: TJSPositionNS.API.Animation.AnimationKey = TJSPositionDataUtil.getAnimationKey(
-          key as TJSPositionNS.API.Animation.AnimationKey);
+         const animKey: AnimationAPI.AnimationKey = TJSPositionDataUtil.getAnimationKey(
+          key as AnimationAPI.AnimationKey);
 
          if (this.#data[animKey] !== void 0 && toData[key] !== this.#data[animKey])
          {
@@ -433,7 +436,7 @@ export class AnimationScheduler
     *
     * @returns Returns null to abort scheduling current animation.
     */
-   static #handleStrategy(position: TJSPosition, strategy: TJSPositionNS.API.Animation.TweenOptions['strategy']):
+   static #handleStrategy(position: TJSPosition, strategy: AnimationAPI.TweenOptions['strategy']):
     undefined | null
    {
       switch (strategy)

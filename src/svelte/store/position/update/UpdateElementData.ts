@@ -7,15 +7,14 @@ import type {
    Subscriber,
    Writable }                          from 'svelte/store';
 
-import type { TJSPositionNS }          from '../types';
 
 import type { PositionChangeSet }      from './PositionChangeSet';
 
 import type { OptionsInternal }        from '../types-local';
 
+import type { DataAPI }                   from '../data/types';
 import type { TJSPositionStyleCache }  from '../util';
-
-import type { TJSTransforms }          from '../transform';
+import type { TransformAPI }           from '../transform/types';
 
 /**
  * Encapsulates internal data from a TJSPosition instance to be manipulated by {@link UpdateElementManager}.
@@ -35,18 +34,18 @@ export class UpdateElementData
    queued: boolean;
 
    storeDimension: Writable<{ width: number | 'auto' | 'inherit' | null, height: number | 'auto' | 'inherit' | null }>;
-   storeTransform: Writable<TJSPositionNS.API.Transform.TransformData>;
+   storeTransform: Writable<TransformAPI.TransformData>;
 
    styleCache: TJSPositionStyleCache;
 
-   subscribers: Subscriber<TJSPositionNS.Data.TJSPositionData>[];
+   subscribers: Subscriber<DataAPI.TJSPositionData>[];
 
-   transforms: TJSTransforms;
+   transforms: TransformAPI;
    transformData: TJSTransformData;
 
    constructor(changeSet: PositionChangeSet, data: TJSPositionData, options: OptionsInternal,
-    styleCache: TJSPositionStyleCache, subscribers: Subscriber<TJSPositionNS.Data.TJSPositionData>[],
-     transforms: TJSTransforms)
+    styleCache: TJSPositionStyleCache, subscribers: Subscriber<DataAPI.TJSPositionData>[],
+     transforms: TransformAPI)
    {
       /**
        */

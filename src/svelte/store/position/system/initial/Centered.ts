@@ -1,11 +1,11 @@
 import { SystemBase }         from '../SystemBase';
 
-import type { TJSPositionNS } from '../../types';
+import type { System }        from '../types';
 
 /**
  * Provides a {@link System.Initial.InitialSystem} implementation to center an element being positioned.
  */
-export class Centered extends SystemBase implements TJSPositionNS.System.Initial.InitialSystem
+export class Centered extends SystemBase implements System.Initial.InitialSystem
 {
    /**
     * Get the left constraint based on any manual target values or the browser inner width.

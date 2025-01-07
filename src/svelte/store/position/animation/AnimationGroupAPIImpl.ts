@@ -3,7 +3,7 @@ import {
    isObject }                    from '#runtime/util/object';
 
 import { AnimationManager }      from './AnimationManager';
-import { AnimationAPI }          from './AnimationAPI';
+import { AnimationAPIImpl }          from './AnimationAPIImpl';
 import { AnimationGroupControl } from './AnimationGroupControl';
 import { AnimationScheduler }    from './AnimationScheduler';
 
@@ -17,7 +17,14 @@ import type {
    AnimationData }               from './types-local';
 
 import type { TJSPosition }      from '../TJSPosition';
-import type { TJSPositionNS }    from '../types';
+
+import type { AnimationAPI }     from './types';
+
+import type { DataAPI }             from '../data/types';
+
+import type {
+   Positionable,
+   PositionGroup }               from '../types';
 
 /**
  * Provides a public API for grouping multiple {@link TJSPosition} animations together with the
@@ -27,11 +34,11 @@ import type { TJSPositionNS }    from '../types';
  * checks are not done against TJSPosition. Instead, a check for the animate property being an instanceof
  * {@link AnimationAPI} is performed in {@link AnimationGroupAPI.#getPosition}.
  *
- * Note: This is a static class that conforms to the {@link TJSPositionNS.API.AnimationGroup} interface.
+ * Note: This is a static class that conforms to the {@link AnimationGroupAPI} interface.
  *
  * @see AnimationAPI
  */
-class AnimationGroupAPI
+class AnimationGroupAPIImpl
 {
    private constructor() {}
 
@@ -43,13 +50,13 @@ class AnimationGroupAPI
     *
     * @returns Returns actual TJSPosition instance.
     */
-   static #getPosition(positionable: TJSPosition | TJSPositionNS.Positionable): TJSPosition | null
+   static #getPosition(positionable: TJSPosition | Positionable): TJSPosition | null
    {
       if (!isObject(positionable)) { return null; }
 
-      if (positionable.animate instanceof AnimationAPI) { return positionable as TJSPosition; }
+      if (positionable.animate instanceof AnimationAPIImpl) { return positionable as TJSPosition; }
 
-      if ((positionable.position as any)?.animate instanceof AnimationAPI)
+      if ((positionable.position as any)?.animate instanceof AnimationAPIImpl)
       {
          return positionable.position as TJSPosition;
       }
@@ -62,7 +69,7 @@ class AnimationGroupAPI
     *
     * @param positionGroup - The position group to cancel.
     */
-   static cancel(positionGroup: TJSPositionNS.PositionGroup)
+   static cancel(positionGroup: PositionGroup)
    {
       if (isIterable(positionGroup))
       {
@@ -109,15 +116,15 @@ class AnimationGroupAPI
     *
     * @returns Results array.
     */
-   static getScheduled(positionGroup: TJSPositionNS.PositionGroup): {
+   static getScheduled(positionGroup: PositionGroup): {
       position: TJSPosition,
-      entry: TJSPositionNS.Positionable | undefined,
+      entry: Positionable | undefined,
       controls: BasicAnimation[]
    }[]
    {
       const results: {
          position: TJSPosition,
-         entry: TJSPositionNS.Positionable | undefined,
+         entry: Positionable | undefined,
          controls: BasicAnimation[]
       }[] = [];
 
@@ -143,7 +150,7 @@ class AnimationGroupAPI
 
             results.push({
                position: actualPosition,
-               entry: actualPosition !== entry ? entry as TJSPositionNS.Positionable : void 0,
+               entry: actualPosition !== entry ? entry as Positionable : void 0,
                controls
             });
          }
@@ -162,7 +169,7 @@ class AnimationGroupAPI
 
          results.push({
             position: actualPosition,
-            entry: actualPosition !== positionGroup ? positionGroup as TJSPositionNS.Positionable : void 0,
+            entry: actualPosition !== positionGroup ? positionGroup as Positionable : void 0,
             controls
          });
       }
@@ -171,13 +178,13 @@ class AnimationGroupAPI
    }
 
    /**
-    * Provides a type guard to test in the given key is an {@link AnimationAPI.AnimationKey}.
+    * Provides a type guard to test in the given key is an {@link AnimationAPIImpl.AnimationKey}.
     *
     * @param key - A key value to test.
     *
     * @returns Whether the given key is an animation key.
     */
-   static isAnimationKey(key: string): key is TJSPositionNS.API.Animation.AnimationKey
+   static isAnimationKey(key: string): key is AnimationAPI.AnimationKey
    {
       return TJSPositionDataUtil.isAnimationKey(key);
    }
@@ -191,8 +198,8 @@ class AnimationGroupAPI
     *
     * @returns True if all are scheduled / false if just one position instance in the group is not scheduled.
     */
-   static isScheduled(positionGroup: TJSPositionNS.PositionGroup,
-    options?: TJSPositionNS.API.Animation.ScheduleOptions): boolean
+   static isScheduled(positionGroup: PositionGroup,
+    options?: AnimationAPI.ScheduleOptions): boolean
    {
       if (isIterable(positionGroup))
       {
@@ -243,9 +250,9 @@ class AnimationGroupAPI
     *
     * @returns Basic animation control.
     */
-   static from(positionGroup: TJSPositionNS.PositionGroup, fromData: TJSPositionNS.Data.TJSPositionDataRelative |
-    TJSPositionNS.API.Animation.GroupDataCallback, options?: TJSPositionNS.API.Animation.TweenOptions |
-     TJSPositionNS.API.Animation.GroupTweenOptionsCallback): BasicAnimation
+   static from(positionGroup: PositionGroup, fromData: DataAPI.TJSPositionDataRelative |
+    AnimationAPI.GroupDataCallback, options?: AnimationAPI.TweenOptions |
+     AnimationAPI.GroupTweenOptionsCallback): BasicAnimation
    {
       if (!isObject(fromData) && typeof fromData !== 'function')
       {
@@ -270,7 +277,7 @@ class AnimationGroupAPI
 
       /**
        */
-      let callbackOptions: TJSPositionNS.API.Animation.GroupCallbackOptions;
+      let callbackOptions: AnimationAPI.GroupCallbackOptions;
 
       const hasDataCallback: boolean = typeof fromData === 'function';
       const hasOptionCallback: boolean = typeof options === 'function';
@@ -278,10 +285,10 @@ class AnimationGroupAPI
 
       if (hasCallback) { callbackOptions = { index, position: void 0, entry: void 0 }; }
 
-      let actualFromData: TJSPositionNS.Data.TJSPositionDataRelative |
-       TJSPositionNS.API.Animation.GroupDataCallback = fromData;
+      let actualFromData: DataAPI.TJSPositionDataRelative |
+       AnimationAPI.GroupDataCallback = fromData;
 
-      let actualOptions: TJSPositionNS.API.Animation.TweenOptions = isObject(options) ? options : void 0;
+      let actualOptions: AnimationAPI.TweenOptions = isObject(options) ? options : void 0;
 
       if (isIterable(positionGroup))
       {
@@ -301,7 +308,7 @@ class AnimationGroupAPI
             {
                callbackOptions.index = index;
                callbackOptions.position = actualPosition;
-               callbackOptions.entry = actualPosition !== entry ? entry as TJSPositionNS.Positionable : void 0;
+               callbackOptions.entry = actualPosition !== entry ? entry as Positionable : void 0;
             }
 
             if (hasDataCallback && typeof fromData === 'function')
@@ -350,7 +357,7 @@ class AnimationGroupAPI
          {
             callbackOptions.index = 0;
             callbackOptions.position = actualPosition;
-            callbackOptions.entry = actualPosition !== positionGroup ? positionGroup as TJSPositionNS.Positionable :
+            callbackOptions.entry = actualPosition !== positionGroup ? positionGroup as Positionable :
              void 0;
          }
 
@@ -407,10 +414,10 @@ class AnimationGroupAPI
     *
     * @returns {import('#runtime/util/animate').BasicAnimation} Basic animation control.
     */
-   static fromTo(positionGroup: TJSPositionNS.PositionGroup, fromData: TJSPositionNS.Data.TJSPositionDataRelative |
-    TJSPositionNS.API.Animation.GroupDataCallback, toData: TJSPositionNS.Data.TJSPositionDataRelative |
-      TJSPositionNS.API.Animation.GroupDataCallback, options?: TJSPositionNS.API.Animation.TweenOptions |
-       TJSPositionNS.API.Animation.GroupTweenOptionsCallback): BasicAnimation
+   static fromTo(positionGroup: PositionGroup, fromData: DataAPI.TJSPositionDataRelative |
+    AnimationAPI.GroupDataCallback, toData: DataAPI.TJSPositionDataRelative |
+      AnimationAPI.GroupDataCallback, options?: AnimationAPI.TweenOptions |
+       AnimationAPI.GroupTweenOptionsCallback): BasicAnimation
    {
       if (!isObject(fromData) && typeof fromData !== 'function')
       {
@@ -438,7 +445,7 @@ class AnimationGroupAPI
 
       /**
        */
-      let callbackOptions: TJSPositionNS.API.Animation.GroupCallbackOptions;
+      let callbackOptions: AnimationAPI.GroupCallbackOptions;
 
       const hasFromCallback: boolean = typeof fromData === 'function';
       const hasToCallback: boolean = typeof toData === 'function';
@@ -447,10 +454,10 @@ class AnimationGroupAPI
 
       if (hasCallback) { callbackOptions = { index, position: void 0, entry: void 0 }; }
 
-      let actualFromData: TJSPositionNS.Data.TJSPositionDataRelative = fromData;
-      let actualToData: TJSPositionNS.Data.TJSPositionDataRelative = toData;
+      let actualFromData: DataAPI.TJSPositionDataRelative = fromData;
+      let actualToData: DataAPI.TJSPositionDataRelative = toData;
 
-      let actualOptions: TJSPositionNS.API.Animation.TweenOptions = isObject(options) ? options : void 0;
+      let actualOptions: AnimationAPI.TweenOptions = isObject(options) ? options : void 0;
 
       if (isIterable(positionGroup))
       {
@@ -470,7 +477,7 @@ class AnimationGroupAPI
             {
                callbackOptions.index = index;
                callbackOptions.position = actualPosition;
-               callbackOptions.entry = actualPosition !== entry ? entry as TJSPositionNS.Positionable : void 0;
+               callbackOptions.entry = actualPosition !== entry ? entry as Positionable : void 0;
             }
 
             if (hasFromCallback && typeof fromData === 'function')
@@ -535,7 +542,7 @@ class AnimationGroupAPI
          {
             callbackOptions.index = 0;
             callbackOptions.position = actualPosition;
-            callbackOptions.entry = actualPosition !== positionGroup ? positionGroup as TJSPositionNS.Positionable :
+            callbackOptions.entry = actualPosition !== positionGroup ? positionGroup as Positionable :
              void 0;
          }
 
@@ -603,9 +610,9 @@ class AnimationGroupAPI
     *
     * @returns {import('#runtime/util/animate').BasicAnimation} Basic animation control.
     */
-   static to(positionGroup: TJSPositionNS.PositionGroup, toData: TJSPositionNS.Data.TJSPositionDataRelative |
-    TJSPositionNS.API.Animation.GroupDataCallback, options?: TJSPositionNS.API.Animation.TweenOptions |
-     TJSPositionNS.API.Animation.GroupTweenOptionsCallback): BasicAnimation
+   static to(positionGroup: PositionGroup, toData: DataAPI.TJSPositionDataRelative |
+    AnimationAPI.GroupDataCallback, options?: AnimationAPI.TweenOptions |
+     AnimationAPI.GroupTweenOptionsCallback): BasicAnimation
    {
       if (!isObject(toData) && typeof toData !== 'function')
       {
@@ -630,7 +637,7 @@ class AnimationGroupAPI
 
       /**
        */
-      let callbackOptions: TJSPositionNS.API.Animation.GroupCallbackOptions;
+      let callbackOptions: AnimationAPI.GroupCallbackOptions;
 
       const hasDataCallback: boolean = typeof toData === 'function';
       const hasOptionCallback: boolean = typeof options === 'function';
@@ -638,9 +645,9 @@ class AnimationGroupAPI
 
       if (hasCallback) { callbackOptions = { index, position: void 0, entry: void 0 }; }
 
-      let actualToData: TJSPositionNS.Data.TJSPositionDataRelative = toData;
+      let actualToData: DataAPI.TJSPositionDataRelative = toData;
 
-      let actualOptions: TJSPositionNS.API.Animation.TweenOptions = isObject(options) ? options : void 0;
+      let actualOptions: AnimationAPI.TweenOptions = isObject(options) ? options : void 0;
 
       if (isIterable(positionGroup))
       {
@@ -660,7 +667,7 @@ class AnimationGroupAPI
             {
                callbackOptions.index = index;
                callbackOptions.position = actualPosition;
-               callbackOptions.entry = actualPosition !== entry ? entry as TJSPositionNS.Positionable : void 0;
+               callbackOptions.entry = actualPosition !== entry ? entry as Positionable : void 0;
             }
 
             if (hasDataCallback && typeof toData === 'function')
@@ -711,7 +718,7 @@ class AnimationGroupAPI
          {
             callbackOptions.index = 0;
             callbackOptions.position = actualPosition;
-            callbackOptions.entry = actualPosition !== positionGroup ? positionGroup as TJSPositionNS.Positionable :
+            callbackOptions.entry = actualPosition !== positionGroup ? positionGroup as Positionable :
              void 0;
          }
 
@@ -764,9 +771,9 @@ class AnimationGroupAPI
     *
     * @returns quick-to tween function.
     */
-   static quickTo(positionGroup: TJSPositionNS.PositionGroup, keys: Iterable<TJSPositionNS.API.Animation.AnimationKey>,
-    options?: TJSPositionNS.API.Animation.QuickTweenOptions |
-     TJSPositionNS.API.Animation.GroupQuickTweenOptionsCallback): TJSPositionNS.API.Animation.GroupQuickToCallback |
+   static quickTo(positionGroup: PositionGroup, keys: Iterable<AnimationAPI.AnimationKey>,
+    options?: AnimationAPI.QuickTweenOptions |
+     AnimationAPI.GroupQuickTweenOptionsCallback): AnimationAPI.GroupQuickToCallback |
       undefined
    {
       if (!isIterable(keys))
@@ -781,7 +788,7 @@ class AnimationGroupAPI
 
       /**
        */
-      const quickToCallbacks: TJSPositionNS.API.Animation.QuickToCallback[] = [];
+      const quickToCallbacks: AnimationAPI.QuickToCallback[] = [];
 
       let index: number = -1;
 
@@ -789,7 +796,7 @@ class AnimationGroupAPI
 
       const callbackOptions = { index, position: void 0, entry: void 0 };
 
-      let actualOptions: TJSPositionNS.API.Animation.QuickTweenOptions = isObject(options) ? options : void 0;
+      let actualOptions: AnimationAPI.QuickTweenOptions = isObject(options) ? options : void 0;
 
       if (isIterable(positionGroup))
       {
@@ -857,7 +864,7 @@ class AnimationGroupAPI
          quickToCallbacks.push(actualPosition.animate.quickTo(keys, actualOptions));
       }
 
-      const keysArray: TJSPositionNS.API.Animation.AnimationKey[] = [...keys];
+      const keysArray: AnimationAPI.AnimationKey[] = [...keys];
 
       Object.freeze(keysArray);
 
@@ -966,7 +973,7 @@ class AnimationGroupAPI
           * Sets options of quickTo tween.
           * @param options -
           */
-         value: (options: TJSPositionNS.API.Animation.QuickTweenOptions): TJSPositionNS.API.Animation.QuickToCallback =>
+         value: (options: AnimationAPI.QuickTweenOptions): AnimationAPI.QuickToCallback =>
          {
             if (options !== void 0 && !isObject(options))
             {
@@ -982,16 +989,16 @@ class AnimationGroupAPI
                }
             }
 
-            return quickToCB as TJSPositionNS.API.Animation.GroupQuickToCallback;
+            return quickToCB as AnimationAPI.GroupQuickToCallback;
          },
          writable: false,
          configurable: false
       });
 
-      return quickToCB as TJSPositionNS.API.Animation.GroupQuickToCallback;
+      return quickToCB as AnimationAPI.GroupQuickToCallback;
    }
 }
 
-Object.seal(AnimationGroupAPI);
+Object.seal(AnimationGroupAPIImpl);
 
-export { AnimationGroupAPI };
+export { AnimationGroupAPIImpl };

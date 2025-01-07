@@ -7,7 +7,8 @@ import type { AnimationControl }    from './AnimationControl';
 
 import type { TJSPosition }         from '../TJSPosition.js';
 
-import type { TJSPositionNS }       from '../types';
+import type { AnimationAPI }        from './types';
+import type { TransformAPI }        from '../transform/types';
 
 /**
  * Internal data structure tracking an animation.
@@ -41,7 +42,7 @@ export type AnimationData = {
    /**
     * Target destination for animation.
     */
-   destination: { [key: TJSPositionNS.API.Animation.AnimationKey]: number } | undefined;
+   destination: { [key: AnimationAPI.AnimationKey]: number } | undefined;
 
    /**
     * Duration of animation in milliseconds.
@@ -66,7 +67,7 @@ export type AnimationData = {
    /**
     * Initial position data.
     */
-   initial: { [key: TJSPositionNS.API.Animation.AnimationKey]: number };
+   initial: { [key: AnimationAPI.AnimationKey]: number };
 
    /**
     * Interpolation function; default lerp.
@@ -81,7 +82,7 @@ export type AnimationData = {
    /**
     * Copy of initial data. Used as temporary storage.
     */
-   newData: { [key: TJSPositionNS.API.Animation.AnimationKey]: number };
+   newData: { [key: AnimationAPI.AnimationKey]: number };
 
    /**
     * Associated TJSPosition instance.
@@ -106,12 +107,12 @@ export type AnimationData = {
    /**
     * A transform origin for the animation.
     */
-   transformOrigin?: TJSPositionNS.API.Transform.TransformOrigin;
+   transformOrigin?: TransformAPI.TransformOrigin;
 
    /**
     * The initial transform origin to set after the animation finishes.
     */
-   transformOriginInitial?: TJSPositionNS.API.Transform.TransformOrigin;
+   transformOriginInitial?: TransformAPI.TransformOrigin;
 }
 
 /**

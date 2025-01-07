@@ -1,8 +1,8 @@
-import { Writable }           from 'svelte/store';
+import type { Writable }           from 'svelte/store';
 
 import type { Mat4, Vec3 }    from '#runtime/math/gl-matrix';
 
-import type { TJSPositionNS } from '../types';
+import type { DataAPI }          from '../data/types';
 
 interface TransformAPI
 {
@@ -119,14 +119,14 @@ interface TransformAPI
     *
     * @param position - The position data converted to numeric values to process.
     *
-    * @param [output] - Optional TransformAPI.Data output instance.
+    * @param [output] - Optional TransformAPI.TransformData output instance.
     *
     * @param [validationData] - Optional validation data for adjustment parameters.
     *
     * @returns The output TransformAPI.Data instance.
     */
-   getData(position: TJSPositionNS.Data.TJSPositionData, output?: TransformAPI.TransformData,
-    validationData?: object): TransformAPI.TransformData;
+   getData(position: DataAPI.TJSPositionData, output?: TransformAPI.TransformData,
+           validationData?: object): TransformAPI.TransformData;
 
    /**
     * Creates a transform matrix based on local data applied in order it was added.
@@ -135,7 +135,7 @@ interface TransformAPI
     * then the stored local transform order is applied then all remaining transform keys are applied. This allows the
     * construction of a transform matrix in advance of setting local data and is useful in collision detection.
     *
-    * @param {Data.TJSPositionData}   [data] - TJSPositionData instance or local transform data.
+    * @param {DataAPI.TJSPositionData}   [data] - TJSPositionData instance or local transform data.
     *
     * @param {Mat4}  [output] - The output mat4 instance.
     *
@@ -153,7 +153,7 @@ interface TransformAPI
     * then the stored local transform order is applied then all remaining transform keys are applied. This allows the
     * construction of a transform matrix in advance of setting local data and is useful in collision detection.
     *
-    * @param {Data.TJSPositionData}   [data] - TJSPositionData instance or local transform data.
+    * @param {DataAPI.TJSPositionData}   [data] - TJSPositionData instance or local transform data.
     *
     * @param {Mat4}  [output] - The output mat4 instance.
     *
@@ -164,7 +164,7 @@ interface TransformAPI
    /**
     * Tests an object if it contains transform keys and the values are finite numbers.
     *
-    * @param {Data.TJSPositionData} data - An object to test for transform data.
+    * @param {DataAPI.TJSPositionData} data - An object to test for transform data.
     *
     * @returns {boolean} Whether the given TJSPositionData has transforms.
     */
