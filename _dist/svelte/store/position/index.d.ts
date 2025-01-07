@@ -7,14 +7,13 @@
  * @packageDocumentation
  */
 
-import * as svelte_action from 'svelte/action';
-import * as svelte_store from 'svelte/store';
-import { Writable, Subscriber, Invalidator, Unsubscriber, Readable } from 'svelte/store';
-import { ResizeObserverData } from '@typhonjs-svelte/runtime-base/util/dom/observer';
-import { InterpolateFunctionName } from '@typhonjs-svelte/runtime-base/math/interpolate';
+import { ActionReturn } from 'svelte/action';
 import { EasingReference } from '@typhonjs-svelte/runtime-base/svelte/easing';
-import { BasicAnimation } from '@typhonjs-svelte/runtime-base/util/animate';
+import { Writable, Readable, Subscriber, Invalidator, Unsubscriber, Updater } from 'svelte/store';
 import { Mat4, Vec3 } from '@typhonjs-svelte/runtime-base/math/gl-matrix';
+import { InterpolateFunctionName } from '@typhonjs-svelte/runtime-base/math/interpolate';
+import { BasicAnimation } from '@typhonjs-svelte/runtime-base/util/animate';
+import { ResizeObserverData } from '@typhonjs-svelte/runtime-base/util/dom/observer';
 
 interface TransformAPI {
   /**
@@ -22,73 +21,73 @@ interface TransformAPI {
    */
   get isActive(): boolean;
   /**
-   * @returns {number | undefined} Any local `rotateX` data.
+   * @returns {number | null} Any local `rotateX` data.
    */
-  get rotateX(): number | undefined;
+  get rotateX(): number | null | undefined;
   /**
-   * @returns {number | undefined} Any local `rotateY` data.
+   * @returns {number | null} Any local `rotateY` data.
    */
-  get rotateY(): number | undefined;
+  get rotateY(): number | null | undefined;
   /**
-   * @returns {number | undefined} Any local `rotateZ` data.
+   * @returns {number | null} Any local `rotateZ` data.
    */
-  get rotateZ(): number | undefined;
+  get rotateZ(): number | null | undefined;
   /**
-   * @returns {number | undefined} Any local `scale` data.
+   * @returns {number | null} Any local `scale` data.
    */
-  get scale(): number | undefined;
+  get scale(): number | null | undefined;
   /**
-   * @returns {number | undefined} Any local `translateX` data.
+   * @returns {number | null} Any local `translateX` data.
    */
-  get translateX(): number | undefined;
+  get translateX(): number | null | undefined;
   /**
-   * @returns {number | undefined} Any local `translateY` data.
+   * @returns {number | null} Any local `translateY` data.
    */
-  get translateY(): number | undefined;
+  get translateY(): number | null | undefined;
   /**
-   * @returns {number | undefined} Any local `translateZ` data.
+   * @returns {number | null} Any local `translateZ` data.
    */
-  get translateZ(): number | undefined;
+  get translateZ(): number | null | undefined;
   /**
    * Sets the local `rotateX` data if the value is a finite number otherwise removes the local data.
    *
-   * @param {number | null | undefined}   value - A value to set.
+   * @param {number | null}   value - A value to set.
    */
   set rotateX(value: number | null | undefined);
   /**
    * Sets the local `rotateY` data if the value is a finite number otherwise removes the local data.
    *
-   * @param {number | null | undefined}   value - A value to set.
+   * @param {number | null}   value - A value to set.
    */
   set rotateY(value: number | null | undefined);
   /**
    * Sets the local `rotateZ` data if the value is a finite number otherwise removes the local data.
    *
-   * @param {number | null | undefined}   value - A value to set.
+   * @param {number | null}   value - A value to set.
    */
   set rotateZ(value: number | null | undefined);
   /**
    * Sets the local `scale` data if the value is a finite number otherwise removes the local data.
    *
-   * @param {number | null | undefined}   value - A value to set.
+   * @param {number | null}   value - A value to set.
    */
   set scale(value: number | null | undefined);
   /**
    * Sets the local `translateX` data if the value is a finite number otherwise removes the local data.
    *
-   * @param {number | null | undefined}   value - A value to set.
+   * @param {number | null}   value - A value to set.
    */
   set translateX(value: number | null | undefined);
   /**
    * Sets the local `translateY` data if the value is a finite number otherwise removes the local data.
    *
-   * @param {number | null | undefined}   value - A value to set.
+   * @param {number | null}   value - A value to set.
    */
   set translateY(value: number | null | undefined);
   /**
    * Sets the local `translateZ` data if the value is a finite number otherwise removes the local data.
    *
-   * @param {number | null | undefined}   value - A value to set.
+   * @param {number | null}   value - A value to set.
    */
   set translateZ(value: number | null | undefined);
   /**
@@ -111,13 +110,13 @@ interface TransformAPI {
    * Collects all data including a bounding rect, transform matrix, and points array of the given
    * {@link TJSPositionData} instance with the applied local transform data.
    *
-   * @param {Data.TJSPositionData} position - The position data to process.
+   * @param position - The position data converted to numeric values to process.
    *
-   * @param {TransformAPI.TransformData} [output] - Optional TransformAPI.Data output instance.
+   * @param [output] - Optional TransformAPI.TransformData output instance.
    *
-   * @param {object} [validationData] - Optional validation data for adjustment parameters.
+   * @param [validationData] - Optional validation data for adjustment parameters.
    *
-   * @returns {TransformAPI.TransformData} The output TransformAPI.Data instance.
+   * @returns The output TransformAPI.Data instance.
    */
   getData(
     position: Data.TJSPositionData,
@@ -236,11 +235,11 @@ declare namespace TransformAPI {
  */
 interface AnimationGroupAPI {
   /**
-   * Cancels any animation for given PositionGroup data.
+   * Cancels any animation for given TJSPosition.PositionGroup data.
    *
-   * @param {TJSPositionTypes.PositionGroup} positionGroup - The position group to cancel.
+   * @param positionGroup - The position group to cancel.
    */
-  cancel(positionGroup: TJSPositionTypes.PositionGroup): void;
+  cancel(positionGroup: TJSPosition.PositionGroup): void;
   /**
    * Cancels all TJSPosition animation.
    */
@@ -248,73 +247,69 @@ interface AnimationGroupAPI {
   /**
    * Provides a type guard to test in the given key is an {@link AnimationAPI.AnimationKey}.
    *
-   * @param {unknown}  key - A key value to test.
+   * @param key - A key value to test.
    *
-   * @returns {key is AnimationAPI.AnimationKey} Whether the given key is an animation key.
+   * @returns Whether the given key is an animation key.
    */
   isAnimationKey(key: unknown): key is AnimationAPI.AnimationKey;
   /**
    * Gets all animation controls for the given position group data.
    *
-   * @param {TJSPositionTypes.PositionGroup} positionGroup - A position group.
+   * @param positionGroup - A position group.
    *
-   * @returns {({
-   *    position: TJSPosition,
-   *    entry: TJSPositionTypes.Positionable | undefined,
-   *    controls: BasicAnimation[]
-   * }[])} Results array.
+   * @returns Results array.
    */
-  getScheduled(positionGroup: TJSPositionTypes.PositionGroup): {
-    position: TJSPosition;
-    entry: TJSPositionTypes.Positionable | undefined;
+  getScheduled(positionGroup: TJSPosition.PositionGroup): {
+    position: object;
+    entry: TJSPosition.Positionable | undefined;
     controls: BasicAnimation[];
   }[];
   /**
    * Returns the status _for the entire position group_ specified if all position instances of the group are scheduled.
    *
-   * @param {TJSPositionTypes.PositionGroup}   positionGroup - A position group.
+   * @param positionGroup - A position group.
    *
-   * @param {AnimationAPI.ScheduleOptions}     [options] - Scheduling options.
+   * @param [options] - Scheduling options.
    *
    * @returns True if all are scheduled / false if just one position instance in the group is not scheduled.
    */
-  isScheduled(positionGroup: TJSPositionTypes.PositionGroup, options?: AnimationAPI.ScheduleOptions): boolean;
+  isScheduled(positionGroup: TJSPosition.PositionGroup, options?: AnimationAPI.ScheduleOptions): boolean;
   /**
    * Provides the `from` animation tween for one or more positionable instances as a group.
    *
-   * @param {TJSPositionTypes.PositionGroup}  positionGroup - A position group.
+   * @param positionGroup - A position group.
    *
-   * @param {Data.TJSPositionDataRelative | AnimationAPI.GroupDataCallback} fromData - A position data object assigned
-   *        to all positionable instances or a callback function invoked for unique data for each instance.
+   * @param fromData - A position data object assigned to all positionable instances or a callback function invoked
+   *        for unique data for each instance.
    *
-   * @param {AnimationAPI.TweenOptions | AnimationAPI.GroupTweenOptionsCallback}   [options] - Tween options assigned
-   *        to all positionable instances or a callback function invoked for unique options for each instance.
+   * @param [options] - Tween options assigned to all positionable instances or a callback function invoked for unique
+   *        options for each instance.
    *
    * @returns {BasicAnimation} Basic animation control.
    */
   from(
-    positionGroup: TJSPositionTypes.PositionGroup,
+    positionGroup: TJSPosition.PositionGroup,
     fromData: Data.TJSPositionDataRelative | AnimationAPI.GroupDataCallback,
     options?: AnimationAPI.TweenOptions | AnimationAPI.GroupTweenOptionsCallback,
   ): BasicAnimation;
   /**
    * Provides the `fromTo` animation tween for one or more positionable instances as a group.
    *
-   * @param {TJSPositionTypes.PositionGroup} positionGroup - A position group.
+   * @param positionGroup - A position group.
    *
-   * @param {Data.TJSPositionDataRelative | AnimationAPI.GroupDataCallback}   fromData - A position data object
+   * @param fromData - A position data object
    *        assigned to all positionable instances or a callback function invoked for unique data for each instance.
    *
-   * @param {Data.TJSPositionDataRelative | AnimationAPI.GroupDataCallback}   toData - A position data object assigned
+   * @param toData - A position data object assigned
    *        to all positionable instances or a callback function invoked for unique data for each instance.
    *
-   * @param {AnimationAPI.TweenOptions | AnimationAPI.GroupTweenOptionsCallback}   [options] - Tween options assigned
+   * @param [options] - Tween options assigned
    *        to all positionable instances or a callback function invoked for unique options for each instance.
    *
-   * @returns {BasicAnimation} Basic animation control.
+   * @returns Basic animation control.
    */
   fromTo(
-    positionGroup: TJSPositionTypes.PositionGroup,
+    positionGroup: TJSPosition.PositionGroup,
     fromData: Data.TJSPositionDataRelative | AnimationAPI.GroupDataCallback,
     toData: Data.TJSPositionDataRelative | AnimationAPI.GroupDataCallback,
     options?: AnimationAPI.TweenOptions | AnimationAPI.GroupTweenOptionsCallback,
@@ -322,36 +317,36 @@ interface AnimationGroupAPI {
   /**
    * Provides the `to` animation tween for one or more positionable instances as a group.
    *
-   * @param {TJSPositionTypes.PositionGroup} positionGroup - A position group.
+   * @param positionGroup - A position group.
    *
-   * @param {Data.TJSPositionDataRelative | AnimationAPI.GroupDataCallback}   toData - A position data object assigned
+   * @param toData - A position data object assigned
    *        to all positionable instances or a callback function invoked for unique data for each instance.
    *
-   * @param {AnimationAPI.TweenOptions | AnimationAPI.GroupTweenOptionsCallback}   [options] - Tween options assigned
+   * @param [options] - Tween options assigned
    *        to all positionable instances or a callback function invoked for unique options for each instance.
    *
-   * @returns {BasicAnimation} Basic animation control.
+   * @returns Basic animation control.
    */
   to(
-    positionGroup: TJSPositionTypes.PositionGroup,
+    positionGroup: TJSPosition.PositionGroup,
     toData: Data.TJSPositionDataRelative | AnimationAPI.GroupDataCallback,
     options?: AnimationAPI.TweenOptions | AnimationAPI.GroupTweenOptionsCallback,
   ): BasicAnimation;
   /**
    * Provides the `quickTo` animation tweening function for one or more positionable instances as a group.
    *
-   * @param {TJSPositionTypes.PositionGroup} positionGroup - A position group.
+   * @param positionGroup - A position group.
    *
-   * @param {Iterable<AnimationAPI.AnimationKey>}  keys - Animation keys to target.
+   * @param keys - Animation keys to target.
    *
-   * @param {AnimationAPI.QuickTweenOptions | AnimationAPI.GroupQuickTweenOptionsCallback}  [options] - Quick tween
+   * @param [options] - Quick tween
    *        options assigned to all positionable instances or a callback function invoked for unique options for each
    *        instance.
    *
    * @returns {AnimationAPI.GroupQuickToCallback | undefined} quick-to tween function.
    */
   quickTo(
-    positionGroup: TJSPositionTypes.PositionGroup,
+    positionGroup: TJSPosition.PositionGroup,
     keys: Iterable<AnimationAPI.AnimationKey>,
     options?: AnimationAPI.QuickTweenOptions | AnimationAPI.GroupQuickTweenOptionsCallback,
   ): AnimationAPI.GroupQuickToCallback;
@@ -360,7 +355,7 @@ interface AnimationAPI {
   /**
    * Returns if there are scheduled animations whether active or pending for this TJSPosition instance.
    *
-   * @returns {boolean} Are there scheduled animations.
+   * @returns Are there scheduled animations.
    */
   get isScheduled(): boolean;
   /**
@@ -370,29 +365,29 @@ interface AnimationAPI {
   /**
    * Returns all currently scheduled AnimationControl instances for this TJSPosition instance.
    *
-   * @returns {BasicAnimation[]} All currently scheduled animation controls for this TJSPosition instance.
+   * @returns All currently scheduled animation controls for this TJSPosition instance.
    */
   getScheduled(): BasicAnimation[];
   /**
    * Provides a tween from given position data to the current position.
    *
-   * @param {Data.TJSPositionDataRelative} fromData - The starting position.
+   * @param fromData - The starting position.
    *
-   * @param {AnimationAPI.TweenOptions} [options] - Optional tween parameters.
+   * @param [options] - Optional tween parameters.
    *
-   * @returns {BasicAnimation}  A control object that can cancel animation and provides a `finished` Promise.
+   * @returns A control object that can cancel animation and provides a `finished` Promise.
    */
   from(fromData: Data.TJSPositionDataRelative, options?: AnimationAPI.TweenOptions): BasicAnimation;
   /**
    * Provides a tween from given position data to the given position.
    *
-   * @param {Data.TJSPositionDataRelative} fromData - The starting position.
+   * @param fromData - The starting position.
    *
-   * @param {Data.TJSPositionDataRelative} toData - The ending position.
+   * @param toData - The ending position.
    *
-   * @param {AnimationAPI.TweenOptions} [options] - Optional tween parameters.
+   * @param [options] - Optional tween parameters.
    *
-   * @returns {BasicAnimation}  A control object that can cancel animation and provides a `finished` Promise.
+   * @returns A control object that can cancel animation and provides a `finished` Promise.
    */
   fromTo(
     fromData: Data.TJSPositionDataRelative,
@@ -402,21 +397,21 @@ interface AnimationAPI {
   /**
    * Provides a tween to given position data from the current position.
    *
-   * @param {Data.TJSPositionDataRelative} toData - The destination position.
+   * @param toData - The destination position.
    *
-   * @param {AnimationAPI.TweenOptions} [options] - Optional tween parameters.
+   * @param [options] - Optional tween parameters.
    *
-   * @returns {BasicAnimation}  A control object that can cancel animation and provides a `finished` Promise.
+   * @returns A control object that can cancel animation and provides a `finished` Promise.
    */
   to(toData: Data.TJSPositionDataRelative, options?: AnimationAPI.TweenOptions): BasicAnimation;
   /**
    * Returns a function that provides an optimized way to constantly update a to-tween.
    *
-   * @param {Iterable<AnimationAPI.AnimationKey>}  keys - The keys for quickTo.
+   * @param keys - The keys for quickTo.
    *
-   * @param {AnimationAPI.QuickTweenOptions} [options] - Optional quick tween parameters.
+   * @param [options] - Optional quick tween parameters.
    *
-   * @returns {AnimationAPI.QuickToCallback} quick-to tween function.
+   * @returns quick-to tween function.
    */
   quickTo(
     keys: Iterable<AnimationAPI.AnimationKey>,
@@ -451,43 +446,43 @@ declare namespace AnimationAPI {
    */
   type GroupCallbackOptions = {
     /**
-     * The index of the {@link TJSPositionTypes.PositionGroup} being processed.
+     * The index of the {@link TJSPosition.PositionGroup} being processed.
      */
     index?: number;
     /**
      * The actual TJSPosition instance being processed.
      */
-    position?: TJSPosition;
+    position?: object;
     /**
      * Any associated positionable entry / object.
      */
-    entry?: TJSPositionTypes.Positionable | undefined;
+    entry?: TJSPosition.Positionable | undefined;
   };
   /**
-   * Defines a callback to process each {@link TJSPosition} / {@link TJSPositionTypes.Positionable} instance allowing
+   * Defines a callback to process each {@link TJSPosition} / {@link TJSPosition.Positionable} instance allowing
    * different position data to be assigned to each instance in the grouped animation.
    */
   interface GroupDataCallback {
     /**
-     * @param {GroupCallbackOptions} options - The group callback options defining the order of the current
+     * @param options - The group callback options defining the order of the current
      *        position / positionable being processed.
      *
-     * @returns {Data.TJSPositionDataRelative} - The unique position data target to animate for this position /
+     * @returns The unique position data target to animate for this position /
      *          positionable instance.  When null or undefined is returned the current position / positionable is
      *          removed from the animation.
      */
     (options?: GroupCallbackOptions): Data.TJSPositionDataRelative | null | undefined;
   }
   /**
-   * Defines a callback to process each {@link TJSPosition} / {@link TJSPositionTypes.Positionable} instance allowing
+   * Defines a callback to process each {@link TJSPosition} / {@link TJSPosition.Positionable} instance allowing
    * different tween options to be assigned to each instance in the grouped animation.
    */
   interface GroupTweenOptionsCallback {
     /**
-     * @param {GroupCallbackOptions} options - The group callback options defining the order of the current
+     * @param options - The group callback options defining the order of the current
      *        position / positionable being processed.
      *
-     * @returns {TweenOptions} - The unique tween options to set for this position / positionable instance. When null
+     * @returns The unique tween options to set for this position / positionable instance. When null
      *          or undefined is returned the current position / positionable is removed from the animation.
      */
     (options?: GroupCallbackOptions): TweenOptions | null | undefined;
@@ -511,7 +506,7 @@ declare namespace AnimationAPI {
     options: (options: QuickTweenOptions | GroupQuickTweenOptionsCallback) => GroupQuickToCallback;
   }
   /**
-   * Defines a callback to process each {@link TJSPosition} / {@link TJSPositionTypes.Positionable} instance allowing
+   * Defines a callback to process each {@link TJSPosition} / {@link TJSPosition.Positionable} instance allowing
    * different quick tween options to be assigned to each instance in the grouped animation.
    */
   interface GroupQuickTweenOptionsCallback {
@@ -613,7 +608,7 @@ declare namespace AnimationAPI {
      *
      * @returns This quickTo callback function.
      */
-    options: (options: QuickTweenOptions) => QuickToCallback;
+    readonly options: (options: QuickTweenOptions) => QuickToCallback;
   }
 }
 
@@ -623,7 +618,7 @@ declare namespace AnimationAPI {
 declare namespace Data {
   /**
    * Defines the primary TJSPosition data object used by various TJSPosition APIs. To externally create a new instance
-   * use the static accessor {@link TJSPosition.Data}.
+   * use the static accessor `TJSPosition.Data`.
    */
   interface TJSPositionData {
     height: number | 'auto' | 'inherit' | null;
@@ -652,6 +647,10 @@ declare namespace Data {
     [key: string]: any;
   }
   /**
+   * Defines the keys in `TJSPositionData` that are transform keys.
+   */
+  type TransformKeys = 'rotateX' | 'rotateY' | 'rotateZ' | 'scale' | 'translateX' | 'translateY' | 'translateZ';
+  /**
    * Defines an extension to {@link Data.TJSPositionData} where each animatable property defined by
    * {@link AnimationAPI.AnimationKey} can also be a string. Relative adjustments to animatable properties should be
    * a string the form of '+=', '-=', or '*=' and float / numeric value. IE '+=0.2'. {@link TJSPosition.set} will
@@ -678,7 +677,8 @@ declare namespace Data {
    * ```
    *
    * Additional properties may be added that are not specified by {@link TJSPositionData} and are forwarded through
-   * {@link ValidatorAPI.ValidationData} as the `rest` property allowing extra data to be sent to any custom validator.
+   * {@link System.Validator.API.ValidationData} as the `rest` property allowing extra data to be sent to any
+   * custom validator.
    */
   type TJSPositionDataRelative = Partial<
     {
@@ -732,6 +732,408 @@ declare namespace Data {
       zIndex?: number | null;
       rotation?: number | null;
     }): TJSPositionData;
+  }
+}
+
+interface StateAPI {
+  /**
+   * Clears all saved position data except any default state.
+   */
+  clear(): void;
+  /**
+   * Gets any stored saved position data by name.
+   *
+   * @param options - Options.
+   *
+   * @param options.name - Saved data name.
+   *
+   * @returns Any saved position data.
+   */
+  get({ name }: { name: string }): Data.TJSPositionDataExtra | undefined;
+  /**
+   * Returns any associated default position data.
+   *
+   * @returns Any saved default position data.
+   */
+  getDefault(): Data.TJSPositionDataExtra | undefined;
+  /**
+   * @returns The saved position data names / keys.
+   */
+  keys(): IterableIterator<string>;
+  /**
+   * Removes and returns any position data by name.
+   *
+   * @param options - Options.
+   *
+   * @param options.name - Name to remove and retrieve.
+   *
+   * @returns Any saved position data.
+   */
+  remove({ name }: { name: string }): Data.TJSPositionDataExtra | undefined;
+  /**
+   * Resets position instance to default data and invokes set.
+   *
+   * @param [options] - Optional parameters.
+   *
+   * @param [options.keepZIndex=false] - When true keeps current z-index.
+   *
+   * @param [options.invokeSet=true] - When true invokes set method.
+   *
+   * @returns Operation successful.
+   */
+  reset({ keepZIndex, invokeSet }: { keepZIndex?: boolean; invokeSet?: boolean }): boolean;
+  /**
+   * Restores a saved positional state returning the data. Several optional parameters are available to control
+   * whether the restore action occurs silently (no store / inline styles updates), animates to the stored data, or
+   * simply sets the stored data. Restoring via {@link AnimationAPI.to} allows specification of the duration and
+   * easing along with configuring a Promise to be returned if awaiting the end of the animation.
+   *
+   * @param options - Parameters
+   *
+   * @param options.name - Saved data set name.
+   *
+   * @param [options.remove=false] - Remove data set.
+   *
+   * @param [options.properties] - Specific properties to set / animate.
+   *
+   * @param [options.silent] - Set position data directly; no store or style updates.
+   *
+   * @param [options.async=false] - If animating return a Promise that resolves with any saved data.
+   *
+   * @param [options.animateTo=false] - Animate to restore data.
+   *
+   * @param [options.duration=0.1] - Duration in seconds.
+   *
+   * @param [options.ease='linear'] - Easing function name or function.
+   *
+   * @returns Any saved position data.
+   */
+  restore({
+    name,
+    remove,
+    properties,
+    silent,
+    async,
+    animateTo,
+    duration,
+    ease,
+  }: {
+    name: string;
+    remove?: boolean;
+    properties?: Iterable<string>;
+    silent?: boolean;
+    async?: boolean;
+    animateTo?: boolean;
+    duration?: number;
+    ease?: EasingReference;
+  }): Data.TJSPositionDataExtra | Promise<Data.TJSPositionDataExtra | undefined> | undefined;
+  /**
+   * Saves current position state with the opportunity to add extra data to the saved state. Simply include
+   * extra properties in `options` to save extra data.
+   *
+   * @param options - Options.
+   *
+   * @param options.name - name to index this saved data.
+   *
+   * @param [optionsGet] - Additional options for
+   *        {@link TJSPosition.get} when serializing position state. By default, `nullable` values are included.
+   *
+   * @returns {Data.TJSPositionDataExtra} Current position data
+   */
+  save(
+    {
+      name,
+      ...extra
+    }: {
+      name: string;
+      [key: string]: any;
+    },
+    optionsGet: TJSPosition.Options.Get,
+  ): Data.TJSPositionDataExtra;
+  /**
+   * Directly sets a saved position state. Simply include extra properties in `options` to set extra data.
+   *
+   * @param {object}   options - Options.
+   *
+   * @param {string}   options.name - name to index this saved data.
+   */
+  set({ name, ...data }: { name: string; [key: string]: any }): void;
+}
+declare namespace StateAPI {
+  namespace Options {
+    /**
+     * Options for `TJSPosition.state.reset`.
+     */
+    type Reset = {
+      /**
+       * When true keeps current z-index.
+       * @defaultValue `false`
+       */
+      keepZIndex?: boolean;
+      /**
+       * When true invokes set method.
+       * @defaultValue `true`
+       */
+      invokeSet?: boolean;
+    };
+    /**
+     * Options for `TJSPosition.state.restore`.
+     */
+    type Restore = {
+      /**
+       * Saved data name.
+       */
+      name: string;
+      /**
+       * Deletes data set.
+       * @defaultValue `false`
+       */
+      remove?: boolean;
+      /**
+       * Specific properties to set / animate.
+       */
+      properties?: Iterable<string>;
+      /**
+       * Set position data directly; no store or style updates.
+       */
+      silent?: boolean;
+      /**
+       * If animating return a Promise that resolves with any saved data.
+       * @defaultValue `false`
+       */
+      async?: boolean;
+      /**
+       * Animate to restore data.
+       * @defaultValue `false`
+       */
+      animateTo?: boolean;
+      /**
+       * Duration in seconds.
+       */
+      duration?: number;
+      /**
+       * Easing function name or function.
+       * @defaultValue `linear`
+       */
+      ease?: EasingReference;
+    };
+    /**
+     * Options for `TJSPosition.state.save`. You may include extra data that is serialized with position state.
+     */
+    type Save = {
+      /**
+       * Name to index this saved data.
+       */
+      name: string;
+      [key: string]: any;
+    };
+    /**
+     * Options for `TJSPosition.state.set`. You may include extra data that is serialized with position state.
+     */
+    type Set = {
+      /**
+       * Name to index this saved data.
+       */
+      name: string;
+      [key: string]: any;
+    };
+  }
+}
+
+/**
+ *
+ */
+declare class PositionStateAPI implements StateAPI {
+  #private;
+  constructor(position: TJSPosition, data: Data.TJSPositionData, transforms: TransformAPI);
+  /**
+   * Clears all saved position data except any default state.
+   */
+  clear(): void;
+  /**
+   * Returns any stored save state by name.
+   *
+   * @param options - Options.
+   *
+   * @param options.name - Saved data name.
+   *
+   * @returns Any saved position data.
+   */
+  get({ name }: { name: string }): Data.TJSPositionDataExtra | undefined;
+  /**
+   * Returns any associated default position data.
+   *
+   * @returns Any saved default position data.
+   */
+  getDefault(): Data.TJSPositionDataExtra | undefined;
+  /**
+   * @returns The saved position data names / keys.
+   */
+  keys(): MapIterator<string>;
+  /**
+   * Removes and returns any position data by name.
+   *
+   * @param options - Options.
+   *
+   * @param options.name - Name to remove and retrieve.
+   *
+   * @returns Any saved position data.
+   */
+  remove({ name }: { name: string }): Data.TJSPositionDataExtra | undefined;
+  /**
+   * Resets position instance to default data and invokes set.
+   *
+   * @param [options] - Optional parameters.
+   *
+   * @param [options.keepZIndex=false] - When true keeps current z-index.
+   *
+   * @param [options.invokeSet=true] - When true invokes set method.
+   *
+   * @returns Operation successful.
+   */
+  reset({ keepZIndex, invokeSet }?: StateAPI.Options.Reset): boolean;
+  /**
+   * Restores a saved positional state returning the data. Several optional parameters are available to control
+   * whether the restore action occurs silently (no store / inline styles updates), animates to the stored data, or
+   * simply sets the stored data. Restoring via {@link AnimationAPI.to} allows specification of the duration and
+   * easing along with configuring a Promise to be returned if awaiting the end of the animation.
+   *
+   * @param options - Parameters
+   *
+   * @param options.name - Saved data set name.
+   *
+   * @param [options.remove=false] - Deletes data set.
+   *
+   * @param [options.properties] - Specific properties to set / animate.
+   *
+   * @param [options.silent] - Set position data directly; no store or style updates.
+   *
+   * @param [options.async=false] - If animating return a Promise that resolves with any saved data.
+   *
+   * @param [options.animateTo=false] - Animate to restore data.
+   *
+   * @param [options.duration=0.1] - Duration in seconds.
+   *
+   * @param [options.ease='linear'] - Easing function name or function.
+   *
+   * @returns Any saved position data.
+   */
+  restore({
+    name,
+    remove,
+    properties,
+    silent,
+    async,
+    animateTo,
+    duration,
+    ease,
+  }: StateAPI.Options.Restore): Data.TJSPositionDataExtra | Promise<Data.TJSPositionDataExtra | undefined> | undefined;
+  /**
+   * Saves current position state with the opportunity to add extra data to the saved state. Simply include
+   * extra properties in `options` to save extra data.
+   *
+   * @param {object}   options - Options.
+   *
+   * @param {string}   options.name - name to index this saved data.
+   *
+   * @param [optionsGet] - Additional options for {@link TJSPosition.get} when serializing position state. By default,
+   *        `nullable` values are included.
+   *
+   * @returns Current position data plus any extra data stored.
+   */
+  save({ name, ...extra }: StateAPI.Options.Save, optionsGet?: TJSPosition.Options.Get): Data.TJSPositionDataExtra;
+  /**
+   * Directly sets a saved position state. Simply include extra properties in `options` to set extra data.
+   *
+   * @param {object}   opts - Options.
+   *
+   * @param {string}   opts.name - name to index this saved data.
+   */
+  set({ name, ...data }: StateAPI.Options.Set): void;
+}
+
+declare namespace Action {
+  /**
+   * Defines the options for the {@link draggable} action.
+   */
+  type DraggableOptions = {
+    /**
+     * A position or positionable instance.
+     */
+    position: TJSPosition | TJSPosition.Positionable;
+    /**
+     * MouseEvent button that activates dragging; default: 0
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button
+     */
+    button?: number;
+    /**
+     * A boolean value; controlling the `enabled` state.
+     */
+    enabled: boolean;
+    /**
+     *  When defined any event targets that have a class in this list are allowed.
+     */
+    hasTargetClassList?: Iterable<string>;
+    /**
+     * When defined any event targets that have a class in this list are ignored.
+     */
+    ignoreTargetClassList?: Iterable<string>;
+    /**
+     *  A writable store that tracks "dragging" state.
+     */
+    storeDragging?: Writable<boolean>;
+    /**
+     * When true tweening is enabled; default: false
+     */
+    tween?: boolean;
+    /**
+     * Quick tween options.
+     */
+    tweenOptions?: AnimationAPI.QuickTweenOptions;
+  };
+  /**
+   * Provides an interface of the {@link draggable} action options support / Readable store to make updating / setting
+   * draggable options much easier. When subscribing to the options instance returned by {@link draggable.options} the
+   * Subscriber handler receives the entire instance.
+   */
+  interface DraggableOptionsStore extends Readable<DraggableOptionsStore> {
+    /**
+     * Tweening enabled state.
+     */
+    tween: boolean;
+    /**
+     * Quick tween options for easing function and duration.
+     */
+    tweenOptions: AnimationAPI.QuickTweenOptions;
+    /**
+     * @returns {number} Get tween duration.
+     */
+    get tweenDuration(): number;
+    /**
+     * @returns {EasingReference} Get easing function or easing function name.
+     */
+    get tweenEase(): EasingReference;
+    /**
+     * @param {number}   duration - Set tween duration.
+     */
+    set tweenDuration(duration: number);
+    /**
+     * @param {EasingReference} ease - Set easing function by name or direct function.
+     */
+    set tweenEase(ease: EasingReference);
+    /**
+     * Resets all options data to initial values.
+     */
+    reset(): void;
+    /**
+     * Resets tween enabled state to initial value.
+     */
+    resetTween(): void;
+    /**
+     * Resets tween options to initial values.
+     */
+    resetTweenOptions(): void;
   }
 }
 
@@ -806,7 +1208,7 @@ declare namespace ValidatorAPI {
     /**
      * Associated position parent instance.
      */
-    parent: TJSPositionTypes.PositionParent;
+    parent: TJSPosition.PositionParent;
     /**
      * Associated element being positioned.
      */
@@ -867,8 +1269,8 @@ declare namespace ValidatorAPI {
    */
   type ValidatorData = {
     /**
-     * TJSPosition validator function that takes a {@link Data.TJSPositionData} instance potentially modifying it or
-     * returning null if invalid.
+     * TJSPosition validator function that takes a {@link Data.TJSPositionData} instance potentially
+     * modifying it or returning null if invalid.
      */
     validate: ValidatorFn;
     /**
@@ -911,133 +1313,6 @@ declare namespace ValidatorAPI {
      */
     subscribe?(this: void, run: Subscriber<any>, invalidate?: Invalidator<any>): Unsubscriber;
   }
-}
-
-interface PositionStateAPI {
-  /**
-   * Clears all saved position data except any default state.
-   */
-  clear(): void;
-  /**
-   * Gets any stored saved position data by name.
-   *
-   * @param {object}   options - Options.
-   *
-   * @param {string}   options.name - Saved data name.
-   *
-   * @returns {Data.TJSPositionDataExtra | undefined} Any saved position data.
-   */
-  get({ name }: { name: string }): Data.TJSPositionDataExtra | undefined;
-  /**
-   * Returns any associated default position data.
-   *
-   * @returns {Data.TJSPositionDataExtra | undefined} Any saved default position data.
-   */
-  getDefault(): Data.TJSPositionDataExtra | undefined;
-  /**
-   * @returns {IterableIterator<string>} The saved position data names / keys.
-   */
-  keys(): IterableIterator<string>;
-  /**
-   * Removes and returns any position data by name.
-   *
-   * @param {object}   options - Options.
-   *
-   * @param {string}   options.name - Name to remove and retrieve.
-   *
-   * @returns {Data.TJSPositionDataExtra | undefined} Any saved position data.
-   */
-  remove({ name }: { name: string }): Data.TJSPositionDataExtra | undefined;
-  /**
-   * Resets position instance to default data and invokes set.
-   *
-   * @param {object}   [options] - Optional parameters.
-   *
-   * @param {boolean}  [options.keepZIndex=false] - When true keeps current z-index.
-   *
-   * @param {boolean}  [options.invokeSet=true] - When true invokes set method.
-   *
-   * @returns {boolean} Operation successful.
-   */
-  reset({ keepZIndex, invokeSet }?: { keepZIndex?: boolean; invokeSet?: boolean }): boolean;
-  /**
-   * Restores a saved positional state returning the data. Several optional parameters are available to control
-   * whether the restore action occurs silently (no store / inline styles updates), animates to the stored data, or
-   * simply sets the stored data. Restoring via {@link AnimationAPI.to} allows specification of the duration and
-   * easing along with configuring a Promise to be returned if awaiting the end of the animation.
-   *
-   * @param {object}            options - Parameters
-   *
-   * @param {string}            options.name - Saved data set name.
-   *
-   * @param {boolean}           [options.remove=false] - Remove data set.
-   *
-   * @param {Iterable<string>}  [options.properties] - Specific properties to set / animate.
-   *
-   * @param {boolean}           [options.silent] - Set position data directly; no store or style updates.
-   *
-   * @param {boolean}           [options.async=false] - If animating return a Promise that resolves with any saved
-   *        data.
-   *
-   * @param {boolean}           [options.animateTo=false] - Animate to restore data.
-   *
-   * @param {number}            [options.duration=0.1] - Duration in seconds.
-   *
-   * @param {EasingReference}   [options.ease='linear'] - Easing function name or function.
-   *
-   * @returns {Data.TJSPositionDataExtra | Promise<Data.TJSPositionDataExtra | undefined> | undefined} Any saved
-   *          position data.
-   */
-  restore({
-    name,
-    remove,
-    properties,
-    silent,
-    async,
-    animateTo,
-    duration,
-    ease,
-  }: {
-    name: string;
-    remove?: boolean;
-    properties?: Iterable<string>;
-    silent?: boolean;
-    async?: boolean;
-    animateTo?: boolean;
-    duration?: number;
-    ease?: EasingReference;
-  }): Data.TJSPositionDataExtra | Promise<Data.TJSPositionDataExtra | undefined> | undefined;
-  /**
-   * Saves current position state with the opportunity to add extra data to the saved state. Simply include
-   * extra properties in `options` to save extra data.
-   *
-   * @param {object}   options - Options.
-   *
-   * @param {string}   options.name - name to index this saved data.
-   *
-   * @param {import('../types').TJSPositionTypes.OptionsGet} [optionsGet] - Additional options for
-   *        {@link TJSPosition.get} when serializing position state. By default, `nullable` values are included.
-   *
-   * @returns {Data.TJSPositionDataExtra} Current position data
-   */
-  save(
-    {
-      name,
-      ...extra
-    }: {
-      name: string;
-      [key: string]: any;
-    },
-    optionsGet: TJSPositionTypes.OptionsGet,
-  ): Data.TJSPositionDataExtra;
-  /**
-   * Directly sets a saved position state. Simply include extra properties in `options` to set extra data.
-   *
-   * @param {object}   options - Options.
-   *
-   * @param {string}   options.name - name to index this saved data.
-   */
-  set({ name, ...data }: { name: string; [key: string]: any }): void;
 }
 
 /**
@@ -1120,19 +1395,20 @@ declare namespace System {
    * interface.
    */
   namespace Validator {
+    export { ValidatorAPI as API };
     /**
      * Provides a system to validate positional changes.
      */
-    interface ValidatorSystem extends SystemBase {
+    export interface ValidatorSystem extends SystemBase {
       /**
        * Provides a validator that respects transforms in positional data constraining the position to within the
        * target elements bounds.
        *
-       * @param {ValidatorAPI.ValidationData}   valData - The associated validation data for position updates.
+       * @param valData - The associated validation data for position updates.
        *
        * @returns {Data.TJSPositionData} Potentially adjusted position data.
        */
-      validate: ValidatorAPI.ValidatorFn;
+      validate: System.Validator.API.ValidatorFn;
       /**
        * An ID associated with this validator. Can be used to remove the validator; default: `undefined`.
        */
@@ -1150,7 +1426,7 @@ declare namespace System {
     /**
      * Describes the constructor function for an {@link ValidatorSystem} implementation.
      */
-    interface ValidatorSystemConstructor {
+    export interface ValidatorSystemConstructor {
       /**
        * @param {object}      [options] - Initial options.
        *
@@ -1185,57 +1461,57 @@ declare namespace System {
   }
   interface SystemBase {
     /**
-     * @returns {boolean} The current constrain state.
+     * @returns The current constrain state.
      */
     get constrain(): boolean;
     /**
-     * @returns {HTMLElement | undefined | null} Target element.
+     * @returns Target element.
      */
     get element(): HTMLElement | undefined | null;
     /**
-     * @returns {boolean} Get enabled state.
+     * @returns Get enabled state.
      */
     get enabled(): boolean;
     /**
-     * @returns {number} Get manual height.
+     * @returns Get manual height.
      */
-    get height(): number;
+    get height(): number | undefined;
     /**
-     * @return {boolean} Get locked state.
+     * @return Get locked state.
      */
     get locked(): boolean;
     /**
-     * @returns {number} Get manual width.
+     * @returns Get manual width.
      */
-    get width(): number;
+    get width(): number | undefined;
     /**
-     * @param {boolean}  constrain - Set constrain state.
+     * @param constrain - Set constrain state.
      */
     set constrain(constrain: boolean);
     /**
-     * @param {HTMLElement | undefined | null} element - Set target element.
+     * @param element - Set target element.
      */
     set element(element: HTMLElement | undefined | null);
     /**
-     * @param {boolean}  enabled - Set enabled state.
+     * @param enabled - Set enabled state.
      */
     set enabled(enabled: boolean);
     /**
-     * @param {number}   height - Set manual height.
+     * @param height - Set manual height.
      */
-    set height(height: number);
+    set height(height: number | undefined);
     /**
-     * @param {number}   width - Set manual width.
+     * @param width - Set manual width.
      */
-    set width(width: number);
+    set width(width: number | undefined);
     /**
      * Set manual width & height.
      *
-     * @param {number}   width - New manual width.
+     * @param width - New manual width.
      *
-     * @param {number}   height - New manual height.
+     * @param height - New manual height.
      */
-    setDimension(width: number, height: number): void;
+    setDimension(width: number | undefined, height: number | undefined): void;
   }
   /**
    * Describes the constructor function for anu {@link SystemBase} implementation.
@@ -1275,320 +1551,563 @@ declare namespace System {
 }
 
 /**
+ * Provides the default {@link System.Initial.InitialSystem} implementations available.
+ */
+type DefaultInitial = {
+  /**
+   * A locked instance of the `Centered` initial helper suitable for displaying elements in the browser window.
+   */
+  browserCentered: System.Initial.InitialSystem;
+  /**
+   * The `Centered` class constructor to instantiate a new instance.
+   * @constructor
+   */
+  Centered: System.Initial.InitialSystemConstructor;
+};
+/**
+ * Provides the default {@link System.Validator.ValidatorSystem} implementations available.
+ */
+type DefaultValidators = {
+  /**
+   * The `TransformBounds` class constructor to instantiate a new instance.
+   */
+  TransformBounds: System.Validator.ValidatorSystemConstructor;
+  /**
+   * A locked instance of the `TransformBounds` validator suitable for transformed bounds checking against the
+   * browser window.
+   */
+  transformWindow: System.Validator.ValidatorSystem;
+};
+/**
+ * Defines all derived stores for positional properties. These property stores can be used to update the position
+ * state.
+ *
+ * There are several readable stores for additional derived data.
+ */
+interface Stores {
+  /**
+   * Derived store for `left` updates.
+   */
+  left: WritablePos<number | string | null, number | null>;
+  /**
+   * Derived store for `top` updates.
+   */
+  top: WritablePos<number | string | null, number | null>;
+  /**
+   * Derived store for `width` updates.
+   */
+  width: WritablePos<number | string | null, number | 'auto' | 'inherit' | null>;
+  /**
+   * Derived store for `height` updates.
+   */
+  height: WritablePos<number | string | null, number | 'auto' | 'inherit' | null>;
+  /**
+   * Derived store for `maxHeight` updates.
+   */
+  maxHeight: WritablePos<number | string | null, number | null>;
+  /**
+   * Derived store for `maxWidth` updates.
+   */
+  maxWidth: WritablePos<number | string | null, number | null>;
+  /**
+   * Derived store for `minHeight` updates.
+   */
+  minHeight: WritablePos<number | string | null, number | null>;
+  /**
+   * Derived store for `minWidth` updates.
+   */
+  minWidth: WritablePos<number | string | null, number | null>;
+  /**
+   * Derived store for `rotateX` updates.
+   */
+  rotateX: WritablePos<number | string | null, number | null>;
+  /**
+   * Derived store for `rotateY` updates.
+   */
+  rotateY: WritablePos<number | string | null, number | null>;
+  /**
+   * Derived store for `rotateZ` updates.
+   */
+  rotateZ: WritablePos<number | string | null, number | null>;
+  /**
+   * Derived store for `scale` updates.
+   */
+  scale: Writable<number | null>;
+  /**
+   * Derived store for `transformOrigin` updates.
+   */
+  transformOrigin: TransformAPI.TransformOriginWritable;
+  /**
+   * Derived store for `translateX` updates.
+   */
+  translateX: WritablePos<number | string | null, number | null>;
+  /**
+   * Derived store for `translateY` updates.
+   */
+  translateY: WritablePos<number | string | null, number | null>;
+  /**
+   * Derived store for `translateZ` updates.
+   */
+  translateZ: WritablePos<number | string | null, number | null>;
+  /**
+   * Derived store for `zIndex` updates.
+   */
+  zIndex: Writable<number | null>;
+  /**
+   * Readable store for dimension data.
+   */
+  dimension: Readable<{
+    width: number | 'auto' | 'inherit';
+    height: number | 'auto' | 'inherit';
+  }>;
+  /**
+   * Readable store for current element.
+   */
+  element: Readable<HTMLElement>;
+  /**
+   * Readable store for `contentHeight`.
+   */
+  resizeContentHeight: Readable<number | undefined>;
+  /**
+   * Readable store for `contentWidth`.
+   */
+  resizeContentWidth: Readable<number | undefined>;
+  /**
+   * Readable store indicating when `width` or `height` is `auto` or `inherit` indicating that this position
+   * instance is a good candidate for the {@link #runtime/svelte/action/dom/observer!resizeObserver} action.
+   */
+  resizeObservable: Readable<boolean>;
+  /**
+   * Readable store for `offsetHeight`.
+   */
+  resizeOffsetHeight: Readable<number | undefined>;
+  /**
+   * Readable store for `offsetWidth`.
+   */
+  resizeOffsetWidth: Readable<number | undefined>;
+  /**
+   * Protected store for resize observer updates.
+   */
+  resizeObserved: Writable<ResizeObserverData.ResizeObject>;
+  /**
+   * Readable store for transform data.
+   */
+  transform: Readable<TransformAPI.TransformData>;
+}
+declare namespace Options {
+  /**
+   * Defines the unique options available for setting in the constructor of {@link TJSPosition}.
+   */
+  type Config = {
+    /**
+     * When true always calculate transform data.
+     */
+    calculateTransform: boolean;
+    /**
+     * Provides a helper for setting initial position location.
+     */
+    initial: System.Initial.InitialSystem;
+    /**
+     * Sets TJSPosition to orthographic mode using just `transform` / `matrix3d` CSS for positioning.
+     */
+    ortho: boolean;
+    /**
+     * Provides an initial validator or list of validators.
+     */
+    validator: System.Validator.API.ValidatorOption;
+  };
+  /**
+   * Provides the complete options object including unique {@link TJSPosition} options in addition to positional
+   * data that is available to set in the constructor.
+   */
+  type ConfigAll = Partial<Config & Data.TJSPositionDataExtra>;
+  /**
+   * Options for {@link TJSPosition.get}.
+   */
+  type Get = {
+    /**
+     * When provided only these keys are copied.
+     */
+    keys?: Iterable<keyof Data.TJSPositionData>;
+    /**
+     * When provided these keys are excluded.
+     */
+    exclude?: Iterable<keyof Data.TJSPositionData>;
+    /**
+     * When true all `nullable` values are included.
+     */
+    nullable?: boolean;
+    /**
+     * When true any `null` values are converted into default numeric values.
+     */
+    numeric?: boolean;
+  };
+  /**
+   * Options for {@link TJSPosition.set}.
+   */
+  type Set = {
+    /**
+     * Perform the update to position state immediately. Callers can specify to immediately update the associated
+     * element. This is useful if set is called from requestAnimationFrame / rAF. Library integrations like GSAP
+     * invoke set from rAF.
+     */
+    immediateElementUpdate?: boolean;
+  };
+}
+/**
+ * Defines the shape of an instance / object that is positionable.
+ */
+interface Positionable {
+  position: TJSPosition;
+}
+/**
+ * Defines one or more positions or positionable objects.
+ */
+type PositionGroup = TJSPosition | Positionable | Iterable<TJSPosition> | Iterable<Positionable>;
+/**
+ * Defines the TJSPosition parent element. Provide either an HTMLElement directly or an object with an
+ * `elementTarget` property / accessor defining the parent HTMLElement.
+ */
+type PositionParent =
+  | HTMLElement
+  | {
+      elementTarget?: HTMLElement;
+    };
+/**
+ * Provides an overloaded {@link Writable} store interface for {@link TJSPosition.set}.
+ */
+interface WritableExt extends Writable<Data.TJSPositionDataRelative> {
+  set(this: void, value: Data.TJSPositionDataRelative, options?: Options.Set): TJSPosition;
+}
+/**
+ * Extends Writable to allow type differentiation between writing and reading data. TJSPosition allows flexible
+ * formats for writing data that is converted to specific data for reading after validation.
+ */
+interface WritablePos<W, R> extends Readable<R> {
+  /**
+   * Set value and inform subscribers.
+   * @param value to set
+   */
+  set(this: void, value: W): void;
+  /**
+   * Update value using callback and inform subscribers.
+   * @param updater callback
+   */
+  update(this: void, updater: Updater<W>): void;
+}
+
+/**
  * Provides an advanced compound store for positioning elements dynamically including an optimized pipeline for updating
  * an associated element. Essential tweening / animation is supported in addition to a validation API to constrain
  * positional updates.
- *
- * @implements {import('./types').TJSPositionTypes.TJSPositionWritable}
  */
-declare class TJSPosition implements TJSPositionTypes.TJSPositionWritable {
+declare class TJSPosition implements TJSPosition.WritableExt {
+  #private;
   /**
-   * @returns {import('./animation/types').AnimationGroupAPI} Public Animation API.
+   * @returns Public Animation Group API.
    */
   static get Animate(): AnimationGroupAPI;
   /**
-   * @returns {import('./data/types').Data.TJSPositionDataConstructor} TJSPositionData constructor.
+   * @returns TJSPositionData constructor.
    */
   static get Data(): Data.TJSPositionDataConstructor;
   /**
-   * @returns {Readonly<import('./types').TJSPositionTypes.PositionInitial>} TJSPosition default initial helpers.
+   * @returns TJSPosition default initial systems.
    */
-  static get Initial(): Readonly<TJSPositionTypes.PositionInitial>;
+  static get Initial(): Readonly<TJSPosition.API.DefaultInitial>;
   /**
-   * @returns {import('./system/types').System.SystemBaseConstructor} `SystemBase` constructor.
+   * @returns `SystemBase` constructor.
    */
   static get SystemBase(): System.SystemBaseConstructor;
   /**
    * Returns TJSTransformData class / constructor.
    *
-   * @returns {import('./transform/types').TransformAPI.TransformDataConstructor} TransformData class /
-   *          constructor.
+   * @returns TransformData class / constructor.
    */
   static get TransformData(): TransformAPI.TransformDataConstructor;
   /**
-   * Returns default validators.
+   * Returns default validator systems.
    *
-   * @returns {Readonly<import('./types').TJSPositionTypes.PositionValidators>} Available validators.
+   * @returns Available validators.
    */
-  static get Validators(): Readonly<TJSPositionTypes.PositionValidators>;
+  static get Validators(): Readonly<TJSPosition.API.DefaultValidators>;
   /**
    * Returns a list of supported transform origins.
    *
-   * @returns {Readonly<import('./transform/types').TransformAPI.TransformOrigin[]>} The supported transform origin
-   *          strings.
+   * @returns The supported transform origin strings.
    */
   static get transformOrigins(): Readonly<TransformAPI.TransformOrigin[]>;
   /**
    * Convenience to copy from source to target of two TJSPositionData like objects. If a target is not supplied a new
    * {@link TJSPositionData} instance is created.
    *
-   * @param {Partial<import('./data/types').Data.TJSPositionData>}  source - The source instance to copy from.
+   * @param source - The source instance to copy from.
    *
-   * @param {import('./data/types').Data.TJSPositionData}  [target] - Target TJSPositionData like object; if one is not
-   *        provided a new instance is created.
+   * @param [target] - Target TJSPositionData like object; if one is not provided a new instance is created.
    *
-   * @returns {import('./data/types').Data.TJSPositionData} The target instance with all TJSPositionData fields.
+   * @returns The target instance with all TJSPositionData fields.
    */
-  static copyData(source: Partial<Data.TJSPositionData>, target?: Data.TJSPositionData): Data.TJSPositionData;
+  static copyData(source: Partial<Data.TJSPositionData>, target: Data.TJSPositionData): Data.TJSPositionData;
   /**
    * Returns a duplicate of a given position instance copying any options and validators. The position parent is not
    * copied and a new one must be set manually via the {@link TJSPosition.parent} setter.
    *
-   * @param {TJSPosition} position - A position instance.
+   * @param position - A position instance.
    *
-   * @param {import('./types').TJSPositionTypes.OptionsCtorAll}   [options] - Unique new options to set.
+   * @param [options] - Unique new options to set.
    *
-   * @returns {TJSPosition} A duplicate position instance.
+   * @returns A duplicate position instance.
    */
-  static duplicate(position: TJSPosition, options?: TJSPositionTypes.OptionsCtorAll): TJSPosition;
+  static duplicate(position: TJSPosition, options?: TJSPosition.Options.ConfigAll): TJSPosition;
   /**
-   * @param {(
-   *    import('./types').TJSPositionTypes.PositionParent |
-   *    import('./types').TJSPositionTypes.OptionsCtorAll
-   * )} [parentOrOptions] - A  potential parent element or object w/ `elementTarget` accessor. You may also forego
+   * @param [parentOrOptions] - A  potential parent element or object w/ `elementTarget` accessor. You may also forego
    *    setting the parent and pass in the options object.
    *
-   * @param {import('./types').TJSPositionTypes.OptionsCtorAll}  [options] - The options object.
+   * @param [options] - The options object.
    */
   constructor(
-    parentOrOptions?: TJSPositionTypes.PositionParent | TJSPositionTypes.OptionsCtorAll,
-    options?: TJSPositionTypes.OptionsCtorAll,
+    parentOrOptions?: TJSPosition.PositionParent | TJSPosition.Options.ConfigAll,
+    options?: TJSPosition.Options.ConfigAll,
   );
   /**
    * Returns the animation API.
    *
-   * @returns {import('./animation/types').AnimationAPI} Animation API.
+   * @returns Animation instance API.
    */
   get animate(): AnimationAPI;
   /**
    * Returns the dimension data for the readable store.
    *
-   * @returns {Readonly<{width: number | 'auto' | 'inherit', height: number | 'auto' | 'inherit'}>} Dimension data.
+   * @returns Dimension data.
    */
   get dimension(): Readonly<{
     width: number | 'auto' | 'inherit';
     height: number | 'auto' | 'inherit';
   }>;
   /**
-   * Sets the enabled state.
-   *
-   * @param {boolean}  enabled - New enabled state.
-   */
-  set enabled(enabled: boolean);
-  /**
    * Returns the enabled state.
    *
-   * @returns {boolean} Enabled state.
+   * @returns Enabled state.
    */
   get enabled(): boolean;
   /**
    * Returns the current HTMLElement being positioned.
    *
-   * @returns {HTMLElement | undefined} Current HTMLElement being positioned.
+   * @returns Current HTMLElement being positioned.
    */
   get element(): HTMLElement | undefined;
   /**
    * Returns a promise that is resolved on the next element update with the time of the update.
    *
-   * @returns {Promise<number>} Promise resolved on element update.
+   * @returns Promise resolved on element update.
    */
-  get elementUpdated(): Promise<number>;
+  get elementUpdated(): Promise<number> | undefined;
   /**
-   * Sets the associated {@link TJSPositionTypes.PositionParent} instance. Resets the style cache and default data.
+   * Returns the associated {@link TJSPosition.PositionParent} instance.
    *
-   * @param {import('./types').TJSPositionTypes.PositionParent | undefined} parent - A PositionParent instance or
-   *        undefined to disassociate
+   * @returns The current position parent instance.
    */
-  set parent(parent: TJSPositionTypes.PositionParent | undefined);
-  /**
-   * Returns the associated {@link TJSPositionTypes.PositionParent} instance.
-   *
-   * @returns {import('./types').TJSPositionTypes.PositionParent} The current position parent instance.
-   */
-  get parent(): TJSPositionTypes.PositionParent;
+  get parent(): TJSPosition.PositionParent;
   /**
    * Returns the state API.
    *
-   * @returns {import('./state/types').PositionStateAPI} TJSPosition state API.
+   * @returns TJSPosition state API.
    */
   get state(): PositionStateAPI;
   /**
    * Returns the derived writable stores for individual data variables.
    *
-   * @returns {import('./types').TJSPositionTypes.Stores} Derived / writable stores.
+   * @returns Derived / writable stores.
    */
-  get stores(): TJSPositionTypes.Stores;
+  get stores(): TJSPosition.API.Stores;
   /**
    * Returns the transform data for the readable store.
    *
-   * @returns {import('./transform/types').TransformAPI.TransformData} Transform Data.
+   * @returns Transform Data.
    */
   get transform(): TransformAPI.TransformData;
   /**
    * Returns the validators.
    *
-   * @returns {import('./system/validators/types').ValidatorAPI} validators.
+   * @returns Validators API
    */
-  get validators(): ValidatorAPI;
+  get validators(): System.Validator.API;
   /**
-   * @param {number | 'auto' | 'inherit' | null} height -
+   * Sets the enabled state.
+   *
+   * @param enabled - New enabled state.
    */
-  set height(height: number | 'auto' | 'inherit' | null);
+  set enabled(enabled: boolean);
   /**
-   * @returns {number | 'auto' | 'inherit' | null} height
+   * Sets the associated {@link TJSPosition.PositionParent} instance. Resets the style cache and default data.
+   *
+   * @param parent - A PositionParent instance or undefined to disassociate
+   */
+  set parent(parent: TJSPosition.PositionParent | undefined);
+  /**
+   * @returns height
    */
   get height(): number | 'auto' | 'inherit' | null;
   /**
-   * @param {number | string | null} left -
-   */
-  set left(left: number | string | null);
-  /**
-   * @returns {number | null} left
+   * @returns left
    */
   get left(): number | null;
   /**
-   * @param {number | string | null} maxHeight -
-   */
-  set maxHeight(maxHeight: number | string | null);
-  /**
-   * @returns {number | null} maxHeight
+   * @returns maxHeight
    */
   get maxHeight(): number | null;
   /**
-   * @param {number | string | null} maxWidth -
-   */
-  set maxWidth(maxWidth: number | string | null);
-  /**
-   * @returns {number | null} maxWidth
+   * @returns maxWidth
    */
   get maxWidth(): number | null;
   /**
-   * @param {number | string | null} minHeight -
-   */
-  set minHeight(minHeight: number | string | null);
-  /**
-   * @returns {number | null} minHeight
+   * @returns minHeight
    */
   get minHeight(): number | null;
   /**
-   * @param {number | string | null} minWidth -
-   */
-  set minWidth(minWidth: number | string | null);
-  /**
-   * @returns {number | null} minWidth
+   * @returns minWidth
    */
   get minWidth(): number | null;
   /**
-   * @param {number | string | null} rotateX -
-   */
-  set rotateX(rotateX: number | string | null);
-  /**
-   * @returns {number | null} rotateX
+   * @returns rotateX
    */
   get rotateX(): number | null;
   /**
-   * @param {number | string | null} rotateY -
-   */
-  set rotateY(rotateY: number | string | null);
-  /**
-   * @returns {number | null} rotateY
+   * @returns rotateY
    */
   get rotateY(): number | null;
   /**
-   * @param {number | string | null} rotateZ -
-   */
-  set rotateZ(rotateZ: number | string | null);
-  /**
-   * @returns {number | null} rotateZ
+   * @returns rotateZ
    */
   get rotateZ(): number | null;
   /**
-   * @param {number | string | null} rotateZ - alias for rotateZ
-   */
-  set rotation(rotateZ: number | string | null);
-  /**
-   * @returns {number | null} alias for rotateZ
+   * @returns Alias for rotateZ
    */
   get rotation(): number | null;
   /**
-   * @param {number | string | null} scale -
-   */
-  set scale(scale: number | string | null);
-  /**
-   * @returns {number | null} scale
+   * @returns scale
    */
   get scale(): number | null;
   /**
-   * @param {number | string | null} top -
-   */
-  set top(top: number | string | null);
-  /**
-   * @returns {number | null} top
+   * @returns top
    */
   get top(): number | null;
   /**
-   * @param {import('./transform/types').TransformAPI.TransformOrigin} transformOrigin -
-   */
-  set transformOrigin(transformOrigin: TransformAPI.TransformOrigin);
-  /**
-   * @returns {import('./transform/types').TransformAPI.TransformOrigin | null} transformOrigin
+   * @returns transformOrigin
    */
   get transformOrigin(): TransformAPI.TransformOrigin | null;
   /**
-   * @param {number | string | null} translateX -
-   */
-  set translateX(translateX: number | string | null);
-  /**
-   * @returns {number | null} translateX
+   * @returns translateX
    */
   get translateX(): number | null;
   /**
-   * @param {number | string | null} translateY -
-   */
-  set translateY(translateY: number | string | null);
-  /**
-   * @returns {number | null} translateY
+   * @returns translateY
    */
   get translateY(): number | null;
   /**
-   * @param {number | string | null} translateZ -
-   */
-  set translateZ(translateZ: number | string | null);
-  /**
-   * @returns {number | null} translateZ
+   * @returns translateZ
    */
   get translateZ(): number | null;
   /**
-   * @param {number | 'auto' | 'inherit' | null} width -
-   */
-  set width(width: number | 'auto' | 'inherit' | null);
-  /**
-   * @returns {number | 'auto' | 'inherit' | null} width
+   * @returns width
    */
   get width(): number | 'auto' | 'inherit' | null;
   /**
-   * @param {number | string | null} zIndex -
-   */
-  set zIndex(zIndex: number | string | null);
-  /**
-   * @returns {number | null} z-index
+   * @returns z-index
    */
   get zIndex(): number | null;
+  /**
+   * @param height -
+   */
+  set height(height: number | string | null);
+  /**
+   * @param left -
+   */
+  set left(left: number | string | null);
+  /**
+   * @param maxHeight -
+   */
+  set maxHeight(maxHeight: number | string | null);
+  /**
+   * @param maxWidth -
+   */
+  set maxWidth(maxWidth: number | string | null);
+  /**
+   * @param minHeight -
+   */
+  set minHeight(minHeight: number | string | null);
+  /**
+   * @param minWidth -
+   */
+  set minWidth(minWidth: number | string | null);
+  /**
+   * @param rotateX -
+   */
+  set rotateX(rotateX: number | string | null);
+  /**
+   * @param rotateY -
+   */
+  set rotateY(rotateY: number | string | null);
+  /**
+   * @param rotateZ -
+   */
+  set rotateZ(rotateZ: number | string | null);
+  /**
+   * @param  rotateZ - alias for rotateZ
+   */
+  set rotation(rotateZ: number | string | null);
+  /**
+   * @param scale -
+   */
+  set scale(scale: number | null);
+  /**
+   * @param top -
+   */
+  set top(top: number | string | null);
+  /**
+   * @param transformOrigin -
+   */
+  set transformOrigin(transformOrigin: TransformAPI.TransformOrigin);
+  /**
+   * @param translateX -
+   */
+  set translateX(translateX: number | string | null);
+  /**
+   * @param translateY -
+   */
+  set translateY(translateY: number | string | null);
+  /**
+   * @param translateZ -
+   */
+  set translateZ(translateZ: number | string | null);
+  /**
+   * @param width -
+   */
+  set width(width: number | string | null);
+  /**
+   * @param zIndex -
+   */
+  set zIndex(zIndex: number | null);
   /**
    * Assigns current position data to given object `data` object. By default, `null` position data is not assigned.
    * Other options allow configuration of the data assigned including setting default numeric values for any properties
    * that are null.
    *
-   * @param {object}  [data] - Target to assign current position data.
+   * @param [data] - Target to assign current position data.
    *
-   * @param {import('./types').TJSPositionTypes.OptionsGet}   [options] - Defines options for specific keys and
-   *        substituting null for numeric default values. By default, nullable keys are included.
+   * @param [options] - Defines options for specific keys and substituting null for numeric default values. By
+   *        default, nullable keys are included.
    *
-   * @returns {Partial<import('./data/types').Data.TJSPositionData>} Passed in object with current position data.
+   * @returns Passed in object with current position data.
    */
-  get(data?: object, options?: TJSPositionTypes.OptionsGet): Partial<Data.TJSPositionData>;
+  get(
+    data?: {
+      [key: string]: any;
+    },
+    options?: TJSPosition.Options.Get,
+  ): Partial<Data.TJSPositionData>;
   /**
-   * @returns {import('./data/types').Data.TJSPositionData} Current position data.
+   * @returns Current position data.
    */
   toJSON(): Data.TJSPositionData;
   /**
@@ -1612,378 +2131,71 @@ declare class TJSPosition implements TJSPositionTypes.TJSPositionWritable {
    * the current value of the given property. Please see {@link Data.TJSPositionDataRelative} for a detailed
    * description.
    *
-   * @param {import('./data/types').Data.TJSPositionDataRelative} [position] - TJSPosition data to set.
+   * @param [position] - TJSPosition data to set.
    *
-   * @param {import('./types').TJSPositionTypes.OptionsSet} [options] - Additional options.
+   * @param [options] - Additional options.
    *
-   * @returns {TJSPosition} This TJSPosition instance.
+   * @returns This TJSPosition instance.
    */
-  set(position?: Data.TJSPositionDataRelative, options?: TJSPositionTypes.OptionsSet): TJSPosition;
+  set(position?: Data.TJSPositionDataRelative, options?: TJSPosition.Options.Set): this;
   /**
-   * @param {import('svelte/store').Subscriber<Readonly<import('./data/types').Data.TJSPositionData>>} handler -
-   *        Callback function that is invoked on update / changes. Receives a readonly copy of the TJSPositionData.
+   * @param handler - Callback function that is invoked on update / changes. Receives a readonly copy of the
+   *        TJSPositionData.
    *
-   * @returns {import('svelte/store').Unsubscriber} Unsubscribe function.
+   * @returns Unsubscribe function.
    */
-  subscribe(handler: svelte_store.Subscriber<Readonly<Data.TJSPositionData>>): svelte_store.Unsubscriber;
+  subscribe(handler: Subscriber<Readonly<Data.TJSPositionData>>): Unsubscriber;
   /**
    * Provides the {@link Writable} store `update` method. Receive and return a {@link TJSPositionData} instance to
    * update the position state. You may manipulate numeric properties by providing relative adjustments described in
    * {@link TJSPositionDataRelative}.
    *
-   * @param {import('svelte/store').Updater<import('./data/types').Data.TJSPositionDataRelative>} updater -
+   * @param updater -
    */
-  update(updater: svelte_store.Updater<Data.TJSPositionDataRelative>): void;
-  #private;
+  update(updater: Updater<Data.TJSPositionDataRelative>): void;
 }
-
-/**
- * Provides all interfaces and type aliases used by {@link TJSPosition}.
- */
-declare namespace TJSPositionTypes {
-  /**
-   * Defines the shape of an instance / object that is positionable.
-   */
-  interface Positionable {
-    position: TJSPosition;
+declare namespace TJSPosition {
+  export { Action };
+  export namespace API {
+    export {
+      AnimationAPI as Animation,
+      type AnimationGroupAPI as AnimationGroup,
+      Data,
+      type DefaultInitial,
+      type DefaultValidators,
+      StateAPI as State,
+      System,
+      type Stores,
+      TransformAPI as Transform,
+    };
   }
-  /**
-   * Provides an overloaded {@link Writable} store interface for {@link TJSPosition.set}.
-   */
-  interface TJSPositionWritable extends Writable<Data.TJSPositionDataRelative> {
-    set(this: void, value: Data.TJSPositionDataRelative, options?: OptionsSet): TJSPosition;
-  }
-  /**
-   * Defines the unique options available for setting in the constructor of {@link TJSPosition}.
-   */
-  type OptionsCtor = {
-    /**
-     * When true always calculate transform data.
-     */
-    calculateTransform: boolean;
-    /**
-     * Provides a helper for setting initial position location.
-     */
-    initial: System.Initial.InitialSystem;
-    /**
-     * Sets TJSPosition to orthographic mode using just `transform` / `matrix3d` CSS for positioning.
-     */
-    ortho: boolean;
-    /**
-     * Provides an initial validator or list of validators.
-     */
-    validator: ValidatorAPI.ValidatorOption;
-  };
-  /**
-   * Provides the complete options object including unique {@link TJSPosition} options in addition to positional
-   * data that is available to set in the constructor.
-   */
-  type OptionsCtorAll = Partial<OptionsCtor & Data.TJSPositionDataExtra>;
-  /**
-   * Options for {@link TJSPosition.get}.
-   */
-  type OptionsGet = {
-    /**
-     * When provided only these keys are copied.
-     */
-    keys?: Iterable<keyof Data.TJSPositionData>;
-    /**
-     * When provided these keys are excluded.
-     */
-    exclude?: Iterable<keyof Data.TJSPositionData>;
-    /**
-     * When true all `nullable` values are included.
-     */
-    nullable?: boolean;
-    /**
-     * When true any `null` values are converted into default numeric values.
-     */
-    numeric?: boolean;
-  };
-  /**
-   * Options for {@link TJSPosition.set}.
-   */
-  type OptionsSet = {
-    /**
-     * Perform the update to position state immediately. Callers can specify to immediately update the associated
-     * element. This is useful if set is called from requestAnimationFrame / rAF. Library integrations like GSAP
-     * invoke set from rAF.
-     */
-    immediateElementUpdate: boolean;
-  };
-  /**
-   * Defines one or more positions or positionable objects.
-   */
-  type PositionGroup = TJSPosition | Positionable | Iterable<TJSPosition> | Iterable<Positionable>;
-  /**
-   * Provides the default {@link System.Initial.InitialSystem} implementations available.
-   */
-  type PositionInitial = {
-    /**
-     * A locked instance of the `Centered` initial helper suitable for displaying elements in the browser window.
-     */
-    browserCentered: System.Initial.InitialSystem;
-    /**
-     * The `Centered` class constructor to instantiate a new instance.
-     * @constructor
-     */
-    Centered: System.Initial.InitialSystemConstructor;
-  };
-  /**
-   * Defines the TJSPosition parent element. Provide either an HTMLElement directly or an object with an
-   * `elementTarget` property / accessor defining the parent HTMLElement.
-   */
-  type PositionParent =
-    | HTMLElement
-    | {
-        elementTarget?: HTMLElement;
-      };
-  /**
-   * Provides the default {@link System.Initial.ValidatorSystem} implementations available.
-   */
-  type PositionValidators = {
-    /**
-     * The `TransformBounds` class constructor to instantiate a new instance.
-     */
-    TransformBounds: System.Validator.ValidatorSystemConstructor;
-    /**
-     * A locked instance of the `TransformBounds` validator suitable for transformed bounds checking against the
-     * browser window.
-     */
-    transformWindow: System.Validator.ValidatorSystem;
-  };
-  /**
-   * Defines all derived stores for positional properties. These property stores can be used to update the position
-   * state.
-   *
-   * There are several readable stores for additional derived data.
-   */
-  type Stores = {
-    /**
-     * Derived store for `left` updates.
-     */
-    left: Writable<number | null>;
-    /**
-     * Derived store for `top` updates.
-     */
-    top: Writable<number | null>;
-    /**
-     * Derived store for `width` updates.
-     */
-    width: Writable<number | 'auto' | 'inherit' | null>;
-    /**
-     * Derived store for `height` updates.
-     */
-    height: Writable<number | 'auto' | 'inherit' | null>;
-    /**
-     * Derived store for `maxHeight` updates.
-     */
-    maxHeight: Writable<number | null>;
-    /**
-     * Derived store for `maxWidth` updates.
-     */
-    maxWidth: Writable<number | null>;
-    /**
-     * Derived store for `minHeight` updates.
-     */
-    minHeight: Writable<number | null>;
-    /**
-     * Derived store for `minWidth` updates.
-     */
-    minWidth: Writable<number | null>;
-    /**
-     * Derived store for `rotateX` updates.
-     */
-    rotateX: Writable<number | null>;
-    /**
-     * Derived store for `rotateY` updates.
-     */
-    rotateY: Writable<number | null>;
-    /**
-     * Derived store for `rotateZ` updates.
-     */
-    rotateZ: Writable<number | null>;
-    /**
-     * Derived store for `scale` updates.
-     */
-    scale: Writable<number | null>;
-    /**
-     * Derived store for `transformOrigin` updates.
-     */
-    transformOrigin: TransformAPI.TransformOriginWritable;
-    /**
-     * Derived store for `translateX` updates.
-     */
-    translateX: Writable<number | null>;
-    /**
-     * Derived store for `translateY` updates.
-     */
-    translateY: Writable<number | null>;
-    /**
-     * Derived store for `translateZ` updates.
-     */
-    translateZ: Writable<number | null>;
-    /**
-     * Derived store for `zIndex` updates.
-     */
-    zIndex: Writable<number | null>;
-    /**
-     * Readable store for dimension data.
-     */
-    dimension: Readable<{
-      width: number | 'auto' | 'inherit';
-      height: number | 'auto' | 'inherit';
-    }>;
-    /**
-     * Readable store for current element.
-     */
-    element: Readable<HTMLElement>;
-    /**
-     * Readable store for `contentHeight`.
-     */
-    resizeContentHeight: Readable<number | undefined>;
-    /**
-     * Readable store for `contentWidth`.
-     */
-    resizeContentWidth: Readable<number | undefined>;
-    /**
-     * Readable store indicating when `width` or `height` is `auto` or `inherit` indicating that this position
-     * instance is a good candidate for the {@link resizeObserver} action.
-     */
-    resizeObservable: Readable<boolean>;
-    /**
-     * Readable store for `offsetHeight`.
-     */
-    resizeOffsetHeight: Readable<number | undefined>;
-    /**
-     * Readable store for `offsetWidth`.
-     */
-    resizeOffsetWidth: Readable<number | undefined>;
-    /**
-     * Protected store for resize observer updates.
-     */
-    resizeObserved: Writable<ResizeObserverData.ResizeObject>;
-    /**
-     * Readable store for transform data.
-     */
-    transform: Readable<TransformAPI.TransformData>;
-  };
+  export { Options, type Positionable, type PositionGroup, type PositionParent, type WritableExt, type WritablePos };
 }
 
 /**
  * Provides an action to apply a TJSPosition instance to a HTMLElement and invoke `position.parent`
  *
- * @param {HTMLElement}       node - The node associated with the action.
+ * @param node - The node associated with the action.
  *
- * @param {import('..').TJSPosition | import('../types').TJSPositionTypes.Positionable}   position - A position or
- *        positionable instance.
+ * @param position - A position or positionable instance.
  *
- * @returns {(import('svelte/action').ActionReturn<
- *    import('..').TJSPosition |
- *    import('../types').TJSPositionTypes.Positionable
- * >)} The action lifecycle methods.
+ * @returns The action lifecycle methods.
  */
 declare function applyPosition(
   node: HTMLElement,
-  position: TJSPosition | TJSPositionTypes.Positionable,
-): svelte_action.ActionReturn<TJSPosition | TJSPositionTypes.Positionable>;
-
-declare namespace Action {
-  /**
-   * Defines the options for the {@link draggable} action.
-   */
-  type DraggableOptions = {
-    /**
-     * A position or positionable instance.
-     */
-    position: TJSPosition | TJSPositionTypes.Positionable;
-    /**
-     * MouseEvent button that activates dragging; default: 0
-     *
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button
-     */
-    button?: number;
-    /**
-     * A boolean value; controlling the `enabled` state.
-     */
-    enabled: boolean;
-    /**
-     *  When defined any event targets that have a class in this list are allowed.
-     */
-    hasTargetClassList?: Iterable<string>;
-    /**
-     * When defined any event targets that have a class in this list are ignored.
-     */
-    ignoreTargetClassList?: Iterable<string>;
-    /**
-     *  A writable store that tracks "dragging" state.
-     */
-    storeDragging?: Writable<boolean>;
-    /**
-     * When true tweening is enabled; default: false
-     */
-    tween?: boolean;
-    /**
-     * Quick tween options.
-     */
-    tweenOptions?: AnimationAPI.QuickTweenOptions;
-  };
-  /**
-   * Provides an interface of the {@link draggable} action options support / Readable store to make updating / setting
-   * draggable options much easier. When subscribing to the options instance returned by {@link draggable.options} the
-   * Subscriber handler receives the entire instance.
-   */
-  interface DraggableOptionsStore extends Readable<DraggableOptionsStore> {
-    /**
-     * Tweening enabled state.
-     */
-    tween: boolean;
-    /**
-     * Quick tween options for easing function and duration.
-     */
-    tweenOptions: AnimationAPI.QuickTweenOptions;
-    /**
-     * @returns {number} Get tween duration.
-     */
-    get tweenDuration(): number;
-    /**
-     * @returns {EasingReference} Get easing function or easing function name.
-     */
-    get tweenEase(): EasingReference;
-    /**
-     * @param {number}   duration - Set tween duration.
-     */
-    set tweenDuration(duration: number);
-    /**
-     * @param {EasingReference} ease - Set easing function by name or direct function.
-     */
-    set tweenEase(ease: EasingReference);
-    /**
-     * Resets all options data to initial values.
-     */
-    reset(): void;
-    /**
-     * Resets tween enabled state to initial value.
-     */
-    resetTween(): void;
-    /**
-     * Resets tween options to initial values.
-     */
-    resetTweenOptions(): void;
-  }
-}
+  position: TJSPosition | TJSPosition.Positionable,
+): ActionReturn<TJSPosition | TJSPosition.Positionable>;
 
 /**
  * Provides an action to enable pointer dragging of an HTMLElement and invoke `position.set` on a given
  * {@link TJSPosition} instance provided. When the attached boolean store state changes the draggable
  * action is enabled or disabled.
  *
- * @param {HTMLElement}       node - The node associated with the action.
+ * @param node - The node associated with the action.
  *
- * @param {import('./types').Action.DraggableOptions} options - Draggable action options.
+ * @param options - Draggable action options.
  *
- * @returns {import('svelte/action').ActionReturn<Partial<import('./types').Action.DraggableOptions>>} Action lifecycle
- *          functions.
+ * @returns Action lifecycle functions.
  */
 declare function draggable(
   node: HTMLElement,
@@ -1997,35 +2209,12 @@ declare function draggable(
     hasTargetClassList,
     ignoreTargetClassList,
   }: Action.DraggableOptions,
-): svelte_action.ActionReturn<Partial<Action.DraggableOptions>>;
+): ActionReturn<Partial<Action.DraggableOptions>>;
 declare namespace draggable {
-  /**
-   * Define a function to get a DraggableOptionsStore instance.
-   *
-   * @param {({
-   *    tween?: boolean,
-   *    tweenOptions?: import('../animation/types').AnimationAPI.QuickTweenOptions
-   * })} options - Initial options for DraggableOptionsStore.
-   *
-   * @returns {import('./types').Action.DraggableOptionsStore} A new options instance.
-   */
-  function options(options: {
+  var options: (options: {
     tween?: boolean;
     tweenOptions?: AnimationAPI.QuickTweenOptions;
-  }): Action.DraggableOptionsStore;
+  }) => Action.DraggableOptionsStore;
 }
 
-export {
-  Action,
-  AnimationAPI,
-  type AnimationGroupAPI,
-  Data,
-  type PositionStateAPI,
-  System,
-  TJSPosition,
-  TJSPositionTypes,
-  TransformAPI,
-  ValidatorAPI,
-  applyPosition,
-  draggable,
-};
+export { TJSPosition, applyPosition, draggable };

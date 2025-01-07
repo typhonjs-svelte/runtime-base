@@ -142,19 +142,19 @@ declare class A11yHelper {
   /**
    * Convenience method to check if the given data is a valid focus source.
    *
-   * @param {Element | string}   data - Either an HTMLElement, SVGElement, or selector string.
+   * @param {Element | EventTarget | string}   data - Either an HTMLElement, SVGElement, or selector string.
    *
    * @returns {boolean} Is valid focus source.
    */
-  static isFocusSource(data: Element | string): boolean;
+  static isFocusSource(data: Element | EventTarget | string): boolean;
   /**
    * Tests if the given `element` is a Element node and has a `focus` method.
    *
-   * @param {Element}  element - Element to test for focus method.
+   * @param {unknown}  element - Element to test for focus method.
    *
-   * @returns {boolean} Whether the element has a focus method.
+   * @returns {element is FocusableElement} Whether the element has a focus method.
    */
-  static isFocusTarget(element: Element): boolean;
+  static isFocusTarget(element: unknown): element is FocusableElement;
   /**
    * Perform a parent traversal from the current active element attempting to match the given element to test whether
    * current active element is within that element.
