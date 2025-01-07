@@ -88,7 +88,7 @@ declare namespace Data {
     * ```
     *
     * Additional properties may be added that are not specified by {@link TJSPositionData} and are forwarded through
-    * {@link System.Validator.API.ValidationData} as the `rest` property allowing extra data to be sent to any
+    * {@link ValidatorAPI.ValidationData} as the `rest` property allowing extra data to be sent to any
     * custom validator.
     */
    export type TJSPositionDataRelative = Partial<{

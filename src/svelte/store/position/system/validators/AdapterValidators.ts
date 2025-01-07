@@ -2,6 +2,7 @@ import { isObject }           from '#runtime/util/object';
 
 import type { Unsubscriber }  from 'svelte/store';
 
+import type { ValidatorAPI }  from './types';
 import type { System }        from '../types';
 
 /**
@@ -29,7 +30,7 @@ import type { System }        from '../types';
  * position.validators.removeById(...);
  * ```
  */
-export class AdapterValidators implements System.Validator.API
+export class AdapterValidators implements ValidatorAPI
 {
    /**
     */
@@ -37,18 +38,18 @@ export class AdapterValidators implements System.Validator.API
 
    /**
     */
-   #validatorData: System.Validator.API.ValidatorData[];
+   #validatorData: ValidatorAPI.ValidatorData[];
 
    /**
     */
-   #mapUnsubscribe: Map<System.Validator.API.ValidatorFn, Unsubscriber> = new Map();
+   #mapUnsubscribe: Map<ValidatorAPI.ValidatorFn, Unsubscriber> = new Map();
 
    #updateFn: Function;
 
    /**
     * @returns Returns this and internal storage for validator adapter.
     */
-   static create(updateFn: Function): [AdapterValidators, System.Validator.API.ValidatorData[]]
+   static create(updateFn: Function): [AdapterValidators, ValidatorAPI.ValidatorData[]]
    {
       const validatorAPI = new AdapterValidators(updateFn);
       return [validatorAPI, validatorAPI.#validatorData];
@@ -90,7 +91,7 @@ export class AdapterValidators implements System.Validator.API
     *
     * @returns iterator.
     */
-   *[Symbol.iterator](): IterableIterator<System.Validator.API.ValidatorData>
+   *[Symbol.iterator](): IterableIterator<ValidatorAPI.ValidatorData>
    {
       if (this.#validatorData.length === 0) { return; }
 
@@ -105,8 +106,8 @@ export class AdapterValidators implements System.Validator.API
     *
     * @param validators - Validators to add.
     */
-   add(...validators: (System.Validator.API.ValidatorFn |
-    System.Validator.API.ValidatorData)[]): void
+   add(...validators: (ValidatorAPI.ValidatorFn |
+    ValidatorAPI.ValidatorData)[]): void
    {
       /**
        * Tracks the number of validators added that have subscriber functionality.
@@ -124,7 +125,7 @@ export class AdapterValidators implements System.Validator.API
 
          /**
           */
-         let data: System.Validator.API.ValidatorData | undefined = void 0;
+         let data: ValidatorAPI.ValidatorData | undefined = void 0;
 
          /**
           */
@@ -135,7 +136,7 @@ export class AdapterValidators implements System.Validator.API
             case 'function':
                data = {
                   id: void 0,
-                  validate: validator as System.Validator.API.ValidatorFn,
+                  validate: validator as ValidatorAPI.ValidatorFn,
                   weight: 1
                };
 
@@ -175,7 +176,7 @@ export class AdapterValidators implements System.Validator.API
 
          // Find the index to insert where data.weight is less than existing values weight.
          const index: number = this.#validatorData.findIndex(
-          (value: System.Validator.API.ValidatorData): boolean => data.weight! < value.weight!);
+          (value: ValidatorAPI.ValidatorData): boolean => data.weight! < value.weight!);
 
          // If an index was found insert at that location.
          if (index >= 0)
@@ -238,8 +239,8 @@ export class AdapterValidators implements System.Validator.API
     *
     * @param validators - Validators to remove.
     */
-   remove(...validators: (System.Validator.API.ValidatorFn |
-      System.Validator.API.ValidatorData)[]): void
+   remove(...validators: (ValidatorAPI.ValidatorFn |
+      ValidatorAPI.ValidatorData)[]): void
    {
       const length: number = this.#validatorData.length;
 
@@ -248,7 +249,7 @@ export class AdapterValidators implements System.Validator.API
       for (const data of validators)
       {
          // Handle the case that the validator may either be a function or a validator entry / object.
-         const actualValidator: System.Validator.API.ValidatorFn | undefined =
+         const actualValidator: ValidatorAPI.ValidatorFn | undefined =
           typeof data === 'function' ? data : isObject(data) ? data.validate : void 0;
 
          if (!actualValidator) { continue; }
@@ -280,7 +281,7 @@ export class AdapterValidators implements System.Validator.API
     *
     * @param callback - Callback function to evaluate each validator entry.
     */
-   removeBy(callback: System.Validator.API.RemoveByCallback): void
+   removeBy(callback: ValidatorAPI.RemoveByCallback): void
    {
       const length: number = this.#validatorData.length;
 

@@ -12,9 +12,10 @@ import type { TJSPosition }         from './TJSPosition';
 import type { Data }                from './data/types';
 import type { System }              from './system/types';
 import type { TransformAPI }        from './transform/types';
+import type { ValidatorAPI }        from './system/validators/types';
 
 /**
- * Provides the default {@link System.Initial.InitialSystem} implementations available.
+ * Provides the default {@link System.Initial.InitialSystem} implementations available from {@link TJSPosition.Initial}.
  */
 type DefaultInitial = {
    /**
@@ -30,7 +31,8 @@ type DefaultInitial = {
 }
 
 /**
- * Provides the default {@link System.Validator.ValidatorSystem} implementations available.
+ * Provides the default {@link System.Validator.ValidatorSystem} implementations available from
+ * {@link TJSPosition.Validators}.
  */
 type DefaultValidators = {
    /**
@@ -211,7 +213,7 @@ declare namespace Options {
       /**
        * Provides an initial validator or list of validators.
        */
-      validator: System.Validator.API.ValidatorOption;
+      validator: ValidatorAPI.ValidatorOption;
    }
 
    /**

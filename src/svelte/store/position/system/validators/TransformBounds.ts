@@ -6,6 +6,7 @@ import { TJSTransformData }   from '../../transform';
 import type { System }        from '../types';
 import type { Data }          from '../../data/types';
 import type { TransformAPI }  from '../../transform/types';
+import type { ValidatorAPI }  from './types';
 
 export class TransformBounds extends SystemBase
 {
@@ -19,7 +20,7 @@ export class TransformBounds extends SystemBase
     *
     * @returns Potentially adjusted position data.
     */
-   validate(valData: System.Validator.API.ValidationData): Data.TJSPositionData
+   validate(valData: ValidatorAPI.ValidationData): Data.TJSPositionData
    {
       // Early out if element is undefined or local enabled state is false.
       if (!this.enabled) { return valData.position; }

@@ -3,9 +3,8 @@ import type {
    Subscriber,
    Unsubscriber}              from 'svelte/store';
 
-import type { ValidatorAPI }  from './validators/types';
-
 import type { TJSPosition }   from '../TJSPosition';
+import type { ValidatorAPI }  from './validators/types';
 
 /**
  * Defines the extension points that are available to provide custom implementations for initial positioning and
@@ -83,8 +82,6 @@ declare namespace System {
     * interface.
     */
    export namespace Validator {
-      export { ValidatorAPI as API };
-
       /**
        * Provides a system to validate positional changes.
        */
@@ -97,7 +94,7 @@ declare namespace System {
           *
           * @returns {Data.TJSPositionData} Potentially adjusted position data.
           */
-         validate: System.Validator.API.ValidatorFn;
+         validate: ValidatorAPI.ValidatorFn;
 
          /**
           * An ID associated with this validator. Can be used to remove the validator; default: `undefined`.

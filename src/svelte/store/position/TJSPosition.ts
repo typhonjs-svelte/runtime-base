@@ -49,6 +49,8 @@ import type {
    AnimationAPI,
    AnimationGroupAPI }           from './animation/types';
 
+import type { ValidatorAPI }     from './system/validators/types';
+
 /**
  * Provides an advanced compound store for positioning elements dynamically including an optimized pipeline for updating
  * an associated element. Essential tweening / animation is supported in addition to a validation API to constrain
@@ -146,7 +148,7 @@ class TJSPosition implements TJSPosition.WritableExt
 
    /**
     */
-   #validatorData: System.Validator.API.ValidatorData[];
+   #validatorData: ValidatorAPI.ValidatorData[];
 
    /**
     */
@@ -357,8 +359,7 @@ class TJSPosition implements TJSPosition.WritableExt
          {
             /**
              */
-            const validatorFn: System.Validator.API.ValidatorFn |
-             System.Validator.API.ValidatorData = options.validator;
+            const validatorFn: ValidatorAPI.ValidatorFn | ValidatorAPI.ValidatorData = options.validator;
 
             this.validators.add(validatorFn);
          }
@@ -456,7 +457,7 @@ class TJSPosition implements TJSPosition.WritableExt
     *
     * @returns Validators API
     */
-   get validators(): System.Validator.API { return this.#validators; }
+   get validators(): ValidatorAPI { return this.#validators; }
 
    /**
     * Sets the enabled state.
@@ -1134,7 +1135,7 @@ class TJSPosition implements TJSPosition.WritableExt
    /**
     * Temporary data storage for `TJSPosition.#updatePosition`.
     */
-   static #validationData: System.Validator.API.ValidationData = Object.seal({
+   static #validationData: ValidatorAPI.ValidationData = Object.seal({
       position: void 0,
       parent: void 0,
       el: void 0,
@@ -1397,7 +1398,8 @@ declare namespace TJSPosition {
          StateAPI as State,
          System,
          Stores,
-         TransformAPI as Transform
+         TransformAPI as Transform,
+         ValidatorAPI as Validators
       }
    }
 
