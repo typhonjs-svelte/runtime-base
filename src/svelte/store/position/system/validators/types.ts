@@ -99,7 +99,7 @@ declare namespace ValidatorAPI {
       /**
        * Computed styles for the element.
        */
-      computed: CSSStyleDeclaration;
+      computed: CSSStyleDeclaration | undefined;
 
       /**
        * Current applies transforms / transform tracking & conversion utility.
@@ -129,12 +129,12 @@ declare namespace ValidatorAPI {
       /**
        * Current max height.
        */
-      maxHeight: number | undefined;
+      maxHeight: number | undefined | null;
 
       /**
        * Current max width.
        */
-      maxWidth: number | undefined;
+      maxWidth: number | undefined | null;
 
       /**
        * Current min height.

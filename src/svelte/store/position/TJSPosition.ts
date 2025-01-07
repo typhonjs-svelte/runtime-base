@@ -43,6 +43,8 @@ import type {
    Updater,
    Unsubscriber }                from 'svelte/store';
 
+import type { ResizeObserverData }  from '#runtime/util/dom/observer';
+
 import type { OptionsInternal }  from './types-local';
 
 import type {
@@ -102,7 +104,7 @@ class TJSPosition implements TJSPosition.WritableExt
    /**
     * The associated parent for positional data tracking. Used in validators.
     */
-   #parent: TJSPosition.PositionParent;
+   #parent: TJSPosition.PositionParent | undefined;
 
    /**
     * Stores the style attributes that changed on update.
@@ -321,10 +323,10 @@ class TJSPosition implements TJSPosition.WritableExt
       // When resize change from any applied `resizeObserver` action automatically set data for new validation run.
       // A resizeObserver prop should be set to true for ApplicationShell components or usage of resizeObserver action
       // to monitor for changes. This should only be used on elements that have 'auto' or `inherit` for width or height.
-      subscribeIgnoreFirst(this.#stores.resizeObserved, (resizeData): void =>
+      subscribeIgnoreFirst(this.#stores.resizeObserved, (resizeData: ResizeObserverData.ResizeObject): void =>
       {
-         const parent: TJSPosition.PositionParent = this.#parent;
-         const el: HTMLElement = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
+         const parent: TJSPosition.PositionParent | undefined = this.#parent;
+         const el: HTMLElement | undefined = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
 
          // Only invoke set if there is a target element and the resize data has a valid offset width & height.
          if (A11yHelper.isFocusTarget(el) && Number.isFinite(resizeData?.offsetWidth) &&
@@ -386,7 +388,7 @@ class TJSPosition implements TJSPosition.WritableExt
     *
     * @returns Dimension data.
     */
-   get dimension(): Readonly<{ width: number | 'auto' | 'inherit', height: number | 'auto' | 'inherit' }>
+   get dimension(): Readonly<{ width: number | 'auto' | 'inherit' | null, height: number | 'auto' | 'inherit' | null }>
    {
       return this.#updateElementData.dimensionData;
    }
@@ -426,7 +428,7 @@ class TJSPosition implements TJSPosition.WritableExt
     *
     * @returns The current position parent instance.
     */
-   get parent(): TJSPosition.PositionParent { return this.#parent; }
+   get parent(): TJSPosition.PositionParent | undefined { return this.#parent; }
 
    /**
     * Returns the state API.
@@ -750,8 +752,8 @@ class TJSPosition implements TJSPosition.WritableExt
    get(data: { [key: string]: any } = {}, options: TJSPosition.Options.Get = {}):
     Partial<Data.TJSPositionData>
    {
-      const keys: Iterable<keyof Data.TJSPositionData> = options?.keys;
-      const excludeKeys: Iterable<keyof Data.TJSPositionData> = options?.exclude;
+      const keys: Iterable<keyof Data.TJSPositionData> | undefined = options?.keys;
+      const excludeKeys: Iterable<keyof Data.TJSPositionData> | undefined = options?.exclude;
       const nullable: boolean = options?.nullable ?? true;
       const numeric: boolean = options?.numeric ?? false;
 
@@ -834,7 +836,7 @@ class TJSPosition implements TJSPosition.WritableExt
     *
     * @returns This TJSPosition instance.
     */
-   set(position: Data.TJSPositionDataRelative = {}, options: TJSPosition.Options.Set = {}): this
+   set(position: Data.TJSPositionDataRelative | null = {}, options: TJSPosition.Options.Set = {}): this
    {
       if (!isObject(position)) { throw new TypeError(`TJSPosition - set error: 'position' is not an object.`); }
 
@@ -1062,7 +1064,7 @@ class TJSPosition implements TJSPosition.WritableExt
 
       if (el)
       {
-         const defaultData: Data.TJSPositionDataExtra = this.#state.getDefault();
+         const defaultData: Data.TJSPositionDataExtra | undefined = this.#state.getDefault();
 
          // Set default data after first set operation that has a target element.
          if (!isObject(defaultData)) { this.#state.save({ name: '#defaultData', ...Object.assign({}, data) }); }
@@ -1150,7 +1152,7 @@ class TJSPosition implements TJSPosition.WritableExt
       minHeight: void 0,
       minWidth: void 0,
       rest: void 0
-   });
+   } as unknown as ValidatorAPI.ValidationData);
 
    /**
     * @param data -
@@ -1175,7 +1177,8 @@ class TJSPosition implements TJSPosition.WritableExt
    }: Data.TJSPositionData, parent: TJSPosition.PositionParent, el: HTMLElement,
                    styleCache: TJSPositionStyleCache): TJSPositionData | null
    {
-      let currentPosition: TJSPositionData = TJSPositionDataUtil.copyData(this.#data, TJSPosition.#updateDataCopy);
+      let currentPosition: TJSPositionData | null = TJSPositionDataUtil.copyData(this.#data,
+       TJSPosition.#updateDataCopy);
 
       // Update width if an explicit value is passed, or if no width value is set on the element.
       if (width !== void 0 || el.style.width === '')
@@ -1194,7 +1197,8 @@ class TJSPosition implements TJSPosition.WritableExt
          }
          else
          {
-            const newWidth: number | 'auto' | 'inherit' = MathGuard.isFinite(width) ? width : currentPosition.width;
+            const newWidth: number | 'auto' | 'inherit' | null = MathGuard.isFinite(width) ? width :
+             currentPosition.width;
 
             currentPosition.width = width = MathGuard.isFinite(newWidth) ? Math.round(newWidth) :
              styleCache.offsetWidth;
@@ -1222,7 +1226,8 @@ class TJSPosition implements TJSPosition.WritableExt
          }
          else
          {
-            const newHeight: number | 'auto' | 'inherit' = MathGuard.isFinite(height) ? height : currentPosition.height;
+            const newHeight: number | 'auto' | 'inherit' | null = MathGuard.isFinite(height) ? height :
+             currentPosition.height;
 
             currentPosition.height = height = MathGuard.isFinite(newHeight) ? Math.round(newHeight) :
              styleCache.offsetHeight;
@@ -1257,24 +1262,24 @@ class TJSPosition implements TJSPosition.WritableExt
           this.#options.initial.getTop(height as number) : 0;
       }
 
-      if (Number.isFinite(maxHeight) || maxHeight === null)
+      if (MathGuard.isFiniteOrNull(maxHeight))
       {
-         currentPosition.maxHeight = Number.isFinite(maxHeight) ? Math.round(maxHeight) : null;
+         currentPosition.maxHeight = MathGuard.isFinite(maxHeight) ? Math.round(maxHeight) : null;
       }
 
-      if (Number.isFinite(maxWidth) || maxWidth === null)
+      if (MathGuard.isFiniteOrNull(maxWidth))
       {
-         currentPosition.maxWidth = Number.isFinite(maxWidth) ? Math.round(maxWidth) : null;
+         currentPosition.maxWidth = MathGuard.isFinite(maxWidth) ? Math.round(maxWidth) : null;
       }
 
-      if (Number.isFinite(minHeight) || minHeight === null)
+      if (MathGuard.isFiniteOrNull(minHeight))
       {
-         currentPosition.minHeight = Number.isFinite(minHeight) ? Math.round(minHeight) : null;
+         currentPosition.minHeight = MathGuard.isFinite(minHeight) ? Math.round(minHeight) : null;
       }
 
-      if (Number.isFinite(minWidth) || minWidth === null)
+      if (MathGuard.isFiniteOrNull(minWidth))
       {
-         currentPosition.minWidth = Number.isFinite(minWidth) ? Math.round(minWidth) : null;
+         currentPosition.minWidth = MathGuard.isFinite(minWidth) ? Math.round(minWidth) : null;
       }
 
       // Update rotate X/Y/Z, scale, z-index
@@ -1292,9 +1297,9 @@ class TJSPosition implements TJSPosition.WritableExt
          currentPosition.rotateZ = rotation;
       }
 
-      if (Number.isFinite(translateX) || translateX === null) { currentPosition.translateX = translateX; }
-      if (Number.isFinite(translateY) || translateY === null) { currentPosition.translateY = translateY; }
-      if (Number.isFinite(translateZ) || translateZ === null) { currentPosition.translateZ = translateZ; }
+      if (MathGuard.isFiniteOrNull(translateX)) { currentPosition.translateX = translateX; }
+      if (MathGuard.isFiniteOrNull(translateY)) { currentPosition.translateY = translateY; }
+      if (MathGuard.isFiniteOrNull(translateZ)) { currentPosition.translateZ = translateZ; }
 
       if (Number.isFinite(scale) || scale === null)
       {
@@ -1303,7 +1308,7 @@ class TJSPosition implements TJSPosition.WritableExt
 
       if (typeof transformOrigin === 'string' || transformOrigin === null)
       {
-         currentPosition.transformOrigin = TJSTransforms.transformOrigins.includes(transformOrigin) ? transformOrigin :
+         currentPosition.transformOrigin = TJSTransforms.transformOrigins.includes(transformOrigin!) ? transformOrigin :
           null;
       }
 
