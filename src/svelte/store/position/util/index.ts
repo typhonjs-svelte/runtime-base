@@ -1,2 +1,2 @@
-export * from './MathGuard';
+export * from './NumberGuard';
 export * from './TJSPositionStyleCache';

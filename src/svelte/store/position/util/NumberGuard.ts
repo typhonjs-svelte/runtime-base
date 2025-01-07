@@ -1,7 +1,8 @@
 /**
  * Provides type guards for `Number`.
  */
-export class MathGuard {
+export class NumberGuard
+{
    private constructor() {}
 
    static isFinite(value: unknown): value is number {

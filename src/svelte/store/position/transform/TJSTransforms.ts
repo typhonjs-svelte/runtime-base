@@ -2,7 +2,7 @@ import { degToRad }              from '#runtime/math/util';
 import { Mat4, Vec3 }            from '#runtime/math/gl-matrix';
 
 import { TJSTransformData }      from './TJSTransformData';
-import { MathGuard }             from '../util';
+import { NumberGuard }             from '../util';
 
 import type {
    Mat4Like,
@@ -387,8 +387,8 @@ export class TJSTransforms implements TransformAPI
       position.top! += valOffsetTop;
       position.left! += valOffsetLeft;
 
-      const width: number = MathGuard.isFinite(position.width) ? position.width : valWidth;
-      const height: number = MathGuard.isFinite(position.height) ? position.height : valHeight;
+      const width: number = NumberGuard.isFinite(position.width) ? position.width : valWidth;
+      const height: number = NumberGuard.isFinite(position.height) ? position.height : valHeight;
 
       const rect: Vec3[] = output.corners;
 
@@ -753,7 +753,7 @@ export class TJSTransforms implements TransformAPI
          {
             const value: any = data[key];
 
-            if (MathGuard.isFinite(value))
+            if (NumberGuard.isFinite(value))
             {
                this.#data[key] = value;
             }
