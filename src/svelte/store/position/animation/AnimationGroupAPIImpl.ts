@@ -769,8 +769,7 @@ class AnimationGroupAPIImpl
     */
    static quickTo(positionGroup: TJSPosition.PositionGroup, keys: Iterable<AnimationAPI.AnimationKey>,
     options?: AnimationAPI.QuickTweenOptions |
-     AnimationAPI.GroupQuickTweenOptionsCallback): AnimationAPI.GroupQuickToCallback |
-      undefined
+     AnimationAPI.GroupQuickTweenOptionsCallback): AnimationAPI.GroupQuickToCallback
    {
       if (!isIterable(keys))
       {

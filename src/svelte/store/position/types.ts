@@ -146,12 +146,12 @@ interface Stores {
    /**
     * Readable store for dimension data.
     */
-   dimension: Readable<{ width: number | 'auto' | 'inherit', height: number | 'auto' | 'inherit' }>;
+   dimension: Readable<{ width: number | 'auto' | 'inherit' | null, height: number | 'auto' | 'inherit' | null }>;
 
    /**
     * Readable store for current element.
     */
-   element: Readable<HTMLElement>;
+   element: Readable<HTMLElement | undefined>;
 
    /**
     * Readable store for `contentHeight`.
