@@ -1,6 +1,6 @@
 import { TJSPositionData }    from './TJSPositionData';
 
-import type { DataAPI }       from './types';
+import type { Data }       from './types';
 import type { AnimationAPI }  from '../animation/types';
 
 /**
@@ -64,8 +64,8 @@ export class TJSPositionDataUtil
     *
     * @returns The target instance with all TJSPositionData fields.
     */
-   static copyData(source: Partial<DataAPI.TJSPositionData>,
-    target: DataAPI.TJSPositionData = new TJSPositionData()): TJSPositionData
+   static copyData(source: Partial<Data.TJSPositionData>,
+    target: Data.TJSPositionData = new TJSPositionData()): TJSPositionData
    {
       target.height = source.height ?? null;
       target.left = source.left ?? null;
@@ -111,7 +111,7 @@ export class TJSPositionDataUtil
     *
     * @returns Data at key or numeric default.
     */
-   static getDataOrDefault(data: { [key: string]: any }, key: keyof DataAPI.TJSPositionData,
+   static getDataOrDefault(data: { [key: string]: any }, key: keyof Data.TJSPositionData,
     aliased: boolean = false): number
    {
       if (aliased) { key = this.#animateKeyAliases.get(key) ?? key; }

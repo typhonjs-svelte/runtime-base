@@ -4,7 +4,7 @@ import { TJSPositionDataUtil }   from '../TJSPositionDataUtil';
 
 import type { StringMatch }      from './types-local';
 
-import type { DataAPI }             from '../types';
+import type { Data }             from '../types';
 import type { AnimationAPI }     from '../../animation/types';
 
 /**
@@ -64,8 +64,8 @@ export class ConvertStringData
     *
     * @returns Converted data.
     */
-   static process(data: DataAPI.TJSPositionDataRelative,
-                  position: Partial<DataAPI.TJSPositionData>, el: Element): DataAPI.TJSPositionData
+   static process(data: Data.TJSPositionDataRelative,
+                  position: Partial<Data.TJSPositionData>, el: Element): Data.TJSPositionData
    {
       // Used in `%` calculations. The first `%` conversion that requires parent element height and width will attempt
       // to cache the parent element client height & width of the given element.
@@ -169,7 +169,7 @@ export class ConvertStringData
          }
       }
 
-      return data as DataAPI.TJSPositionData;
+      return data as Data.TJSPositionData;
    }
 
    // Internal implementation ----------------------------------------------------------------------------------------
@@ -189,7 +189,7 @@ export class ConvertStringData
     * @returns Adjustment successful.
     */
    static #applyResultsValue(key: AnimationAPI.AnimationKey, current: number,
-                             data: DataAPI.TJSPositionDataRelative, results: StringMatch): boolean
+                             data: Data.TJSPositionDataRelative, results: StringMatch): boolean
    {
       if (!results.operation)
       {
@@ -241,7 +241,7 @@ export class ConvertStringData
     * @returns Adjustment successful.
     */
    static #handlePercent(key: AnimationAPI.AnimationKey, current: number,
-                         data: DataAPI.TJSPositionDataRelative, position: Partial<DataAPI.TJSPositionData>,
+                         data: Data.TJSPositionDataRelative, position: Partial<Data.TJSPositionData>,
                          el: Element, results: StringMatch, parentClientHeight: number, parentClientWidth: number): boolean
    {
       switch (key)
@@ -297,7 +297,7 @@ export class ConvertStringData
     * @returns Adjustment successful.
     */
    static #handleRelativePercent(key: AnimationAPI.AnimationKey, current: number,
-                                 data: DataAPI.TJSPositionDataRelative, position: Partial<DataAPI.TJSPositionData>,
+                                 data: Data.TJSPositionDataRelative, position: Partial<Data.TJSPositionData>,
                                  el: Element, results: StringMatch): boolean
    {
       // Normalize percentage.
@@ -348,7 +348,7 @@ export class ConvertStringData
     * @returns Adjustment successful.
     */
    static #handleRotationRadTurn(key: AnimationAPI.AnimationKey, current: number,
-                                 data: DataAPI.TJSPositionDataRelative, position: Partial<DataAPI.TJSPositionData>,
+                                 data: Data.TJSPositionDataRelative, position: Partial<Data.TJSPositionData>,
                                  el: Element, results: StringMatch): boolean
    {
       // Convert radians / turn into degrees.

@@ -2,7 +2,7 @@ import type { Writable }           from 'svelte/store';
 
 import type { Mat4, Vec3 }    from '#runtime/math/gl-matrix';
 
-import type { DataAPI }          from '../data/types';
+import type { Data }          from '../data/types';
 
 interface TransformAPI
 {
@@ -125,7 +125,7 @@ interface TransformAPI
     *
     * @returns The output TransformAPI.Data instance.
     */
-   getData(position: DataAPI.TJSPositionData, output?: TransformAPI.TransformData,
+   getData(position: Data.TJSPositionData, output?: TransformAPI.TransformData,
            validationData?: object): TransformAPI.TransformData;
 
    /**
@@ -135,7 +135,7 @@ interface TransformAPI
     * then the stored local transform order is applied then all remaining transform keys are applied. This allows the
     * construction of a transform matrix in advance of setting local data and is useful in collision detection.
     *
-    * @param {DataAPI.TJSPositionData}   [data] - TJSPositionData instance or local transform data.
+    * @param {Data.TJSPositionData}   [data] - TJSPositionData instance or local transform data.
     *
     * @param {Mat4}  [output] - The output mat4 instance.
     *
@@ -153,7 +153,7 @@ interface TransformAPI
     * then the stored local transform order is applied then all remaining transform keys are applied. This allows the
     * construction of a transform matrix in advance of setting local data and is useful in collision detection.
     *
-    * @param {DataAPI.TJSPositionData}   [data] - TJSPositionData instance or local transform data.
+    * @param {Data.TJSPositionData}   [data] - TJSPositionData instance or local transform data.
     *
     * @param {Mat4}  [output] - The output mat4 instance.
     *
@@ -164,7 +164,7 @@ interface TransformAPI
    /**
     * Tests an object if it contains transform keys and the values are finite numbers.
     *
-    * @param {DataAPI.TJSPositionData} data - An object to test for transform data.
+    * @param {Data.TJSPositionData} data - An object to test for transform data.
     *
     * @returns {boolean} Whether the given TJSPositionData has transforms.
     */

@@ -125,7 +125,7 @@ class TJSPosition implements TJSPosition.WritableExt
    /**
     * Stores the subscribers.
     */
-   #subscribers: Subscriber<DataAPI.TJSPositionData>[] = [];
+   #subscribers: Subscriber<Data.TJSPositionData>[] = [];
 
    /**
     */
@@ -160,7 +160,7 @@ class TJSPosition implements TJSPosition.WritableExt
    /**
     * @returns TJSPositionData constructor.
     */
-   static get Data(): DataAPI.TJSPositionDataConstructor { return TJSPositionData; }
+   static get Data(): Data.TJSPositionDataConstructor { return TJSPositionData; }
 
    /**
     * @returns TJSPosition default initial systems.
@@ -206,8 +206,8 @@ class TJSPosition implements TJSPosition.WritableExt
     *
     * @returns The target instance with all TJSPositionData fields.
     */
-   static copyData(source: Partial<DataAPI.TJSPositionData>, target: DataAPI.TJSPositionData):
-    DataAPI.TJSPositionData
+   static copyData(source: Partial<Data.TJSPositionData>, target: Data.TJSPositionData):
+    Data.TJSPositionData
    {
       return TJSPositionDataUtil.copyData(source, target);
    }
@@ -747,10 +747,10 @@ class TJSPosition implements TJSPosition.WritableExt
     * @returns Passed in object with current position data.
     */
    get(data: { [key: string]: any } = {}, options: TJSPosition.Options.Get = {}):
-    Partial<DataAPI.TJSPositionData>
+    Partial<Data.TJSPositionData>
    {
-      const keys: Iterable<keyof DataAPI.TJSPositionData> = options?.keys;
-      const excludeKeys: Iterable<keyof DataAPI.TJSPositionData> = options?.exclude;
+      const keys: Iterable<keyof Data.TJSPositionData> = options?.keys;
+      const excludeKeys: Iterable<keyof Data.TJSPositionData> = options?.exclude;
       const nullable: boolean = options?.nullable ?? true;
       const numeric: boolean = options?.numeric ?? false;
 
@@ -801,7 +801,7 @@ class TJSPosition implements TJSPosition.WritableExt
    /**
     * @returns Current position data.
     */
-   toJSON(): DataAPI.TJSPositionData
+   toJSON(): Data.TJSPositionData
    {
       return Object.assign({}, this.#data);
    }
@@ -833,7 +833,7 @@ class TJSPosition implements TJSPosition.WritableExt
     *
     * @returns This TJSPosition instance.
     */
-   set(position: DataAPI.TJSPositionDataRelative = {}, options: TJSPosition.Options.Set = {}): this
+   set(position: Data.TJSPositionDataRelative = {}, options: TJSPosition.Options.Set = {}): this
    {
       if (!isObject(position)) { throw new TypeError(`TJSPosition - set error: 'position' is not an object.`); }
 
@@ -855,7 +855,7 @@ class TJSPosition implements TJSPosition.WritableExt
 
       const immediateElementUpdate = options?.immediateElementUpdate ?? false;
 
-      const data: DataAPI.TJSPositionData = this.#data;
+      const data: Data.TJSPositionData = this.#data;
       const transforms: TransformAPI = this.#transforms;
 
       // Find the target HTML element and verify that it is connected storing it in `el`.
@@ -1061,7 +1061,7 @@ class TJSPosition implements TJSPosition.WritableExt
 
       if (el)
       {
-         const defaultData: DataAPI.TJSPositionDataExtra = this.#state.getDefault();
+         const defaultData: Data.TJSPositionDataExtra = this.#state.getDefault();
 
          // Set default data after first set operation that has a target element.
          if (!isObject(defaultData)) { this.#state.save({ name: '#defaultData', ...Object.assign({}, data) }); }
@@ -1094,7 +1094,7 @@ class TJSPosition implements TJSPosition.WritableExt
     *
     * @returns Unsubscribe function.
     */
-   subscribe(handler: Subscriber<Readonly<DataAPI.TJSPositionData>>): Unsubscriber
+   subscribe(handler: Subscriber<Readonly<Data.TJSPositionData>>): Unsubscriber
    {
       this.#subscribers.push(handler); // add handler to the array of subscribers
 
@@ -1115,9 +1115,9 @@ class TJSPosition implements TJSPosition.WritableExt
     *
     * @param updater -
     */
-   update(updater: Updater<DataAPI.TJSPositionDataRelative>): void
+   update(updater: Updater<Data.TJSPositionDataRelative>): void
    {
-      const result: DataAPI.TJSPositionDataRelative = updater(this.get());
+      const result: Data.TJSPositionDataRelative = updater(this.get());
 
       if (!isObject(result)) { throw new TypeError(`'result' of 'updater' is not an object.`); }
 
@@ -1171,7 +1171,7 @@ class TJSPosition implements TJSPosition.WritableExt
       rotation,
 
       ...rest
-   }: DataAPI.TJSPositionData, parent: TJSPosition.PositionParent, el: HTMLElement,
+   }: Data.TJSPositionData, parent: TJSPosition.PositionParent, el: HTMLElement,
                    styleCache: TJSPositionStyleCache): TJSPositionData | null
    {
       let currentPosition: TJSPositionData = TJSPositionDataUtil.copyData(this.#data, TJSPosition.#updateDataCopy);
@@ -1375,7 +1375,7 @@ import type { ResizeObserverData }  from '#runtime/util/dom/observer';
 
 import type { Action }              from './action/types';
 
-import type { DataAPI }                from './data/types';
+import type { Data }                from './data/types';
 
 import type { StateAPI }            from './state/types';
 
@@ -1390,7 +1390,9 @@ declare namespace TJSPosition {
       export {
          AnimationAPI as Animation,
          AnimationGroupAPI as AnimationGroup,
+         Data,
          StateAPI as State,
+         System,
          TransformAPI as Transform
       }
 
@@ -1570,8 +1572,6 @@ declare namespace TJSPosition {
       }
    }
 
-   export { DataAPI as Data };
-
    export namespace Options {
       /**
        * Defines the unique options available for setting in the constructor of {@link TJSPosition}.
@@ -1602,7 +1602,7 @@ declare namespace TJSPosition {
        * Provides the complete options object including unique {@link TJSPosition} options in addition to positional
        * data that is available to set in the constructor.
        */
-      export type ConfigAll = Partial<Config & DataAPI.TJSPositionDataExtra>;
+      export type ConfigAll = Partial<Config & Data.TJSPositionDataExtra>;
 
       /**
        * Options for {@link TJSPosition.get}.
@@ -1611,12 +1611,12 @@ declare namespace TJSPosition {
          /**
           * When provided only these keys are copied.
           */
-         keys?: Iterable<keyof DataAPI.TJSPositionData>;
+         keys?: Iterable<keyof Data.TJSPositionData>;
 
          /**
           * When provided these keys are excluded.
           */
-         exclude?: Iterable<keyof DataAPI.TJSPositionData>;
+         exclude?: Iterable<keyof Data.TJSPositionData>;
 
          /**
           * When true all `nullable` values are included.
@@ -1642,8 +1642,6 @@ declare namespace TJSPosition {
       }
    }
 
-   export { System };
-
    // Local declarations ---------------------------------------------------------------------------------------------
 
    /**
@@ -1667,9 +1665,9 @@ declare namespace TJSPosition {
    /**
     * Provides an overloaded {@link Writable} store interface for {@link TJSPosition.set}.
     */
-   export interface WritableExt extends Writable<DataAPI.TJSPositionDataRelative>
+   export interface WritableExt extends Writable<Data.TJSPositionDataRelative>
    {
-      set(this: void, value: DataAPI.TJSPositionDataRelative, options?: Options.Set): TJSPosition;
+      set(this: void, value: Data.TJSPositionDataRelative, options?: Options.Set): TJSPosition;
    }
 
    /**

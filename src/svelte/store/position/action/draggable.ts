@@ -19,7 +19,7 @@ import type { TJSPosition }      from '../TJSPosition';
 import type { Action }           from './types';
 
 import type { AnimationAPI }     from '../animation/types';
-import type { DataAPI }          from '../data/types';
+import type { Data }          from '../data/types';
 
 /**
  * Provides an action to enable pointer dragging of an HTMLElement and invoke `position.set` on a given
@@ -59,7 +59,7 @@ function draggable(node: HTMLElement, { position, enabled = true, button = 0, st
    /**
     * Duplicate the app / Positionable starting position to track differences.
     */
-   let initialPosition: Partial<DataAPI.TJSPositionData> = null;
+   let initialPosition: Partial<Data.TJSPositionData> = null;
 
    /**
     * Stores the initial X / Y on drag down.

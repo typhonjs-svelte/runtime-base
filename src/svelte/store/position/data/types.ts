@@ -4,7 +4,7 @@ import type { AnimationAPI } from '../animation/types';
 /**
  * Defines the data objects / interfaces used by various TJSPosition APIs.
  */
-declare namespace DataAPI {
+declare namespace Data {
    /**
     * Defines the primary TJSPosition data object used by various TJSPosition APIs. To externally create a new instance
     * use the static accessor `TJSPosition.Data`.
@@ -62,7 +62,7 @@ declare namespace DataAPI {
    type TransformKeys = 'rotateX' | 'rotateY' | 'rotateZ' | 'scale' | 'translateX' | 'translateY' | 'translateZ';
 
    /**
-    * Defines an extension to {@link DataAPI.TJSPositionData} where each animatable property defined by
+    * Defines an extension to {@link Data.TJSPositionData} where each animatable property defined by
     * {@link AnimationAPI.AnimationKey} can also be a string. Relative adjustments to animatable properties should be
     * a string the form of '+=', '-=', or '*=' and float / numeric value. IE '+=0.2'. {@link TJSPosition.set} will
     * apply the `addition`, `subtraction`, or `multiplication` operation specified against the current value of the
@@ -133,4 +133,4 @@ declare namespace DataAPI {
    }
 }
 
-export { DataAPI };
+export { Data };

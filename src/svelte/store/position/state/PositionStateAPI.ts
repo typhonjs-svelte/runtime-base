@@ -6,7 +6,7 @@ import type { TJSPosition }      from '../TJSPosition';
 
 import type { StateAPI }         from './types';
 
-import type { DataAPI }             from '../data/types';
+import type { Data }             from '../data/types';
 import type { TransformAPI }     from '../transform/types';
 import type { PositionGroup }    from '../types';
 
@@ -17,11 +17,11 @@ export class PositionStateAPI implements StateAPI
 {
    /**
     */
-   readonly #data: DataAPI.TJSPositionData;
+   readonly #data: Data.TJSPositionData;
 
    /**
     */
-   #dataSaved: Map<string, DataAPI.TJSPositionDataExtra> = new Map();
+   #dataSaved: Map<string, Data.TJSPositionDataExtra> = new Map();
 
    /**
     */
@@ -31,7 +31,7 @@ export class PositionStateAPI implements StateAPI
     */
    #transforms: TransformAPI;
 
-   constructor(position: TJSPosition, data: DataAPI.TJSPositionData, transforms: TransformAPI)
+   constructor(position: TJSPosition, data: Data.TJSPositionData, transforms: TransformAPI)
    {
       this.#position = position;
       this.#data = data;
@@ -60,7 +60,7 @@ export class PositionStateAPI implements StateAPI
     *
     * @returns Any saved position data.
     */
-   get({ name }: { name: string }): DataAPI.TJSPositionDataExtra | undefined
+   get({ name }: { name: string }): Data.TJSPositionDataExtra | undefined
    {
       if (typeof name !== 'string') { throw new TypeError(`TJSPosition - get error: 'name' is not a string.`); }
 
@@ -72,7 +72,7 @@ export class PositionStateAPI implements StateAPI
     *
     * @returns Any saved default position data.
     */
-   getDefault(): DataAPI.TJSPositionDataExtra | undefined
+   getDefault(): Data.TJSPositionDataExtra | undefined
    {
       return this.#dataSaved.get('#defaultData');
    }
@@ -94,7 +94,7 @@ export class PositionStateAPI implements StateAPI
     *
     * @returns Any saved position data.
     */
-   remove({ name }: { name: string }): DataAPI.TJSPositionDataExtra | undefined
+   remove({ name }: { name: string }): Data.TJSPositionDataExtra | undefined
    {
       if (typeof name !== 'string') { throw new TypeError(`TJSPosition - remove: 'name' is not a string.`); }
 
@@ -175,8 +175,8 @@ export class PositionStateAPI implements StateAPI
     * @returns Any saved position data.
     */
    restore({ name, remove = false, properties, silent = false, async = false, animateTo = false, duration = 0.1,
-    ease = 'linear' }: StateAPI.Options.Restore): DataAPI.TJSPositionDataExtra |
-     Promise<DataAPI.TJSPositionDataExtra | undefined>  | undefined
+    ease = 'linear' }: StateAPI.Options.Restore): Data.TJSPositionDataExtra |
+     Promise<Data.TJSPositionDataExtra | undefined>  | undefined
    {
       if (typeof name !== 'string') { throw new TypeError(`TJSPosition - restore error: 'name' is not a string.`); }
 
@@ -243,7 +243,7 @@ export class PositionStateAPI implements StateAPI
     * @returns Current position data plus any extra data stored.
     */
    save({ name, ...extra }: StateAPI.Options.Save, optionsGet?: TJSPosition.Options.Get):
-    DataAPI.TJSPositionDataExtra
+    Data.TJSPositionDataExtra
    {
       if (typeof name !== 'string') { throw new TypeError(`TJSPosition - save error: 'name' is not a string.`); }
 

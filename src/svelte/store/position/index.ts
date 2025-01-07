@@ -9,5 +9,3 @@
 
 export * from './action';
 export * from './TJSPosition';
-
-export * from './types';

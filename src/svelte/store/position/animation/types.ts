@@ -4,7 +4,7 @@ import type { BasicAnimation }            from '#runtime/util/animate';
 
 import type { TJSPosition }               from '../TJSPosition';
 
-import type { DataAPI }                   from '../data/types';
+import type { Data }                   from '../data/types';
 import type { TransformAPI }              from '../transform/types';
 
 interface AnimationAPI
@@ -37,7 +37,7 @@ interface AnimationAPI
     *
     * @returns A control object that can cancel animation and provides a `finished` Promise.
     */
-   from(fromData: DataAPI.TJSPositionDataRelative, options?: AnimationAPI.TweenOptions): BasicAnimation;
+   from(fromData: Data.TJSPositionDataRelative, options?: AnimationAPI.TweenOptions): BasicAnimation;
 
    /**
     * Provides a tween from given position data to the given position.
@@ -50,7 +50,7 @@ interface AnimationAPI
     *
     * @returns A control object that can cancel animation and provides a `finished` Promise.
     */
-   fromTo(fromData: DataAPI.TJSPositionDataRelative, toData: DataAPI.TJSPositionDataRelative,
+   fromTo(fromData: Data.TJSPositionDataRelative, toData: Data.TJSPositionDataRelative,
           options?: AnimationAPI.TweenOptions): BasicAnimation;
 
    /**
@@ -62,7 +62,7 @@ interface AnimationAPI
     *
     * @returns A control object that can cancel animation and provides a `finished` Promise.
     */
-   to(toData: DataAPI.TJSPositionDataRelative, options?: AnimationAPI.TweenOptions): BasicAnimation;
+   to(toData: Data.TJSPositionDataRelative, options?: AnimationAPI.TweenOptions): BasicAnimation;
 
    /**
     * Returns a function that provides an optimized way to constantly update a to-tween.
@@ -145,7 +145,7 @@ interface AnimationGroupAPI
     *
     * @returns {BasicAnimation} Basic animation control.
     */
-   from(positionGroup: TJSPosition.PositionGroup, fromData: DataAPI.TJSPositionDataRelative |
+   from(positionGroup: TJSPosition.PositionGroup, fromData: Data.TJSPositionDataRelative |
     AnimationAPI.GroupDataCallback, options?: AnimationAPI.TweenOptions | AnimationAPI.GroupTweenOptionsCallback):
      BasicAnimation;
 
@@ -165,8 +165,8 @@ interface AnimationGroupAPI
     *
     * @returns Basic animation control.
     */
-   fromTo(positionGroup: TJSPosition.PositionGroup, fromData: DataAPI.TJSPositionDataRelative |
-    AnimationAPI.GroupDataCallback, toData: DataAPI.TJSPositionDataRelative | AnimationAPI.GroupDataCallback,
+   fromTo(positionGroup: TJSPosition.PositionGroup, fromData: Data.TJSPositionDataRelative |
+    AnimationAPI.GroupDataCallback, toData: Data.TJSPositionDataRelative | AnimationAPI.GroupDataCallback,
      options?: AnimationAPI.TweenOptions | AnimationAPI.GroupTweenOptionsCallback): BasicAnimation;
 
    /**
@@ -182,7 +182,7 @@ interface AnimationGroupAPI
     *
     * @returns Basic animation control.
     */
-   to(positionGroup: TJSPosition.PositionGroup, toData: DataAPI.TJSPositionDataRelative |
+   to(positionGroup: TJSPosition.PositionGroup, toData: Data.TJSPositionDataRelative |
     AnimationAPI.GroupDataCallback, options?: AnimationAPI.TweenOptions | AnimationAPI.GroupTweenOptionsCallback):
      BasicAnimation;
 
@@ -217,7 +217,7 @@ declare namespace AnimationAPI {
     'rotation';
 
    /**
-    * Options passed to any group animation callbacks for {@link DataAPI.TJSPositionDataRelative} data or
+    * Options passed to any group animation callbacks for {@link Data.TJSPositionDataRelative} data or
     * {@link TweenOptions}.
     */
    export type GroupCallbackOptions = {
@@ -252,7 +252,7 @@ declare namespace AnimationAPI {
        *          positionable instance.  When null or undefined is returned the current position / positionable is
        *          removed from the animation.
        */
-      (options?: GroupCallbackOptions): DataAPI.TJSPositionDataRelative | null | undefined;
+      (options?: GroupCallbackOptions): Data.TJSPositionDataRelative | null | undefined;
    }
 
    /**

@@ -5,7 +5,7 @@ import type { EasingFunction }      from '#runtime/svelte/easing';
 
 import type { AnimationControl }    from './AnimationControl';
 
-import type { TJSPosition }         from '../TJSPosition.js';
+import type { TJSPosition }         from '../TJSPosition';
 
 import type { AnimationAPI }        from './types';
 import type { TransformAPI }        from '../transform/types';

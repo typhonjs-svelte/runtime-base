@@ -21,7 +21,7 @@ import type { BasicAnimation }   from '#runtime/util/animate';
 import type { AnimationAPI }     from './types';
 
 import type { TJSPosition }      from '../TJSPosition';
-import type { DataAPI }             from '../data/types';
+import type { Data }             from '../data/types';
 
 /**
  */
@@ -31,7 +31,7 @@ export class AnimationAPIImpl implements AnimationAPI
 
    /**
     */
-   readonly #data: DataAPI.TJSPositionData;
+   readonly #data: Data.TJSPositionData;
 
    readonly #position: TJSPosition;
 
@@ -40,7 +40,7 @@ export class AnimationAPIImpl implements AnimationAPI
     *
     * @param data -
     */
-   constructor(position: TJSPosition, data: DataAPI.TJSPositionData)
+   constructor(position: TJSPosition, data: Data.TJSPositionData)
    {
       this.#position = position;
       this.#data = data;
@@ -85,7 +85,7 @@ export class AnimationAPIImpl implements AnimationAPI
     *
     * @returns A control object that can cancel animation and provides a `finished` Promise.
     */
-   from(fromData: DataAPI.TJSPositionDataRelative, options: AnimationAPI.TweenOptions):
+   from(fromData: Data.TJSPositionDataRelative, options: AnimationAPI.TweenOptions):
     BasicAnimation
    {
       const animationControl: AnimationControl = AnimationScheduler.from(this.#position, fromData, options);
@@ -103,7 +103,7 @@ export class AnimationAPIImpl implements AnimationAPI
     *
     * @returns A control object that can cancel animation and provides a `finished` Promise.
     */
-   fromTo(fromData: DataAPI.TJSPositionDataRelative, toData: DataAPI.TJSPositionDataRelative,
+   fromTo(fromData: Data.TJSPositionDataRelative, toData: Data.TJSPositionDataRelative,
           options: AnimationAPI.TweenOptions): BasicAnimation
    {
       const animationControl: AnimationControl = AnimationScheduler.fromTo(this.#position, fromData, toData, options);
@@ -119,7 +119,7 @@ export class AnimationAPIImpl implements AnimationAPI
     *
     * @returns A control object that can cancel animation and provides a `finished` Promise.
     */
-   to(toData: DataAPI.TJSPositionDataRelative, options: AnimationAPI.TweenOptions):
+   to(toData: Data.TJSPositionDataRelative, options: AnimationAPI.TweenOptions):
     BasicAnimation
    {
       const animationControl: AnimationControl = AnimationScheduler.to(this.#position, toData, options);

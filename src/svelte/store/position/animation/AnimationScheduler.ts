@@ -23,7 +23,7 @@ import type {
    AnimationData }                  from './types-local';
 
 import type { AnimationAPI }        from './types';
-import type { DataAPI }                from '../data/types';
+import type { Data }                from '../data/types';
 import type { TransformAPI }        from '../transform/types';
 
 export class AnimationScheduler
@@ -31,7 +31,7 @@ export class AnimationScheduler
    /**
     * Used to copy data from a TJSPosition instance.
     */
-   static #data: Partial<DataAPI.TJSPositionData> = {};
+   static #data: Partial<Data.TJSPositionData> = {};
 
    static #getEaseOptions: Readonly<{ default: false }> = Object.freeze({ default: false });
 
@@ -139,7 +139,7 @@ export class AnimationScheduler
     *
     * @returns An AnimationControl instance or null if none created.
     */
-   static from(position: TJSPosition, fromData: DataAPI.TJSPositionDataRelative,
+   static from(position: TJSPosition, fromData: Data.TJSPositionDataRelative,
     options: AnimationAPI.TweenOptions = {}, cleanup?: AnimationCleanupFunction): AnimationControl | null
    {
       if (!isObject(fromData))
@@ -234,8 +234,8 @@ export class AnimationScheduler
     *
     * @returns An AnimationControl instance or null if none created.
     */
-   static fromTo(position: TJSPosition, fromData: DataAPI.TJSPositionDataRelative,
-                 toData: DataAPI.TJSPositionDataRelative, options: AnimationAPI.TweenOptions = {},
+   static fromTo(position: TJSPosition, fromData: Data.TJSPositionDataRelative,
+                 toData: Data.TJSPositionDataRelative, options: AnimationAPI.TweenOptions = {},
                  cleanup?: AnimationCleanupFunction): AnimationControl | null
    {
       if (!isObject(fromData))
@@ -343,7 +343,7 @@ export class AnimationScheduler
     *
     * @returns An AnimationControl instance or null if none created.
     */
-   static to(position: TJSPosition, toData: DataAPI.TJSPositionDataRelative,
+   static to(position: TJSPosition, toData: Data.TJSPositionDataRelative,
     options: AnimationAPI.TweenOptions, cleanup?: AnimationCleanupFunction): AnimationControl | null
    {
       if (!isObject(toData))

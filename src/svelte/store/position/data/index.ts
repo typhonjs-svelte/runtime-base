@@ -1,3 +1,3 @@
-export * from './convert/ConvertStringData.js';
-export * from './TJSPositionData.ts';
-export * from './TJSPositionDataUtil.ts';
+export * from './convert/ConvertStringData';
+export * from './TJSPositionData';
+export * from './TJSPositionDataUtil';

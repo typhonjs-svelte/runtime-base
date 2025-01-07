@@ -1,10 +1,10 @@
-import { DataAPI }         from './types';
+import { Data }         from './types';
 import { TransformAPI } from '../transform/types';
 
 /**
  * Defines stored positional data.
  */
-export class TJSPositionData implements DataAPI.TJSPositionData
+export class TJSPositionData implements Data.TJSPositionData
 {
    height: number | 'auto' | 'inherit' | null;
    left: number | null;

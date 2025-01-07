@@ -12,7 +12,7 @@ import type { PositionChangeSet }      from './PositionChangeSet';
 
 import type { OptionsInternal }        from '../types-local';
 
-import type { DataAPI }                   from '../data/types';
+import type { Data }                   from '../data/types';
 import type { TJSPositionStyleCache }  from '../util';
 import type { TransformAPI }           from '../transform/types';
 
@@ -38,13 +38,13 @@ export class UpdateElementData
 
    styleCache: TJSPositionStyleCache;
 
-   subscribers: Subscriber<DataAPI.TJSPositionData>[];
+   subscribers: Subscriber<Data.TJSPositionData>[];
 
    transforms: TransformAPI;
    transformData: TJSTransformData;
 
    constructor(changeSet: PositionChangeSet, data: TJSPositionData, options: OptionsInternal,
-    styleCache: TJSPositionStyleCache, subscribers: Subscriber<DataAPI.TJSPositionData>[],
+    styleCache: TJSPositionStyleCache, subscribers: Subscriber<Data.TJSPositionData>[],
      transforms: TransformAPI)
    {
       /**

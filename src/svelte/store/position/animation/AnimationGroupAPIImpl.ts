@@ -20,7 +20,7 @@ import type { TJSPosition }      from '../TJSPosition';
 
 import type { AnimationAPI }     from './types';
 
-import type { DataAPI }             from '../data/types';
+import type { Data }             from '../data/types';
 
 /**
  * Provides a public API for grouping multiple {@link TJSPosition} animations together with the
@@ -246,7 +246,7 @@ class AnimationGroupAPIImpl
     *
     * @returns Basic animation control.
     */
-   static from(positionGroup: TJSPosition.PositionGroup, fromData: DataAPI.TJSPositionDataRelative |
+   static from(positionGroup: TJSPosition.PositionGroup, fromData: Data.TJSPositionDataRelative |
     AnimationAPI.GroupDataCallback, options?: AnimationAPI.TweenOptions |
      AnimationAPI.GroupTweenOptionsCallback): BasicAnimation
    {
@@ -281,7 +281,7 @@ class AnimationGroupAPIImpl
 
       if (hasCallback) { callbackOptions = { index, position: void 0, entry: void 0 }; }
 
-      let actualFromData: DataAPI.TJSPositionDataRelative |
+      let actualFromData: Data.TJSPositionDataRelative |
        AnimationAPI.GroupDataCallback = fromData;
 
       let actualOptions: AnimationAPI.TweenOptions = isObject(options) ? options : void 0;
@@ -410,8 +410,8 @@ class AnimationGroupAPIImpl
     *
     * @returns {import('#runtime/util/animate').BasicAnimation} Basic animation control.
     */
-   static fromTo(positionGroup: TJSPosition.PositionGroup, fromData: DataAPI.TJSPositionDataRelative |
-    AnimationAPI.GroupDataCallback, toData: DataAPI.TJSPositionDataRelative |
+   static fromTo(positionGroup: TJSPosition.PositionGroup, fromData: Data.TJSPositionDataRelative |
+    AnimationAPI.GroupDataCallback, toData: Data.TJSPositionDataRelative |
       AnimationAPI.GroupDataCallback, options?: AnimationAPI.TweenOptions |
        AnimationAPI.GroupTweenOptionsCallback): BasicAnimation
    {
@@ -450,8 +450,8 @@ class AnimationGroupAPIImpl
 
       if (hasCallback) { callbackOptions = { index, position: void 0, entry: void 0 }; }
 
-      let actualFromData: DataAPI.TJSPositionDataRelative = fromData;
-      let actualToData: DataAPI.TJSPositionDataRelative = toData;
+      let actualFromData: Data.TJSPositionDataRelative = fromData;
+      let actualToData: Data.TJSPositionDataRelative = toData;
 
       let actualOptions: AnimationAPI.TweenOptions = isObject(options) ? options : void 0;
 
@@ -606,7 +606,7 @@ class AnimationGroupAPIImpl
     *
     * @returns {import('#runtime/util/animate').BasicAnimation} Basic animation control.
     */
-   static to(positionGroup: TJSPosition.PositionGroup, toData: DataAPI.TJSPositionDataRelative |
+   static to(positionGroup: TJSPosition.PositionGroup, toData: Data.TJSPositionDataRelative |
     AnimationAPI.GroupDataCallback, options?: AnimationAPI.TweenOptions |
      AnimationAPI.GroupTweenOptionsCallback): BasicAnimation
    {
@@ -641,7 +641,7 @@ class AnimationGroupAPIImpl
 
       if (hasCallback) { callbackOptions = { index, position: void 0, entry: void 0 }; }
 
-      let actualToData: DataAPI.TJSPositionDataRelative = toData;
+      let actualToData: Data.TJSPositionDataRelative = toData;
 
       let actualOptions: AnimationAPI.TweenOptions = isObject(options) ? options : void 0;
 

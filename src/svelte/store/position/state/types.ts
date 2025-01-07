@@ -1,6 +1,6 @@
 import type { EasingReference }  from '#runtime/svelte/easing';
 
-import type { DataAPI }             from '../data/types';
+import type { Data }             from '../data/types';
 
 import type { TJSPosition }      from '../TJSPosition';
 
@@ -19,14 +19,14 @@ interface StateAPI {
     *
     * @returns Any saved position data.
     */
-   get({ name }: { name: string }): DataAPI.TJSPositionDataExtra | undefined;
+   get({ name }: { name: string }): Data.TJSPositionDataExtra | undefined;
 
    /**
     * Returns any associated default position data.
     *
     * @returns Any saved default position data.
     */
-   getDefault(): DataAPI.TJSPositionDataExtra | undefined;
+   getDefault(): Data.TJSPositionDataExtra | undefined;
 
    /**
     * @returns The saved position data names / keys.
@@ -42,7 +42,7 @@ interface StateAPI {
     *
     * @returns Any saved position data.
     */
-   remove({ name }: { name: string }): DataAPI.TJSPositionDataExtra | undefined;
+   remove({ name }: { name: string }): Data.TJSPositionDataExtra | undefined;
 
    /**
     * Resets position instance to default data and invokes set.
@@ -92,7 +92,7 @@ interface StateAPI {
       animateTo?: boolean,
       duration?: number,
       ease?: EasingReference,
-   }): DataAPI.TJSPositionDataExtra | Promise<DataAPI.TJSPositionDataExtra | undefined> |
+   }): Data.TJSPositionDataExtra | Promise<Data.TJSPositionDataExtra | undefined> |
     undefined;
 
    /**
@@ -106,12 +106,12 @@ interface StateAPI {
     * @param [optionsGet] - Additional options for
     *        {@link TJSPosition.get} when serializing position state. By default, `nullable` values are included.
     *
-    * @returns {DataAPI.TJSPositionDataExtra} Current position data
+    * @returns {Data.TJSPositionDataExtra} Current position data
     */
    save({ name, ...extra }: {
       name: string;
       [key: string]: any;
-   }, optionsGet: TJSPosition.Options.Get): DataAPI.TJSPositionDataExtra;
+   }, optionsGet: TJSPosition.Options.Get): Data.TJSPositionDataExtra;
 
    /**
     * Directly sets a saved position state. Simply include extra properties in `options` to set extra data.

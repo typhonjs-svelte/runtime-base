@@ -1,2 +1,2 @@
-export * from './TJSTransformData.js';
-export * from './TJSTransforms.js';
+export * from './TJSTransformData';
+export * from './TJSTransforms';

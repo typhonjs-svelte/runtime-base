@@ -4,7 +4,7 @@ import type {
    Unsubscriber }                   from 'svelte/store';
 
 import type { TJSPosition }         from '../../TJSPosition';
-import type { DataAPI }                from '../../data/types';
+import type { Data }                from '../../data/types';
 import type { TransformAPI }        from '../../transform/types';
 
 /**
@@ -84,7 +84,7 @@ declare namespace ValidatorAPI {
       /**
        * New position data to evaluate.
        */
-      position: DataAPI.TJSPositionData;
+      position: Data.TJSPositionData;
 
       /**
        * Associated position parent instance.
@@ -159,7 +159,7 @@ declare namespace ValidatorAPI {
     */
    export type ValidatorData = {
       /**
-       * TJSPosition validator function that takes a {@link DataAPI.TJSPositionData} instance potentially
+       * TJSPosition validator function that takes a {@link Data.TJSPositionData} instance potentially
        * modifying it or returning null if invalid.
        */
       validate: ValidatorFn;
@@ -201,9 +201,9 @@ declare namespace ValidatorAPI {
        *
        * @param {ValidationData} data - Validation data to handle.
        *
-       * @returns {DataAPI.TJSPositionData | null} The validated position data or null to cancel position update.
+       * @returns {Data.TJSPositionData | null} The validated position data or null to cancel position update.
        */
-      (data: ValidationData): DataAPI.TJSPositionData | null;
+      (data: ValidationData): Data.TJSPositionData | null;
 
       /**
        * Optional subscribe function following the Svelte store / subscribe pattern. On updates validation will
