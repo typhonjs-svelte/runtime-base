@@ -1,6 +1,7 @@
-import type {
-   Readable,
-   Writable }                       from 'svelte/store';
+import {
+   Readable, Updater,
+   Writable
+} from 'svelte/store';
 
 import type { ResizeObserverData }  from '#runtime/util/dom/observer';
 
@@ -59,57 +60,57 @@ export declare namespace TJSPositionNS {
          /**
           * Derived store for `left` updates.
           */
-         left: Writable<number | null>;
+         left: WritablePos<number | string | null, number | null>;
 
          /**
           * Derived store for `top` updates.
           */
-         top: Writable<number | null>;
+         top: WritablePos<number | string | null, number | null>;
 
          /**
           * Derived store for `width` updates.
           */
-         width: Writable<number | 'auto' | 'inherit' | null>;
+         width: WritablePos<number | string | null, number | 'auto' | 'inherit' | null>;
 
          /**
           * Derived store for `height` updates.
           */
-         height: Writable<number | 'auto' | 'inherit' | null>;
+         height: WritablePos<number | string | null, number | 'auto' | 'inherit' | null>;
 
          /**
           * Derived store for `maxHeight` updates.
           */
-         maxHeight: Writable<number | null>;
+         maxHeight: WritablePos<number | string | null, number | null>;
 
          /**
           * Derived store for `maxWidth` updates.
           */
-         maxWidth: Writable<number | null>;
+         maxWidth: WritablePos<number | string | null, number | null>;
 
          /**
           * Derived store for `minHeight` updates.
           */
-         minHeight: Writable<number | null>;
+         minHeight: WritablePos<number | string | null, number | null>;
 
          /**
           * Derived store for `minWidth` updates.
           */
-         minWidth: Writable<number | null>;
+         minWidth: WritablePos<number | string | null, number | null>;
 
          /**
           * Derived store for `rotateX` updates.
           */
-         rotateX: Writable<number | null>;
+         rotateX: WritablePos<number | string | null, number | null>;
 
          /**
           * Derived store for `rotateY` updates.
           */
-         rotateY: Writable<number | null>;
+         rotateY: WritablePos<number | string | null, number | null>;
 
          /**
           * Derived store for `rotateZ` updates.
           */
-         rotateZ: Writable<number | null>;
+         rotateZ: WritablePos<number | string | null, number | null>;
 
          /**
           * Derived store for `scale` updates.
@@ -124,17 +125,17 @@ export declare namespace TJSPositionNS {
          /**
           * Derived store for `translateX` updates.
           */
-         translateX: Writable<number | null>;
+         translateX: WritablePos<number | string | null, number | null>;
 
          /**
           * Derived store for `translateY` updates.
           */
-         translateY: Writable<number | null>;
+         translateY: WritablePos<number | string | null, number | null>;
 
          /**
           * Derived store for `translateZ` updates.
           */
-         translateZ: Writable<number | null>;
+         translateZ: WritablePos<number | string | null, number | null>;
 
          /**
           * Derived store for `zIndex` updates.
@@ -146,7 +147,7 @@ export declare namespace TJSPositionNS {
          /**
           * Readable store for dimension data.
           */
-         dimension: Readable<{width: number | 'auto' | 'inherit', height: number | 'auto' | 'inherit'}>;
+         dimension: Readable<{ width: number | 'auto' | 'inherit', height: number | 'auto' | 'inherit' }>;
 
          /**
           * Readable store for current element.
@@ -165,7 +166,7 @@ export declare namespace TJSPositionNS {
 
          /**
           * Readable store indicating when `width` or `height` is `auto` or `inherit` indicating that this position
-          * instance is a good candidate for the {@link resizeObserver} action.
+          * instance is a good candidate for the {@link #runtime/svelte/action/dom/observer!resizeObserver} action.
           */
          resizeObservable: Readable<boolean>;
 
@@ -307,5 +308,24 @@ export declare namespace TJSPositionNS {
    export interface WritableExt extends Writable<TJSPositionNS.Data.TJSPositionDataRelative>
    {
       set(this: void, value: TJSPositionNS.Data.TJSPositionDataRelative, options?: Options.Set): TJSPosition;
+   }
+
+   /**
+    * Extends Writable to allow type differentiation between writing and reading data. TJSPosition allows flexible
+    * formats for writing data that is converted to specific data for reading after validation.
+    */
+   export interface WritablePos<W, R> extends Readable<R>
+   {
+      /**
+       * Set value and inform subscribers.
+       * @param value to set
+       */
+      set(this: void, value: W): void;
+
+      /**
+       * Update value using callback and inform subscribers.
+       * @param updater callback
+       */
+      update(this: void, updater: Updater<W>): void;
    }
 }

@@ -588,7 +588,7 @@ export class TJSPosition implements TJSPositionNS.WritableExt
    /**
     * @param height -
     */
-   set height(height: number | 'auto' | 'inherit' | null)
+   set height(height: number | string | null)
    {
       this.#stores.height.set(height);
    }
@@ -668,7 +668,7 @@ export class TJSPosition implements TJSPositionNS.WritableExt
    /**
     * @param scale -
     */
-   set scale(scale: number | string | null)
+   set scale(scale: number | null)
    {
       this.#stores.scale.set(scale);
    }
@@ -719,7 +719,7 @@ export class TJSPosition implements TJSPositionNS.WritableExt
    /**
     * @param width -
     */
-   set width(width: number | 'auto' | 'inherit' | null)
+   set width(width: number | string | null)
    {
       this.#stores.width.set(width);
    }
@@ -727,7 +727,7 @@ export class TJSPosition implements TJSPositionNS.WritableExt
    /**
     * @param zIndex -
     */
-   set zIndex(zIndex: number | string | null)
+   set zIndex(zIndex: number | null)
    {
       this.#stores.zIndex.set(zIndex);
    }
