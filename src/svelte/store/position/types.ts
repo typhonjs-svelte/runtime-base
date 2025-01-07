@@ -1,7 +1,7 @@
 import {
-   Readable, Updater,
-   Writable
-} from 'svelte/store';
+   Readable,
+   Updater,
+   Writable }                       from 'svelte/store';
 
 import type { ResizeObserverData }  from '#runtime/util/dom/observer';
 
@@ -35,7 +35,7 @@ export declare namespace TJSPositionNS {
       /**
        * Provides the default {@link System.Initial.InitialSystem} implementations available.
        */
-      export type Initial = {
+      export type DefaultInitial = {
          /**
           * A locked instance of the `Centered` initial helper suitable for displaying elements in the browser window.
           */
@@ -47,6 +47,22 @@ export declare namespace TJSPositionNS {
           */
          Centered: System.Initial.InitialSystemConstructor
       }
+
+      /**
+       * Provides the default {@link System.Validator.ValidatorSystem} implementations available.
+       */
+      export type DefaultValidators = {
+         /**
+          * The `TransformBounds` class constructor to instantiate a new instance.
+          */
+         TransformBounds: System.Validator.ValidatorSystemConstructor,
+
+         /**
+          * A locked instance of the `TransformBounds` validator suitable for transformed bounds checking against the
+          * browser window.
+          */
+         transformWindow: System.Validator.ValidatorSystem
+      };
 
       /**
        * Defines all derived stores for positional properties. These property stores can be used to update the position
@@ -190,22 +206,6 @@ export declare namespace TJSPositionNS {
           */
          transform: Readable<TransformAPI.TransformData>;
       }
-
-      /**
-       * Provides the default {@link System.Initial.ValidatorSystem} implementations available.
-       */
-      export type Validators = {
-         /**
-          * The `TransformBounds` class constructor to instantiate a new instance.
-          */
-         TransformBounds: System.Validator.ValidatorSystemConstructor,
-
-         /**
-          * A locked instance of the `TransformBounds` validator suitable for transformed bounds checking against the
-          * browser window.
-          */
-         transformWindow: System.Validator.ValidatorSystem
-      };
    }
 
    export { Data };

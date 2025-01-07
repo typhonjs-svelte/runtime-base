@@ -161,9 +161,9 @@ export class TJSPosition implements TJSPositionNS.WritableExt
    static get Data(): TJSPositionNS.Data.TJSPositionDataConstructor { return TJSPositionData; }
 
    /**
-    * @returns TJSPosition default initial helpers.
+    * @returns TJSPosition default initial systems.
     */
-   static get Initial(): Readonly<TJSPositionNS.API.Initial> { return this.#positionInitial; }
+   static get Initial(): Readonly<TJSPositionNS.API.DefaultInitial> { return this.#positionInitial; }
 
    /**
     * @returns `SystemBase` constructor.
@@ -178,11 +178,11 @@ export class TJSPosition implements TJSPositionNS.WritableExt
    static get TransformData(): TJSPositionNS.API.Transform.TransformDataConstructor { return TJSTransformData; }
 
    /**
-    * Returns default validators.
+    * Returns default validator systems.
     *
     * @returns Available validators.
     */
-   static get Validators(): Readonly<TJSPositionNS.API.Validators> { return this.#positionValidators; }
+   static get Validators(): Readonly<TJSPositionNS.API.DefaultValidators> { return this.#positionValidators; }
 
    /**
     * Returns a list of supported transform origins.
