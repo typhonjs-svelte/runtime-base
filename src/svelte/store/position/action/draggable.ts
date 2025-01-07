@@ -59,7 +59,7 @@ function draggable(node: HTMLElement, { position, enabled = true, button = 0, st
    /**
     * Duplicate the app / Positionable starting position to track differences.
     */
-   let initialPosition: Partial<Data.TJSPositionData> = null;
+   let initialPosition: Partial<Data.TJSPositionData> | null = null;
 
    /**
     * Stores the initial X / Y on drag down.
@@ -82,9 +82,9 @@ function draggable(node: HTMLElement, { position, enabled = true, button = 0, st
     * Event handlers associated with this action, so they may be later unregistered.
     */
    const handlers: { [p: string]: [string, EventListener, boolean] } = {
-      dragDown: ['pointerdown', onDragPointerDown, false],
-      dragMove: ['pointermove', onDragPointerChange, false],
-      dragUp: ['pointerup', onDragPointerUp, false]
+      dragDown: ['pointerdown', onDragPointerDown as EventListener, false],
+      dragMove: ['pointermove', onDragPointerChange as EventListener, false],
+      dragUp: ['pointerup', onDragPointerUp as EventListener, false]
    };
 
    /**
@@ -198,8 +198,8 @@ function draggable(node: HTMLElement, { position, enabled = true, button = 0, st
          storeDragging.set(true);
       }
 
-      const newLeft: number = initialPosition.left + (event.clientX - initialDragPoint.x);
-      const newTop: number = initialPosition.top + (event.clientY - initialDragPoint.y);
+      const newLeft: number = initialPosition?.left! + (event.clientX - initialDragPoint.x);
+      const newTop: number = initialPosition?.top! + (event.clientY - initialDragPoint.y);
 
       if (tween)
       {
@@ -303,8 +303,8 @@ function draggable(node: HTMLElement, { position, enabled = true, button = 0, st
  */
 class DraggableOptionsStore implements Action.DraggableOptionsStore
 {
-   tween: boolean;
-   tweenOptions: AnimationAPI.QuickTweenOptions;
+   tween!: boolean;
+   tweenOptions!: AnimationAPI.QuickTweenOptions;
 
    readonly #initialTween: boolean;
 
@@ -312,7 +312,7 @@ class DraggableOptionsStore implements Action.DraggableOptionsStore
     */
    readonly #initialTweenOptions: AnimationAPI.QuickTweenOptions;
 
-   #tween: boolean;
+   #tween: boolean = false;
 
    /**
     */
@@ -401,12 +401,12 @@ class DraggableOptionsStore implements Action.DraggableOptionsStore
    /**
     * @returns Get tween duration.
     */
-   get tweenDuration(): number { return this.#tweenOptions.duration; }
+   get tweenDuration(): number { return this.#tweenOptions.duration as number; }
 
    /**
     * @returns Get easing function or easing function name.
     */
-   get tweenEase(): EasingReference { return this.#tweenOptions.ease; }
+   get tweenEase(): EasingReference { return this.#tweenOptions.ease as EasingReference; }
 
    /**
     * @param duration - Set tween duration.
