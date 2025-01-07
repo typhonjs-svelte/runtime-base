@@ -197,7 +197,10 @@ export class PositionStateAPI implements StateAPI
          // Update data directly with no store or inline style updates.
          if (silent)
          {
-            for (const property in data) { this.#data[property] = data[property]; }
+            for (const property in data)
+            {
+               if (property in this.#data) { this.#data[property as keyof Data.TJSPositionData] = data[property]; }
+            }
             return dataSaved;
          }
          else if (animateTo)  // Animate to saved data.
