@@ -7,7 +7,6 @@ import type { EasingReference }  from '#runtime/svelte/easing';
 import type { TJSPosition }      from '../TJSPosition';
 
 import type { AnimationAPI }     from '../animation/types';
-import type { Positionable }     from '../types';
 
 declare namespace Action {
    /**
@@ -17,7 +16,7 @@ declare namespace Action {
       /**
        * A position or positionable instance.
        */
-      position: TJSPosition | Positionable;
+      position: TJSPosition | TJSPosition.Positionable;
 
       /**
        * MouseEvent button that activates dragging; default: 0

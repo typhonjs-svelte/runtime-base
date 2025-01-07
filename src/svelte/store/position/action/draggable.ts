@@ -19,8 +19,7 @@ import type { TJSPosition }      from '../TJSPosition';
 import type { Action }           from './types';
 
 import type { AnimationAPI }     from '../animation/types';
-import type { DataAPI }             from '../data/types';
-import type { Positionable }     from '../types';
+import type { DataAPI }          from '../data/types';
 
 /**
  * Provides an action to enable pointer dragging of an HTMLElement and invoke `position.set` on a given
@@ -55,7 +54,7 @@ function draggable(node: HTMLElement, { position, enabled = true, button = 0, st
    /**
     * Find actual position instance checking for a Positionable instance.
     */
-   let actualPosition: TJSPosition = ((position as Positionable)?.position ?? position) as TJSPosition;
+   let actualPosition: TJSPosition = ((position as TJSPosition.Positionable)?.position ?? position) as TJSPosition;
 
    /**
     * Duplicate the app / Positionable starting position to track differences.
@@ -239,7 +238,7 @@ function draggable(node: HTMLElement, { position, enabled = true, button = 0, st
          {
             // Find actual position instance checking for a Positionable instance.
             const newPosition: TJSPosition =
-             ((options.position as Positionable)?.position ?? options.position) as TJSPosition;
+             ((options.position as TJSPosition.Positionable)?.position ?? options.position) as TJSPosition;
 
             if (newPosition !== actualPosition)
             {

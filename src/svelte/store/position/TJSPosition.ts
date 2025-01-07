@@ -1647,6 +1647,18 @@ declare namespace TJSPosition {
    // Local declarations ---------------------------------------------------------------------------------------------
 
    /**
+    * Defines the shape of an instance / object that is positionable.
+    */
+   export interface Positionable {
+      position: TJSPosition;
+   }
+
+   /**
+    * Defines one or more positions or positionable objects.
+    */
+   export type PositionGroup = TJSPosition | Positionable | Iterable<TJSPosition> | Iterable<Positionable>;
+
+   /**
     * Defines the TJSPosition parent element. Provide either an HTMLElement directly or an object with an
     * `elementTarget` property / accessor defining the parent HTMLElement.
     */

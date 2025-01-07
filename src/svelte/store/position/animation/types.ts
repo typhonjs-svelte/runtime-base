@@ -2,14 +2,10 @@ import type { InterpolateFunctionName }   from '#runtime/math/interpolate';
 import type { EasingReference }           from '#runtime/svelte/easing';
 import type { BasicAnimation }            from '#runtime/util/animate';
 
-// import type { TJSPosition }               from '../TJSPosition';
+import type { TJSPosition }               from '../TJSPosition';
 
 import type { DataAPI }                   from '../data/types';
 import type { TransformAPI }              from '../transform/types';
-
-import type {
-   Positionable,
-   PositionGroup }                        from '../types';
 
 interface AnimationAPI
 {
@@ -91,11 +87,11 @@ interface AnimationAPI
 interface AnimationGroupAPI
 {
    /**
-    * Cancels any animation for given PositionGroup data.
+    * Cancels any animation for given TJSPosition.PositionGroup data.
     *
     * @param positionGroup - The position group to cancel.
     */
-   cancel(positionGroup: PositionGroup): void;
+   cancel(positionGroup: TJSPosition.PositionGroup): void;
 
    /**
     * Cancels all TJSPosition animation.
@@ -118,10 +114,10 @@ interface AnimationGroupAPI
     *
     * @returns Results array.
     */
-   getScheduled(positionGroup: PositionGroup): {
+   getScheduled(positionGroup: TJSPosition.PositionGroup): {
       // position: TJSPosition,
       position: object,
-      entry: Positionable | undefined,
+      entry: TJSPosition.Positionable | undefined,
       controls: BasicAnimation[]
    }[];
 
@@ -134,7 +130,7 @@ interface AnimationGroupAPI
     *
     * @returns True if all are scheduled / false if just one position instance in the group is not scheduled.
     */
-   isScheduled(positionGroup: PositionGroup, options?: AnimationAPI.ScheduleOptions): boolean;
+   isScheduled(positionGroup: TJSPosition.PositionGroup, options?: AnimationAPI.ScheduleOptions): boolean;
 
    /**
     * Provides the `from` animation tween for one or more positionable instances as a group.
@@ -149,7 +145,7 @@ interface AnimationGroupAPI
     *
     * @returns {BasicAnimation} Basic animation control.
     */
-   from(positionGroup: PositionGroup, fromData: DataAPI.TJSPositionDataRelative |
+   from(positionGroup: TJSPosition.PositionGroup, fromData: DataAPI.TJSPositionDataRelative |
     AnimationAPI.GroupDataCallback, options?: AnimationAPI.TweenOptions | AnimationAPI.GroupTweenOptionsCallback):
      BasicAnimation;
 
@@ -169,7 +165,7 @@ interface AnimationGroupAPI
     *
     * @returns Basic animation control.
     */
-   fromTo(positionGroup: PositionGroup, fromData: DataAPI.TJSPositionDataRelative |
+   fromTo(positionGroup: TJSPosition.PositionGroup, fromData: DataAPI.TJSPositionDataRelative |
     AnimationAPI.GroupDataCallback, toData: DataAPI.TJSPositionDataRelative | AnimationAPI.GroupDataCallback,
      options?: AnimationAPI.TweenOptions | AnimationAPI.GroupTweenOptionsCallback): BasicAnimation;
 
@@ -186,7 +182,7 @@ interface AnimationGroupAPI
     *
     * @returns Basic animation control.
     */
-   to(positionGroup: PositionGroup, toData: DataAPI.TJSPositionDataRelative |
+   to(positionGroup: TJSPosition.PositionGroup, toData: DataAPI.TJSPositionDataRelative |
     AnimationAPI.GroupDataCallback, options?: AnimationAPI.TweenOptions | AnimationAPI.GroupTweenOptionsCallback):
      BasicAnimation;
 
@@ -203,7 +199,7 @@ interface AnimationGroupAPI
     *
     * @returns {AnimationAPI.GroupQuickToCallback | undefined} quick-to tween function.
     */
-   quickTo(positionGroup: PositionGroup, keys: Iterable<AnimationAPI.AnimationKey>,
+   quickTo(positionGroup: TJSPosition.PositionGroup, keys: Iterable<AnimationAPI.AnimationKey>,
     options?: AnimationAPI.QuickTweenOptions | AnimationAPI.GroupQuickTweenOptionsCallback):
      AnimationAPI.GroupQuickToCallback;
 }
@@ -226,7 +222,7 @@ declare namespace AnimationAPI {
     */
    export type GroupCallbackOptions = {
       /**
-       * The index of the {@link PositionGroup} being processed.
+       * The index of the {@link TJSPosition.PositionGroup} being processed.
        */
       index?: number;
 
@@ -239,11 +235,11 @@ declare namespace AnimationAPI {
       /**
        * Any associated positionable entry / object.
        */
-      entry?: Positionable | undefined;
+      entry?: TJSPosition.Positionable | undefined;
    }
 
    /**
-    * Defines a callback to process each {@link TJSPosition} / {@link Positionable} instance allowing
+    * Defines a callback to process each {@link TJSPosition} / {@link TJSPosition.Positionable} instance allowing
     * different position data to be assigned to each instance in the grouped animation.
     */
    export interface GroupDataCallback
@@ -260,7 +256,7 @@ declare namespace AnimationAPI {
    }
 
    /**
-    * Defines a callback to process each {@link TJSPosition} / {@link Positionable} instance allowing
+    * Defines a callback to process each {@link TJSPosition} / {@link TJSPosition.Positionable} instance allowing
     * different tween options to be assigned to each instance in the grouped animation.
     */
    export interface GroupTweenOptionsCallback
@@ -297,7 +293,7 @@ declare namespace AnimationAPI {
    }
 
    /**
-    * Defines a callback to process each {@link TJSPosition} / {@link Positionable} instance allowing
+    * Defines a callback to process each {@link TJSPosition} / {@link TJSPosition.Positionable} instance allowing
     * different quick tween options to be assigned to each instance in the grouped animation.
     */
    export interface GroupQuickTweenOptionsCallback
