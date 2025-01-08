@@ -1099,15 +1099,18 @@ class TJSPosition implements TJSPosition.WritableExt
     */
    subscribe(handler: Subscriber<Readonly<Data.TJSPositionData>>): Unsubscriber
    {
-      this.#subscribers.push(handler); // add handler to the array of subscribers
-
-      handler(Object.assign({}, this.#data));                     // call handler with current value
+      const currentIdx: number = this.#subscribers.findIndex((entry: Function): boolean => entry === handler);
+      if (currentIdx === -1)
+      {
+         this.#subscribers.push(handler);          // add handler to the array of subscribers
+         handler(Object.assign({}, this.#data));   // call handler with current value
+      }
 
       // Return unsubscribe function.
-      return () =>
+      return (): void =>
       {
-         const index = this.#subscribers.findIndex((sub) => sub === handler);
-         if (index >= 0) { this.#subscribers.splice(index, 1); }
+         const existingIdx: number = this.#subscribers.findIndex((entry: Function): boolean => entry === handler);
+         if (existingIdx !== -1) { this.#subscribers.splice(existingIdx, 1); }
       };
    }
 

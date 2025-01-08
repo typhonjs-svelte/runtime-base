@@ -321,7 +321,7 @@ class DraggableOptionsStore implements Action.DraggableOptionsStore
    /**
     * Stores the subscribers.
     */
-   #subscriptions: Subscriber<Action.DraggableOptionsStore>[] = [];
+   #subscribers: Subscriber<Action.DraggableOptionsStore>[] = [];
 
    /**
     * @param [opts] - Optional parameters.
@@ -478,23 +478,24 @@ class DraggableOptionsStore implements Action.DraggableOptionsStore
     */
    subscribe(handler: Subscriber<Action.DraggableOptionsStore>): Unsubscriber
    {
-      this.#subscriptions.push(handler); // add handler to the array of subscribers
-
-      handler(this);                     // call handler with current value
+      const currentIdx: number = this.#subscribers.findIndex((entry: Function): boolean => entry === handler);
+      if (currentIdx === -1)
+      {
+         this.#subscribers.push(handler); // add handler to the array of subscribers
+         handler(this);                   // call handler with current value
+      }
 
       // Return unsubscribe function.
       return (): void =>
       {
-         const index: number = this.#subscriptions.findIndex(
-          (sub: Subscriber<Action.DraggableOptionsStore>): boolean => sub === handler);
-
-         if (index >= 0) { this.#subscriptions.splice(index, 1); }
-      };
+         const existingIdx: number = this.#subscribers.findIndex((entry: Function): boolean => entry === handler);
+         if (existingIdx !== -1) { this.#subscribers.splice(existingIdx, 1); }
+      }
    }
 
    #updateSubscribers(): void
    {
-      const subscriptions: Subscriber<Action.DraggableOptionsStore>[] = this.#subscriptions;
+      const subscriptions: Subscriber<Action.DraggableOptionsStore>[] = this.#subscribers;
 
       // Early out if there are no subscribers.
       if (subscriptions.length > 0)
