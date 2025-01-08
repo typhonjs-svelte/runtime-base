@@ -51,8 +51,8 @@ function applyPosition(node, position) {
 
 /**
  * Provides an action to enable pointer dragging of an HTMLElement and invoke `position.set` on a given
- * {@link TJSPosition} instance provided. When the attached boolean store state changes the draggable
- * action is enabled or disabled.
+ * {@link TJSPosition} instance provided. When the attached boolean store state changes the draggable action is enabled
+ * or disabled.
  *
  * @param node - The node associated with the action.
  *
@@ -84,8 +84,8 @@ function draggable(node, { position, enabled = true, button = 0, storeDragging =
      */
     let initialDragPoint = { x: 0, y: 0 };
     /**
-     * Stores the current dragging state and gates the move pointer as the dragging store is not
-     * set until the first pointer move.
+     * Stores the current dragging state and gates the move pointer as the dragging store is not set until the first
+     * pointer move.
      */
     let dragging = false;
     /**
@@ -192,8 +192,8 @@ function draggable(node, { position, enabled = true, button = 0, storeDragging =
             dragging = true;
             storeDragging.set(true);
         }
-        const newLeft = initialPosition.left + (event.clientX - initialDragPoint.x);
-        const newTop = initialPosition.top + (event.clientY - initialDragPoint.y);
+        const newLeft = initialPosition?.left + (event.clientX - initialDragPoint.x);
+        const newTop = initialPosition?.top + (event.clientY - initialDragPoint.y);
         if (tween) {
             quickTo(newTop, newLeft);
         }
@@ -279,14 +279,14 @@ class DraggableOptionsStore {
     /**
      */
     #initialTweenOptions;
-    #tween;
+    #tween = false;
     /**
      */
     #tweenOptions = { duration: 1, ease: 'cubicOut' };
     /**
      * Stores the subscribers.
      */
-    #subscriptions = [];
+    #subscribers = [];
     /**
      * @param [opts] - Optional parameters.
      *
@@ -403,23 +403,27 @@ class DraggableOptionsStore {
     /**
      * Store subscribe method.
      *
-     * @param handler - Callback function that is invoked on update / changes. Receives the DraggableOptionsStore instance.
+     * @param handler - Callback function that is invoked on update / changes. Receives the DraggableOptionsStore
+     *        instance.
      *
      * @returns Unsubscribe function.
      */
     subscribe(handler) {
-        this.#subscriptions.push(handler); // add handler to the array of subscribers
-        handler(this); // call handler with current value
+        const currentIdx = this.#subscribers.findIndex((entry) => entry === handler);
+        if (currentIdx === -1) {
+            this.#subscribers.push(handler); // add handler to the array of subscribers
+            handler(this); // call handler with current value
+        }
         // Return unsubscribe function.
         return () => {
-            const index = this.#subscriptions.findIndex((sub) => sub === handler);
-            if (index >= 0) {
-                this.#subscriptions.splice(index, 1);
+            const existingIdx = this.#subscribers.findIndex((entry) => entry === handler);
+            if (existingIdx !== -1) {
+                this.#subscribers.splice(existingIdx, 1);
             }
         };
     }
     #updateSubscribers() {
-        const subscriptions = this.#subscriptions;
+        const subscriptions = this.#subscribers;
         // Early out if there are no subscribers.
         if (subscriptions.length > 0) {
             for (let cntr = 0; cntr < subscriptions.length; cntr++) {
@@ -491,13 +495,13 @@ class AnimationControl {
      *
      * @returns Animation active state.
      */
-    get isActive() { return this.#animationData.active; }
+    get isActive() { return this.#animationData?.active ?? false; }
     /**
      * Returns whether this animation is completely finished.
      *
      * @returns Animation finished state.
      */
-    get isFinished() { return this.#animationData.finished; }
+    get isFinished() { return this.#animationData?.finished ?? true; }
     /**
      * Cancels the animation.
      */
@@ -519,7 +523,7 @@ class AnimationManager {
     /**
      * Cancels all animations except `quickTo` animations.
      */
-    static cancelFn = (data) => data.quickTo !== true;
+    static cancelFn = (data) => data?.quickTo !== true;
     /**
      * Cancels all animations.
      */
@@ -731,13 +735,13 @@ class AnimationManager {
         const results = [];
         for (let cntr = AnimationManager.#activeList.length; --cntr >= 0;) {
             const data = AnimationManager.#activeList[cntr];
-            if (data.position === position) {
+            if (data.position === position && data.control) {
                 results.push(data.control);
             }
         }
         for (let cntr = AnimationManager.#pendingList.length; --cntr >= 0;) {
             const data = AnimationManager.#pendingList[cntr];
-            if (data.position === position) {
+            if (data.position === position && data.control) {
                 results.push(data.control);
             }
         }
@@ -792,46 +796,46 @@ class TJSPositionData {
     translateZ;
     width;
     zIndex;
-    // Aliases -----------------------------------------------------------------------------------------------------
+    // Aliases --------------------------------------------------------------------------------------------------------
     rotation;
     /**
-     * @param {object} [opts] - Options.
+     * @param [opts] - Options.
      *
-     * @param {number | 'auto' | 'inherit' | null} [opts.height] -
+     * @param [opts.height] -
      *
-     * @param {number | null} [opts.left] -
+     * @param [opts.left] -
      *
-     * @param {number | null} [opts.maxHeight] -
+     * @param [opts.maxHeight] -
      *
-     * @param {number | null} [opts.maxWidth] -
+     * @param [opts.maxWidth] -
      *
-     * @param {number | null} [opts.minHeight] -
+     * @param [opts.minHeight] -
      *
-     * @param {number | null} [opts.minWidth] -
+     * @param [opts.minWidth] -
      *
-     * @param {number | null} [opts.rotateX] -
+     * @param [opts.rotateX] -
      *
-     * @param {number | null} [opts.rotateY] -
+     * @param [opts.rotateY] -
      *
-     * @param {number | null} [opts.rotateZ] -
+     * @param [opts.rotateZ] -
      *
-     * @param {number | null} [opts.scale] -
+     * @param [opts.scale] -
      *
-     * @param {number | null} [opts.translateX] -
+     * @param [opts.translateX] -
      *
-     * @param {number | null} [opts.translateY] -
+     * @param [opts.translateY] -
      *
-     * @param {number | null} [opts.translateZ] -
+     * @param [opts.translateZ] -
      *
-     * @param {number | null} [opts.top] -
+     * @param [opts.top] -
      *
      * @param [opts.transformOrigin] -
      *
-     * @param {number | 'auto' | 'inherit' | null} [opts.width] -
+     * @param [opts.width] -
      *
-     * @param {number | null} [opts.zIndex] -
+     * @param [opts.zIndex] -
      *
-     * @param {number | null} [opts.rotation] - Alias for `rotateZ`.
+     * @param [opts.rotation] - Alias for `rotateZ`.
      */
     constructor({ height = null, left = null, maxHeight = null, maxWidth = null, minHeight = null, minWidth = null, rotateX = null, rotateY = null, rotateZ = null, scale = null, translateX = null, translateY = null, translateZ = null, top = null, transformOrigin = null, width = null, zIndex = null, rotation = null } = {}) {
         this.height = height;
@@ -875,8 +879,8 @@ class TJSPositionDataUtil {
      */
     static #animateKeyAliases = Object.freeze(new Map([['rotation', 'rotateZ']]));
     /**
-     * Provides numeric defaults for all parameters. This is used by {@link TJSPosition.get} to optionally
-     * provide numeric defaults.
+     * Provides numeric defaults for all parameters. This is used by {@link TJSPosition.get} to optionally provide
+     * numeric defaults.
      */
     static #numericDefaults = Object.freeze({
         // Other keys
@@ -1094,12 +1098,12 @@ class ConvertStringData {
                                         continue;
                                     }
                                 }
-                                handled = this.#handlePercent(animKey, current, data, position, el, results, parentClientHeight, parentClientWidth);
+                                handled = this.#handlePercent(animKey, current, data, results, parentClientHeight, parentClientWidth);
                                 break;
                             }
                         // Animation keys that support percentage changes from current values.
                         case '%~':
-                            handled = this.#handleRelativePercent(animKey, current, data, position, el, results);
+                            handled = this.#handleRelativePercent(animKey, current, data, results);
                             break;
                         // Animation keys that support `px` / treat as raw number.
                         case 'px':
@@ -1110,7 +1114,7 @@ class ConvertStringData {
                         case 'rad':
                         case 'turn':
                             handled = this.#animKeyTypes.rotationRadTurn.has(key) ?
-                                this.#handleRotationRadTurn(animKey, current, data, position, el, results) : false;
+                                this.#handleRotationRadTurn(animKey, current, data, results) : false;
                             break;
                         // No units / treat as raw number.
                         default:
@@ -1171,10 +1175,6 @@ class ConvertStringData {
      *
      * @param data - Source data to convert.
      *
-     * @param position - Current position data.
-     *
-     * @param el - Positioned element.
-     *
      * @param results - Match results.
      *
      * @param parentClientHeight - Parent element client height.
@@ -1183,7 +1183,7 @@ class ConvertStringData {
      *
      * @returns Adjustment successful.
      */
-    static #handlePercent(key, current, data, position, el, results, parentClientHeight, parentClientWidth) {
+    static #handlePercent(key, current, data, results, parentClientHeight, parentClientWidth) {
         switch (key) {
             // Calculate value; take into account keys that calculate parent client width.
             case 'left':
@@ -1222,15 +1222,11 @@ class ConvertStringData {
      *
      * @param data - Source data to convert.
      *
-     * @param position - Current position data.
-     *
-     * @param el - Positioned element.
-     *
      * @param results - Match results.
      *
      * @returns Adjustment successful.
      */
-    static #handleRelativePercent(key, current, data, position, el, results) {
+    static #handleRelativePercent(key, current, data, results) {
         // Normalize percentage.
         results.value = results.value / 100;
         if (!results.operation) {
@@ -1261,15 +1257,11 @@ class ConvertStringData {
      *
      * @param data - Source data to convert.
      *
-     * @param position - Current position data.
-     *
-     * @param el - Positioned element.
-     *
      * @param results - Match results.
      *
      * @returns Adjustment successful.
      */
-    static #handleRotationRadTurn(key, current, data, position, el, results) {
+    static #handleRotationRadTurn(key, current, data, results) {
         // Convert radians / turn into degrees.
         switch (results.unit) {
             case 'rad':
@@ -1304,7 +1296,7 @@ class TJSTransformData {
      */
     #mat4 = Mat4.create();
     /**
-     * Stores the pre & post origin translations to apply to matrix transforms.
+     * Stores the pre-origin & post-origin translations to apply to matrix transforms.
      */
     #originTranslations = [Mat4.create(), Mat4.create()];
     /**
@@ -1332,7 +1324,7 @@ class TJSTransformData {
 /**
  * Provides type guards for `Number`.
  */
-class MathGuard {
+class NumberGuard {
     constructor() { }
     static isFinite(value) {
         return typeof value === 'number' && Number.isFinite(value);
@@ -1392,7 +1384,7 @@ class TJSPositionStyleCache {
      * the element directly. The more optimized path is using `resizeObserver` as getting it from the element
      * directly is more expensive and alters the execution order of an animation frame.
      *
-     * @returns {number} The element offsetHeight.
+     * @returns The element offsetHeight.
      */
     get offsetHeight() {
         if (this.el !== void 0 && A11yHelper.isFocusTarget(this.el)) {
@@ -1547,7 +1539,7 @@ class TJSTransforms {
     /**
      * Returns whether the given string is a {@link TransformAPI.TransformOrigin}.
      *
-     * @param {string}  origin - A potential transform origin string.
+     * @param origin - A potential transform origin string.
      *
      * @returns True if origin is a TransformOrigin string.
      */
@@ -1779,8 +1771,8 @@ class TJSTransforms {
         const valOffsetLeft = validationData?.offsetLeft ?? validationData?.marginLeft ?? 0;
         position.top += valOffsetTop;
         position.left += valOffsetLeft;
-        const width = MathGuard.isFinite(position.width) ? position.width : valWidth;
-        const height = MathGuard.isFinite(position.height) ? position.height : valHeight;
+        const width = NumberGuard.isFinite(position.width) ? position.width : valWidth;
+        const height = NumberGuard.isFinite(position.height) ? position.height : valHeight;
         const rect = output.corners;
         if (this.hasTransform(position)) {
             rect[0][0] = rect[0][1] = rect[0][2] = 0;
@@ -1928,7 +1920,6 @@ class TJSTransforms {
             for (let cntr = 0; cntr < TJSTransforms.#transformKeys.length; cntr++) {
                 const key = TJSTransforms.#transformKeys[cntr];
                 // Reject bad / no data or if the key has already been applied.
-                // if (data[key] === null || (seenKeys & TJSTransforms.#transformKeysBitwise[key]) > 0) { continue; }
                 if (data[key] === null || (seenKeys & TJSTransforms.#transformKeysBitwise[key]) > 0) {
                     continue;
                 }
@@ -1973,8 +1964,8 @@ class TJSTransforms {
     /**
      * Provides an orthographic enhancement to convert left / top positional data to a translate operation.
      *
-     * This transform matrix takes into account that the remaining operations are , but adds any left / top attributes from passed in data to
-     * translate X / Y.
+     * This transform matrix takes into account that the remaining operations are , but adds any left / top attributes
+     * from passed in data to translate X / Y.
      *
      * If no data object is provided then the source is the local transform data. If another data object is supplied
      * then the stored local transform order is applied then all remaining transform keys are applied. This allows the
@@ -2073,7 +2064,7 @@ class TJSTransforms {
         for (const key in data) {
             if (TJSTransforms.#isTransformKey(key)) {
                 const value = data[key];
-                if (MathGuard.isFinite(value)) {
+                if (NumberGuard.isFinite(value)) {
                     this.#data[key] = value;
                 }
                 else {
@@ -2301,7 +2292,8 @@ class AnimationScheduler {
         }
         // Cache any target element allowing AnimationManager to stop animation if it becomes disconnected from DOM.
         const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
-        const el = A11yHelper.isFocusTarget(targetEl) && targetEl.isConnected ? targetEl : void 0;
+        const el = A11yHelper.isFocusTarget(targetEl) && targetEl.isConnected ? targetEl :
+            void 0;
         if (!Number.isFinite(delay) || delay < 0) {
             throw new TypeError(`AnimationScheduler.from error: 'delay' is not a positive number.`);
         }
@@ -2319,7 +2311,8 @@ class AnimationScheduler {
         // Determine if any transform origin for the animation is valid.
         transformOrigin = TJSTransforms.isTransformOrigin(transformOrigin) ? transformOrigin : void 0;
         // Given a valid transform origin store the initial transform origin to be restored.
-        const transformOriginInitial = transformOrigin !== void 0 ? this.#data.transformOrigin : void 0;
+        const transformOriginInitial = transformOrigin !== void 0 ?
+            this.#data.transformOrigin : void 0;
         // Set initial data if the key / data is defined and the end position is not equal to current data.
         for (const key in fromData) {
             // Must use actual key from any aliases.
@@ -2369,7 +2362,8 @@ class AnimationScheduler {
         }
         // Cache any target element allowing AnimationManager to stop animation if it becomes disconnected from DOM.
         const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
-        const el = A11yHelper.isFocusTarget(targetEl) && targetEl.isConnected ? targetEl : void 0;
+        const el = A11yHelper.isFocusTarget(targetEl) && targetEl.isConnected ? targetEl :
+            void 0;
         if (!Number.isFinite(delay) || delay < 0) {
             throw new TypeError(`AnimationScheduler.fromTo error: 'delay' is not a positive number.`);
         }
@@ -2635,7 +2629,6 @@ class AnimationAPIImpl {
         const keysArray = [...keys];
         Object.freeze(keysArray);
         const newData = Object.assign({}, initial);
-        /** @type {import('./types-local').AnimationData} */
         const animationData = {
             active: true,
             cancelled: false,
@@ -2652,7 +2645,7 @@ class AnimationAPIImpl {
             newData,
             position: this.#position,
             resolve: void 0,
-            start: void 0,
+            start: 0,
             quickTo: true
         };
         const quickToCB = (...args) => {
@@ -2727,7 +2720,7 @@ class AnimationAPIImpl {
                     throw new TypeError(`AnimationAPI.quickTo.options error: 'ease' is not a function or valid Svelte easing function name.`);
                 }
                 // TODO: In the future potentially support more interpolation functions besides `lerp`.
-                if (duration >= 0) {
+                if (NumberGuard.isFinite(duration) && duration >= 0) {
                     animationData.duration = duration * 1000;
                 }
                 if (ease) {
@@ -2775,8 +2768,7 @@ class AnimationGroupControl {
         const animationControls = this.#animationControls;
         if (!CrossWindow.isPromise(this.#finishedPromise)) {
             if (animationControls === null || animationControls === void 0 || animationControls.size === 0) {
-                this.#finishedPromise = /** @type {Promise<import('#runtime/util/animate').BasicAnimationState>} */
-                    Promise.resolve({ cancelled: false });
+                this.#finishedPromise = Promise.resolve({ cancelled: false });
             }
             else {
                 const promises = [];
@@ -3127,7 +3119,7 @@ class AnimationGroupAPIImpl {
      * @param [options] - Tween options assigned to all positionable instances or a callback function invoked for unique
      *        options for each instance.
      *
-     * @returns {import('#runtime/util/animate').BasicAnimation} Basic animation control.
+     * @returns Basic animation control.
      */
     static fromTo(positionGroup, fromData, toData, options) {
         if (!isObject(fromData) && typeof fromData !== 'function') {
@@ -3266,7 +3258,7 @@ class AnimationGroupAPIImpl {
      * @param [options] - Tween options assigned to all positionable instances or a callback function invoked for unique
      *        options for each instance.
      *
-     * @returns {import('#runtime/util/animate').BasicAnimation} Basic animation control.
+     * @returns Basic animation control.
      */
     static to(positionGroup, toData, options) {
         if (!isObject(toData) && typeof toData !== 'function') {
@@ -3705,7 +3697,9 @@ class PositionStateAPI {
             // Update data directly with no store or inline style updates.
             if (silent) {
                 for (const property in data) {
-                    this.#data[property] = data[property];
+                    if (property in this.#data) {
+                        this.#data[property] = data[property];
+                    }
                 }
                 return dataSaved;
             }
@@ -3733,12 +3727,12 @@ class PositionStateAPI {
         return async ? Promise.resolve(dataSaved) : dataSaved;
     }
     /**
-     * Saves current position state with the opportunity to add extra data to the saved state. Simply include
-     * extra properties in `options` to save extra data.
+     * Saves current position state with the opportunity to add extra data to the saved state. Simply include extra
+     * properties in `options` to save extra data.
      *
-     * @param {object}   options - Options.
+     * @param options - Options.
      *
-     * @param {string}   options.name - name to index this saved data.
+     * @param options.name - name to index this saved data.
      *
      * @param [optionsGet] - Additional options for {@link TJSPosition.get} when serializing position state. By default,
      *        `nullable` values are included.
@@ -3756,9 +3750,9 @@ class PositionStateAPI {
     /**
      * Directly sets a saved position state. Simply include extra properties in `options` to set extra data.
      *
-     * @param {object}   opts - Options.
+     * @param opts - Options.
      *
-     * @param {string}   opts.name - name to index this saved data.
+     * @param opts.name - name to index this saved data.
      */
     set({ name, ...data }) {
         if (typeof name !== 'string') {
@@ -3802,19 +3796,19 @@ class SystemBase {
      */
     #width;
     /**
-     * @param {object}      [options] - Initial options.
+     * @param [options] - Initial options.
      *
-     * @param {boolean}     [options.constrain=true] - Initial constrained state.
+     * @param [options.constrain=true] - Initial constrained state.
      *
-     * @param {HTMLElement} [options.element] - Target element.
+     * @param [options.element] - Target element.
      *
-     * @param {boolean}     [options.enabled=true] - Enabled state.
+     * @param [options.enabled=true] - Enabled state.
      *
-     * @param {boolean}     [options.lock=false] - Lock parameters from being set.
+     * @param [options.lock=false] - Lock parameters from being set.
      *
-     * @param {number}      [options.width] - Manual width.
+     * @param [options.width] - Manual width.
      *
-     * @param {number}      [options.height] - Manual height.
+     * @param [options.height] - Manual height.
      */
     constructor({ constrain = true, element, enabled = true, lock = false, width, height } = {}) {
         this.#constrain = true;
@@ -3851,7 +3845,7 @@ class SystemBase {
      */
     get width() { return this.#width; }
     /**
-     * @param {boolean}  constrain - New constrain state.
+     * @param constrain - New constrain state.
      */
     set constrain(constrain) {
         if (this.#lock) {
@@ -3864,7 +3858,7 @@ class SystemBase {
         this.#updateSubscribers();
     }
     /**
-     * @param {HTMLElement | undefined | null} element - Set target element.
+     * @param element - Set target element.
      */
     set element(element) {
         if (this.#lock) {
@@ -3952,13 +3946,16 @@ class SystemBase {
      * @returns Unsubscribe function.
      */
     subscribe(handler) {
-        this.#subscribers.push(handler); // add handler to the array of subscribers
-        handler(this); // call handler with current value
+        const currentIdx = this.#subscribers.findIndex((entry) => entry === handler);
+        if (currentIdx === -1) {
+            this.#subscribers.push(handler); // add handler to the array of subscribers
+            handler(this); // call handler with current value
+        }
         // Return unsubscribe function.
         return () => {
-            const index = this.#subscribers.findIndex((sub) => sub === handler);
-            if (index >= 0) {
-                this.#subscribers.splice(index, 1);
+            const existingIdx = this.#subscribers.findIndex((entry) => entry === handler);
+            if (existingIdx !== -1) {
+                this.#subscribers.splice(existingIdx, 1);
             }
         };
     }
@@ -4003,16 +4000,16 @@ class Centered extends SystemBase {
 
 /**
  * Provides the storage and sequencing of managed position validators. Each validator added may be a bespoke function or
- * a {@link ValidatorData} object containing an `id`, `validator`, and `weight` attributes; `validator` is
- * the only required attribute.
+ * a {@link ValidatorData} object containing an `id`, `validator`, and `weight` attributes; `validator` is the only
+ * required attribute.
  *
  * The `id` attribute can be anything that creates a unique ID for the validator; recommended strings or numbers. This
  * allows validators to be removed by ID easily.
  *
- * The `weight` attribute is a number between 0 and 1 inclusive that allows validators to be added in a
- * predictable order which is especially handy if they are manipulated at runtime. A lower weighted validator always
- * runs before a higher weighted validator. If no weight is specified the default of '1' is assigned and it is appended
- * to the end of the validators list.
+ * The `weight` attribute is a number between 0 and 1 inclusive that allows validators to be added in a predictable
+ * order which is especially handy if they are manipulated at runtime. A lower weighted validator always runs before a
+ * higher weighted validator. If no weight is specified the default of '1' is assigned, and it is appended to the end of
+ * the validators list.
  *
  * This class forms the public API which is accessible from the {@link TJSPosition.validators} getter in the main
  * TJSPosition instance.
@@ -4240,7 +4237,7 @@ class AdapterValidators {
     /**
      * Removes any validators with matching IDs.
      *
-     * @param {...any}   ids - IDs to remove.
+     * @param ids - IDs to remove.
      */
     removeById(...ids) {
         const length = this.#validatorData.length;
@@ -4327,8 +4324,8 @@ class TransformBounds extends SystemBase {
 }
 
 /**
- * Tracks changes to positional data during {@link TJSPosition.set} updates to minimize changes to the element
- * style in {@link UpdateElementManager}.
+ * Tracks changes to positional data during {@link TJSPosition.set} updates to minimize changes to the element style in
+ * {@link UpdateElementManager}.
  */
 class PositionChangeSet {
     left;
@@ -4400,8 +4397,6 @@ class UpdateElementData {
         this.data = data;
         /**
          * Provides a copy of local data sent to subscribers.
-         *
-         * @type {TJSPositionData}
          */
         this.dataSubscribers = Object.seal(new TJSPositionData());
         /**
@@ -4447,8 +4442,6 @@ class UpdateElementData {
  * on the returned promise that is resolved with the current render time via `nextAnimationFrame` /
  * `requestAnimationFrame`. This allows the underlying data model to be updated immediately while updates to the
  * element are in sync with the browser and potentially in the future be further throttled.
- *
- * @param {HTMLElement} el - The target HTMLElement.
  */
 class UpdateElementManager {
     /**
@@ -4506,7 +4499,6 @@ class UpdateElementManager {
             // Reset queued state.
             updateData.queued = false;
             // Early out if the element is no longer connected to the DOM / shadow root.
-            // if (!el.isConnected || !updateData.changeSet.hasChange()) { continue; }
             if (!el.isConnected) {
                 continue;
             }
@@ -4535,7 +4527,6 @@ class UpdateElementManager {
      */
     static immediate(el, updateData) {
         // Early out if the element is no longer connected to the DOM / shadow root.
-        // if (!el.isConnected || !updateData.changeSet.hasChange()) { continue; }
         if (!el.isConnected) {
             return;
         }
@@ -4625,11 +4616,10 @@ class UpdateElementManager {
         }
     }
     /**
-     * Decouples updates to any parent target HTMLElement inline styles. Invoke
-     * {@link TJSPosition.elementUpdated} to await on the returned promise that is resolved with the current
-     * render time via `nextAnimationFrame` / `requestAnimationFrame`. This allows the underlying data model to be updated
-     * immediately while updates to the element are in sync with the browser and potentially in the future be further
-     * throttled.
+     * Decouples updates to any parent target HTMLElement inline styles. Invoke {@link TJSPosition.elementUpdated} to
+     * await on the returned promise that is resolved with the current render time via `nextAnimationFrame` /
+     * `requestAnimationFrame`. This allows the underlying data model to be updated immediately while updates to the
+     * element are in sync with the browser and potentially in the future be further throttled.
      *
      * @param el - The target HTMLElement.
      *
@@ -4831,7 +4821,7 @@ class TJSPosition {
     }
     /**
      * @param [parentOrOptions] - A  potential parent element or object w/ `elementTarget` accessor. You may also forego
-     *    setting the parent and pass in the options object.
+     *        setting the parent and pass in the options object.
      *
      * @param [options] - The options object.
      */
@@ -5344,67 +5334,67 @@ class TJSPosition {
                 return this;
             }
         }
-        if (MathGuard.isFinite(position.left)) {
+        if (NumberGuard.isFinite(position.left)) {
             position.left = Math.round(position.left);
             if (data.left !== position.left) {
                 data.left = position.left;
                 changeSet.left = true;
             }
         }
-        if (MathGuard.isFinite(position.top)) {
+        if (NumberGuard.isFinite(position.top)) {
             position.top = Math.round(position.top);
             if (data.top !== position.top) {
                 data.top = position.top;
                 changeSet.top = true;
             }
         }
-        if (MathGuard.isFiniteOrNull(position.maxHeight)) {
+        if (NumberGuard.isFiniteOrNull(position.maxHeight)) {
             position.maxHeight = typeof position.maxHeight === 'number' ? Math.round(position.maxHeight) : null;
             if (data.maxHeight !== position.maxHeight) {
                 data.maxHeight = position.maxHeight;
                 changeSet.maxHeight = true;
             }
         }
-        if (MathGuard.isFiniteOrNull(position.maxWidth)) {
+        if (NumberGuard.isFiniteOrNull(position.maxWidth)) {
             position.maxWidth = typeof position.maxWidth === 'number' ? Math.round(position.maxWidth) : null;
             if (data.maxWidth !== position.maxWidth) {
                 data.maxWidth = position.maxWidth;
                 changeSet.maxWidth = true;
             }
         }
-        if (MathGuard.isFiniteOrNull(position.minHeight)) {
+        if (NumberGuard.isFiniteOrNull(position.minHeight)) {
             position.minHeight = typeof position.minHeight === 'number' ? Math.round(position.minHeight) : null;
             if (data.minHeight !== position.minHeight) {
                 data.minHeight = position.minHeight;
                 changeSet.minHeight = true;
             }
         }
-        if (MathGuard.isFiniteOrNull(position.minWidth)) {
+        if (NumberGuard.isFiniteOrNull(position.minWidth)) {
             position.minWidth = typeof position.minWidth === 'number' ? Math.round(position.minWidth) : null;
             if (data.minWidth !== position.minWidth) {
                 data.minWidth = position.minWidth;
                 changeSet.minWidth = true;
             }
         }
-        if (MathGuard.isFiniteOrNull(position.rotateX)) {
+        if (NumberGuard.isFiniteOrNull(position.rotateX)) {
             if (data.rotateX !== position.rotateX) {
                 data.rotateX = transforms.rotateX = position.rotateX;
                 changeSet.transform = true;
             }
         }
-        if (MathGuard.isFiniteOrNull(position.rotateY)) {
+        if (NumberGuard.isFiniteOrNull(position.rotateY)) {
             if (data.rotateY !== position.rotateY) {
                 data.rotateY = transforms.rotateY = position.rotateY;
                 changeSet.transform = true;
             }
         }
-        if (MathGuard.isFiniteOrNull(position.rotateZ)) {
+        if (NumberGuard.isFiniteOrNull(position.rotateZ)) {
             if (data.rotateZ !== position.rotateZ) {
                 data.rotateZ = transforms.rotateZ = position.rotateZ;
                 changeSet.transform = true;
             }
         }
-        if (MathGuard.isFiniteOrNull(position.scale)) {
+        if (NumberGuard.isFiniteOrNull(position.scale)) {
             position.scale = typeof position.scale === 'number' ? clamp(position.scale, 0, 1000) : null;
             if (data.scale !== position.scale) {
                 data.scale = transforms.scale = position.scale;
@@ -5417,25 +5407,25 @@ class TJSPosition {
                 changeSet.transformOrigin = true;
             }
         }
-        if (MathGuard.isFiniteOrNull(position.translateX)) {
+        if (NumberGuard.isFiniteOrNull(position.translateX)) {
             if (data.translateX !== position.translateX) {
                 data.translateX = transforms.translateX = position.translateX;
                 changeSet.transform = true;
             }
         }
-        if (MathGuard.isFiniteOrNull(position.translateY)) {
+        if (NumberGuard.isFiniteOrNull(position.translateY)) {
             if (data.translateY !== position.translateY) {
                 data.translateY = transforms.translateY = position.translateY;
                 changeSet.transform = true;
             }
         }
-        if (MathGuard.isFiniteOrNull(position.translateZ)) {
+        if (NumberGuard.isFiniteOrNull(position.translateZ)) {
             if (data.translateZ !== position.translateZ) {
                 data.translateZ = transforms.translateZ = position.translateZ;
                 changeSet.transform = true;
             }
         }
-        if (MathGuard.isFinite(position.zIndex)) {
+        if (NumberGuard.isFinite(position.zIndex)) {
             position.zIndex = Math.round(position.zIndex);
             if (data.zIndex !== position.zIndex) {
                 data.zIndex = position.zIndex;
@@ -5443,7 +5433,7 @@ class TJSPosition {
             }
         }
         const widthIsObservable = position.width === 'auto' || position.width === 'inherit';
-        if (MathGuard.isFiniteOrNull(position.width) || widthIsObservable) {
+        if (NumberGuard.isFiniteOrNull(position.width) || widthIsObservable) {
             position.width = typeof position.width === 'number' ? Math.round(position.width) : position.width;
             if (data.width !== position.width) {
                 data.width = position.width;
@@ -5451,7 +5441,7 @@ class TJSPosition {
             }
         }
         const heightIsObservable = position.height === 'auto' || position.height === 'inherit';
-        if (MathGuard.isFiniteOrNull(position.height) || heightIsObservable) {
+        if (NumberGuard.isFiniteOrNull(position.height) || heightIsObservable) {
             position.height = typeof position.height === 'number' ? Math.round(position.height) : position.height;
             if (data.height !== position.height) {
                 data.height = position.height;
@@ -5497,13 +5487,16 @@ class TJSPosition {
      * @returns Unsubscribe function.
      */
     subscribe(handler) {
-        this.#subscribers.push(handler); // add handler to the array of subscribers
-        handler(Object.assign({}, this.#data)); // call handler with current value
+        const currentIdx = this.#subscribers.findIndex((entry) => entry === handler);
+        if (currentIdx === -1) {
+            this.#subscribers.push(handler); // add handler to the array of subscribers
+            handler(Object.assign({}, this.#data)); // call handler with current value
+        }
         // Return unsubscribe function.
         return () => {
-            const index = this.#subscribers.findIndex((sub) => sub === handler);
-            if (index >= 0) {
-                this.#subscribers.splice(index, 1);
+            const existingIdx = this.#subscribers.findIndex((entry) => entry === handler);
+            if (existingIdx !== -1) {
+                this.#subscribers.splice(existingIdx, 1);
             }
         };
     }
@@ -5574,8 +5567,9 @@ class TJSPosition {
                 width = styleCache.offsetWidth;
             }
             else {
-                const newWidth = MathGuard.isFinite(width) ? width : currentPosition.width;
-                currentPosition.width = width = MathGuard.isFinite(newWidth) ? Math.round(newWidth) :
+                const newWidth = NumberGuard.isFinite(width) ? width :
+                    currentPosition.width;
+                currentPosition.width = width = NumberGuard.isFinite(newWidth) ? Math.round(newWidth) :
                     styleCache.offsetWidth;
             }
         }
@@ -5594,8 +5588,9 @@ class TJSPosition {
                 height = styleCache.offsetHeight;
             }
             else {
-                const newHeight = MathGuard.isFinite(height) ? height : currentPosition.height;
-                currentPosition.height = height = MathGuard.isFinite(newHeight) ? Math.round(newHeight) :
+                const newHeight = NumberGuard.isFinite(height) ? height :
+                    currentPosition.height;
+                currentPosition.height = height = NumberGuard.isFinite(newHeight) ? Math.round(newHeight) :
                     styleCache.offsetHeight;
             }
         }
@@ -5603,7 +5598,7 @@ class TJSPosition {
             height = Number.isFinite(currentPosition.height) ? currentPosition.height : styleCache.offsetHeight;
         }
         // Update left
-        if (MathGuard.isFinite(left)) {
+        if (NumberGuard.isFinite(left)) {
             currentPosition.left = left;
         }
         else if (!Number.isFinite(currentPosition.left)) {
@@ -5620,50 +5615,50 @@ class TJSPosition {
             currentPosition.top = typeof this.#options?.initial?.getTop === 'function' ?
                 this.#options.initial.getTop(height) : 0;
         }
-        if (Number.isFinite(maxHeight) || maxHeight === null) {
-            currentPosition.maxHeight = Number.isFinite(maxHeight) ? Math.round(maxHeight) : null;
+        if (NumberGuard.isFiniteOrNull(maxHeight)) {
+            currentPosition.maxHeight = NumberGuard.isFinite(maxHeight) ? Math.round(maxHeight) : null;
         }
-        if (Number.isFinite(maxWidth) || maxWidth === null) {
-            currentPosition.maxWidth = Number.isFinite(maxWidth) ? Math.round(maxWidth) : null;
+        if (NumberGuard.isFiniteOrNull(maxWidth)) {
+            currentPosition.maxWidth = NumberGuard.isFinite(maxWidth) ? Math.round(maxWidth) : null;
         }
-        if (Number.isFinite(minHeight) || minHeight === null) {
-            currentPosition.minHeight = Number.isFinite(minHeight) ? Math.round(minHeight) : null;
+        if (NumberGuard.isFiniteOrNull(minHeight)) {
+            currentPosition.minHeight = NumberGuard.isFinite(minHeight) ? Math.round(minHeight) : null;
         }
-        if (Number.isFinite(minWidth) || minWidth === null) {
-            currentPosition.minWidth = Number.isFinite(minWidth) ? Math.round(minWidth) : null;
+        if (NumberGuard.isFiniteOrNull(minWidth)) {
+            currentPosition.minWidth = NumberGuard.isFinite(minWidth) ? Math.round(minWidth) : null;
         }
         // Update rotate X/Y/Z, scale, z-index
-        if (Number.isFinite(rotateX) || rotateX === null) {
+        if (NumberGuard.isFiniteOrNull(rotateX)) {
             currentPosition.rotateX = rotateX;
         }
-        if (Number.isFinite(rotateY) || rotateY === null) {
+        if (NumberGuard.isFiniteOrNull(rotateY)) {
             currentPosition.rotateY = rotateY;
         }
         // Handle alias for rotateZ. First check if `rotateZ` is valid and different from the current value. Next check if
         // `rotation` is valid and use it for `rotateZ`.
-        if (rotateZ !== currentPosition.rotateZ && (Number.isFinite(rotateZ) || rotateZ === null)) {
+        if (rotateZ !== currentPosition.rotateZ && (NumberGuard.isFiniteOrNull(rotateZ))) {
             currentPosition.rotateZ = rotateZ;
         }
-        else if (rotation !== currentPosition.rotateZ && (Number.isFinite(rotation) || rotation === null)) {
+        else if (rotation !== currentPosition.rotateZ && (NumberGuard.isFiniteOrNull(rotation))) {
             currentPosition.rotateZ = rotation;
         }
-        if (Number.isFinite(translateX) || translateX === null) {
+        if (NumberGuard.isFiniteOrNull(translateX)) {
             currentPosition.translateX = translateX;
         }
-        if (Number.isFinite(translateY) || translateY === null) {
+        if (NumberGuard.isFiniteOrNull(translateY)) {
             currentPosition.translateY = translateY;
         }
-        if (Number.isFinite(translateZ) || translateZ === null) {
+        if (NumberGuard.isFiniteOrNull(translateZ)) {
             currentPosition.translateZ = translateZ;
         }
-        if (Number.isFinite(scale) || scale === null) {
+        if (NumberGuard.isFiniteOrNull(scale)) {
             currentPosition.scale = typeof scale === 'number' ? clamp(scale, 0, 1000) : null;
         }
         if (typeof transformOrigin === 'string' || transformOrigin === null) {
             currentPosition.transformOrigin = TJSTransforms.transformOrigins.includes(transformOrigin) ? transformOrigin :
                 null;
         }
-        if (Number.isFinite(zIndex) || zIndex === null) {
+        if (NumberGuard.isFiniteOrNull(zIndex)) {
             currentPosition.zIndex = typeof zIndex === 'number' ? Math.round(zIndex) : zIndex;
         }
         const validatorData = this.#validatorData;

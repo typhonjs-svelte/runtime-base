@@ -9,7 +9,7 @@
 
 import { ActionReturn } from 'svelte/action';
 import { EasingReference } from '@typhonjs-svelte/runtime-base/svelte/easing';
-import { Writable, Readable, Subscriber, Invalidator, Unsubscriber, Updater } from 'svelte/store';
+import { Writable, Subscriber, Invalidator, Unsubscriber, Readable, Updater } from 'svelte/store';
 import { Mat4, Vec3 } from '@typhonjs-svelte/runtime-base/math/gl-matrix';
 import { InterpolateFunctionName } from '@typhonjs-svelte/runtime-base/math/interpolate';
 import { BasicAnimation } from '@typhonjs-svelte/runtime-base/util/animate';
@@ -17,93 +17,93 @@ import { ResizeObserverData } from '@typhonjs-svelte/runtime-base/util/dom/obser
 
 interface TransformAPI {
   /**
-   * @returns {boolean} Whether there are active transforms in local data.
+   * @returns Whether there are active transforms in local data.
    */
   get isActive(): boolean;
   /**
-   * @returns {number | null} Any local `rotateX` data.
+   * @returns Any local `rotateX` data.
    */
   get rotateX(): number | null | undefined;
   /**
-   * @returns {number | null} Any local `rotateY` data.
+   * @returns Any local `rotateY` data.
    */
   get rotateY(): number | null | undefined;
   /**
-   * @returns {number | null} Any local `rotateZ` data.
+   * @returns Any local `rotateZ` data.
    */
   get rotateZ(): number | null | undefined;
   /**
-   * @returns {number | null} Any local `scale` data.
+   * @returns Any local `scale` data.
    */
   get scale(): number | null | undefined;
   /**
-   * @returns {number | null} Any local `translateX` data.
+   * @returns Any local `translateX` data.
    */
   get translateX(): number | null | undefined;
   /**
-   * @returns {number | null} Any local `translateY` data.
+   * @returns Any local `translateY` data.
    */
   get translateY(): number | null | undefined;
   /**
-   * @returns {number | null} Any local `translateZ` data.
+   * @returns Any local `translateZ` data.
    */
   get translateZ(): number | null | undefined;
   /**
    * Sets the local `rotateX` data if the value is a finite number otherwise removes the local data.
    *
-   * @param {number | null}   value - A value to set.
+   * @param value - A value to set.
    */
   set rotateX(value: number | null | undefined);
   /**
    * Sets the local `rotateY` data if the value is a finite number otherwise removes the local data.
    *
-   * @param {number | null}   value - A value to set.
+   * @param value - A value to set.
    */
   set rotateY(value: number | null | undefined);
   /**
    * Sets the local `rotateZ` data if the value is a finite number otherwise removes the local data.
    *
-   * @param {number | null}   value - A value to set.
+   * @param value - A value to set.
    */
   set rotateZ(value: number | null | undefined);
   /**
    * Sets the local `scale` data if the value is a finite number otherwise removes the local data.
    *
-   * @param {number | null}   value - A value to set.
+   * @param value - A value to set.
    */
   set scale(value: number | null | undefined);
   /**
    * Sets the local `translateX` data if the value is a finite number otherwise removes the local data.
    *
-   * @param {number | null}   value - A value to set.
+   * @param value - A value to set.
    */
   set translateX(value: number | null | undefined);
   /**
    * Sets the local `translateY` data if the value is a finite number otherwise removes the local data.
    *
-   * @param {number | null}   value - A value to set.
+   * @param value - A value to set.
    */
   set translateY(value: number | null | undefined);
   /**
    * Sets the local `translateZ` data if the value is a finite number otherwise removes the local data.
    *
-   * @param {number | null}   value - A value to set.
+   * @param value - A value to set.
    */
   set translateZ(value: number | null | undefined);
   /**
    * Returns the `matrix3d` CSS transform for the given position / transform data.
    *
-   * @param {object} [data] - Optional position data otherwise use local stored transform data.
+   * @param [data] - Optional position data otherwise use local stored transform data.
    *
-   * @returns {string} The CSS `matrix3d` string.
+   * @returns The CSS `matrix3d` string.
    */
   getCSS(data?: object): string;
   /**
    * Returns the `matrix3d` CSS transform for the given position / transform data.
    *
-   * @param {object} [data] - Optional position data otherwise use local stored transform data.
+   * @param [data] - Optional position data otherwise use local stored transform data.
    *
-   * @returns {string} The CSS `matrix3d` string.
+   * @returns The CSS `matrix3d` string.
    */
   getCSSOrtho(data?: object): string;
   /**
@@ -130,11 +130,11 @@ interface TransformAPI {
    * then the stored local transform order is applied then all remaining transform keys are applied. This allows the
    * construction of a transform matrix in advance of setting local data and is useful in collision detection.
    *
-   * @param {Data.TJSPositionData}   [data] - TJSPositionData instance or local transform data.
+   * @param [data] - TJSPositionData instance or local transform data.
    *
-   * @param {Mat4}  [output] - The output mat4 instance.
+   * @param [output] - The output mat4 instance.
    *
-   * @returns {Mat4} Transform matrix.
+   * @returns Transform matrix.
    */
   getMat4(data?: object, output?: Mat4): Mat4;
   /**
@@ -147,25 +147,25 @@ interface TransformAPI {
    * then the stored local transform order is applied then all remaining transform keys are applied. This allows the
    * construction of a transform matrix in advance of setting local data and is useful in collision detection.
    *
-   * @param {Data.TJSPositionData}   [data] - TJSPositionData instance or local transform data.
+   * @param [data] - TJSPositionData instance or local transform data.
    *
-   * @param {Mat4}  [output] - The output mat4 instance.
+   * @param [output] - The output mat4 instance.
    *
-   * @returns {Mat4} Transform matrix.
+   * @returns Transform matrix.
    */
   getMat4Ortho(data?: object, output?: Mat4): Mat4;
   /**
    * Tests an object if it contains transform keys and the values are finite numbers.
    *
-   * @param {Data.TJSPositionData} data - An object to test for transform data.
+   * @param data - An object to test for transform data.
    *
-   * @returns {boolean} Whether the given TJSPositionData has transforms.
+   * @returns Whether the given TJSPositionData has transforms.
    */
   hasTransform(data: object): boolean;
   /**
    * Resets internal data from the given object containing valid transform keys.
    *
-   * @param {object}   data - An object with transform data.
+   * @param data - An object with transform data.
    */
   reset(data: object): void;
 }
@@ -184,23 +184,23 @@ declare namespace TransformAPI {
    */
   interface TransformData {
     /**
-     * @returns {DOMRect} The bounding rectangle.
+     * @returns The bounding rectangle.
      */
     get boundingRect(): DOMRect;
     /**
-     * @returns {Vec3[]} The transformed corner points as Vec3 in screen space.
+     * @returns The transformed corner points as Vec3 in screen space.
      */
     get corners(): Vec3[];
     /**
-     * @returns {string} Returns the CSS style string for the transform matrix.
+     * @returns Returns the CSS style string for the transform matrix.
      */
     get css(): string;
     /**
-     * @returns {Mat4} The transform matrix.
+     * @returns The transform matrix.
      */
     get mat4(): Mat4;
     /**
-     * @returns {Mat4[]} The pre / post translation matrices for origin translation.
+     * @returns The pre / post translation matrices for origin translation.
      */
     get originTranslations(): Mat4[];
   }
@@ -218,8 +218,8 @@ declare namespace TransformAPI {
     | 'bottom center'
     | 'bottom right';
   /**
-   * Provides a custom writable for the `transformOrigin` store adding a read only property `values` that
-   * contains a list of all transform origin values.
+   * Provides a custom writable for the `transformOrigin` store adding a read only property `values` that contains a
+   * list of all transform origin values.
    */
   interface TransformOriginWritable extends Writable<TransformOrigin> {
     get values(): Readonly<TransformOrigin[]>;
@@ -285,7 +285,7 @@ interface AnimationGroupAPI {
    * @param [options] - Tween options assigned to all positionable instances or a callback function invoked for unique
    *        options for each instance.
    *
-   * @returns {BasicAnimation} Basic animation control.
+   * @returns Basic animation control.
    */
   from(
     positionGroup: TJSPosition.PositionGroup,
@@ -343,7 +343,7 @@ interface AnimationGroupAPI {
    *        options assigned to all positionable instances or a callback function invoked for unique options for each
    *        instance.
    *
-   * @returns {AnimationAPI.GroupQuickToCallback | undefined} quick-to tween function.
+   * @returns quick-to tween function.
    */
   quickTo(
     positionGroup: TJSPosition.PositionGroup,
@@ -464,12 +464,11 @@ declare namespace AnimationAPI {
    */
   interface GroupDataCallback {
     /**
-     * @param options - The group callback options defining the order of the current
-     *        position / positionable being processed.
+     * @param options - The group callback options defining the order of the current position / positionable being
+     *        processed.
      *
-     * @returns The unique position data target to animate for this position /
-     *          positionable instance.  When null or undefined is returned the current position / positionable is
-     *          removed from the animation.
+     * @returns The unique position data target to animate for this position / positionable instance.  When null or
+     *          undefined is returned the current position / positionable is removed from the animation.
      */
     (options?: GroupCallbackOptions): Data.TJSPositionDataRelative | null | undefined;
   }
@@ -479,11 +478,11 @@ declare namespace AnimationAPI {
    */
   interface GroupTweenOptionsCallback {
     /**
-     * @param options - The group callback options defining the order of the current
-     *        position / positionable being processed.
+     * @param options - The group callback options defining the order of the current position / positionable being
+     *        processed.
      *
-     * @returns The unique tween options to set for this position / positionable instance. When null
-     *          or undefined is returned the current position / positionable is removed from the animation.
+     * @returns The unique tween options to set for this position / positionable instance. When null or undefined is
+     *          returned the current position / positionable is removed from the animation.
      */
     (options?: GroupCallbackOptions): TweenOptions | null | undefined;
   }
@@ -511,11 +510,11 @@ declare namespace AnimationAPI {
    */
   interface GroupQuickTweenOptionsCallback {
     /**
-     * @param {GroupCallbackOptions} options - The group callback options defining the order of the current
-     *        position / positionable being processed.
+     * @param options - The group callback options defining the order of the current position / positionable being
+     *        processed.
      *
-     * @returns {QuickTweenOptions} - The unique quick tween options to set for this position / positionable instance.
-     *          When null or undefined is returned the current position / positionable is removed from the animation.
+     * @returns The unique quick tween options to set for this position / positionable instance. When null or
+     *          undefined is returned the current position / positionable is removed from the animation.
      */
     (options?: GroupCallbackOptions): QuickTweenOptions | null | undefined;
   }
@@ -586,7 +585,7 @@ declare namespace AnimationAPI {
   interface QuickToCallback {
     /**
      * @param args - Individual numbers or relative strings corresponding to the order in which animation keys are
-     * specified.
+     *        specified.
      */
     (...args: (string | number)[]): void;
     /**
@@ -677,7 +676,7 @@ declare namespace Data {
    * ```
    *
    * Additional properties may be added that are not specified by {@link TJSPositionData} and are forwarded through
-   * {@link System.Validator.API.ValidationData} as the `rest` property allowing extra data to be sent to any
+   * {@link ValidatorAPI.ValidationData} as the `rest` property allowing extra data to be sent to any
    * custom validator.
    */
   type TJSPositionDataRelative = Partial<
@@ -828,17 +827,17 @@ interface StateAPI {
     ease?: EasingReference;
   }): Data.TJSPositionDataExtra | Promise<Data.TJSPositionDataExtra | undefined> | undefined;
   /**
-   * Saves current position state with the opportunity to add extra data to the saved state. Simply include
-   * extra properties in `options` to save extra data.
+   * Saves current position state with the opportunity to add extra data to the saved state. Simply include extra
+   * properties in `options` to save extra data.
    *
    * @param options - Options.
    *
    * @param options.name - name to index this saved data.
    *
-   * @param [optionsGet] - Additional options for
-   *        {@link TJSPosition.get} when serializing position state. By default, `nullable` values are included.
+   * @param [optionsGet] - Additional options for {@link TJSPosition.get} when serializing position state. By default,
+   *        `nullable` values are included.
    *
-   * @returns {Data.TJSPositionDataExtra} Current position data
+   * @returns Current position data.
    */
   save(
     {
@@ -853,9 +852,9 @@ interface StateAPI {
   /**
    * Directly sets a saved position state. Simply include extra properties in `options` to set extra data.
    *
-   * @param {object}   options - Options.
+   * @param options - Options.
    *
-   * @param {string}   options.name - name to index this saved data.
+   * @param options.name - name to index this saved data.
    */
   set({ name, ...data }: { name: string; [key: string]: any }): void;
 }
@@ -1029,12 +1028,12 @@ declare class PositionStateAPI implements StateAPI {
     ease,
   }: StateAPI.Options.Restore): Data.TJSPositionDataExtra | Promise<Data.TJSPositionDataExtra | undefined> | undefined;
   /**
-   * Saves current position state with the opportunity to add extra data to the saved state. Simply include
-   * extra properties in `options` to save extra data.
+   * Saves current position state with the opportunity to add extra data to the saved state. Simply include extra
+   * properties in `options` to save extra data.
    *
-   * @param {object}   options - Options.
+   * @param options - Options.
    *
-   * @param {string}   options.name - name to index this saved data.
+   * @param options.name - name to index this saved data.
    *
    * @param [optionsGet] - Additional options for {@link TJSPosition.get} when serializing position state. By default,
    *        `nullable` values are included.
@@ -1045,11 +1044,188 @@ declare class PositionStateAPI implements StateAPI {
   /**
    * Directly sets a saved position state. Simply include extra properties in `options` to set extra data.
    *
-   * @param {object}   opts - Options.
+   * @param opts - Options.
    *
-   * @param {string}   opts.name - name to index this saved data.
+   * @param opts.name - name to index this saved data.
    */
   set({ name, ...data }: StateAPI.Options.Set): void;
+}
+
+/**
+ * Provides the validator API implementation for {@link TJSPosition.validators}. You may add one or more validator
+ * functions which evaluate changes in the associated {@link TJSPosition} instance. This allows standard validation
+ * for browser bounds / transform checking available via {@link TJSPosition.Validators} or custom validators added which
+ * may provide unique bounding validation / constraints.
+ */
+interface ValidatorAPI {
+  /**
+   * @returns Returns the enabled state.
+   */
+  get enabled(): boolean;
+  /**
+   * @returns Returns the length of the validators array.
+   */
+  get length(): number;
+  /**
+   * @param enabled - Sets enabled state.
+   */
+  set enabled(enabled: boolean);
+  /**
+   * Provides an iterator for validators.
+   *
+   * @returns iterator.
+   */
+  [Symbol.iterator](): IterableIterator<ValidatorAPI.ValidatorData>;
+  /**
+   * Adds the given validators.
+   *
+   * @param validators - Validators to add.
+   */
+  add(...validators: (ValidatorAPI.ValidatorFn | ValidatorAPI.ValidatorData)[]): void;
+  /**
+   * Clears / removes all validators.
+   */
+  clear(): void;
+  /**
+   * Removes one or more given validators.
+   *
+   * @param validators - Validators to remove.
+   */
+  remove(...validators: (ValidatorAPI.ValidatorFn | ValidatorAPI.ValidatorData)[]): void;
+  /**
+   * Remove validators by the provided callback. The callback takes 3 parameters: `id`, `validator`, and `weight`.
+   * Any truthy value returned will remove that validator.
+   *
+   * @param callback - Callback function to evaluate each validator entry.
+   */
+  removeBy(callback: ValidatorAPI.RemoveByCallback): void;
+  /**
+   * Removes any validators with matching IDs.
+   *
+   * @param ids - IDs to remove.
+   */
+  removeById(...ids: any[]): void;
+}
+/**
+ * Provides a namespace for all type aliases related to the validator API.
+ */
+declare namespace ValidatorAPI {
+  /**
+   * The data passed to validator functions to determine if the new `position` / TJSPosition data is valid.
+   */
+  type ValidationData = {
+    /**
+     * New position data to evaluate.
+     */
+    position: Data.TJSPositionData;
+    /**
+     * Associated position parent instance.
+     */
+    parent: TJSPosition.PositionParent;
+    /**
+     * Associated element being positioned.
+     */
+    el: HTMLElement;
+    /**
+     * Computed styles for the element.
+     */
+    computed: CSSStyleDeclaration | undefined;
+    /**
+     * Current applies transforms / transform tracking & conversion utility.
+     */
+    transforms: TransformAPI;
+    /**
+     * Current height
+     */
+    height: number;
+    /**
+     * Current width
+     */
+    width: number;
+    /**
+     * Current left margin.
+     */
+    marginLeft: number | undefined;
+    /**
+     * Current top margin.
+     */
+    marginTop: number | undefined;
+    /**
+     * Current max height.
+     */
+    maxHeight: number | undefined | null;
+    /**
+     * Current max width.
+     */
+    maxWidth: number | undefined | null;
+    /**
+     * Current min height.
+     */
+    minHeight: number | undefined;
+    /**
+     * Current min width.
+     */
+    minWidth: number | undefined;
+    /**
+     * The rest of any data submitted to {@link TJSPosition.set}. This may be used to provide directives to
+     * validators.
+     */
+    rest:
+      | {
+          [key: string]: any;
+        }
+      | undefined;
+  };
+  /**
+   * Defines a validator function entry with optional data such as assigning an `id` / `weight` or providing more
+   * interactivity through attaching a subscriber function to monitor for updates that triggers validation.
+   */
+  type ValidatorData = {
+    /**
+     * TJSPosition validator function that takes a {@link Data.TJSPositionData} instance potentially modifying it or
+     * returning null if invalid.
+     */
+    validate: ValidatorFn;
+    /**
+     * An ID associated with this validator. Can be used to remove the validator; default: `undefined`.
+     */
+    id?: any;
+    /**
+     * Optional subscribe function following the Svelte store / subscribe pattern. On updates validation will be
+     * processed again.
+     */
+    subscribe?(this: void, run: Subscriber<any>, invalidate?: Invalidator<any>): Unsubscriber;
+    /**
+     * A number between 0 and 1 inclusive to position this validator against others; default: `1`.
+     */
+    weight?: number;
+  };
+  /**
+   * Defines the {@link TJSPosition} validator option.
+   */
+  type ValidatorOption = ValidatorFn | ValidatorData | Iterable<ValidatorFn | ValidatorData>;
+  /**
+   * Callback function to evaluate each validator entry. Return true to remove.
+   *
+   * @param data - ValidatorData instance to potentially filter / remove.
+   */
+  type RemoveByCallback = (data: ValidatorData) => boolean;
+  interface ValidatorFn extends Function {
+    /**
+     * TJSPosition validator function that takes a {@link ValidationData} instance potentially modifying `position`
+     * data or returning null if invalid.
+     *
+     * @param data - Validation data to handle.
+     *
+     * @returns The validated position data or null to cancel position update.
+     */
+    (data: ValidationData): Data.TJSPositionData | null;
+    /**
+     * Optional subscribe function following the Svelte store / subscribe pattern. On updates validation will be
+     * processed again.
+     */
+    subscribe?(this: void, run: Subscriber<any>, invalidate?: Invalidator<any>): Unsubscriber;
+  }
 }
 
 declare namespace Action {
@@ -1107,19 +1283,19 @@ declare namespace Action {
      */
     tweenOptions: AnimationAPI.QuickTweenOptions;
     /**
-     * @returns {number} Get tween duration.
+     * @returns Get tween duration.
      */
     get tweenDuration(): number;
     /**
-     * @returns {EasingReference} Get easing function or easing function name.
+     * @returns Get easing function or easing function name.
      */
     get tweenEase(): EasingReference;
     /**
-     * @param {number}   duration - Set tween duration.
+     * @param duration - Set tween duration.
      */
     set tweenDuration(duration: number);
     /**
-     * @param {EasingReference} ease - Set easing function by name or direct function.
+     * @param ease - Set easing function by name or direct function.
      */
     set tweenEase(ease: EasingReference);
     /**
@@ -1134,184 +1310,6 @@ declare namespace Action {
      * Resets tween options to initial values.
      */
     resetTweenOptions(): void;
-  }
-}
-
-/**
- * Provides the validator API implementation for {@link TJSPosition.validators}. You may add one or more validator
- * functions which evaluate changes in the associated {@link TJSPosition} instance. This allows standard validation
- * for browser bounds / transform checking available via {@link TJSPosition.Validators} or custom validators added which
- * may provide unique bounding validation / constraints.
- */
-interface ValidatorAPI {
-  /**
-   * @returns {boolean} Returns the enabled state.
-   */
-  get enabled(): boolean;
-  /**
-   * @returns {number} Returns the length of the validators array.
-   */
-  get length(): number;
-  /**
-   * @param {boolean}  enabled - Sets enabled state.
-   */
-  set enabled(enabled: boolean);
-  /**
-   * Provides an iterator for validators.
-   *
-   * @yields {ValidatorAPI.ValidatorData}
-   * @returns {IterableIterator<ValidatorAPI.ValidatorData>} iterator.
-   */
-  [Symbol.iterator](): IterableIterator<ValidatorAPI.ValidatorData>;
-  /**
-   * Adds the given validators.
-   *
-   * @param {...(ValidatorAPI.ValidatorFn | ValidatorAPI.ValidatorData)}   validators - Validators to add.
-   */
-  add(...validators: (ValidatorAPI.ValidatorFn | ValidatorAPI.ValidatorData)[]): void;
-  /**
-   * Clears / removes all validators.
-   */
-  clear(): void;
-  /**
-   * Removes one or more given validators.
-   *
-   * @param {...(ValidatorAPI.ValidatorFn | ValidatorAPI.ValidatorData)}   validators - Validators to remove.
-   */
-  remove(...validators: (ValidatorAPI.ValidatorFn | ValidatorAPI.ValidatorData)[]): void;
-  /**
-   * Remove validators by the provided callback. The callback takes 3 parameters: `id`, `validator`, and `weight`.
-   * Any truthy value returned will remove that validator.
-   *
-   * @param {ValidatorAPI.RemoveByCallback} callback - Callback function to evaluate each validator entry.
-   */
-  removeBy(callback: ValidatorAPI.RemoveByCallback): void;
-  /**
-   * Removes any validators with matching IDs.
-   *
-   * @param {...any} ids - IDs to remove.
-   */
-  removeById(...ids: any[]): void;
-}
-/**
- * Provides a namespace for all type aliases related to the validator API.
- */
-declare namespace ValidatorAPI {
-  /**
-   * The data passed to validator functions to determine if the new `position` / TJSPosition data is valid.
-   */
-  type ValidationData = {
-    /**
-     * New position data to evaluate.
-     */
-    position: Data.TJSPositionData;
-    /**
-     * Associated position parent instance.
-     */
-    parent: TJSPosition.PositionParent;
-    /**
-     * Associated element being positioned.
-     */
-    el: HTMLElement;
-    /**
-     * Computed styles for the element.
-     */
-    computed: CSSStyleDeclaration;
-    /**
-     * Current applies transforms / transform tracking & conversion utility.
-     */
-    transforms: TransformAPI;
-    /**
-     * Current height
-     */
-    height: number;
-    /**
-     * Current width
-     */
-    width: number;
-    /**
-     * Current left margin.
-     */
-    marginLeft: number | undefined;
-    /**
-     * Current top margin.
-     */
-    marginTop: number | undefined;
-    /**
-     * Current max height.
-     */
-    maxHeight: number | undefined;
-    /**
-     * Current max width.
-     */
-    maxWidth: number | undefined;
-    /**
-     * Current min height.
-     */
-    minHeight: number | undefined;
-    /**
-     * Current min width.
-     */
-    minWidth: number | undefined;
-    /**
-     * The rest of any data submitted to {@link TJSPosition.set}. This may be used to provide directives to
-     * validators.
-     */
-    rest:
-      | {
-          [key: string]: any;
-        }
-      | undefined;
-  };
-  /**
-   * Defines a validator function entry with optional data such as assigning an `id` / `weight` or providing more
-   * interactivity through attaching a subscriber function to monitor for updates that triggers validation.
-   */
-  type ValidatorData = {
-    /**
-     * TJSPosition validator function that takes a {@link Data.TJSPositionData} instance potentially
-     * modifying it or returning null if invalid.
-     */
-    validate: ValidatorFn;
-    /**
-     * An ID associated with this validator. Can be used to remove the validator; default: `undefined`.
-     */
-    id?: any;
-    /**
-     * Optional subscribe function following the Svelte store / subscribe pattern. On updates validation will
-     * be processed again.
-     */
-    subscribe?(this: void, run: Subscriber<any>, invalidate?: Invalidator<any>): Unsubscriber;
-    /**
-     * A number between 0 and 1 inclusive to position this validator against others; default: `1`.
-     */
-    weight?: number;
-  };
-  /**
-   * Defines the {@link TJSPosition} validator option.
-   */
-  type ValidatorOption = ValidatorFn | ValidatorData | Iterable<ValidatorFn | ValidatorData>;
-  /**
-   * Callback function to evaluate each validator entry. Return true to remove.
-   *
-   * @param {ValidatorData} data - ValidatorData instance to potentially filter / remove.
-   */
-  type RemoveByCallback = (data: ValidatorData) => boolean;
-  interface ValidatorFn extends Function {
-    /**
-     * TJSPosition validator function that takes a {@link ValidationData} instance potentially modifying `position`
-     * data or returning null if invalid.
-     *
-     * @param {ValidationData} data - Validation data to handle.
-     *
-     * @returns {Data.TJSPositionData | null} The validated position data or null to cancel position update.
-     */
-    (data: ValidationData): Data.TJSPositionData | null;
-    /**
-     * Optional subscribe function following the Svelte store / subscribe pattern. On updates validation will
-     * be processed again.
-     */
-    subscribe?(this: void, run: Subscriber<any>, invalidate?: Invalidator<any>): Unsubscriber;
   }
 }
 
@@ -1337,17 +1335,17 @@ declare namespace System {
       /**
        * Get the left constraint.
        *
-       * @param {number}   width - Target width.
+       * @param width - Target width.
        *
-       * @returns {number} Calculated left constraint.
+       * @returns Calculated left constraint.
        */
       getLeft(width: number): number;
       /**
        * Get the top constraint.
        *
-       * @param {number}   height - Target height.
+       * @param height - Target height.
        *
-       * @returns {number} Calculated top constraint.
+       * @returns Calculated top constraint.
        */
       getTop(height: number): number;
     }
@@ -1356,19 +1354,19 @@ declare namespace System {
      */
     interface InitialSystemConstructor {
       /**
-       * @param {object}      [options] - Initial options.
+       * @param [options] - Initial options.
        *
-       * @param {boolean}     [options.constrain=true] - Constrain state.
+       * @param [options.constrain=true] - Constrain state.
        *
-       * @param {HTMLElement} [options.element] - Target element.
+       * @param [options.element] - Target element.
        *
-       * @param {boolean}     [options.enabled=true] - Enabled state.
+       * @param [options.enabled=true] - Enabled state.
        *
-       * @param {boolean}     [options.lock=false] - Lock parameters from being set.
+       * @param [options.lock=false] - Lock parameters from being set.
        *
-       * @param {number}      [options.width] - Manual width.
+       * @param [options.width] - Manual width.
        *
-       * @param {number}      [options.height] - Manual height.
+       * @param [options.height] - Manual height.
        */
       new ({
         constrain,
@@ -1395,27 +1393,22 @@ declare namespace System {
    * interface.
    */
   namespace Validator {
-    export { ValidatorAPI as API };
     /**
      * Provides a system to validate positional changes.
      */
-    export interface ValidatorSystem extends SystemBase {
+    interface ValidatorSystem extends SystemBase {
       /**
        * Provides a validator that respects transforms in positional data constraining the position to within the
        * target elements bounds.
-       *
-       * @param valData - The associated validation data for position updates.
-       *
-       * @returns {Data.TJSPositionData} Potentially adjusted position data.
        */
-      validate: System.Validator.API.ValidatorFn;
+      validate: ValidatorAPI.ValidatorFn;
       /**
        * An ID associated with this validator. Can be used to remove the validator; default: `undefined`.
        */
       id?: any;
       /**
-       * Optional subscribe function following the Svelte store / subscribe pattern. On updates validation will
-       * be processed again.
+       * Optional subscribe function following the Svelte store / subscribe pattern. On updates validation will be
+       * processed again.
        */
       subscribe?(this: void, run: Subscriber<any>, invalidate?: Invalidator<any>): Unsubscriber;
       /**
@@ -1426,21 +1419,21 @@ declare namespace System {
     /**
      * Describes the constructor function for an {@link ValidatorSystem} implementation.
      */
-    export interface ValidatorSystemConstructor {
+    interface ValidatorSystemConstructor {
       /**
-       * @param {object}      [options] - Initial options.
+       * @param [options] - Initial options.
        *
-       * @param {boolean}     [options.constrain=true] - Constrain state.
+       * @param [options.constrain=true] - Constrain state.
        *
-       * @param {HTMLElement} [options.element] - Target element.
+       * @param [options.element] - Target element.
        *
-       * @param {boolean}     [options.enabled=true] - Enabled state.
+       * @param [options.enabled=true] - Enabled state.
        *
-       * @param {boolean}     [options.lock=false] - Lock parameters from being set.
+       * @param [options.lock=false] - Lock parameters from being set.
        *
-       * @param {number}      [options.width] - Manual width.
+       * @param [options.width] - Manual width.
        *
-       * @param {number}      [options.height] - Manual height.
+       * @param [options.height] - Manual height.
        */
       new ({
         constrain,
@@ -1518,19 +1511,19 @@ declare namespace System {
    */
   interface SystemBaseConstructor {
     /**
-     * @param {object}      [options] - Initial options.
+     * @param [options] - Initial options.
      *
-     * @param {boolean}     [options.constrain=true] - Constrain state.
+     * @param [options.constrain=true] - Constrain state.
      *
-     * @param {HTMLElement} [options.element] - Target element.
+     * @param [options.element] - Target element.
      *
-     * @param {boolean}     [options.enabled=true] - Enabled state.
+     * @param [options.enabled=true] - Enabled state.
      *
-     * @param {boolean}     [options.lock=false] - Lock parameters from being set.
+     * @param [options.lock=false] - Lock parameters from being set.
      *
-     * @param {number}      [options.width] - Manual width.
+     * @param [options.width] - Manual width.
      *
-     * @param {number}      [options.height] - Manual height.
+     * @param [options.height] - Manual height.
      */
     new ({
       constrain,
@@ -1551,7 +1544,7 @@ declare namespace System {
 }
 
 /**
- * Provides the default {@link System.Initial.InitialSystem} implementations available.
+ * Provides the default {@link System.Initial.InitialSystem} implementations available from {@link TJSPosition.Initial}.
  */
 type DefaultInitial = {
   /**
@@ -1560,12 +1553,12 @@ type DefaultInitial = {
   browserCentered: System.Initial.InitialSystem;
   /**
    * The `Centered` class constructor to instantiate a new instance.
-   * @constructor
    */
   Centered: System.Initial.InitialSystemConstructor;
 };
 /**
- * Provides the default {@link System.Validator.ValidatorSystem} implementations available.
+ * Provides the default {@link System.Validator.ValidatorSystem} implementations available from
+ * {@link TJSPosition.Validators}.
  */
 type DefaultValidators = {
   /**
@@ -1657,13 +1650,13 @@ interface Stores {
    * Readable store for dimension data.
    */
   dimension: Readable<{
-    width: number | 'auto' | 'inherit';
-    height: number | 'auto' | 'inherit';
+    width: number | 'auto' | 'inherit' | null;
+    height: number | 'auto' | 'inherit' | null;
   }>;
   /**
    * Readable store for current element.
    */
-  element: Readable<HTMLElement>;
+  element: Readable<HTMLElement | undefined>;
   /**
    * Readable store for `contentHeight`.
    */
@@ -1714,7 +1707,7 @@ declare namespace Options {
     /**
      * Provides an initial validator or list of validators.
      */
-    validator: System.Validator.API.ValidatorOption;
+    validator: ValidatorAPI.ValidatorOption;
   };
   /**
    * Provides the complete options object including unique {@link TJSPosition} options in addition to positional
@@ -1765,8 +1758,8 @@ interface Positionable {
  */
 type PositionGroup = TJSPosition | Positionable | Iterable<TJSPosition> | Iterable<Positionable>;
 /**
- * Defines the TJSPosition parent element. Provide either an HTMLElement directly or an object with an
- * `elementTarget` property / accessor defining the parent HTMLElement.
+ * Defines the TJSPosition parent element. Provide either an HTMLElement directly or an object with an `elementTarget`
+ * property / accessor defining the parent HTMLElement.
  */
 type PositionParent =
   | HTMLElement
@@ -1861,7 +1854,7 @@ declare class TJSPosition implements TJSPosition.WritableExt {
   static duplicate(position: TJSPosition, options?: TJSPosition.Options.ConfigAll): TJSPosition;
   /**
    * @param [parentOrOptions] - A  potential parent element or object w/ `elementTarget` accessor. You may also forego
-   *    setting the parent and pass in the options object.
+   *        setting the parent and pass in the options object.
    *
    * @param [options] - The options object.
    */
@@ -1881,8 +1874,8 @@ declare class TJSPosition implements TJSPosition.WritableExt {
    * @returns Dimension data.
    */
   get dimension(): Readonly<{
-    width: number | 'auto' | 'inherit';
-    height: number | 'auto' | 'inherit';
+    width: number | 'auto' | 'inherit' | null;
+    height: number | 'auto' | 'inherit' | null;
   }>;
   /**
    * Returns the enabled state.
@@ -1907,7 +1900,7 @@ declare class TJSPosition implements TJSPosition.WritableExt {
    *
    * @returns The current position parent instance.
    */
-  get parent(): TJSPosition.PositionParent;
+  get parent(): TJSPosition.PositionParent | undefined;
   /**
    * Returns the state API.
    *
@@ -1931,7 +1924,7 @@ declare class TJSPosition implements TJSPosition.WritableExt {
    *
    * @returns Validators API
    */
-  get validators(): System.Validator.API;
+  get validators(): ValidatorAPI;
   /**
    * Sets the enabled state.
    *
@@ -2137,7 +2130,7 @@ declare class TJSPosition implements TJSPosition.WritableExt {
    *
    * @returns This TJSPosition instance.
    */
-  set(position?: Data.TJSPositionDataRelative, options?: TJSPosition.Options.Set): this;
+  set(position?: Data.TJSPositionDataRelative | null, options?: TJSPosition.Options.Set): this;
   /**
    * @param handler - Callback function that is invoked on update / changes. Receives a readonly copy of the
    *        TJSPositionData.
@@ -2154,8 +2147,14 @@ declare class TJSPosition implements TJSPosition.WritableExt {
    */
   update(updater: Updater<Data.TJSPositionDataRelative>): void;
 }
+/**
+ * Provides comprehensive types for {@link TJSPosition} and related actions.
+ */
 declare namespace TJSPosition {
   export { Action };
+  /**
+   * Public API surface types.
+   */
   export namespace API {
     export {
       AnimationAPI as Animation,
@@ -2167,6 +2166,7 @@ declare namespace TJSPosition {
       System,
       type Stores,
       TransformAPI as Transform,
+      ValidatorAPI as Validators,
     };
   }
   export { Options, type Positionable, type PositionGroup, type PositionParent, type WritableExt, type WritablePos };
@@ -2188,8 +2188,8 @@ declare function applyPosition(
 
 /**
  * Provides an action to enable pointer dragging of an HTMLElement and invoke `position.set` on a given
- * {@link TJSPosition} instance provided. When the attached boolean store state changes the draggable
- * action is enabled or disabled.
+ * {@link TJSPosition} instance provided. When the attached boolean store state changes the draggable action is enabled
+ * or disabled.
  *
  * @param node - The node associated with the action.
  *
