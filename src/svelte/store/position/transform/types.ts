@@ -1,8 +1,8 @@
-import type { Writable }           from 'svelte/store';
+import type { Writable }   from 'svelte/store';
 
-import type { Mat4, Vec3 }    from '#runtime/math/gl-matrix';
+import type { Mat4, Vec3 } from '#runtime/math/gl-matrix';
 
-import type { Data }          from '../data/types';
+import type { Data }       from '../data/types';
 
 interface TransformAPI
 {
@@ -233,8 +233,8 @@ declare namespace TransformAPI {
     'bottom right';
 
    /**
-    * Provides a custom writable for the `transformOrigin` store adding a read only property `values` that
-    * contains a list of all transform origin values.
+    * Provides a custom writable for the `transformOrigin` store adding a read only property `values` that contains a
+    * list of all transform origin values.
     */
    export interface TransformOriginWritable extends Writable<TransformOrigin>
    {

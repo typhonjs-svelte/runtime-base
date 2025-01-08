@@ -4,7 +4,7 @@ import type { BasicAnimation }            from '#runtime/util/animate';
 
 import type { TJSPosition }               from '../TJSPosition';
 
-import type { Data }                   from '../data/types';
+import type { Data }                      from '../data/types';
 import type { TransformAPI }              from '../transform/types';
 
 interface AnimationAPI
@@ -245,12 +245,11 @@ declare namespace AnimationAPI {
    export interface GroupDataCallback
    {
       /**
-       * @param options - The group callback options defining the order of the current
-       *        position / positionable being processed.
+       * @param options - The group callback options defining the order of the current position / positionable being
+       *        processed.
        *
-       * @returns The unique position data target to animate for this position /
-       *          positionable instance.  When null or undefined is returned the current position / positionable is
-       *          removed from the animation.
+       * @returns The unique position data target to animate for this position / positionable instance.  When null or
+       *          undefined is returned the current position / positionable is removed from the animation.
        */
       (options?: GroupCallbackOptions): Data.TJSPositionDataRelative | null | undefined;
    }
@@ -262,11 +261,11 @@ declare namespace AnimationAPI {
    export interface GroupTweenOptionsCallback
    {
       /**
-       * @param options - The group callback options defining the order of the current
-       *        position / positionable being processed.
+       * @param options - The group callback options defining the order of the current position / positionable being
+       *        processed.
        *
-       * @returns The unique tween options to set for this position / positionable instance. When null
-       *          or undefined is returned the current position / positionable is removed from the animation.
+       * @returns The unique tween options to set for this position / positionable instance. When null or undefined is
+       *          returned the current position / positionable is removed from the animation.
        */
       (options?: GroupCallbackOptions): TweenOptions | null | undefined;
    }
@@ -299,11 +298,11 @@ declare namespace AnimationAPI {
    export interface GroupQuickTweenOptionsCallback
    {
       /**
-       * @param options - The group callback options defining the order of the current
-       *        position / positionable being processed.
+       * @param options - The group callback options defining the order of the current position / positionable being
+       *        processed.
        *
-       * @returns The unique quick tween options to set for this position / positionable instance.
-       *          When null or undefined is returned the current position / positionable is removed from the animation.
+       * @returns The unique quick tween options to set for this position / positionable instance. When null or
+       *          undefined is returned the current position / positionable is removed from the animation.
        */
       (options?: GroupCallbackOptions): QuickTweenOptions | null | undefined;
    }
@@ -384,7 +383,7 @@ declare namespace AnimationAPI {
    {
       /**
        * @param args - Individual numbers or relative strings corresponding to the order in which animation keys are
-       * specified.
+       *        specified.
        */
       (...args: (string | number)[]): void;
 

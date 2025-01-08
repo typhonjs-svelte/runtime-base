@@ -1,11 +1,11 @@
 import type {
    Invalidator,
    Subscriber,
-   Unsubscriber }                   from 'svelte/store';
+   Unsubscriber }             from 'svelte/store';
 
-import type { TJSPosition }         from '../../TJSPosition';
-import type { Data }                from '../../data/types';
-import type { TransformAPI }        from '../../transform/types';
+import type { TJSPosition }   from '../../TJSPosition';
+import type { Data }          from '../../data/types';
+import type { TransformAPI }  from '../../transform/types';
 
 /**
  * Provides the validator API implementation for {@link TJSPosition.validators}. You may add one or more validator
@@ -158,8 +158,8 @@ declare namespace ValidatorAPI {
     */
    export type ValidatorData = {
       /**
-       * TJSPosition validator function that takes a {@link Data.TJSPositionData} instance potentially
-       * modifying it or returning null if invalid.
+       * TJSPosition validator function that takes a {@link Data.TJSPositionData} instance potentially modifying it or
+       * returning null if invalid.
        */
       validate: ValidatorFn;
 
@@ -169,8 +169,8 @@ declare namespace ValidatorAPI {
       id?: any;
 
       /**
-       * Optional subscribe function following the Svelte store / subscribe pattern. On updates validation will
-       * be processed again.
+       * Optional subscribe function following the Svelte store / subscribe pattern. On updates validation will be
+       * processed again.
        */
       subscribe?(this: void, run: Subscriber<any>, invalidate?: Invalidator<any>): Unsubscriber;
 
@@ -205,8 +205,8 @@ declare namespace ValidatorAPI {
       (data: ValidationData): Data.TJSPositionData | null;
 
       /**
-       * Optional subscribe function following the Svelte store / subscribe pattern. On updates validation will
-       * be processed again.
+       * Optional subscribe function following the Svelte store / subscribe pattern. On updates validation will be
+       * processed again.
        */
       subscribe?(this: void, run: Subscriber<any>, invalidate?: Invalidator<any>): Unsubscriber;
    }

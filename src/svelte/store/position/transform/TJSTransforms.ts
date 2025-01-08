@@ -2,7 +2,7 @@ import { degToRad }              from '#runtime/math/util';
 import { Mat4, Vec3 }            from '#runtime/math/gl-matrix';
 
 import { TJSTransformData }      from './TJSTransformData';
-import { NumberGuard }             from '../util';
+import { NumberGuard }           from '../util';
 
 import type {
    Mat4Like,
@@ -68,7 +68,7 @@ export class TJSTransforms implements TransformAPI
     */
    static #transformOrigins: readonly TransformAPI.TransformOrigin[] = Object.freeze([
       'top left', 'top center', 'top right', 'center left', 'center', 'center right', 'bottom left', 'bottom center',
-       'bottom right'
+      'bottom right'
    ]);
 
    /**
@@ -570,7 +570,6 @@ export class TJSTransforms implements TransformAPI
             const key: keyof Data.TJSPositionData = TJSTransforms.#transformKeys[cntr];
 
             // Reject bad / no data or if the key has already been applied.
-            // if (data[key] === null || (seenKeys & TJSTransforms.#transformKeysBitwise[key]) > 0) { continue; }
             if (data[key] === null || (seenKeys & TJSTransforms.#transformKeysBitwise[key]) > 0) { continue; }
 
             const value: number = data[key] as number;
@@ -627,8 +626,8 @@ export class TJSTransforms implements TransformAPI
    /**
     * Provides an orthographic enhancement to convert left / top positional data to a translate operation.
     *
-    * This transform matrix takes into account that the remaining operations are , but adds any left / top attributes from passed in data to
-    * translate X / Y.
+    * This transform matrix takes into account that the remaining operations are , but adds any left / top attributes
+    * from passed in data to translate X / Y.
     *
     * If no data object is provided then the source is the local transform data. If another data object is supplied
     * then the stored local transform order is applied then all remaining transform keys are applied. This allows the

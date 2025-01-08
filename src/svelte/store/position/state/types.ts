@@ -92,19 +92,18 @@ interface StateAPI {
       animateTo?: boolean,
       duration?: number,
       ease?: EasingReference,
-   }): Data.TJSPositionDataExtra | Promise<Data.TJSPositionDataExtra | undefined> |
-    undefined;
+   }): Data.TJSPositionDataExtra | Promise<Data.TJSPositionDataExtra | undefined> | undefined;
 
    /**
-    * Saves current position state with the opportunity to add extra data to the saved state. Simply include
-    * extra properties in `options` to save extra data.
+    * Saves current position state with the opportunity to add extra data to the saved state. Simply include extra
+    * properties in `options` to save extra data.
     *
     * @param options - Options.
     *
     * @param options.name - name to index this saved data.
     *
-    * @param [optionsGet] - Additional options for
-    *        {@link TJSPosition.get} when serializing position state. By default, `nullable` values are included.
+    * @param [optionsGet] - Additional options for {@link TJSPosition.get} when serializing position state. By default,
+    *        `nullable` values are included.
     *
     * @returns Current position data.
     */
@@ -220,6 +219,4 @@ declare namespace StateAPI {
    }
 }
 
-export {
-   StateAPI
-}
+export { StateAPI }

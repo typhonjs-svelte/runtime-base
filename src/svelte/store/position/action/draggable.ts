@@ -23,8 +23,8 @@ import type { Data }          from '../data/types';
 
 /**
  * Provides an action to enable pointer dragging of an HTMLElement and invoke `position.set` on a given
- * {@link TJSPosition} instance provided. When the attached boolean store state changes the draggable
- * action is enabled or disabled.
+ * {@link TJSPosition} instance provided. When the attached boolean store state changes the draggable action is enabled
+ * or disabled.
  *
  * @param node - The node associated with the action.
  *
@@ -67,8 +67,8 @@ function draggable(node: HTMLElement, { position, enabled = true, button = 0, st
    let initialDragPoint: { x: number, y: number } = { x: 0, y: 0 };
 
    /**
-    * Stores the current dragging state and gates the move pointer as the dragging store is not
-    * set until the first pointer move.
+    * Stores the current dragging state and gates the move pointer as the dragging store is not set until the first
+    * pointer move.
     */
    let dragging: boolean = false;
 
@@ -471,7 +471,8 @@ class DraggableOptionsStore implements Action.DraggableOptionsStore
    /**
     * Store subscribe method.
     *
-    * @param handler - Callback function that is invoked on update / changes. Receives the DraggableOptionsStore instance.
+    * @param handler - Callback function that is invoked on update / changes. Receives the DraggableOptionsStore
+    *        instance.
     *
     * @returns Unsubscribe function.
     */
@@ -482,21 +483,23 @@ class DraggableOptionsStore implements Action.DraggableOptionsStore
       handler(this);                     // call handler with current value
 
       // Return unsubscribe function.
-      return () =>
+      return (): void =>
       {
-         const index = this.#subscriptions.findIndex((sub) => sub === handler);
+         const index: number = this.#subscriptions.findIndex(
+          (sub: Subscriber<Action.DraggableOptionsStore>): boolean => sub === handler);
+
          if (index >= 0) { this.#subscriptions.splice(index, 1); }
       };
    }
 
-   #updateSubscribers()
+   #updateSubscribers(): void
    {
-      const subscriptions = this.#subscriptions;
+      const subscriptions: Subscriber<Action.DraggableOptionsStore>[] = this.#subscriptions;
 
       // Early out if there are no subscribers.
       if (subscriptions.length > 0)
       {
-         for (let cntr = 0; cntr < subscriptions.length; cntr++) { subscriptions[cntr](this); }
+         for (let cntr: number = 0; cntr < subscriptions.length; cntr++) { subscriptions[cntr](this); }
       }
    }
 }

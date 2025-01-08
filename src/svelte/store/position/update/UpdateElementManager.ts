@@ -88,7 +88,6 @@ export class UpdateElementManager
          updateData.queued = false;
 
          // Early out if the element is no longer connected to the DOM / shadow root.
-         // if (!el.isConnected || !updateData.changeSet.hasChange()) { continue; }
          if (!el.isConnected) { continue; }
 
          if (updateData.options.ortho)
@@ -122,10 +121,9 @@ export class UpdateElementManager
     *
     * @param updateData - An UpdateElementData instance.
     */
-   static immediate(el: HTMLElement, updateData: UpdateElementData)
+   static immediate(el: HTMLElement, updateData: UpdateElementData): void
    {
       // Early out if the element is no longer connected to the DOM / shadow root.
-      // if (!el.isConnected || !updateData.changeSet.hasChange()) { continue; }
       if (!el.isConnected) { return; }
 
       if (updateData.options.ortho)
@@ -150,7 +148,7 @@ export class UpdateElementManager
    /**
     * @param updateData - Data change set.
     */
-   static updateSubscribers(updateData: UpdateElementData)
+   static updateSubscribers(updateData: UpdateElementData): void
    {
       const data: TJSPositionData = updateData.data;
       const changeSet: PositionChangeSet = updateData.changeSet;
@@ -244,11 +242,10 @@ export class UpdateElementManager
    }
 
    /**
-    * Decouples updates to any parent target HTMLElement inline styles. Invoke
-    * {@link TJSPosition.elementUpdated} to await on the returned promise that is resolved with the current
-    * render time via `nextAnimationFrame` / `requestAnimationFrame`. This allows the underlying data model to be updated
-    * immediately while updates to the element are in sync with the browser and potentially in the future be further
-    * throttled.
+    * Decouples updates to any parent target HTMLElement inline styles. Invoke {@link TJSPosition.elementUpdated} to
+    * await on the returned promise that is resolved with the current render time via `nextAnimationFrame` /
+    * `requestAnimationFrame`. This allows the underlying data model to be updated immediately while updates to the
+    * element are in sync with the browser and potentially in the future be further throttled.
     *
     * @param el - The target HTMLElement.
     *

@@ -3,7 +3,7 @@ import {
    isObject }                    from '#runtime/util/object';
 
 import { AnimationManager }      from './AnimationManager';
-import { AnimationAPIImpl }          from './AnimationAPIImpl';
+import { AnimationAPIImpl }      from './AnimationAPIImpl';
 import { AnimationGroupControl } from './AnimationGroupControl';
 import { AnimationScheduler }    from './AnimationScheduler';
 

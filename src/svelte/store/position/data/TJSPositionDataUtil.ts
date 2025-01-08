@@ -1,6 +1,6 @@
 import { TJSPositionData }    from './TJSPositionData';
 
-import type { Data }       from './types';
+import type { Data }          from './types';
 import type { AnimationAPI }  from '../animation/types';
 
 /**
@@ -27,8 +27,8 @@ export class TJSPositionDataUtil
     new Map([['rotation', 'rotateZ' as AnimationAPI.AnimationKey]]));
 
    /**
-    * Provides numeric defaults for all parameters. This is used by {@link TJSPosition.get} to optionally
-    * provide numeric defaults.
+    * Provides numeric defaults for all parameters. This is used by {@link TJSPosition.get} to optionally provide
+    * numeric defaults.
     */
    static #numericDefaults: Readonly<{ [key: string]: number | null }> = Object.freeze({
       // Other keys

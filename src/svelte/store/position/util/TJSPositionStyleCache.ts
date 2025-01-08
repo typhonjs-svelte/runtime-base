@@ -1,9 +1,7 @@
 import { writable }                 from 'svelte/store';
 
 import { propertyStore }            from '#runtime/svelte/store/writable-derived';
-
 import { A11yHelper }               from '#runtime/util/a11y';
-
 import { StyleParse }               from '#runtime/util/dom/style';
 
 import type { Writable }            from 'svelte/store';

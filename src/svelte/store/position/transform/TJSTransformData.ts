@@ -29,7 +29,7 @@ export class TJSTransformData implements TransformAPI.TransformData
    #mat4: Mat4 = Mat4.create();
 
    /**
-    * Stores the pre & post origin translations to apply to matrix transforms.
+    * Stores the pre-origin & post-origin translations to apply to matrix transforms.
     */
    #originTranslations: Mat4[] = [Mat4.create(), Mat4.create()];
 

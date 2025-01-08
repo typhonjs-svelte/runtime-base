@@ -1,57 +1,57 @@
-import { clamp }                 from '#runtime/math/util';
-import { subscribeIgnoreFirst }  from '#runtime/svelte/store/util';
-import { propertyStore }         from '#runtime/svelte/store/writable-derived';
-import { A11yHelper }            from '#runtime/util/a11y';
+import { clamp }                    from '#runtime/math/util';
+import { subscribeIgnoreFirst }     from '#runtime/svelte/store/util';
+import { propertyStore }            from '#runtime/svelte/store/writable-derived';
+import { A11yHelper }               from '#runtime/util/a11y';
 
 import {
    isIterable,
    isObject,
-   isPlainObject }               from '#runtime/util/object';
+   isPlainObject }                  from '#runtime/util/object';
 
 import {
    AnimationAPIImpl,
-   AnimationGroupAPIImpl }       from './animation';
+   AnimationGroupAPIImpl }          from './animation';
 
 import {
    ConvertStringData,
    TJSPositionData,
-   TJSPositionDataUtil }         from './data';
+   TJSPositionDataUtil }            from './data';
 
-import { PositionStateAPI }      from './state';
-import { SystemBase }            from './system';
-import { Centered }              from './system/initial';
+import { PositionStateAPI }         from './state';
+import { SystemBase }               from './system';
+import { Centered }                 from './system/initial';
 
 import {
    AdapterValidators,
-   TransformBounds }             from './system/validators';
+   TransformBounds }                from './system/validators';
 
 import {
    TJSTransformData,
-   TJSTransforms }               from './transform';
+   TJSTransforms }                  from './transform';
 
 import {
    PositionChangeSet,
    UpdateElementData,
-   UpdateElementManager }        from './update';
+   UpdateElementManager }           from './update';
 
 import {
    NumberGuard,
-   TJSPositionStyleCache }       from './util';
+   TJSPositionStyleCache }          from './util';
 
 import type {
    Subscriber,
    Updater,
-   Unsubscriber }                from 'svelte/store';
+   Unsubscriber }                   from 'svelte/store';
 
 import type { ResizeObserverData }  from '#runtime/util/dom/observer';
 
-import type { OptionsInternal }  from './types-local';
+import type { OptionsInternal }     from './types-local';
 
 import type {
    AnimationAPI,
-   AnimationGroupAPI }           from './animation/types';
+   AnimationGroupAPI }              from './animation/types';
 
-import type { ValidatorAPI }     from './system/validators/types';
+import type { ValidatorAPI }        from './system/validators/types';
 
 /**
  * Provides an advanced compound store for positioning elements dynamically including an optimized pipeline for updating
@@ -242,7 +242,7 @@ class TJSPosition implements TJSPosition.WritableExt
 
    /**
     * @param [parentOrOptions] - A  potential parent element or object w/ `elementTarget` accessor. You may also forego
-    *    setting the parent and pass in the options object.
+    *        setting the parent and pass in the options object.
     *
     * @param [options] - The options object.
     */
@@ -1174,8 +1174,8 @@ class TJSPosition implements TJSPosition.WritableExt
       rotation,
 
       ...rest
-   }: Data.TJSPositionData, parent: TJSPosition.PositionParent, el: HTMLElement,
-                   styleCache: TJSPositionStyleCache): TJSPositionData | null
+   }: Data.TJSPositionData, parent: TJSPosition.PositionParent, el: HTMLElement, styleCache: TJSPositionStyleCache):
+    TJSPositionData | null
    {
       let currentPosition: TJSPositionData | null = TJSPositionDataUtil.copyData(this.#data,
        TJSPosition.#updateDataCopy);
@@ -1372,11 +1372,11 @@ class TJSPosition implements TJSPosition.WritableExt
 
 // Imports for TJSPosition namespace ---------------------------------------------------------------------------------
 
-import type { Action }              from './action/types';
-import type { Data }                from './data/types';
-import type { StateAPI }            from './state/types';
-import type { System }              from './system/types';
-import type { TransformAPI }        from './transform/types';
+import type { Action }        from './action/types';
+import type { Data }          from './data/types';
+import type { StateAPI }      from './state/types';
+import type { System }        from './system/types';
+import type { TransformAPI }  from './transform/types';
 
 import type {
    DefaultInitial,
@@ -1387,11 +1387,17 @@ import type {
    PositionParent,
    Stores,
    WritableExt,
-   WritablePos }                    from './types';
+   WritablePos }              from './types';
 
+/**
+ * Provides comprehensive types for {@link TJSPosition} and related actions.
+ */
 declare namespace TJSPosition {
    export { Action };
 
+   /**
+    * Public API surface types.
+    */
    export namespace API
    {
       export {

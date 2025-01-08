@@ -25,7 +25,6 @@ type DefaultInitial = {
 
    /**
     * The `Centered` class constructor to instantiate a new instance.
-    * @constructor
     */
    Centered: System.Initial.InitialSystemConstructor
 }
@@ -275,8 +274,8 @@ interface Positionable {
 type PositionGroup = TJSPosition | Positionable | Iterable<TJSPosition> | Iterable<Positionable>;
 
 /**
- * Defines the TJSPosition parent element. Provide either an HTMLElement directly or an object with an
- * `elementTarget` property / accessor defining the parent HTMLElement.
+ * Defines the TJSPosition parent element. Provide either an HTMLElement directly or an object with an `elementTarget`
+ * property / accessor defining the parent HTMLElement.
  */
 type PositionParent = HTMLElement | { elementTarget?: HTMLElement };
 

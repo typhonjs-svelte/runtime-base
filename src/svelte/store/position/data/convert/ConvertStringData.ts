@@ -129,15 +129,15 @@ export class ConvertStringData
                         }
                      }
 
-                     handled = this.#handlePercent(animKey, current, data, position, el, results,
-                      parentClientHeight, parentClientWidth);
+                     handled = this.#handlePercent(animKey, current, data, results, parentClientHeight,
+                      parentClientWidth);
 
                      break;
                   }
 
                   // Animation keys that support percentage changes from current values.
                   case '%~':
-                     handled = this.#handleRelativePercent(animKey, current, data, position, el, results);
+                     handled = this.#handleRelativePercent(animKey, current, data, results);
                      break;
 
                   // Animation keys that support `px` / treat as raw number.
@@ -150,7 +150,7 @@ export class ConvertStringData
                   case 'rad':
                   case 'turn':
                      handled = this.#animKeyTypes.rotationRadTurn.has(key) ?
-                      this.#handleRotationRadTurn(animKey, current, data, position, el, results) : false;
+                      this.#handleRotationRadTurn(animKey, current, data, results) : false;
                      break;
 
                   // No units / treat as raw number.
@@ -228,10 +228,6 @@ export class ConvertStringData
     *
     * @param data - Source data to convert.
     *
-    * @param position - Current position data.
-    *
-    * @param el - Positioned element.
-    *
     * @param results - Match results.
     *
     * @param parentClientHeight - Parent element client height.
@@ -240,9 +236,8 @@ export class ConvertStringData
     *
     * @returns Adjustment successful.
     */
-   static #handlePercent(key: AnimationAPI.AnimationKey, current: number,
-                         data: Data.TJSPositionDataRelative, position: Partial<Data.TJSPositionData>,
-                         el: Element, results: StringMatch, parentClientHeight: number, parentClientWidth: number): boolean
+   static #handlePercent(key: AnimationAPI.AnimationKey, current: number, data: Data.TJSPositionDataRelative,
+    results: StringMatch, parentClientHeight: number, parentClientWidth: number): boolean
    {
       switch (key)
       {
@@ -288,17 +283,12 @@ export class ConvertStringData
     *
     * @param data - Source data to convert.
     *
-    * @param position - Current position data.
-    *
-    * @param el - Positioned element.
-    *
     * @param results - Match results.
     *
     * @returns Adjustment successful.
     */
-   static #handleRelativePercent(key: AnimationAPI.AnimationKey, current: number,
-                                 data: Data.TJSPositionDataRelative, position: Partial<Data.TJSPositionData>,
-                                 el: Element, results: StringMatch): boolean
+   static #handleRelativePercent(key: AnimationAPI.AnimationKey, current: number, data: Data.TJSPositionDataRelative,
+    results: StringMatch): boolean
    {
       // Normalize percentage.
       results.value = results.value / 100;
@@ -339,17 +329,12 @@ export class ConvertStringData
     *
     * @param data - Source data to convert.
     *
-    * @param position - Current position data.
-    *
-    * @param el - Positioned element.
-    *
     * @param results - Match results.
     *
     * @returns Adjustment successful.
     */
-   static #handleRotationRadTurn(key: AnimationAPI.AnimationKey, current: number,
-                                 data: Data.TJSPositionDataRelative, position: Partial<Data.TJSPositionData>,
-                                 el: Element, results: StringMatch): boolean
+   static #handleRotationRadTurn(key: AnimationAPI.AnimationKey, current: number, data: Data.TJSPositionDataRelative,
+    results: StringMatch): boolean
    {
       // Convert radians / turn into degrees.
       switch (results.unit)

@@ -3,20 +3,19 @@ import { isObject }           from '#runtime/util/object';
 import type { Unsubscriber }  from 'svelte/store';
 
 import type { ValidatorAPI }  from './types';
-import type { System }        from '../types';
 
 /**
  * Provides the storage and sequencing of managed position validators. Each validator added may be a bespoke function or
- * a {@link ValidatorData} object containing an `id`, `validator`, and `weight` attributes; `validator` is
- * the only required attribute.
+ * a {@link ValidatorData} object containing an `id`, `validator`, and `weight` attributes; `validator` is the only
+ * required attribute.
  *
  * The `id` attribute can be anything that creates a unique ID for the validator; recommended strings or numbers. This
  * allows validators to be removed by ID easily.
  *
- * The `weight` attribute is a number between 0 and 1 inclusive that allows validators to be added in a
- * predictable order which is especially handy if they are manipulated at runtime. A lower weighted validator always
- * runs before a higher weighted validator. If no weight is specified the default of '1' is assigned and it is appended
- * to the end of the validators list.
+ * The `weight` attribute is a number between 0 and 1 inclusive that allows validators to be added in a predictable
+ * order which is especially handy if they are manipulated at runtime. A lower weighted validator always runs before a
+ * higher weighted validator. If no weight is specified the default of '1' is assigned, and it is appended to the end of
+ * the validators list.
  *
  * This class forms the public API which is accessible from the {@link TJSPosition.validators} getter in the main
  * TJSPosition instance.
@@ -239,8 +238,7 @@ export class AdapterValidators implements ValidatorAPI
     *
     * @param validators - Validators to remove.
     */
-   remove(...validators: (ValidatorAPI.ValidatorFn |
-      ValidatorAPI.ValidatorData)[]): void
+   remove(...validators: (ValidatorAPI.ValidatorFn | ValidatorAPI.ValidatorData)[]): void
    {
       const length: number = this.#validatorData.length;
 

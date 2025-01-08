@@ -1,6 +1,6 @@
 /**
- * Tracks changes to positional data during {@link TJSPosition.set} updates to minimize changes to the element
- * style in {@link UpdateElementManager}.
+ * Tracks changes to positional data during {@link TJSPosition.set} updates to minimize changes to the element style in
+ * {@link UpdateElementManager}.
  */
 export class PositionChangeSet
 {

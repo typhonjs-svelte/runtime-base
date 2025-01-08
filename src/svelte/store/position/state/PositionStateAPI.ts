@@ -1,14 +1,13 @@
 import {
    isIterable,
-   isObject }     from '#runtime/util/object';
+   isObject }                 from '#runtime/util/object';
 
-import type { TJSPosition }      from '../TJSPosition';
+import type { TJSPosition }   from '../TJSPosition';
 
-import type { StateAPI }         from './types';
+import type { StateAPI }      from './types';
 
-import type { Data }             from '../data/types';
-import type { TransformAPI }     from '../transform/types';
-import type { PositionGroup }    from '../types';
+import type { Data }          from '../data/types';
+import type { TransformAPI }  from '../transform/types';
 
 /**
  *
@@ -233,8 +232,8 @@ export class PositionStateAPI implements StateAPI
    }
 
    /**
-    * Saves current position state with the opportunity to add extra data to the saved state. Simply include
-    * extra properties in `options` to save extra data.
+    * Saves current position state with the opportunity to add extra data to the saved state. Simply include extra
+    * properties in `options` to save extra data.
     *
     * @param options - Options.
     *

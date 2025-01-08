@@ -3,7 +3,6 @@ import { clamp }              from '#runtime/math/util';
 import { SystemBase }         from '../SystemBase';
 import { TJSTransformData }   from '../../transform';
 
-import type { System }        from '../types';
 import type { Data }          from '../../data/types';
 import type { TransformAPI }  from '../../transform/types';
 import type { ValidatorAPI }  from './types';

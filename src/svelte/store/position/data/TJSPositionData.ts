@@ -1,5 +1,5 @@
-import { Data }         from './types';
-import { TransformAPI } from '../transform/types';
+import type { Data }          from './types';
+import type { TransformAPI }  from '../transform/types';
 
 /**
  * Defines stored positional data.
@@ -29,7 +29,8 @@ export class TJSPositionData implements Data.TJSPositionData
 
    zIndex: number | null;
 
-   // Aliases -----------------------------------------------------------------------------------------------------
+   // Aliases --------------------------------------------------------------------------------------------------------
+
    rotation: number | null
 
    /**

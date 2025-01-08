@@ -1,11 +1,11 @@
-import { A11yHelper }         from '#runtime/util/a11y';
+import { A11yHelper }   from '#runtime/util/a11y';
 
 import type {
    Readable,
    Subscriber,
-   Unsubscriber }             from 'svelte/store';
+   Unsubscriber }       from 'svelte/store';
 
-import type { System }        from './types';
+import type { System }  from './types';
 
 /**
  * Provides a base {@link System.SystemBase} implementation.

@@ -98,8 +98,8 @@ declare namespace System {
          id?: any;
 
          /**
-          * Optional subscribe function following the Svelte store / subscribe pattern. On updates validation will
-          * be processed again.
+          * Optional subscribe function following the Svelte store / subscribe pattern. On updates validation will be
+          * processed again.
           */
          subscribe?(this: void, run: Subscriber<any>, invalidate?: Invalidator<any>): Unsubscriber;
 
