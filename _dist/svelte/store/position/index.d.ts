@@ -637,7 +637,6 @@ declare namespace Data {
     translateZ: number | null;
     width: number | 'auto' | 'inherit' | null;
     zIndex: number | null;
-    rotation: number | null;
   }
   /**
    * Defines a TJSPositionData instance that has extra properties / attributes.
@@ -710,7 +709,6 @@ declare namespace Data {
       transformOrigin,
       width,
       zIndex,
-      rotation,
     }?: {
       height?: number | 'auto' | 'inherit' | null;
       left?: number | null;
@@ -729,7 +727,6 @@ declare namespace Data {
       translateZ?: number | null;
       width?: number | 'auto' | 'inherit' | null;
       zIndex?: number | null;
-      rotation?: number | null;
     }): TJSPositionData;
   }
 }

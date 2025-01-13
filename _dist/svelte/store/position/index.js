@@ -796,8 +796,6 @@ class TJSPositionData {
     translateZ;
     width;
     zIndex;
-    // Aliases --------------------------------------------------------------------------------------------------------
-    rotation;
     /**
      * @param [opts] - Options.
      *
@@ -837,7 +835,7 @@ class TJSPositionData {
      *
      * @param [opts.rotation] - Alias for `rotateZ`.
      */
-    constructor({ height = null, left = null, maxHeight = null, maxWidth = null, minHeight = null, minWidth = null, rotateX = null, rotateY = null, rotateZ = null, scale = null, translateX = null, translateY = null, translateZ = null, top = null, transformOrigin = null, width = null, zIndex = null, rotation = null } = {}) {
+    constructor({ height = null, left = null, maxHeight = null, maxWidth = null, minHeight = null, minWidth = null, rotateX = null, rotateY = null, rotateZ = null, scale = null, translateX = null, translateY = null, translateZ = null, top = null, transformOrigin = null, width = null, zIndex = null } = {}) {
         this.height = height;
         this.left = left;
         this.maxHeight = maxHeight;
@@ -855,8 +853,6 @@ class TJSPositionData {
         this.translateZ = translateZ;
         this.width = width;
         this.zIndex = zIndex;
-        // Aliases -----------------------------------------------------------------------------------------------------
-        this.rotation = rotation; // Alias for `rotateZ`.
     }
 }
 
@@ -900,8 +896,7 @@ class TJSPositionDataUtil {
         scale: 1,
         translateX: 0,
         translateY: 0,
-        translateZ: 0,
-        rotation: 0
+        translateZ: 0
     });
     /**
      * Convenience to copy from source to target of two TJSPositionData like objects. If a target is not supplied a new
@@ -950,14 +945,10 @@ class TJSPositionDataUtil {
      *
      * @param key - Animation key.
      *
-     * @param [aliased=false] - When use non-aliased key.
-     *
      * @returns Data at key or numeric default.
      */
-    static getDataOrDefault(data, key, aliased = false) {
-        if (aliased) {
-            key = this.#animateKeyAliases.get(key) ?? key;
-        }
+    static getDataOrDefault(data, key) {
+        key = this.#animateKeyAliases.get(key) ?? key;
         return data[key] ?? this.#numericDefaults[key];
     }
     /**
@@ -997,10 +988,6 @@ class TJSPositionDataUtil {
         }
         if (data.scale === null) {
             data.scale = 1;
-        }
-        // Aliases
-        if (data.rotation === null) {
-            data.rotation = 0;
         }
     }
 }
@@ -1078,7 +1065,7 @@ class ConvertStringData {
                     results.value = parseFloat(regexResults.groups.value);
                     results.unit = regexResults.groups.unit;
                     // Retrieve current value, but if null use the numeric default.
-                    const current = TJSPositionDataUtil.getDataOrDefault(position, key, true);
+                    const current = TJSPositionDataUtil.getDataOrDefault(position, key);
                     switch (results.unit) {
                         // Animation keys that support percentage changes including constraints against the parent element.
                         case '%':
@@ -2620,7 +2607,7 @@ class AnimationAPIImpl {
                 throw new Error(`AnimationAPI.quickTo error: key ('${key}') is not animatable.`);
             }
             // Must use actual key from any aliases.
-            const value = TJSPositionDataUtil.getDataOrDefault(data, key, true);
+            const value = TJSPositionDataUtil.getDataOrDefault(data, key);
             if (value !== null) {
                 destination[key] = value;
                 initial[key] = value;
