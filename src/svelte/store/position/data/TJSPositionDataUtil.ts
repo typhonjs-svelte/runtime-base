@@ -23,8 +23,8 @@ export class TJSPositionDataUtil
    /**
     * Stores the TJSPositionData property aliases that can be animated.
     */
-   static #animateKeyAliases: ReadonlyMap<string, AnimationAPI.AnimationKey> = Object.freeze(
-    new Map([['rotation', 'rotateZ' as AnimationAPI.AnimationKey]]));
+   static #animateKeyAliases: ReadonlyMap<string, keyof Data.TJSPositionData> = Object.freeze(
+    new Map([['rotation', 'rotateZ' as keyof Data.TJSPositionData]]));
 
    /**
     * Provides numeric defaults for all parameters. This is used by {@link TJSPosition.get} to optionally provide
@@ -49,9 +49,7 @@ export class TJSPositionDataUtil
       scale: 1,
       translateX: 0,
       translateY: 0,
-      translateZ: 0,
-
-      rotation: 0
+      translateZ: 0
    });
 
    /**
@@ -97,7 +95,7 @@ export class TJSPositionDataUtil
     */
    static getAnimationKey(key: AnimationAPI.AnimationKey): AnimationAPI.AnimationKey
    {
-      return this.#animateKeyAliases.get(key) ?? key;
+      return this.#animateKeyAliases.get(key) as AnimationAPI.AnimationKey ?? key;
    }
 
    /**
@@ -107,14 +105,12 @@ export class TJSPositionDataUtil
     *
     * @param key - Animation key.
     *
-    * @param [aliased=false] - When use non-aliased key.
-    *
     * @returns Data at key or numeric default.
     */
-   static getDataOrDefault(data: { [key: string]: any }, key: keyof Data.TJSPositionData,
-    aliased: boolean = false): number
+   static getDataOrDefault(data: { [key: string]: any }, key: keyof Data.TJSPositionData | AnimationAPI.AnimationKey):
+    number
    {
-      if (aliased) { key = this.#animateKeyAliases.get(key) ?? key; }
+      key = this.#animateKeyAliases.get(key) ?? key;
 
       return data[key] ?? this.#numericDefaults[key];
    }
@@ -136,7 +132,7 @@ export class TJSPositionDataUtil
     *
     * @param data - A TJSPositionData like object.
     */
-   static setNumericDefaults(data: { [key: string]: any })
+   static setNumericDefaults(data: { [key: string]: any }): void
    {
       // Transform keys
       if (data.rotateX === null) { data.rotateX = 0; }
@@ -146,8 +142,5 @@ export class TJSPositionDataUtil
       if (data.translateY === null) { data.translateY = 0; }
       if (data.translateZ === null) { data.translateZ = 0; }
       if (data.scale === null) { data.scale = 1; }
-
-      // Aliases
-      if (data.rotation === null) { data.rotation = 0; }
    }
 }

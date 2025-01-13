@@ -29,10 +29,6 @@ export class TJSPositionData implements Data.TJSPositionData
 
    zIndex: number | null;
 
-   // Aliases --------------------------------------------------------------------------------------------------------
-
-   rotation: number | null
-
    /**
     * @param [opts] - Options.
     *
@@ -74,14 +70,13 @@ export class TJSPositionData implements Data.TJSPositionData
     */
    constructor({ height = null, left = null, maxHeight = null, maxWidth = null, minHeight = null,
     minWidth = null, rotateX = null, rotateY = null, rotateZ = null, scale = null, translateX = null,
-     translateY = null, translateZ = null, top = null, transformOrigin = null, width = null, zIndex = null,
-      rotation = null }:
+     translateY = null, translateZ = null, top = null, transformOrigin = null, width = null, zIndex = null }:
    { height?: number | 'auto' | 'inherit' | null; left?: number | null; maxHeight?: number | null;
       maxWidth?: number | null; minHeight?: number | null; minWidth?: number | null; rotateX?: number | null;
        rotateY?: number | null; rotateZ?: number | null; scale?: number | null; translateX?: number | null;
         translateY?: number | null; translateZ?: number | null; top?: number | null;
          transformOrigin?: TransformAPI.TransformOrigin | null;
-          width?: number | 'auto' | 'inherit' | null; zIndex?: number | null; rotation?: number | null
+          width?: number | 'auto' | 'inherit' | null; zIndex?: number | null
    } = {})
    {
       this.height = height;
@@ -105,9 +100,5 @@ export class TJSPositionData implements Data.TJSPositionData
       this.width = width;
 
       this.zIndex = zIndex;
-
-      // Aliases -----------------------------------------------------------------------------------------------------
-
-      this.rotation = rotation; // Alias for `rotateZ`.
    }
 }

@@ -45,7 +45,9 @@ import type {
 
 import type { ResizeObserverData }  from '#runtime/util/dom/observer';
 
-import type { OptionsInternal }     from './types-local';
+import type {
+   OptionsInternal,
+   TJSPositionDataWithAlias }       from './types-local';
 
 import type {
    AnimationAPI,
@@ -895,7 +897,7 @@ class TJSPosition implements TJSPosition.WritableExt
          // Converts any string position data to numeric inputs.
          ConvertStringData.process(position, this.#data, el);
 
-         position = this.#updatePosition(position as TJSPositionData, parent, el, styleCache);
+         position = this.#updatePosition(position as TJSPositionDataWithAlias, parent, el, styleCache);
 
          // Check if a validator cancelled the update.
          if (position === null) { return this; }
@@ -1177,8 +1179,8 @@ class TJSPosition implements TJSPosition.WritableExt
       rotation,
 
       ...rest
-   }: Data.TJSPositionData, parent: TJSPosition.PositionParent, el: HTMLElement, styleCache: TJSPositionStyleCache):
-    TJSPositionData | null
+   }: TJSPositionDataWithAlias, parent: TJSPosition.PositionParent, el: HTMLElement,
+    styleCache: TJSPositionStyleCache): TJSPositionData | null
    {
       let currentPosition: TJSPositionData | null = TJSPositionDataUtil.copyData(this.#data,
        TJSPosition.#updateDataCopy);

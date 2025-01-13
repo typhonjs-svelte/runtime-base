@@ -1,11 +1,12 @@
 // Private internal types not in publicly exposed API.
 
-import type { System } from './system/types';
+import type { Data }    from './data/types';
+import type { System }  from './system/types';
 
 /**
  * Defines the internal options managed.
  */
-export type OptionsInternal = {
+type OptionsInternal = {
    /**
     * When true always calculate transform data. Set by constructor option.
     */
@@ -26,4 +27,18 @@ export type OptionsInternal = {
     * Dynamically set to true when there are subscribers to the readable transform store.
     */
    transformSubscribed: boolean;
+};
+
+/**
+ * Used internally to TJSPosition to define additional aliases that `set` position data may include.
+ */
+interface TJSPositionDataWithAlias extends Data.TJSPositionData
+{
+   // Additional alias for `rotateZ`
+   rotation: number | null;
+}
+
+export {
+   OptionsInternal,
+   TJSPositionDataWithAlias
 }

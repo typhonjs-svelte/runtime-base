@@ -100,7 +100,7 @@ export class ConvertStringData
                results.unit = regexResults.groups.unit;
 
                // Retrieve current value, but if null use the numeric default.
-               const current: number = TJSPositionDataUtil.getDataOrDefault(position, key, true);
+               const current: number = TJSPositionDataUtil.getDataOrDefault(position, key);
 
                switch (results.unit)
                {

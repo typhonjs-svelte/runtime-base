@@ -43,10 +43,6 @@ declare namespace Data {
       width: number | 'auto' | 'inherit' | null;
 
       zIndex: number | null;
-
-      // Aliases -----------------------------------------------------------------------------------------------------
-
-      rotation: number | null; // Alias for `rotateZ`.
    }
 
    /**
@@ -110,7 +106,7 @@ declare namespace Data {
     */
    export interface TJSPositionDataConstructor {
       new ({ height, left, maxHeight, maxWidth, minHeight, minWidth, rotateX, rotateY, rotateZ, scale, translateX,
-        translateY, translateZ, top, transformOrigin, width, zIndex, rotation }?: {
+        translateY, translateZ, top, transformOrigin, width, zIndex }?: {
          height?: number | 'auto' | 'inherit' | null,
          left?: number | null,
          maxHeight?: number | null,
@@ -127,8 +123,7 @@ declare namespace Data {
          translateY?: number | null,
          translateZ?: number | null,
          width?: number | 'auto' | 'inherit' | null,
-         zIndex?: number | null,
-         rotation?: number | null
+         zIndex?: number | null
       }): TJSPositionData;
    }
 }

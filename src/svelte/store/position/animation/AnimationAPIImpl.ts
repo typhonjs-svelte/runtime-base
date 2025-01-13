@@ -194,7 +194,7 @@ export class AnimationAPIImpl implements AnimationAPI
          }
 
          // Must use actual key from any aliases.
-         const value: number = TJSPositionDataUtil.getDataOrDefault(data, key, true);
+         const value: number = TJSPositionDataUtil.getDataOrDefault(data, key);
 
          if (value !== null)
          {
