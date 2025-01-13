@@ -21,17 +21,17 @@ export class TJSTransformData implements TransformAPI.TransformData
     * Stores the individual transformed corner points of the window in screen space clockwise from:
     * top left -> top right -> bottom right -> bottom left.
     */
-   #corners: Vec3[] = [Vec3.create(), Vec3.create(), Vec3.create(), Vec3.create()];
+   #corners: Vec3[] = [new Vec3(), new Vec3(), new Vec3(), new Vec3()];
 
    /**
     * Stores the current gl-matrix Mat4 data.
     */
-   #mat4: Mat4 = Mat4.create();
+   #mat4: Mat4 = new Mat4();
 
    /**
     * Stores the pre-origin & post-origin translations to apply to matrix transforms.
     */
-   #originTranslations: Mat4[] = [Mat4.create(), Mat4.create()];
+   #originTranslations: Mat4[] = [new Mat4(), new Mat4()];
 
    /**
     * @returns The bounding rectangle.

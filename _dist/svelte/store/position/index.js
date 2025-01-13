@@ -1277,15 +1277,15 @@ class TJSTransformData {
      * Stores the individual transformed corner points of the window in screen space clockwise from:
      * top left -> top right -> bottom right -> bottom left.
      */
-    #corners = [Vec3.create(), Vec3.create(), Vec3.create(), Vec3.create()];
+    #corners = [new Vec3(), new Vec3(), new Vec3(), new Vec3()];
     /**
      * Stores the current gl-matrix Mat4 data.
      */
-    #mat4 = Mat4.create();
+    #mat4 = new Mat4();
     /**
      * Stores the pre-origin & post-origin translations to apply to matrix transforms.
      */
-    #originTranslations = [Mat4.create(), Mat4.create()];
+    #originTranslations = [new Mat4(), new Mat4()];
     /**
      * @returns The bounding rectangle.
      */
@@ -1502,13 +1502,13 @@ class TJSTransforms {
     // Temporary variables --------------------------------------------------------------------------------------------
     /**
      */
-    static #mat4Result = Mat4.create();
+    static #mat4Result = new Mat4();
     /**
      */
-    static #mat4Temp = Mat4.create();
+    static #mat4Temp = new Mat4();
     /**
      */
-    static #vec3Temp = Vec3.create();
+    static #vec3Temp = new Vec3();
     /**
      */
     static #vectorScale = [1, 1, 1];
@@ -1853,7 +1853,7 @@ class TJSTransforms {
      *
      * @returns Transform matrix.
      */
-    getMat4(data = this.#data, output = Mat4.create()) {
+    getMat4(data = this.#data, output = new Mat4()) {
         const matrix = Mat4.identity(output);
         // Bitwise tracks applied transform keys from local transform data.
         let seenKeys = 0;
@@ -1964,7 +1964,7 @@ class TJSTransforms {
      *
      * @returns Transform matrix.
      */
-    getMat4Ortho(data = this.#data, output = Mat4.create()) {
+    getMat4Ortho(data = this.#data, output = new Mat4()) {
         const matrix = Mat4.identity(output);
         // Attempt to retrieve values from passed in data otherwise default to 0.
         // Always perform the translation last regardless of order added to local transform data.

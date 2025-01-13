@@ -80,15 +80,15 @@ export class TJSTransforms implements TransformAPI
 
    /**
     */
-   static #mat4Result: Mat4 = Mat4.create();
+   static #mat4Result: Mat4 = new Mat4();
 
    /**
     */
-   static #mat4Temp: Mat4 = Mat4.create();
+   static #mat4Temp: Mat4 = new Mat4();
 
    /**
     */
-   static #vec3Temp: Vec3 = Vec3.create();
+   static #vec3Temp: Vec3 = new Vec3();
 
    /**
     */
@@ -496,7 +496,7 @@ export class TJSTransforms implements TransformAPI
     *
     * @returns Transform matrix.
     */
-   getMat4(data: Partial<Data.TJSPositionData> = this.#data, output: Mat4 = Mat4.create()): Mat4
+   getMat4(data: Partial<Data.TJSPositionData> = this.#data, output: Mat4 = new Mat4()): Mat4
    {
       const matrix: Mat4 = Mat4.identity(output) as Mat4;
 
@@ -639,7 +639,7 @@ export class TJSTransforms implements TransformAPI
     *
     * @returns Transform matrix.
     */
-   getMat4Ortho(data: Partial<Data.TJSPositionData> = this.#data, output: Mat4 = Mat4.create()): Mat4
+   getMat4Ortho(data: Partial<Data.TJSPositionData> = this.#data, output: Mat4 = new Mat4()): Mat4
    {
       const matrix: Mat4 = Mat4.identity(output) as Mat4;
 
