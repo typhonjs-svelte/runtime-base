@@ -466,10 +466,11 @@ const rollupConfigs = [
    },
    {
       input: {
-         input: 'src/svelte/store/position/index.js',
+         input: 'src/svelte/store/position/index.ts',
          plugins: [
             importsExternal(),
             resolve(resolveOptions),
+            typescript({ tsconfig: './src/svelte/store/position/tsconfig.json' }),
             generateDTS.plugin(dtsPluginOptions)
          ]
       },
