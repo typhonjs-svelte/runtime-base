@@ -1907,127 +1907,192 @@ class DynMapReducer {
  *
  * This filter function can be used w/ a dynamic reducer and bound as a store to input elements.
  *
- * @param {string | Iterable<string>}   accessors - Property key / accessors to lookup key to compare. To access deeper
+ * @param accessors - Property key / accessors to lookup key to compare. To access deeper
  *        entries into the object format the accessor string with `.` between entries to walk.
  *
- * @param {object}   [opts] - Optional parameters.
+ * @param [opts] - Optional parameters.
  *
- * @param {boolean}  [opts.accessWarn=false] - When true warnings will be posted if accessor not retrieved.
+ * @param [opts.accessWarn=false] - When true warnings will be posted if accessor not retrieved.
  *
- * @param {boolean}  [opts.caseSensitive=false] - When true regex test is case-sensitive.
+ * @param [opts.caseSensitive=false] - When true regex test is case-sensitive.
  *
- * @param {import('#runtime/svelte/store/util').MinimalWritable<string>}  [opts.store] - Use the provided minimal
- *        writable store to instead of creating a default `writable` store.
+ * @param [opts.store] - Use the provided minimal writable store to instead of creating a default `writable` store.
  *
- * @returns {((data: object) => boolean) & import('#runtime/svelte/store/util').MinimalWritable<string>}
- *        The query string filter.
+ * @returns The query string filter.
  */
-function regexObjectQuery(accessors, { accessWarn = false, caseSensitive = false, store } = {})
-{
-   let keyword = '';
-   let regex;
-
-   if (store !== void 0 && !isMinimalWritableStore(store))
-   {
-      throw new TypeError(`regexObjectQuery error: 'store' is not a minimal writable store.`);
-   }
-
-   const storeKeyword = store ? store : writable(keyword);
-
-   // If an existing store is provided then set initial values.
-   if (store)
-   {
-      const current = get(store);
-
-      if (typeof current === 'string')
-      {
-         keyword = Strings.normalize(current);
-         regex = new RegExp(Strings.escape(keyword), caseSensitive ? '' : 'i');
-      }
-      else
-      {
-         store.set(keyword);
-      }
-   }
-
-   /**
-    * If there is no filter keyword / regex then do not filter otherwise filter based on the regex
-    * created from the search input element.
-    *
-    * @param {object} data - Data object to test against regex.
-    *
-    * @returns {boolean} AnimationStore filter state.
-    */
-   function filterQuery(data)
-   {
-      if (keyword === '' || !regex) { return true; }
-
-      if (isIterable(accessors))
-      {
-         for (const accessor of accessors)
-         {
-            const value = safeAccess(data, accessor);
-            if (typeof value !== 'string')
-            {
-               if (accessWarn)
-               {
-                  console.warn(`regexObjectQuery warning: could not access string data from '${accessor}'.`);
-               }
-
-               continue;
+function regexObjectQuery(accessors, { accessWarn = false, caseSensitive = false, store } = {}) {
+    let keyword = '';
+    let regex;
+    if (store !== void 0 && !isMinimalWritableStore(store)) {
+        throw new TypeError(`regexObjectQuery error: 'store' is not a minimal writable store.`);
+    }
+    const storeKeyword = store ? store : writable(keyword);
+    // If an existing store is provided then set initial values.
+    if (store) {
+        const current = get(store);
+        if (typeof current === 'string') {
+            keyword = Strings.normalize(current);
+            regex = new RegExp(Strings.escape(keyword), caseSensitive ? '' : 'i');
+        }
+        else {
+            store.set(keyword);
+        }
+    }
+    const filterQuery = Object.assign(
+    /**
+     * If there is no filter keyword / regex then do not filter otherwise filter based on the regex
+     * created from the search input element.
+     *
+     * @param data - Data object to test against regex.
+     *
+     * @returns Store filter state.
+     */
+    (data) => {
+        if (keyword === '' || !regex) {
+            return true;
+        }
+        if (isIterable(accessors)) {
+            for (const accessor of accessors) {
+                const value = safeAccess(data, accessor);
+                if (typeof value !== 'string') {
+                    if (accessWarn) {
+                        console.warn(`regexObjectQuery warning: could not access string data from '${accessor}'.`);
+                    }
+                    continue;
+                }
+                if (regex.test(Strings.normalize(value))) {
+                    return true;
+                }
             }
-
-            if (regex.test(Strings.normalize(value))) { return true; }
-         }
-
-         return false;
-      }
-      else
-      {
-         const value = safeAccess(data, accessors);
-
-         if (typeof value !== 'string')
-         {
-            if (accessWarn)
-            {
-               console.warn(`regexObjectQuery warning: could not access string data from '${accessors}'.`);
-            }
-
             return false;
-         }
-
-         return regex.test(Strings.normalize(value));
-      }
-   }
-
-   /**
-    * Create a custom store that changes when the search keyword changes.
-    *
-    * @param {(string) => void} handler - A callback function that accepts strings.
-    *
-    * @returns {import('svelte/store').Unsubscriber} Store unsubscribe function.
-    */
-   filterQuery.subscribe = (handler) =>
-   {
-      return storeKeyword.subscribe(handler);
-   };
-
-   /**
-    * Set
-    *
-    * @param {string}   value - A new value for the keyword / regex test.
-    */
-   filterQuery.set = (value) =>
-   {
-      if (typeof value === 'string')
-      {
-         keyword = Strings.normalize(value);
-         regex = new RegExp(Strings.escape(keyword), caseSensitive ? '' : 'i');
-         storeKeyword.set(keyword);
-      }
-   };
-
-   return filterQuery;
+        }
+        else {
+            const value = safeAccess(data, accessors);
+            if (typeof value !== 'string') {
+                if (accessWarn) {
+                    console.warn(`regexObjectQuery warning: could not access string data from '${accessors}'.`);
+                }
+                return false;
+            }
+            return regex.test(Strings.normalize(value));
+        }
+    }, {
+        /**
+         * Create a custom store that changes when the search keyword changes.
+         *
+         * @param handler - A callback function that accepts strings.
+         *
+         * @returns Store unsubscribe function.
+         */
+        subscribe(handler) {
+            return storeKeyword.subscribe(handler);
+        },
+        /**
+         * @param value - A new value for the keyword / regex test.
+         */
+        set(value) {
+            if (typeof value === 'string') {
+                keyword = Strings.normalize(value);
+                regex = new RegExp(Strings.escape(keyword), caseSensitive ? '' : 'i');
+                storeKeyword.set(keyword);
+            }
+        }
+    });
+    /**
+     * Create a custom store that changes when the search keyword changes.
+     *
+     * @param handler - A callback function that accepts strings.
+     *
+     * @returns Store unsubscribe function.
+     */
+    filterQuery.subscribe = (handler) => {
+        return storeKeyword.subscribe(handler);
+    };
+    /**
+     * @param value - A new value for the keyword / regex test.
+     */
+    filterQuery.set = (value) => {
+        if (typeof value === 'string') {
+            keyword = Strings.normalize(value);
+            regex = new RegExp(Strings.escape(keyword), caseSensitive ? '' : 'i');
+            storeKeyword.set(keyword);
+        }
+    };
+    //
+    // /**
+    //  * If there is no filter keyword / regex then do not filter otherwise filter based on the regex
+    //  * created from the search input element.
+    //  *
+    //  * @param data - Data object to test against regex.
+    //  *
+    //  * @returns Store filter state.
+    //  */
+    // const filterQuery: ReturnType<DynReducerHelper.filters['regexObjectQuery']> = function(data: { [key: string]: any }): boolean
+    // {
+    //    if (keyword === '' || !regex) { return true; }
+    //
+    //    if (isIterable(accessors))
+    //    {
+    //       for (const accessor of accessors)
+    //       {
+    //          const value: any = safeAccess(data, accessor);
+    //          if (typeof value !== 'string')
+    //          {
+    //             if (accessWarn)
+    //             {
+    //                console.warn(`regexObjectQuery warning: could not access string data from '${accessor}'.`);
+    //             }
+    //
+    //             continue;
+    //          }
+    //
+    //          if (regex.test(Strings.normalize(value))) { return true; }
+    //       }
+    //
+    //       return false;
+    //    }
+    //    else
+    //    {
+    //       const value: any = safeAccess(data, accessors);
+    //       if (typeof value !== 'string')
+    //       {
+    //          if (accessWarn)
+    //          {
+    //             console.warn(`regexObjectQuery warning: could not access string data from '${accessors}'.`);
+    //          }
+    //
+    //          return false;
+    //       }
+    //
+    //       return regex.test(Strings.normalize(value));
+    //    }
+    // }
+    //
+    // /**
+    //  * Create a custom store that changes when the search keyword changes.
+    //  *
+    //  * @param handler - A callback function that accepts strings.
+    //  *
+    //  * @returns Store unsubscribe function.
+    //  */
+    // filterQuery.subscribe = (handler: Subscriber<string>): Unsubscriber =>
+    // {
+    //    return storeKeyword.subscribe(handler);
+    // };
+    //
+    // /**
+    //  * @param value - A new value for the keyword / regex test.
+    //  */
+    // filterQuery.set = (value: string): void =>
+    // {
+    //    if (typeof value === 'string')
+    //    {
+    //       keyword = Strings.normalize(value);
+    //       regex = new RegExp(Strings.escape(keyword), caseSensitive ? '' : 'i');
+    //       storeKeyword.set(keyword);
+    //    }
+    // };
+    return filterQuery;
 }
 
 const filters = /*#__PURE__*/Object.freeze({
@@ -2039,22 +2104,18 @@ const filters = /*#__PURE__*/Object.freeze({
  * Provides helper functions to create dynamic store driven filters and sort functions for dynamic reducers. The
  * returned functions are also Svelte stores and can be added to a reducer as well as used as a store.
  */
-class DynReducerHelper
-{
-   /**
-    * Returns the following filter functions:
-    * - regexObjectQuery(accessors, options); suitable for object reducers matching one or more property keys /
-    *   accessors against the store value as a regex. To access deeper entries into the object format the accessor
-    *   string with `.` between entries to walk. Optional parameters include logging access warnings, case sensitivity,
-    *   and passing in an existing store.
-    *
-    * @returns {{
-    *    regexObjectQuery: (accessors: string|Iterable<string>, options?: {accessWarn?: boolean,
-    *     caseSensitive?: boolean, store?: import('svelte/store').Writable<string>}) =>
-    *      (((data: {}) => boolean) & import('#runtime/svelte/store/util').MinimalWritable<string>)
-    * }} All available filters.
-    */
-   static get filters() { return filters; }
+class DynReducerHelper {
+    constructor() { }
+    /**
+     * Returns the following filter functions:
+     * - regexObjectQuery(accessors, options); suitable for object reducers matching one or more property keys /
+     *   accessors against the store value as a regex. To access deeper entries into the object format the accessor
+     *   string with `.` between entries to walk. Optional parameters include logging access warnings, case sensitivity,
+     *   and passing in an existing store.
+     *
+     * @returns All available filters.
+     */
+    static get filters() { return filters; }
 }
 
 export { DynArrayReducer, DynArrayReducerDerived, DynMapReducer, DynMapReducerDerived, DynReducerHelper };

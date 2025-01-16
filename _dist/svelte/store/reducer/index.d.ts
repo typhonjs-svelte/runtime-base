@@ -1,5 +1,4 @@
-import * as _runtime_svelte_store_util from '@typhonjs-svelte/runtime-base/svelte/store/util';
-import * as svelte_store from 'svelte/store';
+import { MinimalWritable, MinimalWritableFn } from '@typhonjs-svelte/runtime-base/svelte/store/util';
 
 /**
  * Provides a managed {@link Map} with non-destructive reducing / filtering / sorting capabilities with subscription /
@@ -1196,6 +1195,7 @@ declare class DynArrayReducerDerived<T = unknown> implements DynReducer.DerivedL
  * returned functions are also Svelte stores and can be added to a reducer as well as used as a store.
  */
 declare class DynReducerHelper {
+  private constructor();
   /**
    * Returns the following filter functions:
    * - regexObjectQuery(accessors, options); suitable for object reducers matching one or more property keys /
@@ -1203,22 +1203,59 @@ declare class DynReducerHelper {
    *   string with `.` between entries to walk. Optional parameters include logging access warnings, case sensitivity,
    *   and passing in an existing store.
    *
-   * @returns {{
-   *    regexObjectQuery: (accessors: string|Iterable<string>, options?: {accessWarn?: boolean,
-   *     caseSensitive?: boolean, store?: import('svelte/store').Writable<string>}) =>
-   *      (((data: {}) => boolean) & import('#runtime/svelte/store/util').MinimalWritable<string>)
-   * }} All available filters.
+   * @returns All available filters.
    */
-  static get filters(): {
+  static get filters(): DynReducerHelper.Filters;
+}
+/**
+ * Defines the available resources of {@link DynReducerHelper}.
+ */
+declare namespace DynReducerHelper {
+  /**
+   * All available filters.
+   */
+  interface Filters {
+    /**
+     * Creates a filter function to compare objects by a given accessor key against a regex test. The returned
+     * function is also a minimal writable Svelte store that builds a regex from the stores value.
+     *
+     * Suitable for object reducers matching one or more property keys / accessors against the store value as a
+     * regex. To access deeper entries into the object format the accessor string with `.` between entries to walk.
+     *
+     * This filter function can be used w/ a dynamic reducer and bound as a store to input elements.
+     *
+     * @param accessors - Property key / accessors to lookup key to compare. To access deeper entries into the object
+     *        format the accessor string with `.` between entries to walk.
+     *
+     * @param [options] - Optional parameters.
+     *
+     * @param [options.accessWarn=false] - When true warnings will be posted if accessor not retrieved; default:
+     *        `false`.
+     *
+     * @param [options.caseSensitive=false] - When true regex test is case-sensitive; default: `false`.
+     *
+     * @param [options.store] - Use the provided minimal writable store instead of creating a default `writable`
+     *        store.
+     *
+     * @returns The query string filter.
+     */
     regexObjectQuery: (
       accessors: string | Iterable<string>,
       options?: {
         accessWarn?: boolean;
         caseSensitive?: boolean;
-        store?: svelte_store.Writable<string>;
+        store?: MinimalWritable<string>;
       },
-    ) => ((data: {}) => boolean) & _runtime_svelte_store_util.MinimalWritable<string>;
-  };
+    ) => MinimalWritableFn<
+      string,
+      [
+        data: {
+          [key: string]: any;
+        },
+      ],
+      boolean
+    >;
+  }
 }
 
 export { DynArrayReducer, DynArrayReducerDerived, DynMapReducer, DynMapReducerDerived, DynReducer, DynReducerHelper };

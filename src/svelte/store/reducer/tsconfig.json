@@ -1,0 +1,16 @@
+{
+  "compilerOptions" : {
+    "baseUrl": ".",
+    "lib": ["ES2022", "DOM"],
+    "module": "ES2022",
+    "moduleResolution" : "Bundler",
+    "target": "ES2022",
+
+    // Pretty close to enabling; mostly fixes required in `./animation`.
+    "strict": true,
+//    "strictNullChecks": false,
+  },
+  "include": [
+    "./**/*"
+  ]
+}
