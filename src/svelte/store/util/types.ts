@@ -1,6 +1,52 @@
 import type {
    Readable,
-   Writable } from 'svelte/store';
+   Writable,
+   Updater }   from 'svelte/store';
+
+/**
+ * Extends {@link Writable} to allow type differentiation between writing and reading data. This is useful when
+ * converting or transforming input data to a different or more specific output.
+ *
+ * @typeParam W - Writable / input type.
+ *
+ * @typeParam R - Readable / output type.
+ */
+interface IOWritable<W, R> extends Readable<R>
+{
+   /**
+    * Set value and inform subscribers.
+    * @param value to set
+    */
+   set(this: void, value: W): void;
+
+   /**
+    * Update value using callback and inform subscribers.
+    * @param updater callback
+    */
+   update(this: void, updater: Updater<W>): void;
+}
+
+/**
+ * The minimal requirements of the [writable store contract](https://svelte.dev/docs/svelte-components#script-4-prefix-stores-with-$-to-access-their-values).
+ *
+ * A minimal writable is a {@link Readable} / subscribable, but only has a `set` method omitting the `update` method
+ * from `Writable`.
+ *
+ * Extends the minimal writable interface to allow type differentiation between writing and reading data. This is
+ * useful when converting or transforming input data to a different or more specific output.
+ *
+ * @typeParam W - Writable / input type.
+ *
+ * @typeParam R - Readable / output type.
+ */
+interface MinimalIOWritable<W, R> extends Readable<R>
+{
+   /**
+    * Set value and inform subscribers.
+    * @param value to set
+    */
+   set(this: void, value: W): void;
+}
 
 /**
  * The minimal requirements of the [writable store contract](https://svelte.dev/docs/svelte-components#script-4-prefix-stores-with-$-to-access-their-values).
@@ -43,6 +89,8 @@ type MinimalWritableFn<T, Args extends unknown[], R = void> = MinimalWritable<T>
 type WritableFn<T, Args extends unknown[], R> = Writable<T> & ((...args: Args) => R);
 
 export {
+  IOWritable,
+  MinimalIOWritable,
   MinimalWritable,
   MinimalWritableFn,
   WritableFn

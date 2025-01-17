@@ -1391,8 +1391,7 @@ import type {
    PositionGroup,
    PositionParent,
    Stores,
-   WritableExt,
-   WritablePos }              from './types';
+   WritableExt }              from './types';
 
 /**
  * Provides comprehensive types for {@link TJSPosition} and related actions.
@@ -1424,8 +1423,7 @@ declare namespace TJSPosition {
       Positionable,
       PositionGroup,
       PositionParent,
-      WritableExt,
-      WritablePos
+      WritableExt
    }
 }
 

@@ -13,6 +13,7 @@ import { Writable, Subscriber, Invalidator, Unsubscriber, Readable, Updater } fr
 import { Mat4, Vec3 } from '@typhonjs-svelte/runtime-base/math/gl-matrix';
 import { InterpolateFunctionName } from '@typhonjs-svelte/runtime-base/math/interpolate';
 import { BasicAnimation } from '@typhonjs-svelte/runtime-base/util/animate';
+import { IOWritable } from '@typhonjs-svelte/runtime-base/svelte/store/util';
 import { ResizeObserverData } from '@typhonjs-svelte/runtime-base/util/dom/observer';
 
 interface TransformAPI {
@@ -1578,47 +1579,47 @@ interface Stores {
   /**
    * Derived store for `left` updates.
    */
-  left: WritablePos<number | string | null, number | null>;
+  left: IOWritable<number | string | null, number | null>;
   /**
    * Derived store for `top` updates.
    */
-  top: WritablePos<number | string | null, number | null>;
+  top: IOWritable<number | string | null, number | null>;
   /**
    * Derived store for `width` updates.
    */
-  width: WritablePos<number | string | null, number | 'auto' | 'inherit' | null>;
+  width: IOWritable<number | string | null, number | 'auto' | 'inherit' | null>;
   /**
    * Derived store for `height` updates.
    */
-  height: WritablePos<number | string | null, number | 'auto' | 'inherit' | null>;
+  height: IOWritable<number | string | null, number | 'auto' | 'inherit' | null>;
   /**
    * Derived store for `maxHeight` updates.
    */
-  maxHeight: WritablePos<number | string | null, number | null>;
+  maxHeight: IOWritable<number | string | null, number | null>;
   /**
    * Derived store for `maxWidth` updates.
    */
-  maxWidth: WritablePos<number | string | null, number | null>;
+  maxWidth: IOWritable<number | string | null, number | null>;
   /**
    * Derived store for `minHeight` updates.
    */
-  minHeight: WritablePos<number | string | null, number | null>;
+  minHeight: IOWritable<number | string | null, number | null>;
   /**
    * Derived store for `minWidth` updates.
    */
-  minWidth: WritablePos<number | string | null, number | null>;
+  minWidth: IOWritable<number | string | null, number | null>;
   /**
    * Derived store for `rotateX` updates.
    */
-  rotateX: WritablePos<number | string | null, number | null>;
+  rotateX: IOWritable<number | string | null, number | null>;
   /**
    * Derived store for `rotateY` updates.
    */
-  rotateY: WritablePos<number | string | null, number | null>;
+  rotateY: IOWritable<number | string | null, number | null>;
   /**
    * Derived store for `rotateZ` updates.
    */
-  rotateZ: WritablePos<number | string | null, number | null>;
+  rotateZ: IOWritable<number | string | null, number | null>;
   /**
    * Derived store for `scale` updates.
    */
@@ -1630,15 +1631,15 @@ interface Stores {
   /**
    * Derived store for `translateX` updates.
    */
-  translateX: WritablePos<number | string | null, number | null>;
+  translateX: IOWritable<number | string | null, number | null>;
   /**
    * Derived store for `translateY` updates.
    */
-  translateY: WritablePos<number | string | null, number | null>;
+  translateY: IOWritable<number | string | null, number | null>;
   /**
    * Derived store for `translateZ` updates.
    */
-  translateZ: WritablePos<number | string | null, number | null>;
+  translateZ: IOWritable<number | string | null, number | null>;
   /**
    * Derived store for `zIndex` updates.
    */
@@ -1768,22 +1769,6 @@ type PositionParent =
  */
 interface WritableExt extends Writable<Data.TJSPositionDataRelative> {
   set(this: void, value: Data.TJSPositionDataRelative, options?: Options.Set): TJSPosition;
-}
-/**
- * Extends Writable to allow type differentiation between writing and reading data. TJSPosition allows flexible
- * formats for writing data that is converted to specific data for reading after validation.
- */
-interface WritablePos<W, R> extends Readable<R> {
-  /**
-   * Set value and inform subscribers.
-   * @param value to set
-   */
-  set(this: void, value: W): void;
-  /**
-   * Update value using callback and inform subscribers.
-   * @param updater callback
-   */
-  update(this: void, updater: Updater<W>): void;
 }
 
 /**
@@ -2166,7 +2151,7 @@ declare namespace TJSPosition {
       ValidatorAPI as Validators,
     };
   }
-  export { Options, type Positionable, type PositionGroup, type PositionParent, type WritableExt, type WritablePos };
+  export { Options, type Positionable, type PositionGroup, type PositionParent, type WritableExt };
 }
 
 /**

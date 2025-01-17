@@ -1,6 +1,46 @@
 import * as svelte_store from 'svelte/store';
-import { Readable, Writable } from 'svelte/store';
+import { Readable, Updater, Writable } from 'svelte/store';
 
+/**
+ * Extends {@link Writable} to allow type differentiation between writing and reading data. This is useful when
+ * converting or transforming input data to a different or more specific output.
+ *
+ * @typeParam W - Writable / input type.
+ *
+ * @typeParam R - Readable / output type.
+ */
+interface IOWritable<W, R> extends Readable<R> {
+  /**
+   * Set value and inform subscribers.
+   * @param value to set
+   */
+  set(this: void, value: W): void;
+  /**
+   * Update value using callback and inform subscribers.
+   * @param updater callback
+   */
+  update(this: void, updater: Updater<W>): void;
+}
+/**
+ * The minimal requirements of the [writable store contract](https://svelte.dev/docs/svelte-components#script-4-prefix-stores-with-$-to-access-their-values).
+ *
+ * A minimal writable is a {@link Readable} / subscribable, but only has a `set` method omitting the `update` method
+ * from `Writable`.
+ *
+ * Extends the minimal writable interface to allow type differentiation between writing and reading data. This is
+ * useful when converting or transforming input data to a different or more specific output.
+ *
+ * @typeParam W - Writable / input type.
+ *
+ * @typeParam R - Readable / output type.
+ */
+interface MinimalIOWritable<W, R> extends Readable<R> {
+  /**
+   * Set value and inform subscribers.
+   * @param value to set
+   */
+  set(this: void, value: W): void;
+}
 /**
  * The minimal requirements of the [writable store contract](https://svelte.dev/docs/svelte-components#script-4-prefix-stores-with-$-to-access-their-values).
  *
@@ -108,6 +148,8 @@ declare function subscribeFirstRest(
 ): svelte_store.Unsubscriber;
 
 export {
+  type IOWritable,
+  type MinimalIOWritable,
   type MinimalWritable,
   type MinimalWritableFn,
   type WritableFn,
