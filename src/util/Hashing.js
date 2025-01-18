@@ -48,13 +48,13 @@ export class Hashing
    /**
     * Validates that the given string is formatted as a UUIDv4 string.
     *
-    * @param {string}   uuid - UUID string to test.
+    * @param {unknown}   uuid - UUID string to test.
     *
-    * @returns {boolean} Is UUIDv4 string.
+    * @returns {uuid is string} Is UUIDv4 string.
     */
    static isUuidv4(uuid)
    {
-      return this.#regexUuidv.test(uuid);
+      return typeof uuid === 'string' && this.#regexUuidv.test(uuid);
    }
 
    /**

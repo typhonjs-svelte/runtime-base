@@ -19,11 +19,11 @@ declare class Hashing {
   /**
    * Validates that the given string is formatted as a UUIDv4 string.
    *
-   * @param {string}   uuid - UUID string to test.
+   * @param {unknown}   uuid - UUID string to test.
    *
-   * @returns {boolean} Is UUIDv4 string.
+   * @returns {uuid is string} Is UUIDv4 string.
    */
-  static isUuidv4(uuid: string): boolean;
+  static isUuidv4(uuid: unknown): uuid is string;
   /**
    * Generates a UUID v4 compliant ID. Please use a complete UUID generation package for guaranteed compliance.
    *
