@@ -2112,7 +2112,7 @@ declare class TJSPosition implements TJSPosition.WritableExt {
    *
    * @returns This TJSPosition instance.
    */
-  set(position?: Data.TJSPositionDataRelative | null, options?: TJSPosition.Options.Set): this;
+  set(position?: Data.TJSPositionDataRelative, options?: TJSPosition.Options.Set): this;
   /**
    * @param handler - Callback function that is invoked on update / changes. Receives a readonly copy of the
    *        TJSPositionData.

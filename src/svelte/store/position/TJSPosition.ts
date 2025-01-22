@@ -838,7 +838,7 @@ class TJSPosition implements TJSPosition.WritableExt
     *
     * @returns This TJSPosition instance.
     */
-   set(position: Data.TJSPositionDataRelative | null = {}, options: TJSPosition.Options.Set = {}): this
+   set(position: Data.TJSPositionDataRelative = {}, options: TJSPosition.Options.Set = {}): this
    {
       if (!isObject(position)) { throw new TypeError(`TJSPosition - set error: 'position' is not an object.`); }
 
