@@ -1,68 +1,77 @@
-import { DynArrayReducer }    from '#runtime/svelte/store/reducer';
+import { DynArrayReducer }       from '#runtime/svelte/store/reducer';
 
 import {
    isMinimalWritableStore,
-   subscribeIgnoreFirst }     from '#runtime/svelte/store/util';
+   subscribeIgnoreFirst }        from '#runtime/svelte/store/util';
 
 import {
    Hashing,
-   Timing }                   from '#runtime/util';
+   Timing }                      from '#runtime/util';
 
 import {
+   hasGetter,
    isObject,
-   klona }                    from '#runtime/util/object';
+   klona }                       from '#runtime/util/object';
 
-import { ObjectEntryStore }   from './ObjectEntryStore.js';
+import { ObjectEntryStore }      from './ObjectEntryStore';
+
+import type {
+   Subscriber,
+   Unsubscriber }                from 'svelte/store';
+
+import type {
+   ArrayObjectStoreParams,
+   BaseObjectEntryStore,
+   ExtractDataType }             from './types';
 
 /**
- * @template [T=import('./').BaseArrayObjectEntryStore]
+ * @typeParam S - Store type.
  */
-export class ArrayObjectStore
+export class ArrayObjectStore<S extends BaseObjectEntryStore<any>>
 {
-   /** @type {T[]} */
-   #data = [];
+   /**
+    */
+   #data: S[] = [];
 
    /**
-    * @type {Map<string, { store: T, unsubscribe: Function}>}
     */
-   #dataMap = new Map();
+   #dataMap: Map<string, { store: S, unsubscribe: Unsubscriber }> = new Map();
 
    /**
-    * @type {DynArrayReducer<T>}
     */
-   #dataReducer;
+   readonly #dataReducer: DynArrayReducer<S> | undefined;
 
    /**
-    * @type {boolean}
     */
-   #manualUpdate;
+   readonly #manualUpdate: boolean;
 
    /**
-    * @type {T}
     */
-   #StoreClass;
+   readonly #StoreClass: {
+      new (...args: any[]): S;
+      duplicate?(data: any, arrayStore: ArrayObjectStore<any>): void
+   };
 
    /**
     * Stores the subscribers.
-    *
-    * @type {import('svelte/store').Subscriber<T[]>}
     */
-   #subscriptions = [];
+   #subscribers: Subscriber<S[]>[] = [];
 
    /**
-    * @type {Function}
     */
-   #updateSubscribersBound;
+   readonly #updateSubscribersBound: (update: boolean | ExtractDataType<S> | undefined) => void;
 
    /**
-    * @returns {ObjectEntryStore} The default object entry store constructor.
+    * @returns The default object entry store constructor that can facilitate the creation of the required
+    *          {@link ArrayObjectStoreParams.StoreClass} and generic `T` type parameter.
     */
-   static get EntryStore() { return ObjectEntryStore; }
+   static get EntryStore(): typeof ObjectEntryStore { return ObjectEntryStore; }
 
    /**
-    * @param {import('./').ArrayObjectStoreParams} params -
+    * @param params -
     */
-   constructor({ StoreClass, defaultData = [], childDebounce = 250, dataReducer = false, manualUpdate = false } = {})
+   constructor({ StoreClass, childDebounce = 250, dataReducer = false, manualUpdate = false }:
+    ArrayObjectStoreParams<S>)
    {
       if (!Number.isInteger(childDebounce) || childDebounce < 0 || childDebounce > 1000)
       {
@@ -76,25 +85,10 @@ export class ArrayObjectStore
          throw new TypeError(`'StoreClass' is not a minimal writable store constructor.`);
       }
 
-      let hasIDGetter = false;
-
-      // Walk parent prototype chain. Check for descriptor at each prototype level.
-      for (let o = StoreClass.prototype; o; o = Object.getPrototypeOf(o))
-      {
-         const descriptor = Object.getOwnPropertyDescriptor(o, 'id');
-         if (descriptor !== void 0 && descriptor.get !== void 0)
-         {
-            hasIDGetter = true;
-            break;
-         }
-      }
-
-      if (!hasIDGetter)
+      if (!hasGetter(StoreClass.prototype, 'id'))
       {
          throw new TypeError(`'StoreClass' does not have a getter accessor for 'id' property.`);
       }
-
-      if (!Array.isArray(defaultData)) { throw new TypeError(`'defaultData' is not an array.`); }
 
       this.#manualUpdate = manualUpdate;
 
@@ -104,15 +98,16 @@ export class ArrayObjectStore
 
       // Prepare a debounced callback that is used for all child store entry subscriptions.
       this.#updateSubscribersBound = childDebounce === 0 ? this.updateSubscribers.bind(this) :
-       Timing.debounce((data) => this.updateSubscribers(data), childDebounce);
+       Timing.debounce((update: boolean | ExtractDataType<S> | undefined): void => this.updateSubscribers(update),
+        childDebounce);
    }
 
    /**
     * Provide an iterator for public access to entry stores.
     *
-    * @yields {T | void}
+    * @returns iterator
     */
-   *[Symbol.iterator]()
+   *[Symbol.iterator](): IterableIterator<S>
    {
       if (this.#data.length === 0) { return; }
 
@@ -120,15 +115,14 @@ export class ArrayObjectStore
    }
 
    /**
-    * @returns {T[]} The internal data array tracked allowing child classes direct access.
-    * @protected
+    * @returns The internal data array tracked allowing child classes direct access.
     */
-   get _data() { return this.#data; }
+   protected get _data(): S[] { return this.#data; }
 
    /**
-    * @returns {DynArrayReducer<T>} The data reducer.
+    * @returns The data reducer.
     */
-   get dataReducer()
+   get dataReducer(): DynArrayReducer<S>
    {
       if (!this.#dataReducer)
       {
@@ -140,14 +134,14 @@ export class ArrayObjectStore
    }
 
    /**
-    * @returns {number} The length of all data.
+    * @returns The length of all data.
     */
-   get length() { return this.#data.length; }
+   get length(): number { return this.#data.length; }
 
    /**
     * Removes all child store entries.
     */
-   clearEntries()
+   clearEntries(): void
    {
       for (const storeEntryData of this.#dataMap.values()) { storeEntryData.unsubscribe(); }
 
@@ -160,22 +154,23 @@ export class ArrayObjectStore
    /**
     * Creates a new store from given data.
     *
-    * @param {object}   entryData -
+    * @param entryData - Entry data.
     *
-    * @returns {T} The store
+    * @returns The store
     */
-   createEntry(entryData = {})
+   createEntry(entryData: ExtractDataType<S>): S
    {
       if (!isObject(entryData)) { throw new TypeError(`'entryData' is not an object.`); }
 
       if (typeof entryData.id !== 'string') { entryData.id = Hashing.uuidv4(); }
 
-      if (this.#data.findIndex((entry) => entry.id === entryData.id) >= 0)
+      if (this.#data.findIndex((entry: S): boolean => entry.id === entryData.id) >= 0)
       {
          throw new Error(`'entryData.id' (${entryData.id}) already in this ArrayObjectStore instance.`);
       }
 
-      const store = this.#createStore(entryData);
+      // The required `id` is added to `entryData` if not defined.
+      const store: S = this.#createStore(entryData);
 
       this.updateSubscribers();
 
@@ -185,11 +180,11 @@ export class ArrayObjectStore
    /**
     * Add a new store entry from the given data.
     *
-    * @param {object}   entryData -
+    * @param entryData - Entry data.
     *
-    * @returns {T} New store entry instance.
+    * @returns New store entry instance.
     */
-   #createStore(entryData)
+   #createStore(entryData: ExtractDataType<S>): S
    {
       const store = new this.#StoreClass(entryData, this);
 
@@ -198,10 +193,10 @@ export class ArrayObjectStore
          throw new Error(`'store.id' (${store.id}) is not a UUIDv4 compliant string.`);
       }
 
-      const unsubscribe = subscribeIgnoreFirst(store, this.#updateSubscribersBound);
+      const unsubscribe: Unsubscriber = subscribeIgnoreFirst(store, this.#updateSubscribersBound);
 
       this.#data.push(store);
-      this.#dataMap.set(entryData.id, { store, unsubscribe });
+      this.#dataMap.set(store.id, { store, unsubscribe });
 
       return store;
    }
@@ -209,31 +204,31 @@ export class ArrayObjectStore
    /**
     * Deletes a given entry store by ID from this world setting array store instance.
     *
-    * @param {string}  id - ID of entry to delete.
+    * @param id - ID of entry to delete.
     *
-    * @returns {boolean} Delete operation successful.
+    * @returns Delete operation successful.
     */
-   deleteEntry(id)
+   deleteEntry(id: string): boolean
    {
-      const result = this.#deleteStore(id);
+      const result: boolean = this.#deleteStore(id);
 
       if (result) { this.updateSubscribers(); }
 
       return result;
    }
 
-   #deleteStore(id)
+   #deleteStore(id: string): boolean
    {
       if (typeof id !== 'string') { throw new TypeError(`'id' is not a string.`); }
 
-      const storeEntryData = this.#dataMap.get(id);
+      const storeEntryData: { store: S, unsubscribe: Unsubscriber } | undefined = this.#dataMap.get(id);
       if (storeEntryData)
       {
          storeEntryData.unsubscribe();
 
          this.#dataMap.delete(id);
 
-         const index = this.#data.findIndex((entry) => entry.id === id);
+         const index: number = this.#data.findIndex((entry: S): boolean => entry.id === id);
          if (index >= 0) { this.#data.splice(index, 1); }
 
          return true;
@@ -249,15 +244,15 @@ export class ArrayObjectStore
     *
     * @returns {*} Instance of StoreClass.
     */
-   duplicateEntry(id)
+   duplicateEntry(id: string): S | undefined
    {
       if (typeof id !== 'string') { throw new TypeError(`'id' is not a string.`); }
 
-      const storeEntryData = this.#dataMap.get(id);
+      const storeEntryData: { store: S, unsubscribe: Unsubscriber } | undefined = this.#dataMap.get(id);
 
       if (storeEntryData)
       {
-         const data = klona(storeEntryData.store.toJSON());
+         const data: ExtractDataType<S> = klona(storeEntryData.store.toJSON());
          data.id = Hashing.uuidv4();
 
          // Allow StoreClass to statically perform any specialized duplication.
@@ -272,11 +267,11 @@ export class ArrayObjectStore
    /**
     * Find an entry in the backing child store array.
     *
-    * @param {function(T): T|void}  predicate - A predicate function
+    * @param predicate - A predicate function.
     *
-    * @returns {T|void} Found entry in array or undefined.
+    * @returns Found entry in array or undefined.
     */
-   findEntry(predicate)
+   findEntry(predicate: (value: S, index: number, obj: S[]) => unknown): S | undefined
    {
       return this.#data.find(predicate);
    }
@@ -284,13 +279,13 @@ export class ArrayObjectStore
    /**
     * Finds an entry store instance by 'id' / UUIDv4.
     *
-    * @param {string}   id - A UUIDv4 string.
+    * @param id - A UUIDv4 string.
     *
-    * @returns {T|void} Entry store instance.
+    * @returns Entry store instance.
     */
-   getEntry(id)
+   getEntry(id: string): S | undefined
    {
-      const storeEntryData = this.#dataMap.get(id);
+      const storeEntryData: { store: S, unsubscribe: Unsubscriber } | undefined = this.#dataMap.get(id);
       return storeEntryData ? storeEntryData.store : void 0;
    }
 
@@ -298,9 +293,9 @@ export class ArrayObjectStore
     * Sets the children store data by 'id', adds new entry store instances, or removes entries that are no longer in the
     * update list.
     *
-    * @param {T[]}   updateList -
+    * @param updateList -
     */
-   set(updateList)
+   set(updateList: ExtractDataType<S>[]): void
    {
       if (!Array.isArray(updateList))
       {
@@ -308,27 +303,24 @@ export class ArrayObjectStore
          return;
       }
 
-      const data = this.#data;
-      const dataMap = this.#dataMap;
-
       // Create a set of all current entry IDs.
-      const removeIDSet = new Set(dataMap.keys());
+      const removeIDSet = new Set(this.#dataMap.keys());
 
-      let rebuildIndex = false;
+      let rebuildIndex: boolean = false;
 
-      for (let updateIndex = 0; updateIndex < updateList.length; updateIndex++)
+      for (let updateIndex: number = 0; updateIndex < updateList.length; updateIndex++)
       {
-         const updateData = updateList[updateIndex];
+         const updateData: ExtractDataType<S> = updateList[updateIndex];
 
-         const id = updateData.id;
+         const id: string = updateData.id;
 
          if (typeof id !== 'string') { throw new Error(`'updateData.id' is not a string.`); }
 
-         const localIndex = data.findIndex((entry) => entry.id === id);
+         const localIndex: number = this.#data.findIndex((entry: S): boolean => entry.id === id);
 
          if (localIndex >= 0)
          {
-            const localEntry = data[localIndex];
+            const localEntry: S = this.#data[localIndex];
 
             // Update the entry data.
             localEntry.set(updateData);
@@ -337,12 +329,12 @@ export class ArrayObjectStore
             if (localIndex !== updateIndex)
             {
                // Remove from current location.
-               data.splice(localIndex, 1);
+               this.#data.splice(localIndex, 1);
 
-               if (updateIndex < data.length)
+               if (updateIndex < this.#data.length)
                {
                   // Insert at new location.
-                  data.splice(updateIndex, 0, localEntry);
+                  this.#data.splice(updateIndex, 0, localEntry);
                }
                else
                {
@@ -363,10 +355,10 @@ export class ArrayObjectStore
       if (rebuildIndex)
       {
          // Must invoke unsubscribe for all child stores.
-         for (const storeEntryData of dataMap.values()) { storeEntryData.unsubscribe(); }
+         for (const storeEntryData of this.#dataMap.values()) { storeEntryData.unsubscribe(); }
 
-         data.length = 0;
-         dataMap.clear();
+         this.#data.length = 0;
+         this.#dataMap.clear();
 
          for (const updateData of updateList) { this.#createStore(updateData); }
       }
@@ -379,7 +371,7 @@ export class ArrayObjectStore
       this.updateSubscribers();
    }
 
-   toJSON()
+   toJSON(): S[]
    {
       return this.#data;
    }
@@ -387,40 +379,36 @@ export class ArrayObjectStore
 // -------------------------------------------------------------------------------------------------------------------
 
    /**
-    * @param {import('svelte/store').Subscriber<T[]>} handler - Callback function that is invoked on update / changes.
+    * @param handler - Callback function that is invoked on update / changes.
     *
-    * @returns {import('svelte/store').Unsubscriber} Unsubscribe function.
+    * @returns Unsubscribe function.
     */
-   subscribe(handler)
+   subscribe(handler: Subscriber<S[]>): Unsubscriber
    {
-      this.#subscriptions.push(handler); // add handler to the array of subscribers
+      this.#subscribers.push(handler); // add handler to the array of subscribers
 
       handler(this.#data);                     // call handler with current value
 
       // Return unsubscribe function.
-      return () =>
+      return (): void =>
       {
-         const index = this.#subscriptions.findIndex((sub) => sub === handler);
-         if (index >= 0) { this.#subscriptions.splice(index, 1); }
+         const index: number = this.#subscribers.findIndex((sub: Subscriber<S[]>): boolean => sub === handler);
+         if (index >= 0) { this.#subscribers.splice(index, 1); }
       };
    }
 
    /**
     * Updates subscribers.
     *
-    * @param {import('./').ArrayObjectUpdateData}  [update] -
+    * @param [update] -
     */
-   updateSubscribers(update)
+   updateSubscribers(update: boolean | ExtractDataType<S> | undefined = void 0): void
    {
-      const updateGate = typeof update === 'boolean' ? update : !this.#manualUpdate;
+      const updateGate: boolean = typeof update === 'boolean' ? update : !this.#manualUpdate;
 
       if (updateGate)
       {
-         const subscriptions = this.#subscriptions;
-
-         const data = this.#data;
-
-         for (let cntr = 0; cntr < subscriptions.length; cntr++) { subscriptions[cntr](data); }
+         for (let cntr: number = 0; cntr < this.#subscribers.length; cntr++) { this.#subscribers[cntr](this.#data); }
       }
 
       // This will update the filtered data and `dataReducer` store and forces an update to subscribers.
