@@ -483,10 +483,11 @@ const rollupConfigs = [
    },
    {
       input: {
-         input: 'src/svelte/store/reducer/index.js',
+         input: 'src/svelte/store/reducer/index.ts',
          plugins: [
             importsExternal(),
             resolve(resolveOptions),
+            typescript({ tsconfig: './src/svelte/store/reducer/tsconfig.json' }),
             generateDTS.plugin(dtsPluginOptions)
          ]
       },
@@ -499,10 +500,11 @@ const rollupConfigs = [
    },
    {
       input: {
-         input: 'src/svelte/store/reducer/array-object/index.js',
+         input: 'src/svelte/store/reducer/array-object/index.ts',
          plugins: [
             importsExternal(),
             resolve(resolveOptions),
+            typescript({ tsconfig: './src/svelte/store/reducer/array-object/tsconfig.json' }),
             generateDTS.plugin(dtsPluginOptions)
          ]
       },
