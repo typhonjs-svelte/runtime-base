@@ -29,6 +29,16 @@ class DynReducerHelper
  */
 declare namespace DynReducerHelper {
    /**
+    * All available returned filter functions.
+    */
+   export namespace FilterFn {
+      /**
+       * The returned filter function from `regexObjectQuery` helper.
+       */
+      export type regexObjectQuery = MinimalWritableFn<string, [data: { [key: string]: any }], boolean>;
+   }
+
+   /**
     * All available filters.
     */
    export interface Filters {
@@ -63,7 +73,7 @@ declare namespace DynReducerHelper {
             caseSensitive?: boolean,
             store?: MinimalWritable<string>
          }
-      ) => MinimalWritableFn<string, [data: { [key: string]: any }], boolean>;
+      ) => FilterFn.regexObjectQuery
    }
 }
 
