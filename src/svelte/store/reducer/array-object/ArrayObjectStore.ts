@@ -19,15 +19,12 @@ import type {
    Subscriber,
    Unsubscriber }                from 'svelte/store';
 
-import type {
-   ArrayObjectStoreParams,
-   BaseObjectEntryStore,
-   ExtractDataType }             from './types';
+import type { MinimalWritable }  from '#runtime/svelte/store/util';
 
 /**
  * @typeParam S - Store type.
  */
-export class ArrayObjectStore<S extends BaseObjectEntryStore<any>>
+class ArrayObjectStore<S extends ArrayObjectStore.Data.BaseObjectEntryStore<any>>
 {
    /**
     */
@@ -59,19 +56,19 @@ export class ArrayObjectStore<S extends BaseObjectEntryStore<any>>
 
    /**
     */
-   readonly #updateSubscribersBound: (update: boolean | ExtractDataType<S> | undefined) => void;
+   readonly #updateSubscribersBound: (update: boolean | ArrayObjectStore.Util.ExtractDataType<S> | undefined) => void;
 
    /**
     * @returns The default object entry store constructor that can facilitate the creation of the required
-    *          {@link ArrayObjectStoreParams.StoreClass} and generic `T` type parameter.
+    *          {@link ArrayObjectStore.Options.Config.StoreClass} and generic `T` type parameter.
     */
    static get EntryStore(): typeof ObjectEntryStore { return ObjectEntryStore; }
 
    /**
-    * @param params -
+    * @param options - ArrayObjectStore options.
     */
    constructor({ StoreClass, childDebounce = 250, dataReducer = false, manualUpdate = false }:
-    ArrayObjectStoreParams<S>)
+    ArrayObjectStore.Options.Config<S>)
    {
       if (!Number.isInteger(childDebounce) || childDebounce < 0 || childDebounce > 1000)
       {
@@ -98,8 +95,8 @@ export class ArrayObjectStore<S extends BaseObjectEntryStore<any>>
 
       // Prepare a debounced callback that is used for all child store entry subscriptions.
       this.#updateSubscribersBound = childDebounce === 0 ? this.updateSubscribers.bind(this) :
-       Timing.debounce((update: boolean | ExtractDataType<S> | undefined): void => this.updateSubscribers(update),
-        childDebounce);
+       Timing.debounce((update: boolean | ArrayObjectStore.Util.ExtractDataType<S> | undefined): void =>
+        this.updateSubscribers(update), childDebounce);
    }
 
    /**
@@ -158,7 +155,7 @@ export class ArrayObjectStore<S extends BaseObjectEntryStore<any>>
     *
     * @returns The store
     */
-   createEntry(entryData: ExtractDataType<S>): S
+   createEntry(entryData: ArrayObjectStore.Util.ExtractDataType<S>): S
    {
       if (!isObject(entryData)) { throw new TypeError(`'entryData' is not an object.`); }
 
@@ -184,7 +181,7 @@ export class ArrayObjectStore<S extends BaseObjectEntryStore<any>>
     *
     * @returns New store entry instance.
     */
-   #createStore(entryData: ExtractDataType<S>): S
+   #createStore(entryData: ArrayObjectStore.Util.ExtractDataType<S>): S
    {
       const store = new this.#StoreClass(entryData, this);
 
@@ -252,7 +249,7 @@ export class ArrayObjectStore<S extends BaseObjectEntryStore<any>>
 
       if (storeEntryData)
       {
-         const data: ExtractDataType<S> = klona(storeEntryData.store.toJSON());
+         const data: ArrayObjectStore.Util.ExtractDataType<S> = klona(storeEntryData.store.toJSON());
          data.id = Hashing.uuidv4();
 
          // Allow StoreClass to statically perform any specialized duplication.
@@ -295,7 +292,7 @@ export class ArrayObjectStore<S extends BaseObjectEntryStore<any>>
     *
     * @param updateList -
     */
-   set(updateList: ExtractDataType<S>[]): void
+   set(updateList: ArrayObjectStore.Util.ExtractDataType<S>[]): void
    {
       if (!Array.isArray(updateList))
       {
@@ -310,7 +307,7 @@ export class ArrayObjectStore<S extends BaseObjectEntryStore<any>>
 
       for (let updateIndex: number = 0; updateIndex < updateList.length; updateIndex++)
       {
-         const updateData: ExtractDataType<S> = updateList[updateIndex];
+         const updateData: ArrayObjectStore.Util.ExtractDataType<S> = updateList[updateIndex];
 
          const id: string = updateData.id;
 
@@ -402,7 +399,7 @@ export class ArrayObjectStore<S extends BaseObjectEntryStore<any>>
     *
     * @param [update] -
     */
-   updateSubscribers(update: boolean | ExtractDataType<S> | undefined = void 0): void
+   updateSubscribers(update: boolean | ArrayObjectStore.Util.ExtractDataType<S> | undefined = void 0): void
    {
       const updateGate: boolean = typeof update === 'boolean' ? update : !this.#manualUpdate;
 
@@ -415,3 +412,79 @@ export class ArrayObjectStore<S extends BaseObjectEntryStore<any>>
       if (this.#dataReducer) { this.#dataReducer.index.update(true); }
    }
 }
+
+declare namespace ArrayObjectStore {
+   export namespace Data {
+      export interface BaseArrayObject {
+         /**
+          * Optional UUIDv4 compatible ID string.
+          */
+         id?: string;
+      }
+
+      /**
+       * @typeParam D - Store data type.
+       */
+      export interface BaseObjectEntryStore<D> extends MinimalWritable<D> {
+         /**
+          * @returns UUIDv4 compatible string.
+          */
+         get id(): string;
+
+         /**
+          * Convert or return data in JSON.
+          *
+          * @returns JSON data.
+          */
+         toJSON(): D;
+      }
+   }
+
+   export namespace Options {
+      /**
+       * @typeParam S - Store type.
+       */
+      export interface Config<S extends Data.BaseObjectEntryStore<any>> {
+         /**
+          * The entry store class that is instantiated.
+          */
+         StoreClass: new (...args: any[]) => S;
+
+         /**
+          * An array of default data objects.
+          */
+         defaultData?: Util.ExtractDataType<S>[];
+
+         /**
+          * An integer between and including 0 - 1000; a debounce time in milliseconds for child store subscriptions to
+          * invoke {@link ArrayObjectStore.updateSubscribers} notifying subscribers to this array store. Default
+          * value: `250`.
+          */
+         childDebounce?: number;
+
+         /**
+          * When true a {@link DynArrayReducer} will be instantiated wrapping store data and accessible from
+          * {@link ArrayObjectStore.dataReducer}; default value: `false`.
+          */
+         dataReducer?: boolean;
+
+         /**
+          * When true {@link ArrayObjectStore.updateSubscribers} must be invoked with a single boolean parameter for
+          * subscribers to be updated; default value: `false`.
+          */
+         manualUpdate?: boolean;
+      }
+   }
+
+   export namespace Util {
+      /**
+       * Utility type that extracts and infers generic data type of store.
+       *
+       * @typeParam S - Store type.
+       */
+      export type ExtractDataType<S> = S extends Data.BaseObjectEntryStore<infer D> ? D : never;
+   }
+}
+
+
+export { ArrayObjectStore }

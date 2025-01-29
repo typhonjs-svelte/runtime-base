@@ -1,24 +1,18 @@
-import { Hashing }               from '#runtime/util';
+import { Hashing }            from '#runtime/util';
 
-import { isObject }              from '#runtime/util/object';
+import { isObject }           from '#runtime/util/object';
 
-import { ArrayObjectStore }      from './ArrayObjectStore';
-
-import type {
-   ArrayObjectStoreParams,
-   BaseObjectEntryStore,
-   CrudArrayObjectStoreParams,
-   CrudDispatch,
-   ExtractDataType }             from './types';
+import { ArrayObjectStore }   from './ArrayObjectStore';
 
 /**
  * @typeParam S - Store type.
  */
-export class CrudArrayObjectStore<S extends BaseObjectEntryStore<any>> extends ArrayObjectStore<S>
+class CrudArrayObjectStore<S extends CrudArrayObjectStore.Data.BaseObjectEntryStore<any>> extends ArrayObjectStore<S>
 {
    /**
     */
-   readonly #crudDispatch: CrudDispatch<ExtractDataType<S>> | undefined;
+   readonly #crudDispatch: CrudArrayObjectStore.Options.CrudDispatch<CrudArrayObjectStore.Util.ExtractDataType<S>> |
+    undefined;
 
    /**
     */
@@ -26,14 +20,9 @@ export class CrudArrayObjectStore<S extends BaseObjectEntryStore<any>> extends A
 
    /**
     * @param options - CrudArrayObjectStore options.
-    *
-    * @param [options.crudDispatch] -
-    *
-    * @param [options.extraData] -
-    *
-    * @param options.rest - Rest of ArrayObjectStore parameters.
     */
-   constructor({ crudDispatch, extraData, ...rest }: CrudArrayObjectStoreParams<S> & ArrayObjectStoreParams<S>)
+   constructor({ crudDispatch, extraData, ...rest }: CrudArrayObjectStore.Options.Config<S> &
+    ArrayObjectStore.Options.Config<S>)
    {
       // 'manualUpdate' is set to true if 'crudUpdate' is defined, but can be overridden by `...rest`.
       super({
@@ -75,7 +64,7 @@ export class CrudArrayObjectStore<S extends BaseObjectEntryStore<any>> extends A
     *
     * @returns Associated store with entry data.
     */
-   override createEntry(entryData: ExtractDataType<S>): S
+   override createEntry(entryData: CrudArrayObjectStore.Util.ExtractDataType<S>): S
    {
       const store: S = super.createEntry(entryData);
 
@@ -118,7 +107,7 @@ export class CrudArrayObjectStore<S extends BaseObjectEntryStore<any>> extends A
     *
     * @param [update] - A boolean indicating that subscribers should be notified otherwise
     */
-   override updateSubscribers(update: boolean | ExtractDataType<S> | undefined = void 0): void
+   override updateSubscribers(update: boolean | CrudArrayObjectStore.Util.ExtractDataType<S> | undefined = void 0): void
    {
       if (this.#crudDispatch && isObject(update) && Hashing.isUuidv4(update.id))
       {
@@ -138,3 +127,35 @@ export class CrudArrayObjectStore<S extends BaseObjectEntryStore<any>> extends A
       }
    }
 }
+
+declare namespace CrudArrayObjectStore {
+   export import Data = ArrayObjectStore.Data;
+   export import Util = ArrayObjectStore.Util;
+
+   export namespace Options {
+      /**
+       * @typeParam S - Store type.
+       */
+      export interface Config<S extends Data.BaseObjectEntryStore<any>> extends ArrayObjectStore.Options.Config<S> {
+         /**
+          * Optional dispatch function to receive C(R)UD updates on create, update, delete actions.
+          */
+         crudDispatch?: CrudDispatch<Util.ExtractDataType<S>>;
+
+         /**
+          * Optional additional data that is dispatched with `CrudDispatch` callbacks.
+          */
+         extraData?: object;
+      }
+
+      /**
+       * A function that accepts an object w/ 'action', 'moduleId', 'key' properties and optional 'id' / UUIDv4 string
+       * and 'data' property.
+       *
+       * @typeParam D - Store data type.
+       */
+      export type CrudDispatch<D> = (data: { action: string, id?: string, data?: D, [key: string]: any; }) => boolean;
+   }
+}
+
+export { CrudArrayObjectStore };

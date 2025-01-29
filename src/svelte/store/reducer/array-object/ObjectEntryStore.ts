@@ -9,17 +9,13 @@ import type { MinimalWritable }  from '#runtime/svelte/store/util';
 
 import type { ArrayObjectStore } from './ArrayObjectStore';
 
-import type {
-   BaseArrayObject,
-   BaseObjectEntryStore }   from './types';
-
 /**
  * Provides a base implementation for store entries in {@link ArrayObjectStore}.
  *
  * In particular providing the required getting / accessor for the 'id' property.
  */
-export abstract class ObjectEntryStore<T extends BaseArrayObject = BaseArrayObject> implements
- BaseObjectEntryStore<T>
+export abstract class ObjectEntryStore<T extends ArrayObjectStore.Data.BaseArrayObject =
+ ArrayObjectStore.Data.BaseArrayObject> implements ArrayObjectStore.Data.BaseObjectEntryStore<T>
 {
    /**
     */
