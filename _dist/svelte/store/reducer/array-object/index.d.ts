@@ -3,82 +3,13 @@ import { Subscriber, Unsubscriber } from 'svelte/store';
 import { MinimalWritable } from '@typhonjs-svelte/runtime-base/svelte/store/util';
 
 /**
- * @typeParam S - Store type.
- */
-interface ArrayObjectStoreParams<S extends BaseObjectEntryStore<any>> {
-  /**
-   * The entry store class that is instantiated.
-   */
-  StoreClass: new (...args: any[]) => S;
-  /**
-   * An array of default data objects.
-   */
-  defaultData?: ExtractDataType<S>[];
-  /**
-   * An integer between and including 0 - 1000; a debounce time in milliseconds for child store subscriptions to
-   * invoke {@link ArrayObjectStore.updateSubscribers} notifying subscribers to this array store. Default value: `250`.
-   */
-  childDebounce?: number;
-  /**
-   * When true a {@link DynArrayReducer} will be instantiated wrapping store data and accessible from
-   * {@link ArrayObjectStore.dataReducer}; default value: `false`.
-   */
-  dataReducer?: boolean;
-  /**
-   * When true {@link ArrayObjectStore.updateSubscribers} must be invoked with a single boolean parameter for
-   * subscribers to be updated; default value: `false`.
-   */
-  manualUpdate?: boolean;
-}
-interface BaseArrayObject {
-  /**
-   * Optional UUIDv4 compatible ID string.
-   */
-  id?: string;
-}
-/**
- * @typeParam D - Store data type.
- */
-interface BaseObjectEntryStore<D> extends MinimalWritable<D> {
-  /**
-   * @returns UUIDv4 compatible string.
-   */
-  get id(): string;
-  /**
-   * Convert or return data in JSON.
-   *
-   * @returns JSON data.
-   */
-  toJSON(): D;
-}
-/**
- * Utility type that extracts and infers generic data type of store.
- *
- * @typeParam S - Store type.
- */
-type ExtractDataType<S> = S extends BaseObjectEntryStore<infer D> ? D : never;
-/**
- * @typeParam S - Store type.
- */
-interface CrudArrayObjectStoreParams<S extends BaseObjectEntryStore<any>> extends ArrayObjectStoreParams<S> {
-  crudDispatch?: CrudDispatch<ExtractDataType<S>>;
-  extraData?: object;
-}
-/**
- * A function that accepts an object w/ 'action', 'moduleId', 'key' properties and optional 'id' / UUIDv4 string and
- * 'data' property.
- *
- * @typeParam D - Store data type.
- */
-type CrudDispatch<D> = (data: { action: string; id?: string; data?: D; [key: string]: any }) => boolean;
-
-/**
  * Provides a base implementation for store entries in {@link ArrayObjectStore}.
  *
  * In particular providing the required getting / accessor for the 'id' property.
  */
-declare abstract class ObjectEntryStore<T extends BaseArrayObject = BaseArrayObject>
-  implements BaseObjectEntryStore<T>
+declare abstract class ObjectEntryStore<
+  T extends ArrayObjectStore.Data.BaseArrayObject = ArrayObjectStore.Data.BaseArrayObject,
+> implements ArrayObjectStore.Data.BaseObjectEntryStore<T>
 {
   #private;
   /**
@@ -128,17 +59,17 @@ declare abstract class ObjectEntryStore<T extends BaseArrayObject = BaseArrayObj
 /**
  * @typeParam S - Store type.
  */
-declare class ArrayObjectStore<S extends BaseObjectEntryStore<any>> {
+declare class ArrayObjectStore<S extends ArrayObjectStore.Data.BaseObjectEntryStore<any>> {
   #private;
   /**
    * @returns The default object entry store constructor that can facilitate the creation of the required
-   *          {@link ArrayObjectStoreParams.StoreClass} and generic `T` type parameter.
+   *          {@link ArrayObjectStore.Options.Config.StoreClass} and generic `T` type parameter.
    */
   static get EntryStore(): typeof ObjectEntryStore;
   /**
-   * @param params -
+   * @param options - ArrayObjectStore options.
    */
-  constructor({ StoreClass, childDebounce, dataReducer, manualUpdate }: ArrayObjectStoreParams<S>);
+  constructor({ StoreClass, childDebounce, dataReducer, manualUpdate }: ArrayObjectStore.Options.Config<S>);
   /**
    * Provide an iterator for public access to entry stores.
    *
@@ -168,7 +99,7 @@ declare class ArrayObjectStore<S extends BaseObjectEntryStore<any>> {
    *
    * @returns The store
    */
-  createEntry(entryData: ExtractDataType<S>): S;
+  createEntry(entryData: ArrayObjectStore.Util.ExtractDataType<S>): S;
   /**
    * Deletes a given entry store by ID from this world setting array store instance.
    *
@@ -207,7 +138,7 @@ declare class ArrayObjectStore<S extends BaseObjectEntryStore<any>> {
    *
    * @param updateList -
    */
-  set(updateList: ExtractDataType<S>[]): void;
+  set(updateList: ArrayObjectStore.Util.ExtractDataType<S>[]): void;
   toJSON(): S[];
   /**
    * @param handler - Callback function that is invoked on update / changes.
@@ -220,24 +151,88 @@ declare class ArrayObjectStore<S extends BaseObjectEntryStore<any>> {
    *
    * @param [update] -
    */
-  updateSubscribers(update?: boolean | ExtractDataType<S> | undefined): void;
+  updateSubscribers(update?: boolean | ArrayObjectStore.Util.ExtractDataType<S> | undefined): void;
+}
+declare namespace ArrayObjectStore {
+  namespace Data {
+    interface BaseArrayObject {
+      /**
+       * Optional UUIDv4 compatible ID string.
+       */
+      id?: string;
+    }
+    /**
+     * @typeParam D - Store data type.
+     */
+    interface BaseObjectEntryStore<D> extends MinimalWritable<D> {
+      /**
+       * @returns UUIDv4 compatible string.
+       */
+      get id(): string;
+      /**
+       * Convert or return data in JSON.
+       *
+       * @returns JSON data.
+       */
+      toJSON(): D;
+    }
+  }
+  namespace Options {
+    /**
+     * @typeParam S - Store type.
+     */
+    interface Config<S extends Data.BaseObjectEntryStore<any>> {
+      /**
+       * The entry store class that is instantiated.
+       */
+      StoreClass: new (...args: any[]) => S;
+      /**
+       * An array of default data objects.
+       */
+      defaultData?: Util.ExtractDataType<S>[];
+      /**
+       * An integer between and including 0 - 1000; a debounce time in milliseconds for child store subscriptions to
+       * invoke {@link ArrayObjectStore.updateSubscribers} notifying subscribers to this array store. Default
+       * value: `250`.
+       */
+      childDebounce?: number;
+      /**
+       * When true a {@link DynArrayReducer} will be instantiated wrapping store data and accessible from
+       * {@link ArrayObjectStore.dataReducer}; default value: `false`.
+       */
+      dataReducer?: boolean;
+      /**
+       * When true {@link ArrayObjectStore.updateSubscribers} must be invoked with a single boolean parameter for
+       * subscribers to be updated; default value: `false`.
+       */
+      manualUpdate?: boolean;
+    }
+  }
+  namespace Util {
+    /**
+     * Utility type that extracts and infers generic data type of store.
+     *
+     * @typeParam S - Store type.
+     */
+    type ExtractDataType<S> = S extends Data.BaseObjectEntryStore<infer D> ? D : never;
+  }
 }
 
 /**
  * @typeParam S - Store type.
  */
-declare class CrudArrayObjectStore<S extends BaseObjectEntryStore<any>> extends ArrayObjectStore<S> {
+declare class CrudArrayObjectStore<
+  S extends CrudArrayObjectStore.Data.BaseObjectEntryStore<any>,
+> extends ArrayObjectStore<S> {
   #private;
   /**
    * @param options - CrudArrayObjectStore options.
-   *
-   * @param [options.crudDispatch] -
-   *
-   * @param [options.extraData] -
-   *
-   * @param options.rest - Rest of ArrayObjectStore parameters.
    */
-  constructor({ crudDispatch, extraData, ...rest }: CrudArrayObjectStoreParams<S> & ArrayObjectStoreParams<S>);
+  constructor({
+    crudDispatch,
+    extraData,
+    ...rest
+  }: CrudArrayObjectStore.Options.Config<S> & ArrayObjectStore.Options.Config<S>);
   /**
    * Removes all child store entries.
    */
@@ -249,7 +244,7 @@ declare class CrudArrayObjectStore<S extends BaseObjectEntryStore<any>> extends 
    *
    * @returns Associated store with entry data.
    */
-  createEntry(entryData: ExtractDataType<S>): S;
+  createEntry(entryData: CrudArrayObjectStore.Util.ExtractDataType<S>): S;
   /**
    * Deletes a given entry store by ID from this world setting array store instance.
    *
@@ -265,17 +260,33 @@ declare class CrudArrayObjectStore<S extends BaseObjectEntryStore<any>> extends 
    *
    * @param [update] - A boolean indicating that subscribers should be notified otherwise
    */
-  updateSubscribers(update?: boolean | ExtractDataType<S> | undefined): void;
+  updateSubscribers(update?: boolean | CrudArrayObjectStore.Util.ExtractDataType<S> | undefined): void;
+}
+declare namespace CrudArrayObjectStore {
+  export import Data = ArrayObjectStore.Data;
+  export import Util = ArrayObjectStore.Util;
+  namespace Options {
+    /**
+     * @typeParam S - Store type.
+     */
+    interface Config<S extends Data.BaseObjectEntryStore<any>> extends ArrayObjectStore.Options.Config<S> {
+      /**
+       * Optional dispatch function to receive C(R)UD updates on create, update, delete actions.
+       */
+      crudDispatch?: CrudDispatch<Util.ExtractDataType<S>>;
+      /**
+       * Optional additional data that is dispatched with `CrudDispatch` callbacks.
+       */
+      extraData?: object;
+    }
+    /**
+     * A function that accepts an object w/ 'action', 'moduleId', 'key' properties and optional 'id' / UUIDv4 string
+     * and 'data' property.
+     *
+     * @typeParam D - Store data type.
+     */
+    type CrudDispatch<D> = (data: { action: string; id?: string; data?: D; [key: string]: any }) => boolean;
+  }
 }
 
-export {
-  ArrayObjectStore,
-  type ArrayObjectStoreParams,
-  type BaseArrayObject,
-  type BaseObjectEntryStore,
-  CrudArrayObjectStore,
-  type CrudArrayObjectStoreParams,
-  type CrudDispatch,
-  type ExtractDataType,
-  ObjectEntryStore,
-};
+export { ArrayObjectStore, CrudArrayObjectStore, ObjectEntryStore };

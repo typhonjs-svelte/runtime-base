@@ -1,4 +1,4 @@
-import { MinimalWritable, MinimalWritableFn } from '@typhonjs-svelte/runtime-base/svelte/store/util';
+import { MinimalWritableFn, MinimalWritable } from '@typhonjs-svelte/runtime-base/svelte/store/util';
 
 /**
  * Provides a managed {@link Map} with non-destructive reducing / filtering / sorting capabilities with subscription /
@@ -1212,6 +1212,23 @@ declare class DynReducerHelper {
  */
 declare namespace DynReducerHelper {
   /**
+   * All available returned filter functions.
+   */
+  namespace FilterFn {
+    /**
+     * The returned filter function from `regexObjectQuery` helper.
+     */
+    type regexObjectQuery = MinimalWritableFn<
+      string,
+      [
+        data: {
+          [key: string]: any;
+        },
+      ],
+      boolean
+    >;
+  }
+  /**
    * All available filters.
    */
   interface Filters {
@@ -1246,15 +1263,7 @@ declare namespace DynReducerHelper {
         caseSensitive?: boolean;
         store?: MinimalWritable<string>;
       },
-    ) => MinimalWritableFn<
-      string,
-      [
-        data: {
-          [key: string]: any;
-        },
-      ],
-      boolean
-    >;
+    ) => FilterFn.regexObjectQuery;
   }
 }
 

@@ -109,11 +109,11 @@ class ArrayObjectStore {
     #updateSubscribersBound;
     /**
      * @returns The default object entry store constructor that can facilitate the creation of the required
-     *          {@link ArrayObjectStoreParams.StoreClass} and generic `T` type parameter.
+     *          {@link ArrayObjectStore.Options.Config.StoreClass} and generic `T` type parameter.
      */
     static get EntryStore() { return ObjectEntryStore; }
     /**
-     * @param params -
+     * @param options - ArrayObjectStore options.
      */
     constructor({ StoreClass, childDebounce = 250, dataReducer = false, manualUpdate = false }) {
         if (!Number.isInteger(childDebounce) || childDebounce < 0 || childDebounce > 1000) {
@@ -404,12 +404,6 @@ class CrudArrayObjectStore extends ArrayObjectStore {
     #extraData;
     /**
      * @param options - CrudArrayObjectStore options.
-     *
-     * @param [options.crudDispatch] -
-     *
-     * @param [options.extraData] -
-     *
-     * @param options.rest - Rest of ArrayObjectStore parameters.
      */
     constructor({ crudDispatch, extraData, ...rest }) {
         // 'manualUpdate' is set to true if 'crudUpdate' is defined, but can be overridden by `...rest`.
