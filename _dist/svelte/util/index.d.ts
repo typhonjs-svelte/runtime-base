@@ -121,7 +121,7 @@ declare namespace TJSSvelte {
      * config in a static context where it is helpful to pass an instance / `this` reference when defining `context`
      * and `props`.
      *
-     * See {@link Config.Minimal} or {@link Config.Standard} that narrows the type accepted for `context` and `props`
+     * See {@link Config.Embed} or {@link Config.Standard} that narrows the type accepted for `context` and `props`
      * to just an `object`.
      *
      * @typeParam Component - A specific component to narrow the allowed `class` and `props`.
