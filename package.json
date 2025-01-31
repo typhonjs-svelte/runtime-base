@@ -217,6 +217,10 @@
       "types": "./_dist/util/object/index.d.ts",
       "import": "./_dist/util/object/index.js"
     },
+    "./util/semver": {
+      "types": "./_dist/util/semver/index.d.ts",
+      "import": "./_dist/util/semver/index.js"
+    },
     "./package.json": "./package.json"
   },
   "devDependencies": {
@@ -234,6 +238,7 @@
     "@typhonjs-utils/object": "^0.1.0",
     "@typhonjs-utils/unicode": "^0.1.0",
     "colord-typhonjs": "github:typhonjs-svelte-scratch/colord#0.0.3",
+    "compare-versions": "^6.1.1",
     "eslint": "^8.57.0",
     "fflate": "^0.8.2",
     "gl-matrix": "github:typhonjs-svelte-scratch/gl-matrix-beta3-dist#glmatrix-next",

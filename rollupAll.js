@@ -847,6 +847,22 @@ const rollupConfigs = [
          generatedCode: { constBindings: true },
          sourcemap
       }
+   },
+   {
+      input: {
+         input: 'src/util/semver/index.js',
+         plugins: [
+            resolve(resolveOptions),
+            // Directly bundle the TS source as this module doesn't bundle types.
+            generateDTS.plugin({ input: 'node_modules/compare-versions/src/index.ts', output: '_dist/util/semver/index.d.ts' }),
+         ]
+      },
+      output: {
+         file: '_dist/util/semver/index.js',
+         format: 'es',
+         generatedCode: { constBindings: true },
+         sourcemap
+      }
    }
 ];
 
