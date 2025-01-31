@@ -247,7 +247,7 @@
     "json5": "^2.2.3",
     "msgpackr": "^1.11.2",
     "quick-lru": "^7.0.0",
-    "rollup": "^4.32.1",
+    "rollup": "^4.29.2",
     "striptags": "github:typhonjs-svelte-scratch/striptags",
     "svelte-writable-derived": "^3.1.1",
     "tinykeys": "github:typhonjs-svelte-scratch/tinykeys",
