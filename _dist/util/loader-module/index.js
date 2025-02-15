@@ -33,14 +33,14 @@ class ModuleLoader
     *
     * @returns {Promise<ModuleLoaderObj<M, E>>} The module / instance and data about the loading process.
     */
-   static async load({ modulepath, resolveModule = void 0 })
+   static async load({ modulepath, resolveModule = undefined })
    {
       if (!(modulepath instanceof URL) && typeof modulepath !== 'string')
       {
          throw new TypeError(`'modulepath' is not a string or URL`);
       }
 
-      if (resolveModule !== void 0 && typeof resolveModule !== 'function')
+      if (resolveModule !== undefined && typeof resolveModule !== 'function')
       {
          throw new TypeError(`'resolveModule' is not a function`);
       }

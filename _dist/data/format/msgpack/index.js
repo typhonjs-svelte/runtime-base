@@ -175,13 +175,7 @@ function checkedRead(options) {
 				currentStructures.length = sharedLength;
 		}
 		let result;
-		if (currentUnpackr.randomAccessStructure && src[position$1] < 0x40 && src[position$1] >= 0x20 && readStruct) {
-			result = readStruct(src, position$1, srcEnd, currentUnpackr);
-			src = null; // dispose of this so that recursive unpack calls don't save state
-			if (!(options && options.lazy) && result)
-				result = result.toJSON();
-			position$1 = srcEnd;
-		} else
+		if (currentUnpackr.randomAccessStructure && src[position$1] < 0x40 && src[position$1] >= 0x20 && readStruct) ; else
 			result = read();
 		if (bundledStrings$1) { // bundled strings to skip past
 			position$1 = bundledStrings$1.postBundlePosition;
@@ -1033,7 +1027,7 @@ currentExtensions[0xff] = (data) => {
 	else if (data.length == 12)// TODO: Implement support for negative
 		return new Date(
 			((data[0] << 24) + (data[1] << 16) + (data[2] << 8) + data[3]) / 1000000 +
-			(((data[4] & 0x80) ? -0x1000000000000 : 0) + data[6] * 0x10000000000 + data[7] * 0x100000000 + data[8] * 0x1000000 + (data[9] << 16) + (data[10] << 8) + data[11]) * 1000)
+			(((data[4] & 0x80) ? -281474976710656 : 0) + data[6] * 0x10000000000 + data[7] * 0x100000000 + data[8] * 0x1000000 + (data[9] << 16) + (data[10] << 8) + data[11]) * 1000)
 	else
 		return new Date('invalid')
 }; // notepack defines extension 0 to mean undefined, so use that as the default here
@@ -1473,12 +1467,12 @@ class Packr extends Unpackr {
 						position += 4;
 					}
 				} else if (value >> 0 === value) { // negative integer
-					if (value >= -0x20) {
+					if (value >= -32) {
 						target[position++] = 0x100 + value;
-					} else if (value >= -0x80) {
+					} else if (value >= -128) {
 						target[position++] = 0xd0;
 						target[position++] = value + 0x100;
-					} else if (value >= -0x8000) {
+					} else if (value >= -32768) {
 						target[position++] = 0xd1;
 						targetView.setInt16(position, value);
 						position += 2;
@@ -1489,7 +1483,7 @@ class Packr extends Unpackr {
 					}
 				} else {
 					let useFloat32;
-					if ((useFloat32 = this.useFloat32) > 0 && value < 0x100000000 && value >= -0x80000000) {
+					if ((useFloat32 = this.useFloat32) > 0 && value < 0x100000000 && value >= -2147483648) {
 						target[position++] = 0xca;
 						targetView.setFloat32(position, value);
 						let xShifted;

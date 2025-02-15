@@ -1594,7 +1594,7 @@ class PluginManager
          }
       }));
 
-      deepFreeze(pluginData, new Set(['manager']));
+      deepFreeze(pluginData, { skipKeys: new Set(['manager']) });
 
       const eventbusProxy = this.#eventbus !== null && this.#eventbus !== void 0 ?
        new EventbusProxy(this.#eventbus) /* c8 ignore next */ : void 0;

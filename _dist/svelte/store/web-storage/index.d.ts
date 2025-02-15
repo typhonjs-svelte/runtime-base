@@ -1,13 +1,13 @@
 import * as svelte_store from 'svelte/store';
 import {
   Stores,
-  Readable,
-  StartStopNotifier,
-  Writable,
   StoresValues,
   Subscriber,
   Updater,
   Unsubscriber,
+  Readable,
+  StartStopNotifier,
+  Writable,
 } from 'svelte/store';
 
 /**

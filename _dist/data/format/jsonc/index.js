@@ -12,7 +12,7 @@ function createScanner$1(text, ignoreTrivia = false) {
     function scanHexDigits(count, exact) {
         let digits = 0;
         let value = 0;
-        while (digits < count || !exact) {
+        while (digits < count || false) {
             let ch = text.charCodeAt(pos);
             if (ch >= 48 /* CharacterCodes._0 */ && ch <= 57 /* CharacterCodes._9 */) {
                 value = value * 16 + ch - 48 /* CharacterCodes._0 */;
@@ -132,7 +132,7 @@ function createScanner$1(text, ignoreTrivia = false) {
                         result += '\t';
                         break;
                     case 117 /* CharacterCodes.u */:
-                        const ch3 = scanHexDigits(4, true);
+                        const ch3 = scanHexDigits(4);
                         if (ch3 >= 0) {
                             result += String.fromCharCode(ch3);
                         }

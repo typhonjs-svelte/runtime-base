@@ -1,4 +1,4 @@
-import { packAndDeflateB64, inflateAndUnpackB64 } from '@typhonjs-svelte/runtime-base/data/format/msgpack/compress';
+import { inflateAndUnpackB64, packAndDeflateB64 } from '@typhonjs-svelte/runtime-base/data/format/msgpack/compress';
 import { TJSWebStorage, storeGenerator } from '@typhonjs-svelte/runtime-base/svelte/store/web-storage';
 
 /**
