@@ -375,7 +375,11 @@ function isObject(value) {
  * @returns Is it a plain object.
  */
 function isPlainObject(value) {
-    return Object.prototype.toString.call(value) === '[object Object]';
+    if (Object.prototype.toString.call(value) !== '[object Object]') {
+        return false;
+    }
+    const prototype = Object.getPrototypeOf(value);
+    return prototype === null || prototype === Object.prototype;
 }
 /**
  * Safely returns keys on an object or an empty array if not an object.
