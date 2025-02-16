@@ -858,7 +858,7 @@ class TJSPosition implements TJSPosition.WritableExt
          return this;
       }
 
-      const immediateElementUpdate = options?.immediateElementUpdate ?? false;
+      const immediateElementUpdate: boolean = options?.immediateElementUpdate ?? false;
 
       const data: Data.TJSPositionData = this.#data;
       const transforms: TransformAPI = this.#transforms;
