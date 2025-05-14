@@ -1,4 +1,7 @@
 # Changelog
+## Release 0.3.0 (minor)
+- Update dependencies
+
 ## Release 0.2.0 (major)
 - Various sub-path refactoring / removals.
 - Additional exported libraries.

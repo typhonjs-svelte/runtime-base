@@ -1,6 +1,6 @@
 {
   "name": "@typhonjs-svelte/runtime-base",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Provides the base to the TyphonJS Runtime Library including re-exported packages & all common packages.",
   "type": "module",
   "author": "Michael Leahy <support@typhonjs.io> (https://github.com/typhonrt)",
@@ -224,8 +224,8 @@
     "./package.json": "./package.json"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^28.0.2",
-    "@rollup/plugin-node-resolve": "^16.0.0",
+    "@rollup/plugin-commonjs": "^28.0.3",
+    "@rollup/plugin-node-resolve": "^16.0.1",
     "@rollup/plugin-typescript": "^12.1.2",
     "@typhonjs-build-test/esm-d-ts": "^0.3.0-next.11",
     "@typhonjs-build-test/rollup-plugin-pkg-imports": "^0.6.0",
@@ -246,13 +246,13 @@
     "jsonc-parser": "^3.3.1",
     "json5": "^2.2.3",
     "msgpackr": "^1.11.2",
-    "quick-lru": "^7.0.0",
-    "rollup": "^4.34.7",
+    "quick-lru": "^7.0.1",
+    "rollup": "^4.40.2",
     "striptags": "github:typhonjs-svelte-scratch/striptags",
     "svelte-writable-derived": "^3.1.1",
     "tinykeys": "github:typhonjs-svelte-scratch/tinykeys",
     "tslib": "^2.8.1",
-    "typescript": "^5.7.3",
+    "typescript": "^5.8.3",
     "upath": "^2.0.1"
   },
   "peerDependencies": {
