@@ -15,14 +15,11 @@ import { CSSRuleManager } from './CSSRuleManager.js';
  */
 export class TJSStyleManager
 {
-   // TODO: REMOVE
-   #cssRule;
-
    /** @type {Map<string, import('./types').CSSRuleManager>} */
    #cssRuleMap = new Map();
 
    /** @type {string} */
-   #docKey;
+   #id;
 
    /** @type {string} */
    #layerName;
@@ -37,7 +34,7 @@ export class TJSStyleManager
     *
     * @param {object}   opts - Options.
     *
-    * @param {string}   opts.docKey - Required key providing a link to a specific style sheet element.
+    * @param {string}   opts.id - Required CSS ID providing a link to a specific style sheet element.
     *
     * @param {Document} [opts.document] - Target document to load styles into.
     *
@@ -47,42 +44,43 @@ export class TJSStyleManager
     *
     * @param {number}   [opts.version] - An integer representing the version / level of styles being managed.
     */
-   constructor({ docKey, document = globalThis.document, layerName, rules, version } = {})
+   constructor({ id, rules, version, document = globalThis.document, layerName } = {})
    {
-      if (typeof docKey !== 'string') { throw new TypeError(`StyleManager error: 'docKey' is not a string.`); }
+      if (typeof id !== 'string') { throw new TypeError(`TJSStyleManager error: 'id' is not a string.`); }
 
       if (Object.prototype.toString.call(document) !== '[object HTMLDocument]')
       {
          throw new TypeError(`TJSStyleManager error: 'document' is not an instance of HTMLDocument.`);
       }
 
-      if (version !== void 0 && !Number.isSafeInteger(version) && version < 1)
+      if (version !== void 0 && (!Number.isFinite(version) || version < 1))
       {
-         throw new TypeError(`StyleManager error: 'version' is defined and is not a positive integer >= 1.`);
+         throw new TypeError(`TJSStyleManager error: 'version' is not a positive number >= 1.`);
       }
 
-      this.#docKey = docKey;
+      this.#id = id;
       this.#layerName = layerName;
       this.#version = version;
 
-      if (document[this.#docKey] === void 0)
+      const existingStyleEl = document.querySelector(`head style#${id}`);
+
+      if (!existingStyleEl)
       {
-         this.#initialize(rules);
+         if (typeof version === 'number') { this.#initialize(document, id, rules, version, layerName); }
       }
       else
       {
-         this.#styleElement = document[docKey];
-         this.#cssRule = this.#styleElement.sheet.cssRules[0];
+         const existingVersion = Number(existingStyleEl.getAttribute('data-version') ?? 0);
 
-         if (version)
+         // Remove all existing CSS rules / text if the version is greater than the existing version.
+         if (typeof version === 'number' && version > existingVersion)
          {
-            const existingVersion = this.#styleElement._STYLE_MANAGER_VERSION ?? 0;
-
-            // Remove all existing CSS rules / text if version is greater than existing version.
-            if (version > existingVersion)
-            {
-               this.#resetStyleElement();
-            }
+            existingStyleEl.remove();
+            this.#initialize(document, id, rules, version, layerName);
+         }
+         else
+         {
+            // TODO: CONSIDER A WAY TO CONNECT TO AN EXISTING STYLESHEET WHEN NO VERSION / RULES ARE PRESENT
          }
       }
    }
@@ -111,10 +109,12 @@ export class TJSStyleManager
     *
     * @param {Document} [document] Target browser document to clone into.
     *
-    * @returns {TJSStyleManager} New style manager instance.
+    * @returns {TJSStyleManager | undefined} New style manager instance or undefined if not connected.
     */
    clone(document = globalThis.document)
    {
+      if (!this.isConnected()) { return; }
+
       // TODO REFACTOR
       // const newStyleManager = new TJSStyleManager({
       //    selector: this.#selector,
@@ -142,10 +142,13 @@ export class TJSStyleManager
     *
     * @param {string}   ruleName - Rule name.
     *
-    * @returns {import('./types').CSSRuleManager} Associated rule manager for given name.
+    * @returns {import('./types').CSSRuleManager | undefined} Associated rule manager for given name or undefined if the
+    *          rule name is not defined or manager is unconnected.
     */
    get(ruleName)
    {
+      if (!this.isConnected()) { return; }
+
       return this.#cssRuleMap.get(ruleName);
    }
 
@@ -159,6 +162,16 @@ export class TJSStyleManager
    has(ruleName)
    {
       return this.#cssRuleMap.has(ruleName);
+   }
+
+   /**
+    * Determines if this TJSStyleManager is still connected / available.
+    *
+    * @returns {boolean} Is TJSStyleManager connected.
+    */
+   isConnected()
+   {
+      return !!this.#styleElement?.isConnected;
    }
 
    /**
@@ -179,17 +192,29 @@ export class TJSStyleManager
 
    // Internal Implementation ----------------------------------------------------------------------------------------
 
+   #hasLayerBlock(styleEl)
+   {
+
+   }
+
    /**
+    * @param {Document} document - Target Document.
+    *
+    * @param {string} id - Associated CSS ID
+    *
     * @param {{ [key: string]: string }} rules -
+    *
+    * @param {number} version -
+    *
+    * @param {string} layerName -
     */
-   #initialize(rules)
+   #initialize(document, id, rules, version, layerName)
    {
       this.#styleElement = document.createElement('style');
+      this.#styleElement.id = id;
+      this.#styleElement.setAttribute('data-version', String(version));
 
       document.head.append(this.#styleElement);
-
-      // Set initial style manager version if any supplied.
-      this.#styleElement._STYLE_MANAGER_VERSION = this.#version;
 
       for (const ruleName in rules)
       {
@@ -200,14 +225,5 @@ export class TJSStyleManager
 
          this.#cssRuleMap.set(ruleName, new CSSRuleManager(cssRule, ruleName, selector));
       }
-
-      document[this.#docKey] = this.#styleElement;
-   }
-
-   #resetStyleElement()
-   {
-      const sheet = this.#styleElement.sheet;
-
-      while (sheet.cssRules.length > 0) { sheet.deleteRule(0); }
    }
 }

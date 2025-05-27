@@ -1,2 +1,2 @@
-export * from './StyleParse.js';
-export * from './TJSStyleManager.js';
+export * from './manager';
+export * from './parse';

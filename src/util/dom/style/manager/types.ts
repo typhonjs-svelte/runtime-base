@@ -23,6 +23,13 @@ interface CSSRuleManager
    get(): { [key: string]: string };
 
    /**
+    * Determines if this CSSRuleManager is still connected / available.
+    *
+    * @returns {boolean} Is CSSRuleManager connected.
+    */
+   isConnected(): boolean;
+
+   /**
     * Gets a particular CSS variable.
     *
     * @param key - CSS variable property key.
