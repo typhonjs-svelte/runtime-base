@@ -220,7 +220,7 @@ class TJSPosition implements TJSPosition.WritableExt
 
    /**
     * Returns a duplicate of a given position instance copying any options and validators. The position parent is not
-    * copied and a new one must be set manually via the {@link TJSPosition.parent} setter.
+    * copied, and a new one must be set manually via the {@link TJSPosition.parent} setter.
     *
     * @param position - A position instance.
     *
@@ -243,15 +243,15 @@ class TJSPosition implements TJSPosition.WritableExt
    }
 
    /**
-    * @param [parentOrOptions] - A  potential parent element or object w/ `elementTarget` accessor. You may also forego
-    *        setting the parent and pass in the options object.
+    * @param [parentOrOptions] - A potential parent element or object w/ `elementTarget` accessor. You may also forego
+    *        setting the parent and pass in the configuration options object.
     *
-    * @param [options] - The options object.
+    * @param [options] - The configuration options object.
     */
    constructor(parentOrOptions?: TJSPosition.PositionParent | TJSPosition.Options.ConfigAll,
     options?: TJSPosition.Options.ConfigAll)
    {
-      // Test if `parent` is a plain object; if so treat as options object.
+      // Test if `parent` is a plain object; if so, treat as the configuration options object.
       if (isPlainObject(parentOrOptions))
       {
          options = parentOrOptions;
@@ -330,7 +330,7 @@ class TJSPosition implements TJSPosition.WritableExt
          const parent: TJSPosition.PositionParent | undefined = this.#parent;
          const el: HTMLElement | undefined = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
 
-         // Only invoke set if there is a target element and the resize data has a valid offset width & height.
+         // Only invoke set if there is a target element, and the resize data has a valid offset width & height.
          if (A11yHelper.isFocusTarget(el) && Number.isFinite(resizeData?.offsetWidth) &&
           Number.isFinite(resizeData?.offsetHeight))
          {
@@ -466,7 +466,7 @@ class TJSPosition implements TJSPosition.WritableExt
    /**
     * Sets the enabled state.
     *
-    * @param enabled - New enabled state.
+    * @param enabled - Newly enabled state.
     */
    set enabled(enabled: boolean)
    {
@@ -496,7 +496,7 @@ class TJSPosition implements TJSPosition.WritableExt
       this.#state.remove({ name: '#defaultData' });
       this.#styleCache.reset();
 
-      // If a parent is defined then invoke set to update any parent element.
+      // If a parent is defined, then invoke set to update any parent element.
       if (parent) { this.set(this.#data); }
    }
 
@@ -740,16 +740,16 @@ class TJSPosition implements TJSPosition.WritableExt
    }
 
    /**
-    * Assigns current position data to given object `data` object. By default, `null` position data is not assigned.
-    * Other options allow configuration of the data assigned including setting default numeric values for any properties
-    * that are null.
+    * Assigns current position data to the given object `data` object. By default, `null` position data is not assigned.
+    * Other options allow configuration of the data assigned, including setting default numeric values for any
+    * properties that are null.
     *
     * @param [data] - Target to assign current position data.
     *
     * @param [options] - Defines options for specific keys and substituting null for numeric default values. By
     *        default, nullable keys are included.
     *
-    * @returns Passed in object with current position data.
+    * @returns Any passed in data object with current position data.
     */
    get(data: { [key: string]: any } = {}, options: TJSPosition.Options.Get = {}):
     Partial<Data.TJSPositionData>
@@ -818,7 +818,7 @@ class TJSPosition implements TJSPosition.WritableExt
     * The initial set call with a target element will always set width / height as this is necessary for correct
     * calculations.
     *
-    * When a target element is present updated styles are applied after validation. To modify the behavior of set
+    * When a target element is present, updated styles are applied after validation. To modify the behavior of set,
     * implement one or more validator functions and add them via the validator API available from
     * {@link TJSPosition.validators}.
     *
@@ -1059,8 +1059,6 @@ class TJSPosition implements TJSPosition.WritableExt
       if (this.#resizeObservable !== resizeObservable)
       {
          this.#resizeObservable = resizeObservable;
-         // Set store on next clock tick.
-         // setTimeout(() => this.#styleCache.stores.resizeObservable.set(resizeObservable), 0);
          this.#styleCache.stores.resizeObservable.set(resizeObservable);
       }
 
@@ -1071,14 +1069,14 @@ class TJSPosition implements TJSPosition.WritableExt
          // Set default data after first set operation that has a target element.
          if (!isObject(defaultData)) { this.#state.save({ name: '#defaultData', ...Object.assign({}, data) }); }
 
-         // If `immediateElementUpdate` is true then update the element immediately. This is for rAF based library
+         // If `immediateElementUpdate` is true, then update the element immediately. This is for rAF based library
          // integrations like GSAP and updates coming from AnimationManager.
          if (immediateElementUpdate)
          {
             UpdateElementManager.immediate(el, this.#updateElementData);
             this.#updateElementPromise = Promise.resolve(globalThis.performance.now());
          }
-         // Else if not queued then queue an update for the next rAF callback.
+         // Else, if not queued then queue an update for the next rAF callback.
          else if (!this.#updateElementData.queued)
          {
             this.#updateElementPromise = UpdateElementManager.add(el, this.#updateElementData);
@@ -1175,7 +1173,7 @@ class TJSPosition implements TJSPosition.WritableExt
       left, top, maxWidth, maxHeight, minWidth, minHeight, width, height, rotateX, rotateY, rotateZ, scale,
        transformOrigin, translateX, translateY, translateZ, zIndex,
 
-      // Aliased parameters
+      // Aliased parameters.
       rotation,
 
       ...rest
@@ -1291,8 +1289,8 @@ class TJSPosition implements TJSPosition.WritableExt
       if (NumberGuard.isFiniteOrNull(rotateX)) { currentPosition.rotateX = rotateX; }
       if (NumberGuard.isFiniteOrNull(rotateY)) { currentPosition.rotateY = rotateY; }
 
-      // Handle alias for rotateZ. First check if `rotateZ` is valid and different from the current value. Next check if
-      // `rotation` is valid and use it for `rotateZ`.
+      // Handle alias for rotateZ. First check if `rotateZ` is valid and different from the current value. Next, check
+      // if `rotation` is valid and use it for `rotateZ`.
       if (rotateZ !== currentPosition.rotateZ && (NumberGuard.isFiniteOrNull(rotateZ)))
       {
          currentPosition.rotateZ = rotateZ;
@@ -1324,7 +1322,7 @@ class TJSPosition implements TJSPosition.WritableExt
 
       const validatorData: ValidatorAPI.ValidatorData[] = this.#validatorData;
 
-      // If there are any validators allow them to potentially modify position data or reject the update.
+      // If there are any validators, allow them to potentially modify position data or reject the update.
       if (this.#validators.enabled && validatorData.length)
       {
          const validationData: ValidatorAPI.ValidationData = TJSPosition.#validationData;

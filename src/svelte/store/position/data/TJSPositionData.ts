@@ -65,8 +65,6 @@ export class TJSPositionData implements Data.TJSPositionData
     * @param [opts.width] -
     *
     * @param [opts.zIndex] -
-    *
-    * @param [opts.rotation] - Alias for `rotateZ`.
     */
    constructor({ height = null, left = null, maxHeight = null, maxWidth = null, minHeight = null,
     minWidth = null, rotateX = null, rotateY = null, rotateZ = null, scale = null, translateX = null,
