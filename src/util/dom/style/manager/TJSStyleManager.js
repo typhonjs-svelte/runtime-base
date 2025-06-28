@@ -95,6 +95,16 @@ export class TJSStyleManager
    // }
 
    /**
+    * Determines if this TJSStyleManager is still connected / available.
+    *
+    * @returns {boolean} Is TJSStyleManager connected.
+    */
+   get isConnected()
+   {
+      return !!this.#styleElement?.isConnected;
+   }
+
+   /**
     * @returns {number} Returns the version of this instance.
     */
    get version()
@@ -113,7 +123,7 @@ export class TJSStyleManager
     */
    clone(document = globalThis.document)
    {
-      if (!this.isConnected()) { return; }
+      if (!this.isConnected) { return; }
 
       // TODO REFACTOR
       // const newStyleManager = new TJSStyleManager({
@@ -147,7 +157,7 @@ export class TJSStyleManager
     */
    get(ruleName)
    {
-      if (!this.isConnected()) { return; }
+      if (!this.isConnected) { return; }
 
       return this.#cssRuleMap.get(ruleName);
    }
@@ -162,16 +172,6 @@ export class TJSStyleManager
    has(ruleName)
    {
       return this.#cssRuleMap.has(ruleName);
-   }
-
-   /**
-    * Determines if this TJSStyleManager is still connected / available.
-    *
-    * @returns {boolean} Is TJSStyleManager connected.
-    */
-   isConnected()
-   {
-      return !!this.#styleElement?.isConnected;
    }
 
    /**

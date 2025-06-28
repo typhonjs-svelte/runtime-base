@@ -1,6 +1,8 @@
 import {
    isIterable,
-   isObject }  from '#runtime/util/object';
+   isObject }           from '#runtime/util/object';
+
+import { StyleParse }   from '../parse/index.js';
 
 /**
  * @implements {import('./types').CSSRuleManager>}
@@ -38,9 +40,20 @@ export class CSSRuleManager
     */
    get cssText()
    {
-      if (!this.isConnected()) { return; }
+      return this.isConnected ? this.#cssRule.style.cssText : void 0;
+   }
 
-      return this.#cssRule.style.cssText;
+   /**
+    * Determines if this CSSRuleManager is still connected / available.
+    *
+    * @returns {boolean} Is CSSRuleManager connected.
+    */
+   get isConnected()
+   {
+      const sheet = this.#cssRule?.parentStyleSheet;
+      const owner = sheet?.ownerNode;
+
+      return !!(sheet && owner && owner.isConnected);
    }
 
    /**
@@ -66,38 +79,7 @@ export class CSSRuleManager
     */
    get()
    {
-      if (!this.isConnected()) { return; }
-
-      const cssText = this.#cssRule.style.cssText;
-
-      const result = {};
-
-      if (cssText !== '')
-      {
-         for (const entry of cssText.split(';'))
-         {
-            if (entry !== '')
-            {
-               const values = entry.split(':');
-               result[values[0].trim()] = values[1].trim();
-            }
-         }
-      }
-
-      return result;
-   }
-
-   /**
-    * Determines if this CSSRuleManager is still connected / available.
-    *
-    * @returns {boolean} Is CSSRuleManager connected.
-    */
-   isConnected()
-   {
-      const sheet = this.#cssRule?.parentStyleSheet;
-      const owner = sheet?.ownerNode;
-
-      return !!(sheet && owner && owner.isConnected);
+      return this.isConnected ? StyleParse.cssText(this.#cssRule.style.cssText) : void 0;
    }
 
    /**
@@ -109,11 +91,27 @@ export class CSSRuleManager
     */
    getProperty(key)
    {
-      if (!this.isConnected()) { return; }
+      if (!this.isConnected) { return; }
 
-      if (typeof key !== 'string') { throw new TypeError(`StyleManager error: 'key' is not a string.`); }
+      if (typeof key !== 'string') { throw new TypeError(`CSSRuleManager error: 'key' is not a string.`); }
 
       return this.#cssRule.style.getPropertyValue(key);
+   }
+
+   /**
+    * Returns whether this CSS rule manager has a given property key.
+    *
+    * @param {string}   key - CSS variable property key.
+    *
+    * @returns {boolean} Property key exists / is defined.
+    */
+   hasProperty(key)
+   {
+      if (!this.isConnected) { return false; }
+
+      if (typeof key !== 'string') { throw new TypeError(`CSSRuleManager error: 'key' is not a string.`); }
+
+      return this.#cssRule.style.getPropertyValue(key) !== '';
    }
 
    /**
@@ -125,11 +123,14 @@ export class CSSRuleManager
     */
    setProperties(rules, overwrite = true)
    {
-      if (!this.isConnected()) { return; }
+      if (!this.isConnected) { return; }
 
-      if (!isObject(rules)) { throw new TypeError(`StyleManager error: 'rules' is not an object.`); }
+      if (!isObject(rules)) { throw new TypeError(`CSSRuleManager error: 'rules' is not an object.`); }
 
-      if (typeof overwrite !== 'boolean') { throw new TypeError(`StyleManager error: 'overwrite' is not a boolean.`); }
+      if (typeof overwrite !== 'boolean')
+      {
+         throw new TypeError(`CSSRuleManager error: 'overwrite' is not a boolean.`);
+      }
 
       if (overwrite)
       {
@@ -162,13 +163,16 @@ export class CSSRuleManager
     */
    setProperty(key, value, overwrite = true)
    {
-      if (!this.isConnected()) { return; }
+      if (!this.isConnected) { return; }
 
-      if (typeof key !== 'string') { throw new TypeError(`StyleManager error: 'key' is not a string.`); }
+      if (typeof key !== 'string') { throw new TypeError(`CSSRuleManager error: 'key' is not a string.`); }
 
-      if (typeof value !== 'string') { throw new TypeError(`StyleManager error: 'value' is not a string.`); }
+      if (typeof value !== 'string') { throw new TypeError(`CSSRuleManager error: 'value' is not a string.`); }
 
-      if (typeof overwrite !== 'boolean') { throw new TypeError(`StyleManager error: 'overwrite' is not a boolean.`); }
+      if (typeof overwrite !== 'boolean')
+      {
+         throw new TypeError(`CSSRuleManager error: 'overwrite' is not a boolean.`);
+      }
 
       if (overwrite)
       {
@@ -190,9 +194,9 @@ export class CSSRuleManager
     */
    removeProperties(keys)
    {
-      if (!this.isConnected()) { return; }
+      if (!this.isConnected) { return; }
 
-      if (!isIterable(keys)) { throw new TypeError(`StyleManager error: 'keys' is not an iterable list.`); }
+      if (!isIterable(keys)) { throw new TypeError(`CSSRuleManager error: 'keys' is not an iterable list.`); }
 
       for (const key of keys)
       {
@@ -209,9 +213,9 @@ export class CSSRuleManager
     */
    removeProperty(key)
    {
-      if (!this.isConnected()) { return; }
+      if (!this.isConnected) { return; }
 
-      if (typeof key !== 'string') { throw new TypeError(`StyleManager error: 'key' is not a string.`); }
+      if (typeof key !== 'string') { throw new TypeError(`CSSRuleManager error: 'key' is not a string.`); }
 
       return this.#cssRule.style.removeProperty(key);
    }

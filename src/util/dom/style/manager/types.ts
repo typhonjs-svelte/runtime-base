@@ -6,6 +6,13 @@ interface CSSRuleManager
    get cssText(): string;
 
    /**
+    * Determines if this CSSRuleManager is still connected / available.
+    *
+    * @returns {boolean} Is CSSRuleManager connected.
+    */
+   get isConnected(): boolean;
+
+   /**
     * @returns Name of this CSSRuleManager indexed by associated TJSStyleManager.
     */
    get name(): string;
@@ -23,13 +30,6 @@ interface CSSRuleManager
    get(): { [key: string]: string };
 
    /**
-    * Determines if this CSSRuleManager is still connected / available.
-    *
-    * @returns {boolean} Is CSSRuleManager connected.
-    */
-   isConnected(): boolean;
-
-   /**
     * Gets a particular CSS variable.
     *
     * @param key - CSS variable property key.
@@ -37,6 +37,15 @@ interface CSSRuleManager
     * @returns Returns CSS variable value.
     */
    getProperty(key: string): string;
+
+   /**
+    * Returns whether this CSS rule manager has a given property key.
+    *
+    * @param key - CSS variable property key.
+    *
+    * @returns Property key exists / is defined.
+    */
+   hasProperty(key: string): boolean;
 
    /**
     * Set rules by property / value; useful for CSS variables.

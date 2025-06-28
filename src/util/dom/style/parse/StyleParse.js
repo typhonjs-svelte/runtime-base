@@ -6,6 +6,52 @@ export class StyleParse
    static #regexPixels = /(\d+)\s*px/;
 
    /**
+    * @hideconstructor
+    */
+   constructor()
+   {
+      throw new Error('StyleParse constructor: This is a static class and should not be constructed.');
+   }
+
+   /**
+    * Parse an inline CSS style text string into an object.
+    *
+    * @param {string} cssText - Inline CSS style text to parse.
+    *
+    * @param {object} [options] - Optional settings.
+    *
+    * @param {boolean} [options.camelCase=false] - Whether to convert property names to camelCase.
+    *
+    * @returns {{ [key: string]: string }} Parsed object of CSS properties.
+    */
+   static cssText(cssText, { camelCase = false } = {})
+   {
+      if (typeof cssText !== 'string') { return {}; }
+
+      const result = {};
+
+      for (const entry of cssText.split(';'))
+      {
+         const index = entry.indexOf(':');
+
+         if (index !== -1)
+         {
+            let key = entry.slice(0, index).trim();
+            const value = entry.slice(index + 1).trim();
+
+            if (key !== '')
+            {
+               if (camelCase) { key = key.replace(/-([a-z])/g, (_, c) => c.toUpperCase()); }
+
+               result[key] = value;
+            }
+         }
+      }
+
+      return result;
+   }
+
+   /**
     * Parses a pixel string / computed styles. Ex. `100px` returns `100`.
     *
     * @param {string}   value - Value to parse.
