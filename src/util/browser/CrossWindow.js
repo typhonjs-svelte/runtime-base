@@ -1,14 +1,14 @@
 import { isObject } from '#runtime/util/object';
 
 /**
- * Provides cross window checks for DOM nodes / elements, events, and essential duck typing for any class based object
+ * Provides cross-realm checks for DOM nodes / elements, events, and essential duck typing for any class-based object
  * with a constructor name. The impetus is that certain browsers such as Chrome and Firefox behave differently when
- * performing `instanceof` checks when elements are moved between browser windows. With Firefox in particular the
- * entire JS runtime can not use `instanceof` checks as the instances of fundamental DOM elements differ between
+ * performing `instanceof` checks when elements are moved between browser windows. With Firefox in particular, the
+ * entire JS runtime cannot use `instanceof` checks as the instances of fundamental DOM elements differ between
  * windows.
  *
  * TRL supports moving applications from a main central browser window and popping them out into separate standalone
- * app instances in a separate browser window. In this case for essential DOM element and event checks it is necessary
+ * app instances in a separate browser window. In this case, for essential DOM element and event checks, it is necessary
  * to employ the workarounds found in `CrossWindow`.
  */
 export class CrossWindow
@@ -35,7 +35,8 @@ export class CrossWindow
    static #NodesWithOwnerDocument = new Set([Node.ELEMENT_NODE, Node.TEXT_NODE, Node.COMMENT_NODE,
     Node.DOCUMENT_FRAGMENT_NODE]);
 
-   // Various UI Event sets for duck typing by constructor name.
+   // Various UIEvent sets for duck typing by constructor name.
+
    /**
     * Duck typing class names for pointer events.
     *
@@ -322,7 +323,7 @@ export class CrossWindow
    }
 
    /**
-    * Provides precise type checking if `target` is a HTMLElement.
+    * Provides precise type checking if `target` is an HTMLElement.
     *
     * @param {unknown}  target - A potential HTMLElement to test.
     *
@@ -346,7 +347,7 @@ export class CrossWindow
 
       if (target instanceof globalThis.Node) { return true; }
 
-      // Must retrieve window by a more thorough duck type via `getWindow` as not all Nodes have `ownerDocument`
+      // Must retrieve the window by a more thorough duck type via `getWindow` as not all Nodes have `ownerDocument`
       // defined.
       const activeWindow = this.getWindow(target, this.#optionsInternalCheckDOM);
 
@@ -472,7 +473,7 @@ export class CrossWindow
     *
     * @param {number}   nodeType - Node type constant.
     *
-    * @param {string}   className - DOM class name for instanceof check.
+    * @param {string}   className - DOM classname for instanceof check.
     *
     * @returns {boolean} Is the target the given nodeType and instance of class name.
     */
