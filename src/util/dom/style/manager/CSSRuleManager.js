@@ -27,11 +27,12 @@ export class CSSRuleManager
     */
    constructor(cssRule, name, selector)
    {
+      if (typeof name !== 'string') { throw new TypeError(`CSSRuleManager error: 'name' is not a string.`); }
       if (typeof selector !== 'string') { throw new TypeError(`CSSRuleManager error: 'selector' is not a string.`); }
 
-      this.#selector = selector;
       this.#cssRule = cssRule;
       this.#name = name;
+      this.#selector = selector;
    }
 
    /**

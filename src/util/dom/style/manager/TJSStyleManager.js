@@ -2,16 +2,15 @@ import { CSSRuleManager } from './CSSRuleManager.js';
 
 /**
  * Provides a managed dynamic style sheet / element useful in configuring global CSS variables. When creating an
- * instance of TJSStyleManager you must provide a "document key" / string for the style element added. The style element
- * can be accessed via `document[docKey]`.
+ * instance of TJSStyleManager, you must provide a CSS ID for the style element added.
  *
- * Instances of TJSStyleManager can also be versioned by supplying a positive integer greater than or equal to `1` via
+ * Instances of TJSStyleManager can also be versioned by supplying a positive number greater than or equal to `1` via
  * the 'version' option. This version number is assigned to the associated style element. When a TJSStyleManager
- * instance is created and there is an existing instance with a version that is lower than the current instance all CSS
- * rules are removed letting the higher version take precedence. This isn't a perfect system and requires thoughtful
- * construction of CSS variables exposed, but allows multiple independently compiled TRL packages to load the latest
- * CSS variables. It is recommended to always set `overwrite` option of {@link TJSStyleManager.setProperty} and
- * {@link TJSStyleManager.setProperties} to `false` when loading initial values.
+ * instance is created and there is an existing instance with a version that is lower than the current new instance,
+ * all CSS rules are removed, letting the higher version take precedence. This isn't a perfect system and requires
+ * thoughtful construction of CSS variables exposed, but allows multiple independently compiled TRL packages to load
+ * the latest CSS variables. It is recommended to always set `overwrite` option of {@link TJSStyleManager.setProperty}
+ * and {@link TJSStyleManager.setProperties} to `false` when loading initial values.
  */
 export class TJSStyleManager
 {
@@ -58,6 +57,11 @@ export class TJSStyleManager
          throw new TypeError(`TJSStyleManager error: 'version' is not a positive number >= 1.`);
       }
 
+      if (layerName !== void 0 && typeof layerName !== 'string')
+      {
+         throw new TypeError(`TJSStyleManager error: 'layerName' is not a string.`);
+      }
+
       this.#id = id;
       this.#layerName = layerName;
       this.#version = version;
@@ -85,15 +89,6 @@ export class TJSStyleManager
       }
    }
 
-   // TODO: Can we get the entire stylesheet text content?
-   // /**
-   //  * @returns {string} Provides an accessor to get the `cssText` for the style sheet.
-   //  */
-   // get cssText()
-   // {
-   //    return this.#cssRule.style.cssText;
-   // }
-
    /**
     * Determines if this TJSStyleManager is still connected / available.
     *
@@ -102,6 +97,14 @@ export class TJSStyleManager
    get isConnected()
    {
       return !!this.#styleElement?.isConnected;
+   }
+
+   /**
+    * @returns {string} Provides an accessor to get the `textContent` for the style sheet.
+    */
+   get textContent()
+   {
+      return this.#styleElement?.textContent;
    }
 
    /**
@@ -216,12 +219,39 @@ export class TJSStyleManager
 
       document.head.append(this.#styleElement);
 
+      let targetSheet;
+
+      try
+      {
+         if (layerName)
+         {
+            const index = this.#styleElement.sheet.insertRule(`@layer ${layerName} {}`);
+            targetSheet = this.#styleElement.sheet.cssRules[index];
+         }
+         else
+         {
+            targetSheet = this.#styleElement.sheet;
+         }
+      }
+      catch (error)
+      {
+         console.error(`TyphonJS Runtime [TJSStyleManager error]: Please update your browser to the latest version.`,
+          error);
+
+         // Clean up: remove the <style> from the DOM.
+         if (this.#styleElement && this.#styleElement.parentNode) { this.#styleElement.remove(); }
+
+         this.#styleElement = null;
+
+         return;
+      }
+
       for (const ruleName in rules)
       {
          const selector = rules[ruleName];
-         const index =  this.#styleElement.sheet.insertRule(`${selector} {}`);
+         const index = targetSheet.insertRule(`${selector} {}`);
 
-         const cssRule = /** @type {CSSStyleRule} */ this.#styleElement.sheet.cssRules[index];
+         const cssRule = /** @type {CSSStyleRule} */ targetSheet.cssRules[index];
 
          this.#cssRuleMap.set(ruleName, new CSSRuleManager(cssRule, ruleName, selector));
       }
