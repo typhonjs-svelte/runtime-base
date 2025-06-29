@@ -6,6 +6,11 @@ interface CSSRuleManager
    get cssText(): string;
 
    /**
+    * @param cssText - Provides an accessor to set the `cssText` for the style rule.
+    */
+   set cssText(cssText: string);
+
+   /**
     * Determines if this CSSRuleManager is still connected / available.
     *
     * @returns {boolean} Is CSSRuleManager connected.

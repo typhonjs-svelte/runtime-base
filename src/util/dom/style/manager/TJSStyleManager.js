@@ -42,8 +42,10 @@ export class TJSStyleManager
     * @param {{ [key: string]: string }}  [opts.rules] - Optional CSS Rules configuration.
     *
     * @param {number}   [opts.version] - An integer representing the version / level of styles being managed.
+    *
+    * @param {boolean}  [opts.force] - When true, removes any existing matching style sheet and initializes a new one.
     */
-   constructor({ id, rules, version, document = globalThis.document, layerName } = {})
+   constructor({ id, rules, version, document = globalThis.document, layerName, force = false } = {})
    {
       if (typeof id !== 'string') { throw new TypeError(`TJSStyleManager error: 'id' is not a string.`); }
 
@@ -62,6 +64,11 @@ export class TJSStyleManager
          throw new TypeError(`TJSStyleManager error: 'layerName' is not a string.`);
       }
 
+      if (typeof force !== 'boolean')
+      {
+         throw new TypeError(`TJSStyleManager error: 'force' is not a boolean.`);
+      }
+
       this.#id = id;
       this.#layerName = layerName;
       this.#version = version;
@@ -76,8 +83,8 @@ export class TJSStyleManager
       {
          const existingVersion = Number(existingStyleEl.getAttribute('data-version') ?? 0);
 
-         // Remove all existing CSS rules / text if the version is greater than the existing version.
-         if (typeof version === 'number' && version > existingVersion)
+         // Remove all existing CSS rules / text if the version is greater than the existing version or `force` is true.
+         if (force || (typeof version === 'number' && version > existingVersion))
          {
             existingStyleEl.remove();
             this.#initialize(document, id, rules, version, layerName);
@@ -122,24 +129,39 @@ export class TJSStyleManager
     *
     * @param {Document} [document] Target browser document to clone into.
     *
+    * @param {boolean} [force] When true, force the cloning of the style manager into the target document.
+    *
     * @returns {TJSStyleManager | undefined} New style manager instance or undefined if not connected.
     */
-   clone(document = globalThis.document)
+   clone({ document = globalThis.document, force = false } = {})
    {
       if (!this.isConnected) { return; }
 
-      // TODO REFACTOR
-      // const newStyleManager = new TJSStyleManager({
-      //    selector: this.#selector,
-      //    docKey: this.#docKey,
-      //    document,
-      //    version: this.#version
-      // });
-      //
-      // newStyleManager.#cssRule.style.cssText = this.#cssRule.style.cssText;
-      //
-      // return newStyleManager;
-      return void 0;
+      const rules = {};
+
+      for (const key of this.#cssRuleMap.keys())
+      {
+         rules[key] = this.#cssRuleMap.get(key).selector;
+      }
+
+      const newStyleManager = new TJSStyleManager({
+         id: this.#id,
+         version: this.#version,
+         layerName: this.#layerName,
+         rules,
+         document,
+         force
+      });
+
+      for (const key of this.#cssRuleMap.keys())
+      {
+         if (newStyleManager.#cssRuleMap.has(key))
+         {
+            newStyleManager.#cssRuleMap.get(key).cssText = this.#cssRuleMap.get(key).cssText;
+         }
+      }
+
+      return newStyleManager;
    }
 
    /**
@@ -195,11 +217,6 @@ export class TJSStyleManager
 
    // Internal Implementation ----------------------------------------------------------------------------------------
 
-   #hasLayerBlock(styleEl)
-   {
-
-   }
-
    /**
     * @param {Document} document - Target Document.
     *
@@ -232,6 +249,16 @@ export class TJSStyleManager
          {
             targetSheet = this.#styleElement.sheet;
          }
+
+         for (const ruleName in rules)
+         {
+            const selector = rules[ruleName];
+            const index = targetSheet.insertRule(`${selector} {}`);
+
+            const cssRule = /** @type {CSSStyleRule} */ targetSheet.cssRules[index];
+
+            this.#cssRuleMap.set(ruleName, new CSSRuleManager(cssRule, ruleName, selector));
+         }
       }
       catch (error)
       {
@@ -241,19 +268,8 @@ export class TJSStyleManager
          // Clean up: remove the <style> from the DOM.
          if (this.#styleElement && this.#styleElement.parentNode) { this.#styleElement.remove(); }
 
+         this.#cssRuleMap.clear();
          this.#styleElement = null;
-
-         return;
-      }
-
-      for (const ruleName in rules)
-      {
-         const selector = rules[ruleName];
-         const index = targetSheet.insertRule(`${selector} {}`);
-
-         const cssRule = /** @type {CSSStyleRule} */ targetSheet.cssRules[index];
-
-         this.#cssRuleMap.set(ruleName, new CSSRuleManager(cssRule, ruleName, selector));
       }
    }
 }

@@ -74,6 +74,16 @@ export class CSSRuleManager
    }
 
    /**
+    * @param {string} cssText - Provides an accessor to set the `cssText` for the style rule.
+    */
+   set cssText(cssText)
+   {
+      if (!this.isConnected) { return; }
+
+      this.#cssRule.style.cssText = cssText;
+   }
+
+   /**
     * Retrieves an object with the current CSS rule data.
     *
     * @returns {{ [key: string]: string } | undefined} Current CSS rule data or undefined if not connected.
