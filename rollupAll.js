@@ -338,6 +338,22 @@ const rollupConfigs = [
    },
    {
       input: {
+         input: 'src/svelte/action/dom/inline-svg/index.js',
+         plugins: [
+            importsExternal(),
+            resolve(resolveOptions),
+            generateDTS.plugin(dtsPluginOptions)
+         ]
+      },
+      output: {
+         file: '_dist/svelte/action/dom/inline-svg/index.js',
+         format: 'es',
+         generatedCode: { constBindings: true },
+         sourcemap
+      }
+   },
+   {
+      input: {
          input: 'src/svelte/action/dom/input/index.js',
          plugins: [
             importsExternal(),
