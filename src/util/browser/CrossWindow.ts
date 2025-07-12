@@ -11,7 +11,7 @@ import { isObject } from '#runtime/util/object';
  * app instances in a separate browser window. In this case, for essential DOM element and event checks, it is necessary
  * to employ the workarounds found in `CrossWindow`.
  */
-export class CrossWindow
+class CrossWindow
 {
    /**
     * @private
@@ -20,52 +20,40 @@ export class CrossWindow
 
    /**
     * Class names for all focusable element types.
-    *
-    * @type {string[]}
     */
-   static #FocusableElementClassNames = ['HTMLAnchorElement', 'HTMLButtonElement', 'HTMLDetailsElement',
+   static #FocusableElementClassNames: string[] = ['HTMLAnchorElement', 'HTMLButtonElement', 'HTMLDetailsElement',
     'HTMLEmbedElement', 'HTMLIFrameElement', 'HTMLInputElement', 'HTMLObjectElement', 'HTMLSelectElement',
      'HTMLTextAreaElement'];
 
    /**
     * DOM nodes with defined `ownerDocument` property.
-    *
-    * @type {Set<number>}
     */
-   static #NodesWithOwnerDocument = new Set([Node.ELEMENT_NODE, Node.TEXT_NODE, Node.COMMENT_NODE,
+   static #NodesWithOwnerDocument: Set<number> = new Set([Node.ELEMENT_NODE, Node.TEXT_NODE, Node.COMMENT_NODE,
     Node.DOCUMENT_FRAGMENT_NODE]);
 
    // Various UIEvent sets for duck typing by constructor name.
 
    /**
     * Duck typing class names for pointer events.
-    *
-    * @type {Set<string>}
     */
-   static #PointerEventSet = new Set(['MouseEvent', 'PointerEvent']);
+   static #PointerEventSet: Set<string> = new Set(['MouseEvent', 'PointerEvent']);
 
    /**
     * Duck typing class names for all UIEvents.
-    *
-    * @type {Set<string>}
     */
-   static #UIEventSet = new Set(['UIEvent', 'FocusEvent', 'MouseEvent', 'WheelEvent', 'KeyboardEvent', 'PointerEvent',
+   static #UIEventSet: Set<string> = new Set(['UIEvent', 'FocusEvent', 'MouseEvent', 'WheelEvent', 'KeyboardEvent', 'PointerEvent',
     'TouchEvent', 'InputEvent', 'CompositionEvent', 'DragEvent']);
 
    /**
     * Duck typing class names for events considered as user input.
-    *
-    * @type {Set<string>}
     */
-   static #UserInputEventSet = new Set(['KeyboardEvent', 'MouseEvent', 'PointerEvent']);
+   static #UserInputEventSet: Set<string> = new Set(['KeyboardEvent', 'MouseEvent', 'PointerEvent']);
 
    /**
     * Internal options used by `#checkDOMInstanceType` when retrieving the Window reference from a Node that doesn't
     * define `ownerDocument`.
-    *
-    * @type {{throws: boolean}}
     */
-   static #optionsInternalCheckDOM = { throws: false };
+   static #optionsInternalCheckDOM: { throws: boolean } = { throws: false };
 
    // DOM Querying ---------------------------------------------------------------------------------------------------
 
@@ -73,31 +61,28 @@ export class CrossWindow
     * Convenience method to retrieve the `document.activeElement` value in the current Window context of a DOM Node /
     * Element, EventTarget, Document, or Window.
     *
-    * @param {Document | EventTarget | Node | UIEvent | Window}  target - DOM Node / Element, EventTarget, Document,
-    *        UIEvent or Window to query.
+    * @param target - DOM Node / Element, EventTarget, Document, UIEvent or Window to query.
     *
-    * @param {object} [options] - Options.
+    * @param [options] - Options.
     *
-    * @param {boolean} [options.throws=true] - When `true` and target is invalid throw an exception. If `false` and the
-    *        target is invalid `undefined` is returned; default: `true`.
-    *
-    * @returns {Element | null} Active element or `undefined` when `throws` option is `false` and the target is invalid.
+    * @returns Active element or `undefined` when `throws` option is `false` and the target is invalid.
     *
     * @throws {@link TypeError} Target must be a DOM Node / Element, Document, UIEvent, or Window.
     */
-   static getActiveElement(target, { throws = true } = {})
+   static getActiveElement(target: CrossWindow.GetTarget, { throws = true }: CrossWindow.GetOptions = {}): Element |
+    null | undefined
    {
       // Duck type if target has known defined `ownerDocument` property.
-      if (this.#NodesWithOwnerDocument.has(target?.nodeType)) { return target?.ownerDocument?.activeElement ?? null; }
+      if (this.#hasOwnerDocument(target)) { return target?.ownerDocument?.activeElement ?? null; }
 
       // Duck type if target is a UIEvent.
       if (this.isUIEvent(target) && isObject(target?.view)) { return target?.view?.document?.activeElement ?? null; }
 
       // Duck type if target is a Document.
-      if (isObject(target?.defaultView)) { return target?.activeElement ?? null; }
+      if (this.isDocument(target)) { return target?.activeElement ?? null; }
 
       // Duck type if target is a Window.
-      if (isObject(target?.document) && isObject(target?.location)) { return target?.document?.activeElement ?? null; }
+      if (this.isWindow(target)) { return target?.document?.activeElement ?? null; }
 
       if (throws) { throw new TypeError(`'target' must be a DOM Node / Element, Document, UIEvent, or Window.`); }
 
@@ -108,31 +93,27 @@ export class CrossWindow
     * Convenience method to retrieve the `Document` value in the current context of a DOM Node / Element, EventTarget,
     * Document, UIEvent, or Window.
     *
-    * @param {Document | EventTarget | Node | UIEvent | Window}  target - DOM Node / Element, EventTarget, Document,
-    *        UIEvent or Window to query.
+    * @param target - DOM Node / Element, EventTarget, Document, UIEvent or Window to query.
     *
-    * @param {object} [options] - Options.
-    *
-    * @param {boolean} [options.throws=true] - When `true` and target is invalid throw an exception. If `false` and the
-    *        target is invalid `undefined` is returned; default: `true`.
+    * @param [options] - Options.
     *
     * @returns {Document} Active document or `undefined` when `throws` option is `false` and the target is invalid.
     *
     * @throws {@link TypeError} Target must be a DOM Node / Element, Document, UIEvent, or Window.
     */
-   static getDocument(target, { throws = true } = {})
+   static getDocument(target: CrossWindow.GetTarget, { throws = true } = {}): Document | undefined
    {
       // Duck type if target has known defined `ownerDocument` property.
-      if (this.#NodesWithOwnerDocument.has(target?.nodeType)) { return target?.ownerDocument; }
+      if (this.#hasOwnerDocument(target)) { return target?.ownerDocument; }
 
       // Duck type if target is a UIEvent.
       if (this.isUIEvent(target) && isObject(target?.view)) { return target?.view?.document; }
 
       // Duck type if target is a Document.
-      if (isObject(target?.defaultView)) { return target; }
+      if (this.isDocument(target)) { return target; }
 
       // Duck type if target is a Window.
-      if (isObject(target?.document) && isObject(target?.location)) { return target?.document; }
+      if (this.isWindow(target)) { return target?.document; }
 
       if (throws) { throw new TypeError(`'target' must be a DOM Node / Element, Document, UIEvent, or Window.`); }
 
@@ -143,34 +124,27 @@ export class CrossWindow
     * Convenience method to retrieve the `Window` value in the current context of a DOM Node / Element, EventTarget,
     * Document, or Window.
     *
-    * @param {Document | EventTarget | Node | UIEvent | Window}  target - DOM Node / Element, EventTarget, Document,
-    *        UIEvent or Window to query.
+    * @param target - DOM Node / Element, EventTarget, Document, UIEvent or Window to query.
     *
-    * @param {object} [options] - Options.
+    * @param [options] - Options.
     *
-    * @param {boolean} [options.throws=true] - When `true` and target is invalid throw an exception. If `false` and the
-    *        target is invalid `undefined` is returned; default: `true`.
-    *
-    * @returns {Window} Active window or `undefined` when `throws` option is `false` and the target is invalid.
+    * @returns Active window or `undefined` when `throws` option is `false` and the target is invalid.
     *
     * @throws {@link TypeError} Target must be a DOM Node / Element, Document, UIEvent, or Window.
     */
-   static getWindow(target, { throws = true } = {})
+   static getWindow(target: CrossWindow.GetTarget, { throws = true } = {}): Window | undefined
    {
       // Duck type if target has known defined `ownerDocument` property.
-      if (this.#NodesWithOwnerDocument.has(target?.nodeType))
-      {
-         return target.ownerDocument?.defaultView ?? globalThis;
-      }
+      if (this.#hasOwnerDocument(target)) { return target.ownerDocument?.defaultView ?? globalThis as typeof window; }
 
       // Duck type if target is a UIEvent.
-      if (this.isUIEvent(target) && isObject(target?.view)) { return target.view ?? globalThis; }
+      if (this.isUIEvent(target) && isObject(target?.view)) { return target.view ?? globalThis as typeof window; }
 
       // Duck type if target is a Document.
-      if (isObject(target?.defaultView)) { return target.defaultView ?? globalThis; }
+      if (this.isDocument(target)) { return target.defaultView ?? globalThis as typeof window; }
 
       // Duck type if target is a Window.
-      if (isObject(target?.document) && isObject(target?.location)) { return target; }
+      if (this.isWindow(target)) { return target; }
 
       if (throws) { throw new TypeError(`'target' must be a DOM Node / Element, Document, UIEvent, or Window.`); }
 
@@ -182,11 +156,11 @@ export class CrossWindow
    /**
     * Provides basic prototype string type checking if `target` is a Document.
     *
-    * @param {unknown}  target - A potential Document to test.
+    * @param target - A potential Document to test.
     *
-    * @returns {target is Document} Is `target` a Document.
+    * @returns Is `target` a Document.
     */
-   static isDocument(target)
+   static isDocument(target: unknown): target is Document
    {
       return isObject(target) && Object.prototype.toString.call(target) === '[object Document]';
    }
@@ -194,11 +168,11 @@ export class CrossWindow
    /**
     * Provides basic prototype string type checking if `target` is a Map.
     *
-    * @param {unknown}  target - A potential Map to test.
+    * @param target - A potential Map to test.
     *
-    * @returns {target is Map} Is `target` a Map.
+    * @returns Is `target` a Map.
     */
-   static isMap(target)
+   static isMap(target: unknown): target is Map<unknown, unknown>
    {
       return isObject(target) && Object.prototype.toString.call(target) === '[object Map]';
    }
@@ -206,11 +180,11 @@ export class CrossWindow
    /**
     * Provides basic prototype string type checking if `target` is a Promise.
     *
-    * @param {unknown}  target - A potential Promise to test.
+    * @param target - A potential Promise to test.
     *
-    * @returns {target is Promise} Is `target` a Promise.
+    * @returns Is `target` a Promise.
     */
-   static isPromise(target)
+   static isPromise(target: unknown): target is Promise<unknown>
    {
       return isObject(target) && Object.prototype.toString.call(target) === '[object Promise]';
    }
@@ -218,11 +192,11 @@ export class CrossWindow
    /**
     * Provides basic prototype string type checking if `target` is a RegExp.
     *
-    * @param {unknown}  target - A potential RegExp to test.
+    * @param target - A potential RegExp to test.
     *
-    * @returns {target is RegExp} Is `target` a RegExp.
+    * @returns Is `target` a RegExp.
     */
-   static isRegExp(target)
+   static isRegExp(target: unknown): target is RegExp
    {
       return isObject(target) && Object.prototype.toString.call(target) === '[object RegExp]';
    }
@@ -230,11 +204,11 @@ export class CrossWindow
    /**
     * Provides basic prototype string type checking if `target` is a Set.
     *
-    * @param {unknown}  target - A potential Set to test.
+    * @param target - A potential Set to test.
     *
-    * @returns {target is Set} Is `target` a Set.
+    * @returns Is `target` a Set.
     */
-   static isSet(target)
+   static isSet(target: unknown): target is Set<unknown>
    {
       return isObject(target) && Object.prototype.toString.call(target) === '[object Set]';
    }
@@ -242,11 +216,11 @@ export class CrossWindow
    /**
     * Provides basic prototype string type checking if `target` is a URL.
     *
-    * @param {unknown}  target - A potential URL to test.
+    * @param target - A potential URL to test.
     *
-    * @returns {target is URL} Is `target` a URL.
+    * @returns Is `target` a URL.
     */
-   static isURL(target)
+   static isURL(target: unknown): target is URL
    {
       return isObject(target) && Object.prototype.toString.call(target) === '[object URL]';
    }
@@ -254,11 +228,11 @@ export class CrossWindow
    /**
     * Provides basic prototype string type checking if `target` is a Window.
     *
-    * @param {unknown}  target - A potential Window to test.
+    * @param target - A potential Window to test.
     *
-    * @returns {target is Window} Is `target` a Window.
+    * @returns Is `target` a Window.
     */
-   static isWindow(target)
+   static isWindow(target: unknown): target is Window
    {
       return isObject(target) && Object.prototype.toString.call(target) === '[object Window]';
    }
@@ -269,11 +243,11 @@ export class CrossWindow
     * Ensures that the given target is an `instanceof` all known DOM elements that are focusable. Please note that
     * additional checks are required regarding focusable state; use {@link A11yHelper.isFocusable} for a complete check.
     *
-    * @param {unknown}  target - Target to test for `instanceof` focusable HTML element.
+    * @param target - Target to test for `instanceof` focusable HTML element.
     *
-    * @returns {boolean} Is target an `instanceof` a focusable DOM element.
+    * @returns Is target an `instanceof` a focusable DOM element.
     */
-   static isFocusableHTMLElement(target)
+   static isFocusableHTMLElement(target: unknown): boolean
    {
       for (let cntr = this.#FocusableElementClassNames.length; --cntr >= 0;)
       {
@@ -289,11 +263,11 @@ export class CrossWindow
    /**
     * Provides precise type checking if `target` is a DocumentFragment.
     *
-    * @param {unknown}  target - A potential DocumentFragment to test.
+    * @param target - A potential DocumentFragment to test.
     *
-    * @returns {target is DocumentFragment} Is `target` a DocumentFragment.
+    * @returns Is `target` a DocumentFragment.
     */
-   static isDocumentFragment(target)
+   static isDocumentFragment(target: unknown): target is DocumentFragment
    {
       return this.#checkDOMInstanceType(target, Node.DOCUMENT_FRAGMENT_NODE, 'DocumentFragment');
    }
@@ -301,11 +275,11 @@ export class CrossWindow
    /**
     * Provides precise type checking if `target` is an Element.
     *
-    * @param {unknown}  target - A potential Element to test.
+    * @param target - A potential Element to test.
     *
-    * @returns {target is Element} Is `target` an Element.
+    * @returns Is `target` an Element.
     */
-   static isElement(target)
+   static isElement(target): target is Element
    {
       return this.#checkDOMInstanceType(target, Node.ELEMENT_NODE, 'Element');
    }
@@ -313,11 +287,11 @@ export class CrossWindow
    /**
     * Provides precise type checking if `target` is a HTMLAnchorElement.
     *
-    * @param {unknown}  target - A potential HTMLAnchorElement to test.
+    * @param target - A potential HTMLAnchorElement to test.
     *
-    * @returns {target is HTMLAnchorElement} Is `target` a HTMLAnchorElement.
+    * @returns Is `target` a HTMLAnchorElement.
     */
-   static isHTMLAnchorElement(target)
+   static isHTMLAnchorElement(target: unknown): target is HTMLAnchorElement
    {
       return this.#checkDOMInstanceType(target, Node.ELEMENT_NODE, 'HTMLAnchorElement');
    }
@@ -325,11 +299,11 @@ export class CrossWindow
    /**
     * Provides precise type checking if `target` is an HTMLElement.
     *
-    * @param {unknown}  target - A potential HTMLElement to test.
+    * @param target - A potential HTMLElement to test.
     *
-    * @returns {target is HTMLElement} Is `target` a HTMLElement.
+    * @returns Is `target` a HTMLElement.
     */
-   static isHTMLElement(target)
+   static isHTMLElement(target: unknown): target is HTMLElement
    {
       return this.#checkDOMInstanceType(target, Node.ELEMENT_NODE, 'HTMLElement');
    }
@@ -337,32 +311,32 @@ export class CrossWindow
    /**
     * Provides precise type checking if `target` is a Node.
     *
-    * @param {unknown}  target - A potential Node to test.
+    * @param target - A potential Node to test.
     *
-    * @returns {target is Node} Is `target` a DOM Node.
+    * @returns Is `target` a DOM Node.
     */
-   static isNode(target)
+   static isNode(target: unknown): target is Node
    {
-      if (typeof target?.nodeType !== 'number') { return false; }
+      if (typeof (target as Node)?.nodeType !== 'number') { return false; }
 
       if (target instanceof globalThis.Node) { return true; }
 
       // Must retrieve the window by a more thorough duck type via `getWindow` as not all Nodes have `ownerDocument`
       // defined.
-      const activeWindow = this.getWindow(target, this.#optionsInternalCheckDOM);
+      const activeWindow = this.getWindow(target as Window, this.#optionsInternalCheckDOM);
 
-      const TargetNode = activeWindow?.Node;
+      const TargetNode = (activeWindow as typeof window)?.Node;
       return TargetNode && target instanceof TargetNode;
    }
 
    /**
     * Provides precise type checking if `target` is a ShadowRoot.
     *
-    * @param {unknown}  target - A potential ShadowRoot to test.
+    * @param target - A potential ShadowRoot to test.
     *
-    * @returns {target is ShadowRoot} Is `target` a ShadowRoot.
+    * @returns Is `target` a ShadowRoot.
     */
-   static isShadowRoot(target)
+   static isShadowRoot(target: unknown): target is ShadowRoot
    {
       // ShadowRoot is a specialized type of DocumentFragment.
       return this.#checkDOMInstanceType(target, Node.DOCUMENT_FRAGMENT_NODE, 'ShadowRoot');
@@ -371,11 +345,11 @@ export class CrossWindow
    /**
     * Provides precise type checking if `target` is a SVGElement.
     *
-    * @param {unknown}  target - A potential SVGElement to test.
+    * @param target - A potential SVGElement to test.
     *
-    * @returns {target is SVGElement} Is `target` a SVGElement.
+    * @returns Is `target` a SVGElement.
     */
-   static isSVGElement(target)
+   static isSVGElement(target: unknown): target is SVGElement
    {
       return this.#checkDOMInstanceType(target, Node.ELEMENT_NODE, 'SVGElement');
    }
@@ -385,16 +359,16 @@ export class CrossWindow
    /**
     * Provides basic duck type checking for `Event` signature and optional constructor name(s).
     *
-    * @param {unknown}  target - A potential DOM event to test.
+    * @param target - A potential DOM event to test.
     *
-    * @param {string | Set<string>} [types] Specific constructor name or Set of constructor names to match.
+    * @param [types] Specific constructor name or Set of constructor names to match.
     *
-    * @returns {target is Event} Is `target` an Event with optional constructor name check.
+    * @returns Is `target` an Event with optional constructor name check.
     */
-   static isEvent(target, types)
+   static isEvent(target: unknown, types: string | Set<string>): target is Event
    {
-      if (typeof target?.type !== 'string' || typeof target?.defaultPrevented !== 'boolean' ||
-         typeof target?.stopPropagation !== 'function')
+      if (typeof (target as Event)?.type !== 'string' || typeof (target as Event)?.defaultPrevented !== 'boolean' ||
+       typeof (target as Event)?.stopPropagation !== 'function')
       {
          return false;
       }
@@ -406,11 +380,11 @@ export class CrossWindow
     * Provides basic duck type checking for `Event` signature for standard mouse / pointer events including
     * `MouseEvent` and `PointerEvent`.
     *
-    * @param {unknown}  target - A potential DOM event to test.
+    * @param target - A potential DOM event to test.
     *
-    * @returns {target is PointerEvent} Is `target` a MouseEvent or PointerEvent.
+    * @returns Is `target` a MouseEvent or PointerEvent.
     */
-   static isPointerEvent(target)
+   static isPointerEvent(target: unknown): target is PointerEvent
    {
       return this.isEvent(target, this.#PointerEventSet);
    }
@@ -418,12 +392,12 @@ export class CrossWindow
    /**
     * Provides basic duck type checking for `Event` signature for all UI events.
     *
-    * @param {unknown}  target - A potential DOM event to test.
+    * @param target - A potential DOM event to test.
     *
-    * @returns {target is UIEvent} Is `target` a UIEvent.
+    * @returns Is `target` a UIEvent.
     * @see https://developer.mozilla.org/en-US/docs/Web/API/UIEvent
     */
-   static isUIEvent(target)
+   static isUIEvent(target: unknown): target is UIEvent
    {
       return this.isEvent(target, this.#UIEventSet);
    }
@@ -432,12 +406,11 @@ export class CrossWindow
     * Provides basic duck type checking for `Event` signature for standard user input events including `KeyboardEvent`,
     * `MouseEvent`, and `PointerEvent`.
     *
-    * @param {unknown}  target - A potential DOM event to test.
+    * @param target - A potential DOM event to test.
     *
-    * @returns {target is KeyboardEvent | MouseEvent | PointerEvent} Is `target` a Keyboard, MouseEvent, or
-    *          PointerEvent.
+    * @returns Is `target` a Keyboard, MouseEvent, or PointerEvent.
     */
-   static isUserInputEvent(target)
+   static isUserInputEvent(target: unknown): target is KeyboardEvent | MouseEvent | PointerEvent
    {
       return this.isEvent(target, this.#UserInputEventSet);
    }
@@ -448,19 +421,19 @@ export class CrossWindow
     * Provides basic type checking by constructor name(s) for objects. This can be useful when checking multiple
     * constructor names against a provided Set.
     *
-    * @param {unknown}  target - Object to test for constructor name.
+    * @param target - Object to test for constructor name.
     *
-    * @param {string | Set<string>} types Specific constructor name or Set of constructor names to match.
+    * @param types Specific constructor name or Set of constructor names to match.
     *
-    * @returns {boolean} Does the provided object constructor name match the types provided.
+    * @returns Does the provided object constructor name match the types provided.
     */
-   static isCtorName(target, types)
+   static isCtorName(target: unknown, types: string | Set<string>): boolean
    {
       if (!isObject(target)) { return false; }
 
       if (typeof types === 'string' && target?.constructor?.name === types) { return true; }
 
-      return !!types?.has(target?.constructor?.name);
+      return !!(types as Set<string>)?.has(target?.constructor?.name);
    }
 
    // Internal implementation ----------------------------------------------------------------------------------------
@@ -469,15 +442,15 @@ export class CrossWindow
     * Internal generic DOM `instanceof` check. First will attempt to find the class name by `globalThis` falling back
     * to the {@link Window} associated with the DOM node.
     *
-    * @param {unknown}  target - Target to test.
+    * @param target - Target to test.
     *
-    * @param {number}   nodeType - Node type constant.
+    * @param nodeType - Node type constant.
     *
-    * @param {string}   className - DOM classname for instanceof check.
+    * @param className - DOM classname for instanceof check.
     *
-    * @returns {boolean} Is the target the given nodeType and instance of class name.
+    * @returns Is the target the given nodeType and instance of class name.
     */
-   static #checkDOMInstanceType(target, nodeType, className)
+   static #checkDOMInstanceType(target: unknown, nodeType: number, className: string): boolean
    {
       if (!isObject(target)) { return false; }
 
@@ -487,11 +460,40 @@ export class CrossWindow
 
       if (GlobalClass && target instanceof GlobalClass) { return true; }
 
-      const activeWindow = this.#NodesWithOwnerDocument.has(target.nodeType) ? target?.ownerDocument?.defaultView :
+      const activeWindow: Window = this.#hasOwnerDocument(target) ? target?.ownerDocument?.defaultView :
+       // @ts-ignore: Safe in this context.
        this.getWindow(target, this.#optionsInternalCheckDOM);
 
       const TargetClass = activeWindow?.[className];
 
       return TargetClass && target instanceof TargetClass;
    }
+
+   static #hasOwnerDocument(target: unknown): target is Element
+   {
+      return target && this.#NodesWithOwnerDocument.has((target as Node)?.nodeType);
+   }
 }
+
+declare namespace CrossWindow {
+
+   /**
+    * Defines the DOM API targets usable for all `get` methods.
+    */
+   export type GetTarget = Document | EventTarget | Node | UIEvent | Window;
+
+   /**
+    * Defines options for all `get` methods.
+    */
+   export interface GetOptions {
+      /**
+       * When `true` and the target is invalid, throw an exception. If `false` and the target is invalid `undefined`
+       * is returned; default: `true`.
+       *
+       * @defaultValue `true`
+       */
+      throws?: boolean;
+   }
+}
+
+export { CrossWindow }

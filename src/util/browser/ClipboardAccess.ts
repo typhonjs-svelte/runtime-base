@@ -1,4 +1,4 @@
-import { CrossWindow } from './CrossWindow.js';
+import { CrossWindow } from './CrossWindow';
 
 /**
  * Provides access to the Clipboard API for reading / writing text strings. This requires a secure context.
@@ -9,18 +9,23 @@ import { CrossWindow } from './CrossWindow.js';
 export class ClipboardAccess
 {
    /**
+    * @private
+    */
+   constructor() {} // eslint-disable-line no-useless-constructor
+
+   /**
     * Uses `navigator.clipboard` if available to read text from the clipboard.
     *
     * Note: Always returns `undefined` when `navigator.clipboard` is not available or the clipboard contains the
     * empty string.
     *
-    * @param {Window} [activeWindow=globalThis] Optional active current window.
+    * @param [activeWindow=window] Optional active current window.
     *
     * @returns {Promise<string|undefined>} The current clipboard text or undefined.
     */
-   static async readText(activeWindow = globalThis)
+   static async readText(activeWindow: Window = window): Promise<string | undefined>
    {
-      let result;
+      let result: string;
 
       if (!CrossWindow.isWindow(activeWindow))
       {
@@ -43,13 +48,13 @@ export class ClipboardAccess
     * Uses `navigator.clipboard` if available then falls back to `document.execCommand('copy')` if available to copy
     * the given text to the clipboard.
     *
-    * @param {string}   text - Text to copy to the browser clipboard.
+    * @param text - Text to copy to the browser clipboard.
     *
-    * @param {Window} [activeWindow=globalThis] Optional active current window.
+    * @param [activeWindow=window] Optional active current window.
     *
-    * @returns {Promise<boolean>} Copy successful.
+    * @returns Copy successful.
     */
-   static async writeText(text, activeWindow = globalThis)
+   static async writeText(text: string, activeWindow: Window = window): Promise<boolean>
    {
       if (typeof text !== 'string')
       {
@@ -76,7 +81,7 @@ export class ClipboardAccess
       {
          const textArea = activeWindow.document.createElement('textarea');
 
-         // Place in the top-left corner of screen regardless of scroll position.
+         // Place in the top-left corner of the screen regardless of scroll position.
          textArea.style.position = 'fixed';
          textArea.style.top = '0';
          textArea.style.left = '0';
@@ -94,7 +99,7 @@ export class ClipboardAccess
          textArea.style.outline = 'none';
          textArea.style.boxShadow = 'none';
 
-         // Avoid flash of the white box if rendered for any reason.
+         // Avoid the flash of the white box if rendered for any reason.
          textArea.style.background = 'transparent';
 
          textArea.value = text;

@@ -9,11 +9,16 @@
 export class BrowserSupports
 {
    /**
+    * @private
+    */
+   constructor() {} // eslint-disable-line no-useless-constructor
+
+   /**
     * Check for container query support.
     *
-    * @returns {boolean} True if container queries supported.
+    * @returns True if container queries supported.
     */
-   static get containerQueries()
+   static get containerQueries(): boolean
    {
       return 'container' in document.documentElement.style;
    }

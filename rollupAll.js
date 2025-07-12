@@ -706,10 +706,11 @@ const rollupConfigs = [
    },
    {
       input: {
-         input: 'src/util/browser/index.js',
+         input: 'src/util/browser/index.ts',
          plugins: [
             importsExternal(),
             resolve(resolveOptions),
+            typescript({ tsconfig: './src/util/browser/tsconfig.json' }),
             generateDTS.plugin(dtsPluginOptions)
          ]
       },
