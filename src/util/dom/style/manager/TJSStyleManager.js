@@ -45,7 +45,7 @@ export class TJSStyleManager
     *
     * @param {boolean}  [opts.force] - When true, removes any existing matching style sheet and initializes a new one.
     */
-   constructor({ id, rules, version, document = globalThis.document, layerName, force = false } = {})
+   constructor({ id, rules, version, layerName, document = globalThis.document, connect = false, force = false } = {})
    {
       if (typeof id !== 'string') { throw new TypeError(`TJSStyleManager error: 'id' is not a string.`); }
 
@@ -62,6 +62,11 @@ export class TJSStyleManager
       if (layerName !== void 0 && typeof layerName !== 'string')
       {
          throw new TypeError(`TJSStyleManager error: 'layerName' is not a string.`);
+      }
+
+      if (typeof connect !== 'boolean')
+      {
+         throw new TypeError(`TJSStyleManager error: 'connect' is not a boolean.`);
       }
 
       if (typeof force !== 'boolean')
@@ -233,6 +238,8 @@ export class TJSStyleManager
       this.#styleElement = document.createElement('style');
       this.#styleElement.id = id;
       this.#styleElement.setAttribute('data-version', String(version));
+
+      this.#styleElement._tjsRules = rules;
 
       document.head.append(this.#styleElement);
 
