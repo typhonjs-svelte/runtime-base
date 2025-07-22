@@ -154,6 +154,30 @@ class CrossWindow
    // ES / Browser API basic prototype tests -------------------------------------------------------------------------
 
    /**
+    * Provides basic prototype string type checking if `target` is a CSSLayerBlockRule.
+    *
+    * @param target - A potential CSSLayerBlockRule to test.
+    *
+    * @returns Is `target` a CSSLayerBlockRule.
+    */
+   static isCSSLayerBlockRule(target: unknown): target is CSSLayerBlockRule
+   {
+      return isObject(target) && Object.prototype.toString.call(target) === '[object CSSLayerBlockRule]';
+   }
+
+   /**
+    * Provides basic prototype string type checking if `target` is a CSSStyleRule.
+    *
+    * @param target - A potential CSSStyleRule to test.
+    *
+    * @returns Is `target` a CSSStyleRule.
+    */
+   static isCSSStyleRule(target: unknown): target is CSSLayerBlockRule
+   {
+      return isObject(target) && Object.prototype.toString.call(target) === '[object CSSStyleRule]';
+   }
+
+   /**
     * Provides basic prototype string type checking if `target` is a CSSStyleSheet.
     *
     * @param target - A potential CSSStyleSheet to test.
