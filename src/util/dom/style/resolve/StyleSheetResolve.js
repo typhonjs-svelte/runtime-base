@@ -6,7 +6,7 @@ import {
 
 /**
  * Dynamically parses and indexes a {@link CSSStyleSheet} at runtime, exposing a selector-to-style mapping by
- * individual selector parts that supports scoped CSS variable resolution. This enables the ability to flatten and
+ * individual selector parts. CSS variable resolution is also possible and this enables the ability to flatten and
  * resolve complex nested `var(--...)` chains defined across multiple selectors and layers.
  *
  * When retrieving specific selector styles via {@link StyleSheetResolve.get} and {@link StyleSheetResolve.getProperty}
@@ -15,7 +15,7 @@ import {
  * flattened.
  *
  * Core features:
- * - Parses all or specific relevant `@layer` blocks based on `#ALLOWED_LAYERS`.
+ * - Parses all or specific relevant `@layer` blocks.
  * - Can filter out and exclude undesired CSS selector parts for parsing via `excludeSelectorParts` option.
  * - Can filter out and include just desired CSS layers via `includeCSSLayers` option.
  * - Enables resolution of scoped CSS variables using a parent-selector fallback chain.
