@@ -154,6 +154,18 @@ class CrossWindow
    // ES / Browser API basic prototype tests -------------------------------------------------------------------------
 
    /**
+    * Provides basic prototype string type checking if `target` is a CSSStyleSheet.
+    *
+    * @param target - A potential CSSStyleSheet to test.
+    *
+    * @returns Is `target` a CSSStyleSheet.
+    */
+   static isCSSStyleSheet(target: unknown): target is CSSStyleSheet
+   {
+      return isObject(target) && Object.prototype.toString.call(target) === '[object CSSStyleSheet]';
+   }
+
+   /**
     * Provides basic prototype string type checking if `target` is a Document.
     *
     * @param target - A potential Document to test.
@@ -258,18 +270,6 @@ class CrossWindow
       }
 
       return false;
-   }
-
-   /**
-    * Provides precise type checking if `target` is a CSSStyleSheet.
-    *
-    * @param target - A potential CSSStyleSheet to test.
-    *
-    * @returns Is `target` a CSSStyleSheet.
-    */
-   static isCSSStyleSheet(target: unknown): target is CSSStyleSheet
-   {
-      return this.#checkDOMInstanceType(target, Node.ELEMENT_NODE, 'CSSStyleSheet');
    }
 
    /**
