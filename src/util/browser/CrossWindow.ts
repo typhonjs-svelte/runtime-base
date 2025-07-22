@@ -261,6 +261,18 @@ class CrossWindow
    }
 
    /**
+    * Provides precise type checking if `target` is a CSSStyleSheet.
+    *
+    * @param target - A potential CSSStyleSheet to test.
+    *
+    * @returns Is `target` a CSSStyleSheet.
+    */
+   static isCSSStyleSheet(target: unknown): target is CSSStyleSheet
+   {
+      return this.#checkDOMInstanceType(target, Node.ELEMENT_NODE, 'CSSStyleSheet');
+   }
+
+   /**
     * Provides precise type checking if `target` is a DocumentFragment.
     *
     * @param target - A potential DocumentFragment to test.
