@@ -5,7 +5,7 @@ import {
    isObject }           from '#runtime/util/object';
 
 /**
- * Dynamically parses and indexes a {@link CSSStyleSheet} at runtime, exposing a selector-to-style mapping by
+ * Dynamically parses and indexes a `CSSStyleSheet` at runtime, exposing a selector-to-style mapping by
  * individual selector parts. CSS variable resolution is also possible and this enables the ability to flatten and
  * resolve complex nested `var(--...)` chains defined across multiple selectors and layers.
  *
@@ -18,6 +18,7 @@ import {
  * - Parses all or specific relevant `@layer` blocks.
  * - Can filter out and exclude undesired CSS selector parts for parsing via `excludeSelectorParts` option.
  * - Can filter out and include just desired CSS layers via `includeCSSLayers` option.
+ * - Can filter out and include just desired CSS selector parts via `includeSelectorPartSet` option.
  * - Enables resolution of scoped CSS variables using a parent-selector fallback chain.
  * - Provides both direct and resolved access to styles via `.get()` and `.getProperty()`.
  *
