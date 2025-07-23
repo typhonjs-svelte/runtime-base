@@ -154,6 +154,18 @@ class CrossWindow
    // ES / Browser API basic prototype tests -------------------------------------------------------------------------
 
    /**
+    * Provides basic prototype string type checking if `target` is a CSSImportRule.
+    *
+    * @param target - A potential CSSImportRule to test.
+    *
+    * @returns Is `target` a CSSImportRule.
+    */
+   static isCSSImportRule(target: unknown): target is CSSImportRule
+   {
+      return isObject(target) && Object.prototype.toString.call(target) === '[object CSSImportRule]';
+   }
+
+   /**
     * Provides basic prototype string type checking if `target` is a CSSLayerBlockRule.
     *
     * @param target - A potential CSSLayerBlockRule to test.
