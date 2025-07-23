@@ -37,6 +37,13 @@ import {
 export class StyleSheetResolve
 {
    /**
+    * Internal tracking of frozen state; once frozen, no more modifications are possible.
+    *
+    * @type {boolean}
+    */
+   #frozen = false;
+
+   /**
     * Parsed selector to associated style properties.
     *
     * @type {Map<string, { [key: string]: string }>}
@@ -44,23 +51,26 @@ export class StyleSheetResolve
    #sheetMap = new Map();
 
    /**
-    * @param {CSSStyleSheet | Map<string, { [key: string]: string }>}   styleSheetOrMap - The style sheet element to
-    *        parse or an existing parsed style sheet Map.
+    * @param {CSSStyleSheet | Map<string, { [key: string]: string }>}   styleSheetOrMap - The stylesheet element to
+    *        parse or an existing parsed stylesheet Map.
     *
     * @param {object} [options] - Options for parsing stylesheet.
     *
     * @param {Iterable<RegExp>}  [options.excludeSelectorParts] - A list of RegExp instance used to exclude CSS
-    *        selector parts from parsed style sheet data.
+    *        selector parts from parsed stylesheet data.
     *
     * @param {Iterable<RegExp>}  [options.includeCSSLayers] - A list of RegExp instance used to specifically include
-    *        in parsing for specific allowed CSS layers if present in the style sheet.
+    *        in parsing for specific allowed CSS layers if present in the stylesheet.
+    *
+    * @param {Set<string>}  [options.includeSelectorPartSet] - A Set of strings to exactly match selector parts
+    *        to include in parsed stylesheet data.
     */
    constructor(styleSheetOrMap, options = {})
    {
       if (!CrossWindow.isCSSStyleSheet(styleSheetOrMap) && !CrossWindow.isMap(styleSheetOrMap))
       {
          throw new TypeError(
-          `'styleSheetOrMap' must be a 'CSSStyleSheet' instance or a parsed Map of style sheet entries.`);
+          `'styleSheetOrMap' must be a 'CSSStyleSheet' instance or a parsed Map of stylesheet entries.`);
       }
 
       if (!isObject(options)) { throw new TypeError(`'options' is not an object.`); }
@@ -85,6 +95,41 @@ export class StyleSheetResolve
       }
    }
 
+   // Accessors ------------------------------------------------------------------------------------------------------
+
+   /**
+    * @returns {boolean} Current frozen state; when true no more modifications are possible.
+    */
+   get frozen()
+   {
+      return this.#frozen;
+   }
+
+   /**
+    * @returns {number} Returns the size / count of selector properties tracked.
+    */
+   get size()
+   {
+      return this.#sheetMap.size;
+   }
+
+   // Methods --------------------------------------------------------------------------------------------------------
+
+   /**
+    * Clones this instance returning a new `StyleSheetResolve` instance with a copy of the data.
+    *
+    * @returns {StyleSheetResolve} Cloned instance.
+    */
+   clone()
+   {
+      const clonedMap = new Map();
+
+      // Shallow copy.
+      for (const [selector, props] of this.#sheetMap.entries()) { clonedMap.set(selector, { ...props }); }
+
+      return new StyleSheetResolve(clonedMap);
+   }
+
    /**
     * Entries iterator of selector / style properties objects.
     *
@@ -93,6 +138,18 @@ export class StyleSheetResolve
    entries()
    {
       return this.#sheetMap.entries();
+   }
+
+   /**
+    * Freezes this instance disallowing further modifications to the stylesheet data.
+    */
+   freeze()
+   {
+      this.#frozen = true;
+
+      for (const props of this.#sheetMap.values()) { Object.freeze(props); }
+
+      Object.freeze(this.#sheetMap);
    }
 
    /**
@@ -238,11 +295,37 @@ export class StyleSheetResolve
    }
 
    /**
-    * @returns {number} Returns the size / count of selector properties tracked.
+    * Merges styles from another StyleSheetResolve instance into this one.
+    *
+    * @param {StyleSheetResolve} source - Another instance to merge from.
+    *
+    * @param {object} [options] - Options.
+    *
+    * @param {boolean} [options.exactMatch=false] - Only merge if selector part keys match exactly.
+    *
+    * @param {'override' | 'preserve'} [options.strategy='override'] - By default, the source overrides existing values.
+    *        You may also provide a `preserve` strategy which only merges property keys that do not exist already.
     */
-   get size()
+   merge(source, { exactMatch = false, strategy = 'override' } = {})
    {
-      return this.#sheetMap.size;
+      if (this.#frozen) { throw new Error('Cannot modify a frozen StyleSheetResolve instance.'); }
+
+      if (!(source instanceof StyleSheetResolve))
+      {
+         throw new TypeError(`'source' is not a StyleSheetResolve instance.`);
+      }
+
+      for (const [selectorPart, incoming] of source.entries())
+      {
+         if (exactMatch && !this.#sheetMap.has(selectorPart)) { continue; }
+
+         const current = this.#sheetMap.get(selectorPart) ?? {};
+
+         const merged = strategy === 'preserve' ? Object.assign({}, incoming, current) :
+          Object.assign({}, current, incoming);
+
+         this.#sheetMap.set(selectorPart, merged);
+      }
    }
 
    // Internal Implementation ----------------------------------------------------------------------------------------
@@ -250,28 +333,39 @@ export class StyleSheetResolve
    /**
     * Parses the given CSSStyleSheet instance.
     *
-    * @param {CSSStyleSheet}  styleSheet - The style sheet to parse.
+    * @param {CSSStyleSheet}  styleSheet - The stylesheet to parse.
     *
     * @param {object} [opts] - Options for parsing stylesheet.
     *
     * @param {Iterable<RegExp>}  [opts.excludeSelectorParts] - A list of RegExp instance used to exclude CSS
-    *        selector parts from parsed style sheet data.
+    *        selector parts from parsed stylesheet data.
     *
     * @param {Iterable<RegExp>}  [opts.includeCSSLayers] - A list of RegExp instance used to specifically include
-    *        in parsing for specific allowed CSS layers if present in the style sheet.
+    *        in parsing for specific allowed CSS layers if present in the stylesheet.
+    *
+    * @param {Set<string>}  [opts.includeSelectorPartSet] - A Set of strings to exactly match selector parts
+    *        to include in parsed stylesheet data.
     */
    #initialize(styleSheet, opts)
    {
       opts.excludeSelectorParts = isIterable(opts.excludeSelectorParts) ? Array.from(opts.excludeSelectorParts) : [];
+
       opts.includeCSSLayers = isIterable(opts.includeCSSLayers) ? Array.from(opts.includeCSSLayers) : [];
 
-      // Parse each CSSStyleRule and build the map of selectors to properties.
-      for (const layerRule of styleSheet.cssRules)
-      {
-         if (!CrossWindow.isCSSLayerBlockRule(layerRule)) { continue; }
-         if (!isObject(layerRule.cssRules)) { continue; }
+      opts.includeSelectorPartSet = CrossWindow.isSet(opts.includeSelectorPartSet) ? opts.includeSelectorPartSet :
+       new Set();
 
-         this.#processLayerBlockRule(layerRule, void 0, opts);
+      // Parse each CSSStyleRule and build the map of selectors to properties.
+      for (const rule of styleSheet.cssRules)
+      {
+         if (CrossWindow.isCSSLayerBlockRule(rule) && isObject(rule.cssRules))
+         {
+            this.#processLayerBlockRule(rule, void 0, opts);
+         }
+         else if (CrossWindow.isCSSStyleRule(rule))
+         {
+            this.#processStyleRule(rule, opts);
+         }
       }
    }
 
@@ -309,6 +403,9 @@ export class StyleSheetResolve
     * @param {RegExp[]} opts.excludeSelectorParts - Array of RegExp to filter via exclusion CSS selector parts.
     *
     * @param {RegExp[]} opts.includeCSSLayers - Array of RegExp to filter via inclusion for CSS layer names.
+    *
+    * @param {Set<string>}  opts.includeSelectorPartSet - A Set of strings to exactly match selector parts
+    *        to include in parsed stylesheet data.
     */
    #processLayerBlockRule(blockRule, parentLayerName, opts)
    {
@@ -346,6 +443,9 @@ export class StyleSheetResolve
     * @param {RegExp[]} opts.excludeSelectorParts - Array of RegExp to filter via exclusion CSS selector parts.
     *
     * @param {RegExp[]} opts.includeCSSLayers - Array of RegExp to filter via inclusion for CSS layer names.
+    *
+    * @param {Set<string>}  opts.includeSelectorPartSet - A Set of strings to exactly match selector parts
+    *        to include in parsed stylesheet data.
     */
    #processStyleRule(styleRule, opts)
    {
@@ -361,11 +461,25 @@ export class StyleSheetResolve
 
       if (selectorParts.length)
       {
-         for (const part of selectorParts)
+         if (opts.includeSelectorPartSet.size)
          {
-            const existing = this.#sheetMap.get(part);
-            const update = Object.assign(existing ?? {}, result);
-            this.#sheetMap.set(part, update);
+            for (const part of selectorParts)
+            {
+               if (!opts.includeSelectorPartSet.has(part)) { continue; }
+
+               const existing = this.#sheetMap.get(part);
+               const update = Object.assign(existing ?? {}, result);
+               this.#sheetMap.set(part, update);
+            }
+         }
+         else
+         {
+            for (const part of selectorParts)
+            {
+               const existing = this.#sheetMap.get(part);
+               const update = Object.assign(existing ?? {}, result);
+               this.#sheetMap.set(part, update);
+            }
          }
       }
    }
