@@ -760,7 +760,7 @@ class ResolveVars
 
             if (affected.length > 0)
             {
-               console.warn(`[TyphonJS Runtime] StyleSheetResolve - CSS variable cycles detected: ${
+               console.warn(`[TyphonJS Runtime] StyleSheetResolve - CSS variable cyclic dependency: ${
                 cycleChain.join(' → ')}\nAffected properties:\n${affected.join('\n')}`);
             }
          }
