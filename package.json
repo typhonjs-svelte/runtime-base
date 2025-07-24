@@ -245,11 +245,14 @@
     "@typhonjs-utils/loader-module": "^0.2.0",
     "@typhonjs-utils/object": "^0.4.0",
     "@typhonjs-utils/unicode": "^0.1.0",
+    "@vitest/coverage-v8": "^3.2.4",
+    "@vitest/ui": "^3.2.4",
     "colord-typhonjs": "github:typhonjs-svelte-scratch/colord#0.0.3",
     "compare-versions": "^6.1.1",
     "eslint": "^8.57.0",
     "fflate": "^0.8.2",
     "gl-matrix": "github:typhonjs-svelte-scratch/gl-matrix-beta3-dist#glmatrix-next",
+    "happy-dom": "^18.0.1",
     "js-base64": "^3.7.7",
     "jsonc-parser": "^3.3.1",
     "json5": "^2.2.3",
@@ -261,7 +264,8 @@
     "tinykeys": "github:typhonjs-svelte-scratch/tinykeys",
     "tslib": "^2.8.1",
     "typescript": "^5.8.3",
-    "upath": "^2.0.1"
+    "upath": "^2.0.1",
+    "vitest": "^3.2.4"
   },
   "peerDependencies": {
     "svelte": ">=4.x.x <5"
@@ -279,7 +283,9 @@
   ],
   "scripts": {
     "build": "node rollupAll.js",
-    "eslint": "eslint ."
+    "eslint": "eslint .",
+    "test": "vitest --coverage",
+    "test-ui": "vitest --ui --coverage"
   },
   "files": [
     "/_dist",
