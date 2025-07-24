@@ -16,11 +16,18 @@ import {
  *
  * Core features:
  * - Parses all or specific relevant `@layer` blocks.
+ * - Provides both direct and resolved access to styles via `.get()` and `.getProperty()`.
+ *
+ * Main Options:
  * - Can filter out and exclude undesired CSS selector parts for parsing via `excludeSelectorParts` option.
  * - Can filter out and include just desired CSS layers via `includeCSSLayers` option.
  * - Can filter out and include just desired CSS selector parts via `includeSelectorPartSet` option.
- * - Enables resolution of scoped CSS variables using a parent-selector fallback chain.
- * - Provides both direct and resolved access to styles via `.get()` and `.getProperty()`.
+ *
+ * Access Options:
+ * - Can return property keys in camel case via `camelCase` option.
+ * - Can limit depth of independent resolved CSS variables across parent-selector fallback chains via `depth` option.
+ * - Enables resolution of scoped CSS variables using a parent-selector fallback chain via `resolve` option.
+ * - Can enable cyclic dependency detection warnings when resolving CSS variables via `warnCycles` option.
  *
  * TODO: There are a few improvements to make including supporting CSS variable fallback resolution.
  *
@@ -86,13 +93,18 @@ export class StyleSheetResolve
          throw new TypeError(`'includeCSSLayers' must be a list of RegExp instances.`);
       }
 
+      if (options.includeSelectorPartSet !== void 0 && !CrossWindow.isSet(options.includeSelectorPartSet))
+      {
+         throw new TypeError(`'includeSelectorPartSet' must be a Set of strings.`);
+      }
+
       if (CrossWindow.isCSSStyleSheet(styleSheetOrMap))
       {
          this.#initialize(styleSheetOrMap, options);
       }
       else if (CrossWindow.isMap(styleSheetOrMap))
       {
-         this.#sheetMap = new Map(styleSheetOrMap.entries());
+         this.#sheetMap = this.#clone(styleSheetOrMap);
       }
    }
 
@@ -114,6 +126,19 @@ export class StyleSheetResolve
       return this.#sheetMap.size;
    }
 
+   // Iterator -------------------------------------------------------------------------------------------------------
+
+   /**
+    * Allows usage in for of loops directly.
+    *
+    * @returns {MapIterator<[string, {[p: string]: string}]>} Entries Map iterator.
+    * @yields
+    */
+   *[Symbol.iterator]()
+   {
+      yield* this.#sheetMap.entries();
+   }
+
    // Methods --------------------------------------------------------------------------------------------------------
 
    /**
@@ -123,22 +148,19 @@ export class StyleSheetResolve
     */
    clone()
    {
-      const clonedMap = new Map();
-
-      // Shallow copy.
-      for (const [selector, props] of this.#sheetMap.entries()) { clonedMap.set(selector, { ...props }); }
-
-      return new StyleSheetResolve(clonedMap);
+      return new StyleSheetResolve(this.#clone(this.#sheetMap));
    }
 
    /**
     * Entries iterator of selector / style properties objects.
     *
     * @returns {MapIterator<[string, { [key: string]: string }]>} Tracked CSS selector key / value iterator.
+    * @yields
     */
-   entries()
+   *entries()
    {
-      return this.#sheetMap.entries();
+      // Ensure a shallow copy of style properties.
+      for (const key of this.#sheetMap.keys()) { yield [key, { ...this.#sheetMap.get(key) }]; }
    }
 
    /**
@@ -146,6 +168,8 @@ export class StyleSheetResolve
     */
    freeze()
    {
+      if (this.#frozen) { return; }
+
       this.#frozen = true;
 
       for (const props of this.#sheetMap.values()) { Object.freeze(props); }
@@ -160,29 +184,31 @@ export class StyleSheetResolve
     *
     * @param {string | Iterable<string>}   selector - A selector or array of selectors to retrieve.
     *
-    * @param {object}   [opts] - Options.
+    * @param {object}   [options] - Options.
     *
-    * @param {boolean}  [opts.camelCase=false] - When true, property keys will be in camel case.
+    * @param {boolean}  [options.camelCase=false] - When true, property keys will be in camel case.
     *
-    * @param {number}   [opts.depth] - Resolution depth for CSS variable substitution. By default, the depth is the
+    * @param {number}   [options.depth] - Resolution depth for CSS variable substitution. By default, the depth is the
     * length of the provided `resolve` selectors, but you may opt to provide a specific depth even with multiple
     * resolution selectors.
     *
-    * @param {string | Iterable<string>} [opts.resolve] - Additional selectors as CSS variable resolution sources.
+    * @param {string | Iterable<string>} [options.resolve] - Additional selectors as CSS variable resolution sources.
+    *
+    * @param {boolean} [options.warnCycles=false] - When true and resolving CSS variables cyclic / self-referential CSS
+    *        variable associations are detected.
+    *
+    * @param {boolean} [options.warnResolve=false] - When true, missing parent-selector in fallback-chain are logged.
     *
     * @returns {{ [key: string]: string } | undefined} Style properties object.
     */
-   get(selector, { camelCase = false, depth, resolve } = {})
+   get(selector, { camelCase = false, depth, resolve, warnCycles = false, warnResolve = false } = {})
    {
       if (typeof selector !== 'string' && !isIterable(selector))
       {
          throw new TypeError(`'selector' must be a string or an iterable list of strings.`);
       }
 
-      if (typeof camelCase !== 'boolean')
-      {
-         throw new TypeError(`'camelCase' must be a boolean.`);
-      }
+      if (typeof camelCase !== 'boolean') { throw new TypeError(`'camelCase' must be a boolean.`); }
 
       if (depth !== void 0 && (!Number.isInteger(depth) || depth < 1))
       {
@@ -193,6 +219,9 @@ export class StyleSheetResolve
       {
          throw new TypeError(`'resolve' must be a string or an iterable list of strings.`);
       }
+
+      if (typeof warnCycles !== 'boolean') { throw new TypeError(`'warnCycles' must be a boolean.`); }
+      if (typeof warnResolve !== 'boolean') { throw new TypeError(`'warnResolve' must be a boolean.`); }
 
       let result = void 0;
 
@@ -212,28 +241,28 @@ export class StyleSheetResolve
 
       if (result && (typeof resolve === 'string' || isIterable(resolve)))
       {
-         depth = typeof depth === 'number' ? depth : Math.max(1, Array.from(resolve).length);
+         const resolveList = typeof resolve === 'string' ? [resolve] : Array.from(resolve ?? []);
 
-         const resolveNotFound = new Set();
+         depth = typeof depth === 'number' ? depth : Math.max(1, resolveList.length);
 
-         // Progressively resolve CSS variables up to the requested depth.
-         for (let cntr = 0; cntr < depth; cntr++)
-         {
-            const beforeResult = JSON.stringify(result);
-
-            this.#resolve(result, resolve, resolveNotFound);
-
-            const afterResult = JSON.stringify(result);
-
-            // Early out if no more variables need resolution.
-            if (beforeResult === afterResult) { break; }
+         /** @type {import('./types').ResolveData} */
+         const resolveData = {
+            parentNotFound: new Set(),
+            seenCycles: new Set(),
+            warnCycles
          }
 
-         if (resolveNotFound.size > 0)
+         // Progressively resolve CSS variables up to the requested depth.
+         for (let cntr = 0; cntr < depth && cntr < resolveList.length; cntr++)
+         {
+            this.#resolve(result, resolveList, resolveData);
+         }
+
+         if (resolveData.parentNotFound.size > 0)
          {
             console.warn(
-             `[TyphonJS Runtime] StyleSheetResolve - #resolve - Could not locate parent selector for resolution: '${
-              [...resolveNotFound].join(', ')}'`);
+             `[TyphonJS Runtime] StyleSheetResolve - #resolve - Could not locate parent selector(s) for resolution: '${
+              [...resolveData.parentNotFound].join(', ')}'`);
          }
       }
 
@@ -260,16 +289,20 @@ export class StyleSheetResolve
     * @param {object}   [options] - Options.
     *
     * @param {number}   [options.depth] - Resolution depth for CSS variable substitution. By default, the depth is the
-    * length of the provided `resolve` selectors, but you may opt to provide a specific depth even with multiple
-    * resolution selectors.
+    *        length of the provided `resolve` selectors, but you may opt to provide a specific depth even with multiple
+    *        resolution selectors.
     *
     * @param {string | string[]} [options.resolve] - Additional selectors as CSS variable resolution sources.
+    *
+    * @param {boolean} [options.warnCycles=false] - When true and resolving CSS variables cyclic / self-referential CSS
+    *        variable associations are detected.
+    *
+    * @param {boolean} [options.warnResolve=false] - When true, missing parent-selector in fallback-chain are logged.
     *
     * @returns {string | undefined} Style property value.
     */
    getProperty(selector, property, options)
    {
-      // If there is a direct selector match, then return a value immediately.
       const data = this.get(selector, options);
 
       return isObject(data) && property in data ? data[property] : void 0;
@@ -296,7 +329,9 @@ export class StyleSheetResolve
    }
 
    /**
-    * Merges styles from another StyleSheetResolve instance into this one.
+    * Merges selectors and style properties from another StyleSheetResolve instance into this one. By default, the
+    * source of the merge overrides existing properties. You may choose to preserve existing values along with
+    * specifying exact selector matches.
     *
     * @param {StyleSheetResolve} source - Another instance to merge from.
     *
@@ -316,13 +351,15 @@ export class StyleSheetResolve
          throw new TypeError(`'source' is not a StyleSheetResolve instance.`);
       }
 
-      for (const [selectorPart, incoming] of source.entries())
+      for (const [selectorPart, incoming] of source)
       {
          if (exactMatch && !this.#sheetMap.has(selectorPart)) { continue; }
 
          const current = this.#sheetMap.get(selectorPart) ?? {};
 
-         const merged = strategy === 'preserve' ? Object.assign({}, incoming, current) :
+         // For preserve strategy, make a copy of the incoming data in the case that the source is frozen.
+
+         const merged = strategy === 'preserve' ? Object.assign({}, { ...incoming }, current) :
           Object.assign({}, current, incoming);
 
          this.#sheetMap.set(selectorPart, merged);
@@ -330,6 +367,21 @@ export class StyleSheetResolve
    }
 
    // Internal Implementation ----------------------------------------------------------------------------------------
+
+   /**
+    * @param {Map<string, { [key: string]: string }>} sourceMap - Source Map.
+    *
+    * @param {Map<string, { [key: string]: string }>} [targetMap] - Target Map.
+    *
+    * @returns {Map<string, { [key: string]: string }>} Shallow copy cloned Map.
+    */
+   #clone(sourceMap, targetMap = new Map())
+   {
+      // Shallow copy.
+      for (const [selector, props] of sourceMap.entries()) { targetMap.set(selector, { ...props }); }
+
+      return targetMap;
+   }
 
    /**
     * Parses the given CSSStyleSheet instance.
@@ -491,35 +543,37 @@ export class StyleSheetResolve
     *
     * @param {{ [key: string]: string }} result - Copy of source selector style properties to resolve.
     *
-    * @param {string | Iterable<string>} resolve - Parent CSS variable resolution selectors.
+    * @param {string[]} resolve - Parent CSS variable resolution selectors.
     *
-    * @param {Set<string>} resolveNotFound - Stores parent resolution selectors that are not found.
+    * @param {import('./types').ResolveData} resolveData - Resolution data.
     */
-   #resolve(result, resolve, resolveNotFound)
+   #resolve(result, resolve, resolveData)
    {
-      // Holds result entries that reference a CSS variable.
-      const cssVars = new ResolveVars(result);
+      // Collect all parent-defined CSS variables.
+      const parentVars = {};
 
-      if (cssVars.unresolvedCount)
+      for (const entry of resolve)
       {
-         const order = typeof resolve === 'string' ? [resolve] : resolve;
+         const parent = this.get(entry);
 
-         for (const entry of order)
+         if (!isObject(parent))
          {
-            const parent = this.get(entry);
+            resolveData.parentNotFound.add(entry);
+            continue;
+         }
 
-            if (!isObject(parent))
-            {
-               resolveNotFound.add(entry);
-               continue;
-            }
-
-            for (const cssVar of cssVars.keysUnresolved())
-            {
-               if (cssVar in parent) { cssVars.set(cssVar, parent[cssVar]); }
-            }
+         for (const [key, value] of Object.entries(parent))
+         {
+            if (key.startsWith('--')) { parentVars[key] = value; }
          }
       }
+
+      // Track and resolve variables used in the result.
+      const cssVars = new ResolveVars(result, parentVars, resolveData);
+
+      if (!cssVars.unresolvedCount) { return; }
+
+      for (const [name, value] of Object.entries(parentVars)) { cssVars.set(name, value); }
 
       Object.assign(result, cssVars.resolved);
    }
@@ -527,6 +581,10 @@ export class StyleSheetResolve
 
 /**
  * Encapsulates CSS variable resolution logic and data.
+ *
+ * TODO: Currently only CSS variables without a fallback like `var(--...)` are resolved. It is possible to provide
+ * support for fallback values with additional CSS variables and this is forthcoming.
+ *
  */
 class ResolveVars
 {
@@ -552,10 +610,27 @@ class ResolveVars
    #varResolved = new Map();
 
    /**
-    * @param {{ [key: string]: string }} initial - Initial style entry to resolve.
+    * @type {{ [key: string]: string }}
     */
-   constructor(initial)
+   #parentVars;
+
+   /**
+    * @type {import('./types').ResolveData}
+    */
+   #resolveData;
+
+   /**
+    * @param {{ [key: string]: string }} initial - Initial style entry to resolve.
+    *
+    * @param {{ [key: string]: string }} parentVars - All parent resolution vars.
+    *
+    * @param {import('./types').ResolveData} resolveData - Resolution data
+    */
+   constructor(initial, parentVars, resolveData)
    {
+      this.#parentVars = parentVars;
+      this.#resolveData = resolveData;
+
       for (const [prop, value] of Object.entries(initial))
       {
          const vars = [...value.matchAll(/var\((--[\w-]+)\)/g)].map((match) => match[1]);
@@ -631,19 +706,6 @@ class ResolveVars
    }
 
    /**
-    * @returns {IterableIterator<string>} Unresolved entry iterator.
-    *
-    * @yields
-    */
-   *keysUnresolved()
-   {
-      for (const entry of this.#varToProp.keys())
-      {
-         if (!this.#varResolved.has(entry)) { yield entry; }
-      }
-   }
-
-   /**
     * Sets the parent selector defined CSS variable for resolution.
     *
     * @param {string}   name - CSS variable name
@@ -652,8 +714,85 @@ class ResolveVars
     */
    set(name, value)
    {
+      if (this.#resolveData.warnCycles)
+      {
+         this.#setCycleWarn(name, value);
+      }
+      else
+      {
+         if (typeof value !== 'string' || value.length === 0) { return; }
+         if (this.#varToProp.has(name) && !this.#varResolved.has(name)) { this.#varResolved.set(name, value); }
+      }
+   }
+
+   // Internal Implementation ----------------------------------------------------------------------------------------
+
+   /**
+    * @param {string}   name - CSS variable name
+    *
+    * @param {string}   value - Value of target CSS variable.
+    *
+    * @param {Set<string>} visited - Visited CSS variables.
+    *
+    * @param {Set<string>} seenCycles - Dedupe cyclic dependency warnings.
+    *
+    * @returns {string | undefined} Resolution result or undefined.
+    */
+   #resolveCycleWarn(name, value, visited, seenCycles)
+   {
+      const match = value.match(/^var\((--[\w-]+)\)$/);
+      if (!match) { return value; }
+
+      const next = match[1];
+
+      if (visited.has(next))
+      {
+         // Format cycle signature for deduping.
+         const cycleChain = [...visited, next];
+         const cycleKey = cycleChain.join('→');
+
+         if (!seenCycles.has(cycleKey))
+         {
+            seenCycles.add(cycleKey);
+
+            const affected = cycleChain.flatMap((varName) => Array.from(this.#varToProp.get(varName) ?? []).map(
+             (prop) => `- ${prop} (via ${varName})`));
+
+            if (affected.length > 0)
+            {
+               console.warn(`[TyphonJS Runtime] StyleSheetResolve - CSS variable cycles detected: ${
+                cycleChain.join(' → ')}\nAffected properties:\n${affected.join('\n')}`);
+            }
+         }
+
+         return void 0;
+      }
+
+      visited.add(next);
+
+      const nextValue = this.#varResolved.get(next) ?? this.#parentVars[next];
+
+      if (typeof nextValue !== 'string') { return void 0; }
+
+      return this.#resolveCycleWarn(next, nextValue, visited, seenCycles);
+   }
+
+   /**
+    * Sets the parent selector defined CSS variable for resolution with additional cyclic dependency metrics.
+    *
+    * @param {string}   name - CSS variable name
+    *
+    * @param {string}   value - Value of target CSS variable.
+    */
+   #setCycleWarn(name, value)
+   {
       if (typeof value !== 'string' || value.length === 0) { return; }
 
-      if (this.#varToProp.has(name) && !this.#varResolved.has(name)) { this.#varResolved.set(name, value); }
+      const resolved = this.#resolveCycleWarn(name, value, new Set([name]), this.#resolveData.seenCycles);
+
+      if (resolved !== void 0 && this.#varToProp.has(name) && !this.#varResolved.has(name))
+      {
+         this.#varResolved.set(name, resolved);
+      }
    }
 }
