@@ -13,6 +13,10 @@
       "types": "./_dist/*/index.d.ts",
       "default": "@typhonjs-svelte/runtime-base/*"
     },
+    "#runtime-test/*": {
+      "types": "./_dist/*/index.d.ts",
+      "default": "./src/*"
+    },
     "#svelte": "svelte",
     "#svelte/*": "svelte/*"
   },

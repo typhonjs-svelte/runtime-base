@@ -11,12 +11,9 @@ export default defineConfig({
       include: ['./test/src/**/*.test.ts'],
       coverage: {
          include: ['src/**'],
-         exclude: ['test/**', 'src/**/*.ts'],
+         exclude: ['test/**', 'src/**/*.d.ts'],
          provider: 'v8',
          reporter: ['text', 'json', 'html']
-      },
-      alias: {
-        "#runtime/": path.resolve(__dirname, "./src"),
       },
       reporters: ['default', 'html'],
       globals: true,
