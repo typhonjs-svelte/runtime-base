@@ -41,6 +41,17 @@ import {
  * // The `props` object has styles w/ CSS variables resolved from `input[type="text"]` for the dark theme.
  * const props = parsedStyles.get('input[type="text"]', { resolve: '.themed.theme-dark input' });
  * ```
+ *
+ * @privateRemarks
+ * This implementation avoids a full parser for `var(--...)` fallback expressions to keep the codebase compact. If
+ * future requirements include resolving deeply nested fallbacks, debug tracing, or custom resolution behavior, I'll
+ * consider replacing this logic with a dedicated parser and visitor pattern. An AST-based approach would offer more
+ * flexibility and maintainability at the cost of slightly increased complexity.
+ *
+ * Current limitations: Fallback resolution supports chained `var(--x, var(--y, ...))` expressions, but only within
+ * standalone `var(...)` values or values composed of multiple `var(...)` references. Complex expressions such as
+ * `calc(var(--x) + 1rem)` or mixed literals like `1px solid var(--color)` are not parsed and are left unresolved.
+ * Only fallback chains rooted in `var(...)` patterns are evaluated.
  */
 export class StyleSheetResolve
 {
