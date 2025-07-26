@@ -168,6 +168,7 @@ export class StyleSheetResolve
     */
    freeze()
    {
+      /* c8 ignore next 1 */
       if (this.#frozen) { return; }
 
       this.#frozen = true;
@@ -241,7 +242,7 @@ export class StyleSheetResolve
 
       if (result && (typeof resolve === 'string' || isIterable(resolve)))
       {
-         const resolveList = typeof resolve === 'string' ? [resolve] : Array.from(resolve ?? []);
+         const resolveList = typeof resolve === 'string' ? [resolve] : Array.from(resolve);
 
          depth = typeof depth === 'number' ? depth : Math.max(1, resolveList.length);
 
@@ -261,7 +262,7 @@ export class StyleSheetResolve
          if (resolveData.parentNotFound.size > 0)
          {
             console.warn(
-             `[TyphonJS Runtime] StyleSheetResolve - #resolve - Could not locate parent selector(s) for resolution: '${
+             `[TyphonJS Runtime] StyleSheetResolve - resolve - Could not locate parent selector(s) for resolution: '${
               [...resolveData.parentNotFound].join(', ')}'`);
          }
       }
@@ -355,6 +356,7 @@ export class StyleSheetResolve
       {
          if (exactMatch && !this.#sheetMap.has(selectorPart)) { continue; }
 
+         /* c8 ignore next 1 */  // `?? {}` is for sanity.
          const current = this.#sheetMap.get(selectorPart) ?? {};
 
          // For preserve strategy, make a copy of the incoming data in the case that the source is frozen.
@@ -401,23 +403,25 @@ export class StyleSheetResolve
     */
    #initialize(styleSheet, opts)
    {
-      opts.excludeSelectorParts = isIterable(opts.excludeSelectorParts) ? Array.from(opts.excludeSelectorParts) : [];
-
-      opts.includeCSSLayers = isIterable(opts.includeCSSLayers) ? Array.from(opts.includeCSSLayers) : [];
-
-      opts.includeSelectorPartSet = CrossWindow.isSet(opts.includeSelectorPartSet) ? opts.includeSelectorPartSet :
-       new Set();
+      // Convert to consistent array data.
+      const options = {
+         excludeSelectorParts: isIterable(opts.excludeSelectorParts) ? Array.from(opts.excludeSelectorParts) : [],
+         includeCSSLayers: isIterable(opts.includeCSSLayers) ? Array.from(opts.includeCSSLayers) : [],
+         includeSelectorPartSet: CrossWindow.isSet(opts.includeSelectorPartSet) ? opts.includeSelectorPartSet :
+          new Set()
+      }
 
       // Parse each CSSStyleRule and build the map of selectors to properties.
       for (const rule of styleSheet.cssRules)
       {
-         if (CrossWindow.isCSSLayerBlockRule(rule) && isObject(rule.cssRules))
+         // For mock testing `cssRules` uses a basic test.
+         if (CrossWindow.isCSSLayerBlockRule(rule) && typeof rule.cssRules === 'object')
          {
-            this.#processLayerBlockRule(rule, void 0, opts);
+            this.#processLayerBlockRule(rule, void 0, options);
          }
          else if (CrossWindow.isCSSStyleRule(rule))
          {
-            this.#processStyleRule(rule, opts);
+            this.#processStyleRule(rule, options);
          }
       }
    }
@@ -430,6 +434,7 @@ export class StyleSheetResolve
    #parseCssText(cssText)
    {
       const match = cssText.match(/{([^}]*)}/);
+      /* c8 ignore next 1 */
       if (!match) { return {}; }
 
       return Object.fromEntries(match[1]
@@ -462,8 +467,8 @@ export class StyleSheetResolve
     */
    #processLayerBlockRule(blockRule, parentLayerName, opts)
    {
-      if (!CrossWindow.isCSSLayerBlockRule(blockRule)) { return; }
-      if (!isObject(blockRule.cssRules)) { return; }
+      /* c8 ignore next 1 */  // For mock testing `cssRules` uses a basic test.
+      if (!CrossWindow.isCSSLayerBlockRule(blockRule) || typeof blockRule?.cssRules !== 'object') { return; }
 
       const fullname = typeof parentLayerName === 'string' ? `${parentLayerName}.${blockRule.name}` : blockRule.name;
 
@@ -472,9 +477,9 @@ export class StyleSheetResolve
       for (const rule of blockRule.cssRules)
       {
          if (CrossWindow.isCSSLayerBlockRule(rule)) { layerBlockRules.push(rule); }
-         if (!CrossWindow.isCSSStyleRule(rule)) { continue; }
 
-         if (opts.includeCSSLayers.length === 0 || opts.includeCSSLayers.some((regex) => regex.test(fullname)))
+         if (CrossWindow.isCSSStyleRule(rule) && (opts.includeCSSLayers.length === 0 ||
+          opts.includeCSSLayers.some((regex) => regex.test(fullname))))
          {
             this.#processStyleRule(rule, opts);
          }
@@ -502,6 +507,7 @@ export class StyleSheetResolve
     */
    #processStyleRule(styleRule, opts)
    {
+      /* c8 ignore next 1 */
       if (typeof styleRule.selectorText !== 'string') { return; }
 
       const result = this.#parseCssText(styleRule.cssText);
@@ -514,25 +520,15 @@ export class StyleSheetResolve
 
       if (selectorParts.length)
       {
-         if (opts.includeSelectorPartSet.size)
-         {
-            for (const part of selectorParts)
-            {
-               if (!opts.includeSelectorPartSet.has(part)) { continue; }
+         const hasIncludeSet = opts.includeSelectorPartSet.size > 0;
 
-               const existing = this.#sheetMap.get(part);
-               const update = Object.assign(existing ?? {}, result);
-               this.#sheetMap.set(part, update);
-            }
-         }
-         else
+         for (const part of selectorParts)
          {
-            for (const part of selectorParts)
-            {
-               const existing = this.#sheetMap.get(part);
-               const update = Object.assign(existing ?? {}, result);
-               this.#sheetMap.set(part, update);
-            }
+            if (hasIncludeSet && !opts.includeSelectorPartSet.has(part)) { continue; }
+
+            const existing = this.#sheetMap.get(part);
+            const update = Object.assign(existing ?? {}, result);
+            this.#sheetMap.set(part, update);
          }
       }
    }
@@ -571,6 +567,7 @@ export class StyleSheetResolve
       // Track and resolve variables used in the result.
       const cssVars = new ResolveVars(result, parentVars, resolveData);
 
+      /* c8 ignore next 1 */
       if (!cssVars.unresolvedCount) { return; }
 
       for (const [name, value] of Object.entries(parentVars)) { cssVars.set(name, value); }
@@ -696,16 +693,6 @@ class ResolveVars
    }
 
    /**
-    * @param {string}   key - Potential CSS var to check if tracked.
-    *
-    * @returns {boolean} Key is tracked.
-    */
-   has(key)
-   {
-      return this.#varToProp.has(key);
-   }
-
-   /**
     * Sets the parent selector defined CSS variable for resolution.
     *
     * @param {string}   name - CSS variable name
@@ -720,6 +707,7 @@ class ResolveVars
       }
       else
       {
+         /* c8 ignore next 1 */
          if (typeof value !== 'string' || value.length === 0) { return; }
          if (this.#varToProp.has(name) && !this.#varResolved.has(name)) { this.#varResolved.set(name, value); }
       }
@@ -772,6 +760,7 @@ class ResolveVars
 
       const nextValue = this.#varResolved.get(next) ?? this.#parentVars[next];
 
+      /* c8 ignore next 1 */
       if (typeof nextValue !== 'string') { return void 0; }
 
       return this.#resolveCycleWarn(next, nextValue, visited, seenCycles);
@@ -786,6 +775,7 @@ class ResolveVars
     */
    #setCycleWarn(name, value)
    {
+      /* c8 ignore next 1 */
       if (typeof value !== 'string' || value.length === 0) { return; }
 
       const resolved = this.#resolveCycleWarn(name, value, new Set([name]), this.#resolveData.seenCycles);
