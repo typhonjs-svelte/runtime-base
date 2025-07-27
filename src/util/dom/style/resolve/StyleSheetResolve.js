@@ -70,7 +70,7 @@ export class StyleSheetResolve
    #sheetMap = new Map();
 
    /**
-    * @param {CSSStyleSheet | Map<string, { [key: string]: string }>}   styleSheetOrMap - The stylesheet element to
+    * @param {CSSStyleSheet | Map<string, { [key: string]: string }>}   [styleSheetOrMap] - The stylesheet element to
     *        parse or an existing parsed stylesheet Map.
     *
     * @param {object} [options] - Options for parsing stylesheet.
@@ -83,40 +83,12 @@ export class StyleSheetResolve
     *
     * @param {Set<string>}  [options.includeSelectorPartSet] - A Set of strings to exactly match selector parts
     *        to include in parsed stylesheet data.
+    *
+    * @returns {StyleSheetResolve} New instance with the given parsed data.
     */
-   constructor(styleSheetOrMap, options = {})
+   static parse(styleSheetOrMap, options = {})
    {
-      if (!CrossWindow.isCSSStyleSheet(styleSheetOrMap) && !CrossWindow.isMap(styleSheetOrMap))
-      {
-         throw new TypeError(
-          `'styleSheetOrMap' must be a 'CSSStyleSheet' instance or a parsed Map of stylesheet entries.`);
-      }
-
-      if (!isObject(options)) { throw new TypeError(`'options' is not an object.`); }
-
-      if (options.excludeSelectorParts !== void 0 && !isIterable(options.excludeSelectorParts))
-      {
-         throw new TypeError(`'excludeSelectorParts' must be a list of RegExp instances.`);
-      }
-
-      if (options.includeCSSLayers !== void 0 && !isIterable(options.includeCSSLayers))
-      {
-         throw new TypeError(`'includeCSSLayers' must be a list of RegExp instances.`);
-      }
-
-      if (options.includeSelectorPartSet !== void 0 && !CrossWindow.isSet(options.includeSelectorPartSet))
-      {
-         throw new TypeError(`'includeSelectorPartSet' must be a Set of strings.`);
-      }
-
-      if (CrossWindow.isCSSStyleSheet(styleSheetOrMap))
-      {
-         this.#initialize(styleSheetOrMap, options);
-      }
-      else if (CrossWindow.isMap(styleSheetOrMap))
-      {
-         this.#sheetMap = this.#clone(styleSheetOrMap);
-      }
+      return new StyleSheetResolve().parse(styleSheetOrMap, options);
    }
 
    // Accessors ------------------------------------------------------------------------------------------------------
@@ -153,13 +125,37 @@ export class StyleSheetResolve
    // Methods --------------------------------------------------------------------------------------------------------
 
    /**
+    * Clears any existing parsed styles.
+    */
+   clear()
+   {
+      if (this.#frozen) { throw new Error('Cannot modify a frozen StyleSheetResolve instance.'); }
+
+      this.#sheetMap.clear();
+   }
+
+   /**
     * Clones this instance returning a new `StyleSheetResolve` instance with a copy of the data.
     *
     * @returns {StyleSheetResolve} Cloned instance.
     */
    clone()
    {
-      return new StyleSheetResolve(this.#clone(this.#sheetMap));
+      return StyleSheetResolve.parse(this.#clone(this.#sheetMap));
+   }
+
+   /**
+    * Deletes an entry in the parsed stylesheet Map.
+    *
+    * @param {string}   selector - Selector key to delete.
+    *
+    * @returns {boolean} Success state.
+    */
+   delete(selector)
+   {
+      if (this.#frozen) { throw new Error('Cannot modify a frozen StyleSheetResolve instance.'); }
+
+      return this.#sheetMap.delete(selector);
    }
 
    /**
@@ -377,6 +373,81 @@ export class StyleSheetResolve
 
          this.#sheetMap.set(selectorPart, merged);
       }
+   }
+
+   /**
+    * Clears existing stylesheet mapping and parses the given stylesheet or Map.
+    *
+    * @param {CSSStyleSheet | Map<string, { [key: string]: string }>}   styleSheetOrMap - The stylesheet element to
+    *        parse or an existing parsed stylesheet Map.
+    *
+    * @param {object} [options] - Options for parsing stylesheet.
+    *
+    * @param {Iterable<RegExp>}  [options.excludeSelectorParts] - A list of RegExp instance used to exclude CSS
+    *        selector parts from parsed stylesheet data.
+    *
+    * @param {Iterable<RegExp>}  [options.includeCSSLayers] - A list of RegExp instance used to specifically include
+    *        in parsing for specific allowed CSS layers if present in the stylesheet.
+    *
+    * @param {Set<string>}  [options.includeSelectorPartSet] - A Set of strings to exactly match selector parts
+    *        to include in parsed stylesheet data.
+    *
+    * @returns {this} This instance.
+    */
+   parse(styleSheetOrMap, options = {})
+   {
+      this.#sheetMap.clear();
+
+      if (!CrossWindow.isCSSStyleSheet(styleSheetOrMap) && !CrossWindow.isMap(styleSheetOrMap))
+      {
+         throw new TypeError(
+          `'styleSheetOrMap' must be a 'CSSStyleSheet' instance or a parsed Map of stylesheet entries.`);
+      }
+
+      if (!isObject(options)) { throw new TypeError(`'options' is not an object.`); }
+
+      if (options.excludeSelectorParts !== void 0 && !isIterable(options.excludeSelectorParts))
+      {
+         throw new TypeError(`'excludeSelectorParts' must be a list of RegExp instances.`);
+      }
+
+      if (options.includeCSSLayers !== void 0 && !isIterable(options.includeCSSLayers))
+      {
+         throw new TypeError(`'includeCSSLayers' must be a list of RegExp instances.`);
+      }
+
+      if (options.includeSelectorPartSet !== void 0 && !CrossWindow.isSet(options.includeSelectorPartSet))
+      {
+         throw new TypeError(`'includeSelectorPartSet' must be a Set of strings.`);
+      }
+
+      if (CrossWindow.isCSSStyleSheet(styleSheetOrMap))
+      {
+         this.#initialize(styleSheetOrMap, options);
+      }
+      else if (CrossWindow.isMap(styleSheetOrMap))
+      {
+         this.#sheetMap = this.#clone(styleSheetOrMap);
+      }
+
+      return this;
+   }
+
+   /**
+    * Directly sets a
+    *
+    * @param {string}   selector - A single selector key to set.
+    *
+    * @param {{ [key: string]: string }}  styleObj - Style data object of property / value pairs.
+    */
+   set(selector, styleObj)
+   {
+      if (this.#frozen) { throw new Error('Cannot modify a frozen StyleSheetResolve instance.'); }
+
+      if (typeof selector !== 'string') { throw new TypeError(`'selector' must be a string.`); }
+      if (!isObject(styleObj)) { throw new TypeError(`'styleObj' must be an object.`); }
+
+      this.#sheetMap.set(selector, styleObj);
    }
 
    // Internal Implementation ----------------------------------------------------------------------------------------

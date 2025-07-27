@@ -21,7 +21,7 @@ describe('StyleSheetResolve', () =>
             ['.parent', { '--parent': 'red' }]
          ]);
 
-         resolver = new StyleSheetResolve(styleMap);
+         resolver = StyleSheetResolve.parse(styleMap);
       });
 
       it('get frozen', () =>
@@ -42,13 +42,29 @@ describe('StyleSheetResolve', () =>
          expect(result).toEqual([['.source',{'color': 'var(--parent)'}],['.parent',{'--parent':'red'}]]);
       });
 
+      it('clear()', () =>
+      {
+         expect(resolver.size).toBe(2);
+         resolver.clear();
+         expect(resolver.size).toBe(0);
+      })
+
       it('clone()', () =>
       {
          const clone = resolver.clone();
 
          expect(clone instanceof StyleSheetResolve).to.be.true;
          expect(Array.from(resolver)).toEqual(Array.from(clone));
-      })
+      });
+
+      it('delete()', () =>
+      {
+         expect(resolver.size).toBe(2);
+         resolver.delete('.parent');
+         expect(resolver.size).toBe(1);
+         resolver.delete('.source');
+         expect(resolver.size).toBe(0);
+      });
 
       it('entries()', () =>
       {
@@ -67,6 +83,13 @@ describe('StyleSheetResolve', () =>
       {
          const result = Array.from(resolver.keys());
          expect(result).toEqual(['.source', '.parent']);
+      });
+
+      it('set()', () =>
+      {
+         expect(resolver.size).toBe(2);
+         resolver.set('.test', { color: 'blue' });
+         expect(resolver.size).toBe(3);
       });
    });
 
@@ -90,7 +113,7 @@ describe('StyleSheetResolve', () =>
             ['.foo', { 'color': 'var(--parent)' }]
          ]);
 
-         beforeEach(() => resolver = new StyleSheetResolve(styleMap));
+         beforeEach(() => resolver = StyleSheetResolve.parse(styleMap));
 
          it ('get() (can resolve [])', () =>
          {
@@ -151,7 +174,7 @@ describe('StyleSheetResolve', () =>
 
          it ('merge() (override)', () =>
          {
-            resolver.merge(new StyleSheetResolve(mergeMap));
+            resolver.merge(StyleSheetResolve.parse(mergeMap));
 
             const result = resolver.get('.source', { resolve: ['.parent'] });
 
@@ -166,14 +189,14 @@ describe('StyleSheetResolve', () =>
          {
             expect([...resolver.keys()]).toEqual([...styleMap.keys()]);
 
-            resolver.merge(new StyleSheetResolve(extraMap), { exactMatch: true });
+            resolver.merge(StyleSheetResolve.parse(extraMap), { exactMatch: true });
 
             expect([...resolver.keys()]).toEqual([...styleMap.keys()]);
          });
 
          it ('merge() (preserve)', () =>
          {
-            resolver.merge(new StyleSheetResolve(mergeMap), { strategy: 'preserve' });
+            resolver.merge(StyleSheetResolve.parse(mergeMap), { strategy: 'preserve' });
 
             const result = resolver.get('.source', { resolve: ['.parent'] });
 
@@ -195,7 +218,7 @@ describe('StyleSheetResolve', () =>
             ['.p2', { '--a': 'blue' }]
          ]);
 
-         beforeEach(() => resolver = new StyleSheetResolve(styleMap));
+         beforeEach(() => resolver = StyleSheetResolve.parse(styleMap));
 
          it('get() (can resolve)', () =>
          {
@@ -224,6 +247,7 @@ describe('StyleSheetResolve', () =>
 
    describe('Complex Resolution', () =>
    {
+      // TODO: FIGURE OUT A COMPLEX RESOLUTION TEST CASE
       it('direct parent', () =>
       {
          const styleMap: Map<string, {}> = new Map([
@@ -231,7 +255,7 @@ describe('StyleSheetResolve', () =>
             ['.source', { color: 'var(--parent)' }]
          ]);
 
-         const resolver = new StyleSheetResolve(styleMap);
+         const resolver = StyleSheetResolve.parse(styleMap);
 
          const result = resolver.get('.source', {
             resolve: ['.parent']
@@ -249,7 +273,7 @@ describe('StyleSheetResolve', () =>
    {
       describe('CSSStyleRule', () =>
       {
-         const sheet = new window.CSSStyleSheet();
+         const sheet = new CSSStyleSheet();
          sheet.insertRule('.source { color: var(--a); }');
          sheet.insertRule('.parent { --a: red; }');
 
@@ -261,7 +285,7 @@ describe('StyleSheetResolve', () =>
 
          it('resolves parent', () =>
          {
-            const resolver = new StyleSheetResolve(sheet);
+            const resolver = StyleSheetResolve.parse(sheet);
 
             const result = resolver.get('.source', { resolve: ['.parent'] });
 
@@ -274,7 +298,7 @@ describe('StyleSheetResolve', () =>
 
          it('excludeSelectorParts option', () =>
          {
-            const resolver = new StyleSheetResolve(sheet, { excludeSelectorParts: [/\.parent/] });
+            const resolver = StyleSheetResolve.parse(sheet, { excludeSelectorParts: [/\.parent/] });
 
             const result = resolver.get('.source', { resolve: ['.parent'] });
 
@@ -288,7 +312,7 @@ describe('StyleSheetResolve', () =>
 
          it('includeSelectorPartSet option', () =>
          {
-            const resolver = new StyleSheetResolve(sheet, { includeSelectorPartSet: new Set(['.source']) });
+            const resolver = StyleSheetResolve.parse(sheet, { includeSelectorPartSet: new Set(['.source']) });
 
             const result = resolver.get('.source', { resolve: ['.parent'] });
 
@@ -328,7 +352,7 @@ describe('StyleSheetResolve', () =>
 
          it('resolves', () =>
          {
-            const resolver = new StyleSheetResolve(baseSheet);
+            const resolver = StyleSheetResolve.parse(baseSheet);
 
             const result = resolver.get('.source', {
                resolve: ['.parent']
@@ -343,7 +367,7 @@ describe('StyleSheetResolve', () =>
 
          it('includeCSSLayers option', () =>
          {
-            const resolver = new StyleSheetResolve(baseSheet, { includeCSSLayers: [/BOGUS/] });
+            const resolver = StyleSheetResolve.parse(baseSheet, { includeCSSLayers: [/BOGUS/] });
 
             const result = resolver.get('.source', { resolve: ['.parent'] });
 
@@ -387,7 +411,7 @@ describe('StyleSheetResolve', () =>
 
          it('resolves', () =>
          {
-            const resolver = new StyleSheetResolve(baseSheet);
+            const resolver = StyleSheetResolve.parse(baseSheet);
 
             const result = resolver.get('.source', { resolve: ['.parent'] });
 
@@ -402,41 +426,27 @@ describe('StyleSheetResolve', () =>
 
    describe('Errors', () =>
    {
-      describe('Argument types (ctor)', () =>
+      describe('clear()', () =>
       {
-         it('styleSheetOrMap (not Map or CSSStyleSheet)', () =>
+         it('frozen', () =>
          {
-            // @ts-expect-error
-            expect(() => new StyleSheetResolve(null)).to.throw(TypeError,
-             `'styleSheetOrMap' must be a 'CSSStyleSheet' instance or a parsed Map of stylesheet entries.`);
-         });
+            const resolver = new StyleSheetResolve();
 
-         it('options (not object)', () =>
-         {
-            // @ts-expect-error
-            expect(() => new StyleSheetResolve(new Map(), null)).to.throw(TypeError,
-             `'options' is not an object.`);
-         });
+            resolver.freeze();
 
-         it('options.excludeSelectorParts (not iterable)', () =>
-         {
-            // @ts-expect-error
-            expect(() => new StyleSheetResolve(new Map(), { excludeSelectorParts: null })).to.throw(TypeError,
-             `'excludeSelectorParts' must be a list of RegExp instances.`);
+            expect(() => resolver.clear()).to.throw(Error, `Cannot modify a frozen StyleSheetResolve instance.`);
          });
+      });
 
-         it('options.includeCSSLayers (not iterable)', () =>
+      describe('delete()', () =>
+      {
+         it('frozen', () =>
          {
-            // @ts-expect-error
-            expect(() => new StyleSheetResolve(new Map(), { includeCSSLayers: null })).to.throw(TypeError,
-             `'includeCSSLayers' must be a list of RegExp instances.`);
-         });
+            const resolver = new StyleSheetResolve();
 
-         it('options.includeSelectorPartSet (not Set)', () =>
-         {
-            // @ts-expect-error
-            expect(() => new StyleSheetResolve(new Map(), { includeSelectorPartSet: null })).to.throw(TypeError,
-             `'includeSelectorPartSet' must be a Set of strings.`);
+            resolver.freeze();
+
+            expect(() => resolver.delete('')).to.throw(Error, `Cannot modify a frozen StyleSheetResolve instance.`);
          });
       });
 
@@ -444,7 +454,7 @@ describe('StyleSheetResolve', () =>
       {
          let resolver: StyleSheetResolve;
 
-         beforeEach(() => resolver = new StyleSheetResolve(new Map()));
+         beforeEach(() => resolver = new StyleSheetResolve());
 
          it(`selector (not string)`, () =>
          {
@@ -499,13 +509,13 @@ describe('StyleSheetResolve', () =>
       {
          let resolver: StyleSheetResolve;
 
-         beforeEach(() => resolver = new StyleSheetResolve(new Map()));
+         beforeEach(() => resolver = new StyleSheetResolve());
 
          it('frozen target', () =>
          {
             resolver.freeze();
 
-            expect(() => resolver.merge(new StyleSheetResolve(new Map()))).to.throw(Error,
+            expect(() => resolver.merge(new StyleSheetResolve())).to.throw(Error,
              `Cannot modify a frozen StyleSheetResolve instance.`);
          });
 
@@ -513,6 +523,70 @@ describe('StyleSheetResolve', () =>
          {
             // @ts-expect-error
             expect(() => resolver.merge(null)).to.throw(TypeError, `'source' is not a StyleSheetResolve instance.`);
+         });
+      });
+
+      describe('parse() types', () =>
+      {
+         it('styleSheetOrMap (not Map or CSSStyleSheet)', () =>
+         {
+            // @ts-expect-error
+            expect(() => StyleSheetResolve.parse(null)).to.throw(TypeError,
+             `'styleSheetOrMap' must be a 'CSSStyleSheet' instance or a parsed Map of stylesheet entries.`);
+         });
+
+         it('options (not object)', () =>
+         {
+            // @ts-expect-error
+            expect(() => StyleSheetResolve.parse(new Map(), null)).to.throw(TypeError,
+             `'options' is not an object.`);
+         });
+
+         it('options.excludeSelectorParts (not iterable)', () =>
+         {
+            // @ts-expect-error
+            expect(() => StyleSheetResolve.parse(new Map(), { excludeSelectorParts: null })).to.throw(TypeError,
+             `'excludeSelectorParts' must be a list of RegExp instances.`);
+         });
+
+         it('options.includeCSSLayers (not iterable)', () =>
+         {
+            // @ts-expect-error
+            expect(() => StyleSheetResolve.parse(new Map(), { includeCSSLayers: null })).to.throw(TypeError,
+             `'includeCSSLayers' must be a list of RegExp instances.`);
+         });
+
+         it('options.includeSelectorPartSet (not Set)', () =>
+         {
+            // @ts-expect-error
+            expect(() => StyleSheetResolve.parse(new Map(), { includeSelectorPartSet: null })).to.throw(TypeError,
+             `'includeSelectorPartSet' must be a Set of strings.`);
+         });
+      });
+
+      describe('set()', () =>
+      {
+         let resolver: StyleSheetResolve;
+
+         beforeEach(() => resolver = new StyleSheetResolve());
+
+         it('frozen', () =>
+         {
+            resolver.freeze();
+
+            expect(() => resolver.set('', {})).to.throw(Error, `Cannot modify a frozen StyleSheetResolve instance.`);
+         });
+
+         it('selector (not string)', () =>
+         {
+            // @ts-expect-error
+            expect(() => resolver.set(null, {})).to.throw(TypeError, `'selector' must be a string.`);
+         });
+
+         it('styleObj (not object)', () =>
+         {
+            // @ts-expect-error
+            expect(() => resolver.set('', null)).to.throw(TypeError, `'styleObj' must be an object.`);
          });
       });
    });
@@ -526,7 +600,7 @@ describe('StyleSheetResolve', () =>
             ['.source', { background: 'var(--a)', color: 'var(--b)' }]
          ]);
 
-         const resolver = new StyleSheetResolve(styleMap);
+         const resolver = StyleSheetResolve.parse(styleMap);
 
          const consoleLog: string[] = [];
 
@@ -559,7 +633,7 @@ describe('StyleSheetResolve', () =>
             ['.source', { background: 'var(--ok)', border: 'var(--y)', color: 'var(--x)' }]
          ]);
 
-         const resolver = new StyleSheetResolve(styleMap);
+         const resolver = StyleSheetResolve.parse(styleMap);
 
          const consoleLog: string[] = [];
 
@@ -595,7 +669,7 @@ describe('StyleSheetResolve', () =>
             ['.source', { color: 'var(--parent)' }]
          ]);
 
-         const resolver = new StyleSheetResolve(styleMap);
+         const resolver = StyleSheetResolve.parse(styleMap);
 
          const consoleLog: string[] = [];
 
