@@ -15,12 +15,15 @@ import {
  * flattened.
  *
  * Current fallback support includes recursive var(--a, var(--b, ...)) chains with graceful partial substitution if
- * some variables are undefined. This maintains correctness without introducing ambiguity or needing a parser.
+ * some variables are undefined. This maintains correctness without introducing ambiguity or needing a complete AST
+ * based parser.
+ *
+ * The goal of this implementation is the size of code, minimal memory footprint, speed, and reasonable accuracy which
+ * is all achieved with regex parsing.
  *
  * Core features:
  * - Parses all or specific relevant `@layer` blocks.
  * - Provides both direct and resolved access to styles via `.get()` and `.getProperty()`.
- *
  *
  * Main Options:
  * - Can filter out and exclude undesired CSS selector parts for parsing via `excludeSelectorParts` option.
@@ -45,10 +48,10 @@ import {
  * ```
  *
  * @privateRemarks
- * This implementation avoids a full parser for `var(--...)` fallback expressions to keep the codebase compact. If
+ * This implementation avoids a full AST parser for `var(--...)` fallback expressions to keep the codebase compact. If
  * future requirements include resolving deeply nested fallbacks, debug tracing, or custom resolution behavior, I'll
- * consider replacing this logic with a dedicated parser and visitor pattern. An AST-based approach would offer more
- * flexibility and maintainability at the cost of slightly increased complexity.
+ * consider replacing this logic with a dedicated AST parser and visitor pattern. An AST-based approach would offer more
+ * flexibility and maintainability at the cost of slightly increased complexity and larger runtime memory footprint.
  */
 export class StyleSheetResolve
 {
@@ -67,7 +70,10 @@ export class StyleSheetResolve
    #sheetMap = new Map();
 
    /**
-    * @param {CSSStyleSheet | Map<string, { [key: string]: string }>}   [styleSheetOrMap] - The stylesheet element to
+    * Parse a CSSStyleSheet instance with the given options or accept a pre-filled Map generating a new
+    * `StyleSheetResolve` instance.
+    *
+    * @param {CSSStyleSheet | Map<string, { [key: string]: string }>}   [styleSheetOrMap] - The stylesheet instance to
     *        parse or an existing parsed stylesheet Map.
     *
     * @param {object} [options] - Options for parsing stylesheet.
@@ -87,6 +93,11 @@ export class StyleSheetResolve
    {
       return new StyleSheetResolve().parse(styleSheetOrMap, options);
    }
+
+   /**
+    * Instantiate an empty `StyleSheetResolve` instance.
+    */
+   constructor() {}
 
    // Accessors ------------------------------------------------------------------------------------------------------
 
@@ -109,14 +120,15 @@ export class StyleSheetResolve
    // Iterator -------------------------------------------------------------------------------------------------------
 
    /**
-    * Allows usage in for of loops directly.
+    * Allows usage in `for of` loops directly.
     *
     * @returns {MapIterator<[string, {[p: string]: string}]>} Entries Map iterator.
     * @yields
     */
    *[Symbol.iterator]()
    {
-      yield* this.#sheetMap.entries();
+      // Use `entries()` to make a shallow copy of data.
+      yield* this.entries();
    }
 
    // Methods --------------------------------------------------------------------------------------------------------
@@ -420,7 +432,7 @@ export class StyleSheetResolve
 
       if (CrossWindow.isCSSStyleSheet(styleSheetOrMap))
       {
-         this.#initialize(styleSheetOrMap, options);
+         this.#parse(styleSheetOrMap, options);
       }
       else if (CrossWindow.isMap(styleSheetOrMap))
       {
@@ -431,7 +443,7 @@ export class StyleSheetResolve
    }
 
    /**
-    * Directly sets a
+    * Directly sets a selector key with the given style properties object.
     *
     * @param {string}   selector - A single selector key to set.
     *
@@ -450,6 +462,8 @@ export class StyleSheetResolve
    // Internal Implementation ----------------------------------------------------------------------------------------
 
    /**
+    * Shallow clone of source Map into target Map.
+    *
     * @param {Map<string, { [key: string]: string }>} sourceMap - Source Map.
     *
     * @param {Map<string, { [key: string]: string }>} [targetMap] - Target Map.
@@ -480,7 +494,7 @@ export class StyleSheetResolve
     * @param {Set<string>}  [opts.includeSelectorPartSet] - A Set of strings to exactly match selector parts
     *        to include in parsed stylesheet data.
     */
-   #initialize(styleSheet, opts)
+   #parse(styleSheet, opts)
    {
       // Convert to consistent array data.
       const options = {
