@@ -6,7 +6,7 @@ import {
 
 /**
  * Dynamically parses and indexes a `CSSStyleSheet` at runtime, exposing a selector-to-style mapping by
- * individual selector parts. CSS variable resolution is also possible and this enables the ability to flatten and
+ * individual selector parts. CSS variable resolution is also possible which enables the ability to flatten and
  * resolve complex nested `var(--...)` chains defined across multiple selectors and layers.
  *
  * When retrieving specific selector styles via {@link StyleSheetResolve.get} and {@link StyleSheetResolve.getProperty}
@@ -14,9 +14,13 @@ import {
  * definitions will be substituted in the target selector data allowing specific element scoping of CSS variables to be
  * flattened.
  *
+ * Current fallback support includes recursive var(--a, var(--b, ...)) chains with graceful partial substitution if
+ * some variables are undefined. This maintains correctness without introducing ambiguity or needing a parser.
+ *
  * Core features:
  * - Parses all or specific relevant `@layer` blocks.
  * - Provides both direct and resolved access to styles via `.get()` and `.getProperty()`.
+ *
  *
  * Main Options:
  * - Can filter out and exclude undesired CSS selector parts for parsing via `excludeSelectorParts` option.
@@ -25,18 +29,16 @@ import {
  *
  * Access Options:
  * - Can return property keys in camel case via `camelCase` option.
- * - Can limit depth of independent resolved CSS variables across parent-selector fallback chains via `depth` option.
+ * - Can limit the depth of resolved CSS variables across parent-selector fallback chains via `depth` option.
  * - Enables resolution of scoped CSS variables using a parent-selector fallback chain via `resolve` option.
  * - Can enable cyclic dependency detection warnings when resolving CSS variables via `warnCycles` option.
- *
- * TODO: There are a few improvements to make including supporting CSS variable fallback resolution.
  *
  * @example
  * ```js
  * import { StyleSheetResolve } from '#runtime/util/dom/style';
  *
  * // Parse first stylesheet in the browser `document`.
- * const parsedStyles = new StyleSheetResolve(document.styleSheets[0]);
+ * const parsedStyles = StyleSheetResolve.parse(document.styleSheets[0]);
  *
  * // The `props` object has styles w/ CSS variables resolved from `input[type="text"]` for the dark theme.
  * const props = parsedStyles.get('input[type="text"]', { resolve: '.themed.theme-dark input' });
@@ -47,11 +49,6 @@ import {
  * future requirements include resolving deeply nested fallbacks, debug tracing, or custom resolution behavior, I'll
  * consider replacing this logic with a dedicated parser and visitor pattern. An AST-based approach would offer more
  * flexibility and maintainability at the cost of slightly increased complexity.
- *
- * Current limitations: Fallback resolution supports chained `var(--x, var(--y, ...))` expressions, but only within
- * standalone `var(...)` values or values composed of multiple `var(...)` references. Complex expressions such as
- * `calc(var(--x) + 1rem)` or mixed literals like `1px solid var(--color)` are not parsed and are left unresolved.
- * Only fallback chains rooted in `var(...)` patterns are evaluated.
  */
 export class StyleSheetResolve
 {
@@ -660,10 +657,6 @@ export class StyleSheetResolve
 
 /**
  * Encapsulates CSS variable resolution logic and data.
- *
- * TODO: Currently only CSS variables without a fallback like `var(--...)` are resolved. It is possible to provide
- * support for fallback values with additional CSS variables and this is forthcoming.
- *
  */
 class ResolveVars
 {
@@ -712,7 +705,7 @@ class ResolveVars
 
       for (const [prop, value] of Object.entries(initial))
       {
-         const vars = [...value.matchAll(/var\((--[\w-]+)\)/g)].map((match) => match[1]);
+         const vars = [...value.matchAll(/--[\w-]+/g)].map((match) => match[0]);
 
          if (vars.length > 0)
          {
@@ -728,6 +721,12 @@ class ResolveVars
    }
 
    /**
+    * Resolves properties in `#propMap` by substituting var(...) expressions using resolved values in #varResolved. If
+    * no resolution is available, attempts to preserve fallback expressions in their original var(...) form.
+    *
+    * Supports chained fallbacks like: var(--a, var(--b, var(--c, red))) and resolving variables in statements like
+    * `calc(1rem + var(--x))`.
+    *
     * @returns {{ [key: string]: string }} All fields that have been resolved.
     */
    get resolved()
@@ -747,11 +746,35 @@ class ResolveVars
 
                if (value && varResolved)
                {
-                  const replacement = value.replaceAll(`var(${entry})`, varResolved);
+                  // Matches var(--x) or var(--x, fallback). Used to substitute only if --x is resolved.
+                  const VAR_PATTERN  = /var\((--[\w-]+)(?:\s*,\s*[^)]+)?\)/g;
+
+                  // Only replace var(--x) if a resolved value exists; leave full expression otherwise.
+                  const replacement = value.replaceAll(VAR_PATTERN, (match, varName) =>
+                  {
+                     const resolved = this.#varResolved.get(varName);
+                     return resolved !== void 0 ? resolved : match;
+                  });
 
                   this.#propMap.set(prop, replacement);
                   result[prop] = replacement;
                }
+            }
+         }
+         else
+         {
+            const props = this.#varToProp.get(entry);
+
+            for (const prop of props)
+            {
+               const value = this.#propMap.get(prop);
+
+               if (!value || !value.includes(`var(${entry},`)) { continue; }
+
+               const fallback = this.#resolveNestedFallback(value, 0);
+
+               this.#propMap.set(prop, fallback);
+               result[prop] = fallback;
             }
          }
       }
@@ -798,6 +821,9 @@ class ResolveVars
    // Internal Implementation ----------------------------------------------------------------------------------------
 
    /**
+    * Performs DFS traversal to detect cycles in CSS variable resolution. Tracks the resolution path and emits a
+    * warning if a cycle is found. Each affected property is reported once with its originating chain.
+    *
     * @param {string}   name - CSS variable name
     *
     * @param {string}   value - Value of target CSS variable.
@@ -823,6 +849,7 @@ class ResolveVars
 
          if (!seenCycles.has(cycleKey))
          {
+            // Record and deduplicate cycle chains to avoid redundant logs.
             seenCycles.add(cycleKey);
 
             const affected = cycleChain.flatMap((varName) => Array.from(this.#varToProp.get(varName) ?? []).map(
@@ -846,6 +873,56 @@ class ResolveVars
       if (typeof nextValue !== 'string') { return void 0; }
 
       return this.#resolveCycleWarn(next, nextValue, visited, seenCycles);
+   }
+
+   /**
+    * Resolve fallback chains of the form: var(--a, var(--b, ...))
+    * - Only replaces the top-level var if it is resolved.
+    * - Leaves fallback intact if unresolved.
+    * - Recursively evaluates nested fallbacks if they are var(...).
+    * - Limits recursion depth to prevent cycles or stack overflow.
+    *
+    * @param {string}   expr - CSS var expression to resolve.
+    *
+    * @param {number}   depth - Recursion guard
+    *
+    * @returns {string} Nested fallback resolution result.
+    */
+   #resolveNestedFallback(expr, depth = 0)
+   {
+      /* c8 ignore next 1 */
+      if (depth > 10) { return expr; } // Prevent runaway recursion or malformed fallback chains; max depth = 10.
+
+      const match = expr.match(/^var\((?<varName>--[\w-]+)\s*,\s*(?<fallback>.+?)\)$/);
+      if (!match?.groups) { return expr; }
+
+      const { varName, fallback } = match.groups;
+      const resolved = this.#varResolved.get(varName);
+
+      if (resolved !== void 0) { return resolved; }
+
+      const fallbackTrimmed = fallback.trim();
+
+      // If fallback is another var(...) chain, recurse to resolve innermost-known value.
+      if (fallbackTrimmed.startsWith('var('))
+      {
+         let nested = this.#resolveNestedFallback(fallbackTrimmed, depth + 1);
+
+         // If the nested result itself is a var(...) with a resolved variable, then resolve again.
+         const innerMatch = nested.match(/^var\((--[\w-]+)\)$/);
+         if (innerMatch)
+         {
+            const innerResolved = this.#varResolved.get(innerMatch[1]);
+
+            // If the result of recursion itself is a var(--x) with a known resolution, resolve it again.
+            if (innerResolved !== void 0) { nested = innerResolved; }
+         }
+
+         return `var(${varName}, ${nested})`;
+      }
+
+      // Otherwise, fallback is a literal value.
+      return `var(${varName}, ${fallbackTrimmed})`;
    }
 
    /**

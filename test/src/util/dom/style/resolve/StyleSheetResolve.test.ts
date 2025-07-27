@@ -93,179 +93,317 @@ describe('StyleSheetResolve', () =>
       });
    });
 
-   describe('Basic Resolution', () =>
+   describe('Resolution', () =>
    {
-      describe('direct parent', () =>
+      describe('Basic', () =>
       {
-         let resolver: StyleSheetResolve;
-
-         const styleMap: Map<string, {}> = new Map([
-            ['.source', { 'background-color': 'var(--parent)' }],
-            ['.parent', { '--parent': 'red' }]
-         ]);
-
-         const mergeMap: Map<string, {}> = new Map([
-            ['.source', { 'background-color': 'var(--parent)' }],
-            ['.parent', { '--parent': 'blue' }]
-         ]);
-
-         const extraMap: Map<string, {}> = new Map([
-            ['.foo', { 'color': 'var(--parent)' }]
-         ]);
-
-         beforeEach(() => resolver = StyleSheetResolve.parse(styleMap));
-
-         it ('get() (can resolve [])', () =>
+         describe('direct parent', () =>
          {
-            const result = resolver.get('.source', { resolve: ['.parent'] });
+            let resolver: StyleSheetResolve;
+
+            const styleMap: Map<string, {}> = new Map([
+               ['.source', {'background-color': 'var(--parent)'}],
+               ['.parent', {'--parent': 'red'}]
+            ]);
+
+            const mergeMap: Map<string, {}> = new Map([
+               ['.source', {'background-color': 'var(--parent)'}],
+               ['.parent', {'--parent': 'blue'}]
+            ]);
+
+            const extraMap: Map<string, {}> = new Map([
+               ['.foo', {'color': 'var(--parent)'}]
+            ]);
+
+            beforeEach(() => resolver = StyleSheetResolve.parse(styleMap));
+
+            it('get() (can resolve [])', () =>
+            {
+               const result = resolver.get('.source', {resolve: ['.parent']});
+
+               expect(stringify(result)).toMatchInlineSnapshot(`
+                 "{
+                   "background-color": "red"
+                 }"
+               `);
+            });
+
+            it('get() (can resolve Set)', () =>
+            {
+               const result = resolver.get('.source', {resolve: new Set(['.parent'])});
+
+               expect(stringify(result)).toMatchInlineSnapshot(`
+                 "{
+                   "background-color": "red"
+                 }"
+               `);
+            });
+
+            it('get() (multiple selectors)', () =>
+            {
+               const result = resolver.get(['.source', '.parent']);
+
+               expect(stringify(result)).toMatchInlineSnapshot(`
+                 "{
+                   "background-color": "var(--parent)",
+                   "--parent": "red"
+                 }"
+               `);
+            });
+
+            it('get() (camelCase)', () =>
+            {
+               const result = resolver.get('.source', {camelCase: true});
+
+               expect(stringify(result)).toMatchInlineSnapshot(`
+                 "{
+                   "backgroundColor": "var(--parent)"
+                 }"
+               `);
+            });
+
+            it('getProperty() (can resolve string)', () =>
+            {
+               const result = resolver.getProperty('.source', 'background-color', {resolve: '.parent'});
+               expect(result).toBe('red');
+            });
+
+            it('getProperty() (undefined result)', () =>
+            {
+               const result = resolver.getProperty('.source', 'BOGUS');
+               expect(result).toBe(void 0);
+            });
+
+            it('merge() (override)', () =>
+            {
+               resolver.merge(StyleSheetResolve.parse(mergeMap));
+
+               const result = resolver.get('.source', {resolve: ['.parent']});
+
+               expect(stringify(result)).toMatchInlineSnapshot(`
+                 "{
+                   "background-color": "blue"
+                 }"
+               `);
+            });
+
+            it('merge() (exactMatch=true)', () =>
+            {
+               expect([...resolver.keys()]).toEqual([...styleMap.keys()]);
+
+               resolver.merge(StyleSheetResolve.parse(extraMap), {exactMatch: true});
+
+               expect([...resolver.keys()]).toEqual([...styleMap.keys()]);
+            });
+
+            it('merge() (preserve)', () =>
+            {
+               resolver.merge(StyleSheetResolve.parse(mergeMap), {strategy: 'preserve'});
+
+               const result = resolver.get('.source', {resolve: ['.parent']});
+
+               expect(stringify(result)).toMatchInlineSnapshot(`
+                 "{
+                   "background-color": "red"
+                 }"
+               `);
+            });
+         });
+
+         describe('indirect parent', () =>
+         {
+            let resolver: StyleSheetResolve;
+
+            const styleMap: Map<string, {}> = new Map([
+               ['.source', {color: 'var(--b)'}],
+               ['.p1', {'--b': 'var(--a)'}],
+               ['.p2', {'--a': 'blue'}]
+            ]);
+
+            beforeEach(() => resolver = StyleSheetResolve.parse(styleMap));
+
+            it('get() (can resolve)', () =>
+            {
+               const result = resolver.get('.source', {resolve: ['.p1', '.p2']});
+
+               expect(stringify(result)).toMatchInlineSnapshot(`
+                 "{
+                   "color": "blue"
+                 }"
+               `);
+            });
+
+            it('get() (depth 1)', () =>
+            {
+               const result = resolver.get('.source', {depth: 1, resolve: ['.p1', '.p2']});
+
+               // Does not resolve as `depth: 1` stops early.
+               expect(stringify(result)).toMatchInlineSnapshot(`
+                 "{
+                   "color": "var(--a)"
+                 }"
+               `);
+            });
+         });
+      });
+
+      describe('Complex', () =>
+      {
+         // TODO: FIGURE OUT A COMPLEX RESOLUTION TEST CASE
+         it('direct parent', () =>
+         {
+            const styleMap: Map<string, {}> = new Map([
+               ['.parent', {'--parent': 'red'}],
+               ['.source', {color: 'var(--parent)'}]
+            ]);
+
+            const resolver = StyleSheetResolve.parse(styleMap);
+
+            const result = resolver.get('.source', {
+               resolve: ['.parent']
+            });
 
             expect(stringify(result)).toMatchInlineSnapshot(`
               "{
-                "background-color": "red"
-              }"
-            `);
-         });
-
-         it ('get() (can resolve Set)', () =>
-         {
-            const result = resolver.get('.source', { resolve: new Set(['.parent']) });
-
-            expect(stringify(result)).toMatchInlineSnapshot(`
-              "{
-                "background-color": "red"
-              }"
-            `);
-         });
-
-         it ('get() (multiple selectors)', () =>
-         {
-            const result = resolver.get(['.source', '.parent']);
-
-            expect(stringify(result)).toMatchInlineSnapshot(`
-              "{
-                "background-color": "var(--parent)",
-                "--parent": "red"
-              }"
-            `);
-         });
-
-         it ('get() (camelCase)', () =>
-         {
-            const result = resolver.get('.source', { camelCase: true });
-
-            expect(stringify(result)).toMatchInlineSnapshot(`
-              "{
-                "backgroundColor": "var(--parent)"
-              }"
-            `);
-         });
-
-         it ('getProperty() (can resolve string)', () =>
-         {
-            const result = resolver.getProperty('.source', 'background-color', { resolve: '.parent' });
-            expect(result).toBe('red');
-         });
-
-         it ('getProperty() (undefined result)', () =>
-         {
-            const result = resolver.getProperty('.source', 'BOGUS');
-            expect(result).toBe(void 0);
-         });
-
-         it ('merge() (override)', () =>
-         {
-            resolver.merge(StyleSheetResolve.parse(mergeMap));
-
-            const result = resolver.get('.source', { resolve: ['.parent'] });
-
-            expect(stringify(result)).toMatchInlineSnapshot(`
-              "{
-                "background-color": "blue"
-              }"
-            `);
-         });
-
-         it ('merge() (exactMatch=true)', () =>
-         {
-            expect([...resolver.keys()]).toEqual([...styleMap.keys()]);
-
-            resolver.merge(StyleSheetResolve.parse(extraMap), { exactMatch: true });
-
-            expect([...resolver.keys()]).toEqual([...styleMap.keys()]);
-         });
-
-         it ('merge() (preserve)', () =>
-         {
-            resolver.merge(StyleSheetResolve.parse(mergeMap), { strategy: 'preserve' });
-
-            const result = resolver.get('.source', { resolve: ['.parent'] });
-
-            expect(stringify(result)).toMatchInlineSnapshot(`
-              "{
-                "background-color": "red"
+                "color": "red"
               }"
             `);
          });
       });
 
-      describe('indirect parent', () =>
+      describe('Fallbacks', () =>
       {
-         let resolver: StyleSheetResolve;
-
-         const styleMap: Map<string, {}> = new Map([
-            ['.source', { color: 'var(--b)' }],
-            ['.p1', { '--b': 'var(--a)' }],
-            ['.p2', { '--a': 'blue' }]
-         ]);
-
-         beforeEach(() => resolver = StyleSheetResolve.parse(styleMap));
-
-         it('get() (can resolve)', () =>
+         it('no resolution', () =>
          {
-            const result = resolver.get('.source', { resolve: ['.p1', '.p2'] });
+            const resolve = new StyleSheetResolve();
 
-            expect(stringify(result)).toMatchInlineSnapshot(`
-              "{
-                "color": "blue"
-              }"
-            `);
+            resolve.set('.source', { color: 'var(--x, blue)' });
+
+            const result = resolve.get('.source');
+
+            expect(result?.color).toBe('var(--x, blue)');
          });
 
-         it('get() (depth 1)', () =>
+         it('no resolution (chained)', () =>
          {
-            const result = resolver.get('.source', { depth: 1, resolve: ['.p1', '.p2'] });
+            const resolve = new StyleSheetResolve();
 
-            // Does not resolve as `depth: 1` stops early.
-            expect(stringify(result)).toMatchInlineSnapshot(`
-              "{
-                "color": "var(--a)"
-              }"
-            `);
-         });
-      });
-   });
+            resolve.set('.source', { color: 'var(--a, var(--b, var(--c, orange)))' });
 
-   describe('Complex Resolution', () =>
-   {
-      // TODO: FIGURE OUT A COMPLEX RESOLUTION TEST CASE
-      it('direct parent', () =>
-      {
-         const styleMap: Map<string, {}> = new Map([
-            ['.parent', { '--parent': 'red' }],
-            ['.source', { color: 'var(--parent)' }]
-         ]);
+            const result = resolve.get('.source');
 
-         const resolver = StyleSheetResolve.parse(styleMap);
-
-         const result = resolver.get('.source', {
-            resolve: ['.parent']
+            expect(result?.color).toBe('var(--a, var(--b, var(--c, orange)))');
          });
 
-         expect(stringify(result)).toMatchInlineSnapshot(`
-           "{
-             "color": "red"
-           }"
-         `);
+         it('w/ resolution', () =>
+         {
+            const resolve = new StyleSheetResolve();
+
+            resolve.set('.source', { color: 'var(--x, blue)' });
+            resolve.set('.p1', { '--x': 'red' });
+
+            const result = resolve.get('.source', { resolve: '.p1' });
+
+            expect(result?.color).toBe('red');
+         });
+
+         it('w/ calc resolution', () =>
+         {
+            const resolve = new StyleSheetResolve();
+
+            resolve.set('.source', { color: 'calc(2rem + var(--x, 1rem))' });
+            resolve.set('.p1', { '--x': '2rem' });
+
+            const result = resolve.get('.source', { resolve: '.p1' });
+
+            expect(result?.color).toBe('calc(2rem + 2rem)');
+         });
+
+         it('w/ resolution (indirect)', () =>
+         {
+            const resolve = new StyleSheetResolve();
+
+            resolve.set('.source', { color: 'var(--a, blue)' });
+            resolve.set('.p1', { '--a': 'var(--b, green)' });
+            resolve.set('.p2', { '--b': 'red' });
+
+            const result = resolve.get('.source', { resolve: ['.p1', '.p2'] });
+
+            expect(result?.color).toBe('red');
+         });
+
+         it('chained resolution', () =>
+         {
+            const resolve = new StyleSheetResolve();
+
+            resolve.set('.source', { color: 'var(--a, var(--b, green))' });
+            resolve.set('.p1', { '--b': 'red' });
+
+            const result = resolve.get('.source', { resolve: '.p1' });
+
+            expect(result?.color).toBe('var(--a, red)');
+         });
+
+         it('deep fallback w/ 3rd resolved', () =>
+         {
+            const resolve = new StyleSheetResolve();
+
+            resolve.set('.source', { color: 'var(--a, var(--b, var(--c, green)))' });
+            resolve.set('.p1', { '--c': 'red' });
+
+            const result = resolve.get('.source', { resolve: '.p1' });
+
+            expect(result?.color).toBe('var(--a, var(--b, red))');
+         });
+
+         it('resolves at 2nd fallback', () =>
+         {
+            const resolve = new StyleSheetResolve();
+
+            resolve.set('.source', { color: 'var(--a, var(--b, var(--c, pink)))' });
+            resolve.set('.theme', { '--b': 'gray' });
+
+            const result = resolve.get('.source', { resolve: '.theme' });
+
+            expect(result?.color).toBe('var(--a, gray)');
+         });
+
+         it('multi-fallback w/ middle resolved var', () =>
+         {
+            const resolve = new StyleSheetResolve();
+
+            resolve.set('.source', { color: 'var(--a, var(--b, var(--c, var(--d, var(--e, lime)))))' });
+
+            resolve.set('.p1', { '--d': 'orchid' });
+            resolve.set('.p2', {}); // intentionally empty.
+            resolve.set('.p3', { '--b': 'var(--c)' });
+            resolve.set('.p4', {}); // intentionally empty.
+            resolve.set('.p5', { '--c': 'var(--d)' });
+
+            const result = resolve.get('.source', { resolve: ['.p1', '.p2', '.p3', '.p4', '.p5'] });
+
+            expect(result?.color).toBe('var(--a, orchid)');
+         });
+
+         it('deep chain no resolution', () =>
+         {
+            const resolve = new StyleSheetResolve();
+
+            resolve.set('.source', { color: 'var(--v1, var(--v2, var(--v3, var(--v4, var(--v5, tomato)))))' });
+
+            // All selectors define nothing resolvable
+            resolve.set('.p1', {});
+            resolve.set('.p2', {});
+            resolve.set('.p3', {});
+            resolve.set('.p4', {});
+            resolve.set('.p5', {});
+
+            const result = resolve.get('.source', {
+               resolve: ['.p1', '.p2', '.p3', '.p4', '.p5']
+            });
+
+            expect(result?.color).toBe('var(--v1, var(--v2, var(--v3, var(--v4, var(--v5, tomato)))))');
+         });
       });
    });
 
