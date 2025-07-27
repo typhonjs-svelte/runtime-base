@@ -520,6 +520,10 @@ export class StyleSheetResolve
    }
 
    /**
+    * Parse a full CSS rule string from `CSSStyleRule.cssText`.
+    *
+    * Extracts property declarations from within a selector block: `"div { color: red; background: blue; }"`.
+    *
     * @param {string}   cssText - CSS text to parse from `CSSStyleRule`.
     *
     * @returns {{ [key: string]: string }} Parsed `cssText`.

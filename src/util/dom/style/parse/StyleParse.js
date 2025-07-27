@@ -16,6 +16,9 @@ export class StyleParse
    /**
     * Parse an inline CSS style text string into an object.
     *
+    * Intended for parsing raw `style=""` attributes or standalone CSS declaration blocks (IE
+    * `"color: red; font-size: 14px"`).
+    *
     * @param {string} cssText - Inline CSS style text to parse.
     *
     * @param {object} [options] - Optional settings.
