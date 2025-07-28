@@ -18,8 +18,8 @@ import {
  * some variables are undefined. This maintains correctness without introducing ambiguity or needing a complete AST
  * based parser.
  *
- * The goal of this implementation is the size of code, minimal memory footprint, speed, and reasonable accuracy which
- * is all achieved with regex parsing.
+ * The goal of this implementation is to realize a regex-based parser with small code size, minimal memory footprint,
+ * speed, and reasonable accuracy.
  *
  * Core features:
  * - Parses all or specific relevant `@layer` blocks.
@@ -31,10 +31,11 @@ import {
  * - Can filter out and include just desired CSS selector parts via `includeSelectorPartSet` option.
  *
  * Access Options:
- * - Can return property keys in camel case via `camelCase` option.
+ * - Can return style property keys in camel case via `camelCase` option.
  * - Can limit the depth of resolved CSS variables across parent-selector fallback chains via `depth` option.
  * - Enables resolution of scoped CSS variables using a parent-selector fallback chain via `resolve` option.
  * - Can enable cyclic dependency detection warnings when resolving CSS variables via `warnCycles` option.
+ * - Can enable warnings for non-existent parent-selector fallback lookup via `warnResolve` option.
  *
  * @example
  * ```js
