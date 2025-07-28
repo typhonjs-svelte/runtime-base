@@ -678,6 +678,8 @@ export class StyleSheetResolve
  */
 class ResolveVars
 {
+   static #MAX_FALLBACK_DEPTH = 10;
+
    /**
     * Initial style properties w/ CSS variables to track.
     *
@@ -906,8 +908,8 @@ class ResolveVars
     */
    #resolveNestedFallback(expr, depth = 0)
    {
-      /* c8 ignore next 1 */
-      if (depth > 10) { return expr; } // Prevent runaway recursion or malformed fallback chains; max depth = 10.
+      /* c8 ignore next 1 */ // Prevent runaway recursion or malformed fallback chains.
+      if (depth > ResolveVars.#MAX_FALLBACK_DEPTH) { return expr; }
 
       const match = expr.match(/^var\((?<varName>--[\w-]+)\s*,\s*(?<fallback>.+?)\)$/);
       if (!match?.groups) { return expr; }
