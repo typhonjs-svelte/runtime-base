@@ -649,6 +649,7 @@ export class StyleSheetResolve
       {
          const parent = this.get(entry);
 
+         // Verify that the parent lookup is available otherwise add selector to `not found` Set.
          if (!isObject(parent))
          {
             resolveData.parentNotFound.add(entry);
@@ -755,41 +756,43 @@ class ResolveVars
 
       for (const entry of this.#varToProp.keys())
       {
-         if (this.#varResolved.has(entry))
-         {
-            const props = this.#varToProp.get(entry);
+         const props = this.#varToProp.get(entry);
+         const varResolved = this.#varResolved.get(entry);
 
+         if (varResolved)
+         {
             for (const prop of props)
             {
                const value = this.#propMap.get(prop);
-               const varResolved = this.#varResolved.get(entry);
 
-               if (value && varResolved)
+               let replacement = value;
+
+               if (value.includes(`var(${entry}`))
                {
-                  const replacement = value.replace(/var\((--[\w-]+)(?:\s*,\s*[^()]*?)?\)/g, (match) =>
+                  replacement = value.replace(/var\((--[\w-]+)(?:\s*,\s*[^()]*?)?\)/g, (match) =>
                   {
                      const varName = match.match(/^var\((--[\w-]+)/)?.[1];
                      const resolved = this.#varResolved.get(varName);
 
+                     /* c8 ignore next 1 */ // `?? match` is a sanity fallback.
                      return resolved ?? match;
                   });
-
-                  this.#propMap.set(prop, replacement);
-                  result[prop] = replacement;
                }
+
+               this.#propMap.set(prop, replacement);
+               result[prop] = replacement;
             }
          }
          else
          {
-            const props = this.#varToProp.get(entry);
-
             for (const prop of props)
             {
                const value = this.#propMap.get(prop);
 
-               if (!value || !value.includes(`var(${entry},`)) { continue; }
+               // Early out if no fallback to resolve.
+               if (!value.includes(`var(${entry},`)) { continue; }
 
-               const fallback = this.#resolveNestedFallback(value, 0);
+               const fallback = this.#resolveNestedFallback(value);
 
                this.#propMap.set(prop, fallback);
                result[prop] = fallback;
