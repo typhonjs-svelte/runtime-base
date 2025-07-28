@@ -249,23 +249,116 @@ describe('StyleSheetResolve', () =>
 
       describe('Complex', () =>
       {
-         // TODO: FIGURE OUT A COMPLEX RESOLUTION TEST CASE
-         it('direct parent', () =>
+         let resolver: StyleSheetResolve;
+
+         beforeEach(() => resolver = StyleSheetResolve.parse(styleMap));
+
+         const styleMap: Map<string, {}> = new Map([
+            ['.source-a', {
+               color: 'var(--a)',
+               'box-shadow': '0 0 4px var(--shadow-color)',
+               'border-radius': 'var(--radius)',
+               padding: 'var(--padding)',
+               border: 'var(--border)'
+            }],
+            ['.source-b', {
+               'background-color': 'var(--nonexistent, lightgray)',
+               outline: '2px dashed var(--focus-color, red)',
+               margin: '8px'
+            }],
+            ['.root-theme', {
+               '--a': 'var(--b)',
+               '--shadow-color': 'black',
+               '--radius': '4px'
+            }],
+            ['.theme-1', {
+               '--b': 'var(--c, var(--alt-c, blue))',
+               '--alt-c': 'teal'
+            }],
+            ['.theme-2', {
+               '--c': 'var(--d)'
+            }],
+            ['.theme-3', {
+               '--d': 'var(--e)',
+               '--unused': 'var(--ghost, gray)'
+            }],
+            ['.theme-4', {
+               '--e': 'orange'
+            }],
+            ['.shared', {
+               '--padding': '12px',
+               '--border-color': 'teal',
+               '--border': '1px solid var(--border-color, #ccc)'
+            }]
+         ]);
+
+         it('individual source-a', () =>
          {
-            const styleMap: Map<string, {}> = new Map([
-               ['.parent', {'--parent': 'red'}],
-               ['.source', {color: 'var(--parent)'}]
-            ]);
-
-            const resolver = StyleSheetResolve.parse(styleMap);
-
-            const result = resolver.get('.source', {
-               resolve: ['.parent']
+            const result = resolver.get('.source-a', {
+               resolve: ['.root-theme', '.theme-1', '.theme-2', '.theme-3', '.theme-4', '.shared']
             });
+
+            // color: --a → --b → --c → --d → --e → 'orange'
+            // border: --border → var(--border-color, #ccc) → 'teal'
+            // padding: --padding from .shared
+            //
+            // margin, borderRadius, boxShadow: resolved or literal
 
             expect(stringify(result)).toMatchInlineSnapshot(`
               "{
-                "color": "red"
+                "color": "orange",
+                "box-shadow": "0 0 4px black",
+                "border-radius": "4px",
+                "padding": "12px",
+                "border": "1px solid teal"
+              }"
+            `);
+         });
+
+         it('individual source-b', () =>
+         {
+            const result = resolver.get('.source-b', {
+               resolve: ['.root-theme', '.theme-1', '.theme-2', '.theme-3', '.theme-4', '.shared']
+            });
+
+            // backgroundColor: --nonexistent not defined → 'lightgray'
+            // outline: --focus-color not defined → fallback 'red'
+            //
+            // margin: literal
+
+            expect(stringify(result)).toMatchInlineSnapshot(`
+              "{
+                "background-color": "var(--nonexistent, lightgray)",
+                "outline": "2px dashed var(--focus-color, red)",
+                "margin": "8px"
+              }"
+            `);
+         });
+
+         it('source-a + source-b', () =>
+         {
+            const result = resolver.get(['.source-a', '.source-b'], {
+               resolve: ['.root-theme', '.theme-1', '.theme-2', '.theme-3', '.theme-4', '.shared']
+            });
+
+            // color: --a → --b → --c → --d → --e → 'orange'
+            // padding: --padding from .shared
+            // border: --border → var(--border-color, #ccc) → 'teal'
+            // backgroundColor: --nonexistent not defined → 'lightgray'
+            // outline: --focus-color not defined → fallback 'red'
+            //
+            // margin, borderRadius, boxShadow: resolved or literal
+
+            expect(stringify(result)).toMatchInlineSnapshot(`
+              "{
+                "color": "orange",
+                "box-shadow": "0 0 4px black",
+                "border-radius": "4px",
+                "padding": "12px",
+                "border": "1px solid teal",
+                "background-color": "var(--nonexistent, lightgray)",
+                "outline": "2px dashed var(--focus-color, red)",
+                "margin": "8px"
               }"
             `);
          });
