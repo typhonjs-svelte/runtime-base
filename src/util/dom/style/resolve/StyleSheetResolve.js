@@ -283,6 +283,7 @@ export class StyleSheetResolve
          }
       }
 
+      // Potentially convert property keys to camel case.
       if (result && camelCase)
       {
          const toCamelCase = (str) => str.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
@@ -376,7 +377,6 @@ export class StyleSheetResolve
          const current = this.#sheetMap.get(selectorPart) ?? {};
 
          // For preserve strategy, make a copy of the incoming data in the case that the source is frozen.
-
          const merged = strategy === 'preserve' ? Object.assign({}, { ...incoming }, current) :
           Object.assign({}, current, incoming);
 
@@ -717,13 +717,15 @@ class ResolveVars
     *
     * @param {{ [key: string]: string }} parentVars - All parent resolution vars.
     *
-    * @param {import('./types').ResolveData} resolveData - Resolution data
+    * @param {import('./types').ResolveData} resolveData - Resolution data.
     */
    constructor(initial, parentVars, resolveData)
    {
       this.#parentVars = parentVars;
       this.#resolveData = resolveData;
 
+      // Build the reverse dependency map of which CSS variables (--x) are referenced by each style property.
+      // This enables efficient tracking of what properties depend on what variables.
       for (const [prop, value] of Object.entries(initial))
       {
          const vars = [...value.matchAll(/--[\w-]+/g)].map((match) => match[0]);
@@ -754,23 +756,27 @@ class ResolveVars
    {
       const result = {};
 
+      // Attempt to resolve each CSS variable found in style properties. If resolution is known, then substitute it
+      // otherwise check for fallback chains.
       for (const entry of this.#varToProp.keys())
       {
          const props = this.#varToProp.get(entry);
          const varResolved = this.#varResolved.get(entry);
 
+         // Direct resolution: replace all `var(--x)` forms in all dependent properties with the resolved value.
          if (varResolved)
          {
             for (const prop of props)
             {
-               const value = this.#propMap.get(prop);
-
-               let replacement = value;
+               let value = this.#propMap.get(prop);
 
                if (value.includes(`var(${entry}`))
                {
-                  replacement = value.replace(/var\((--[\w-]+)(?:\s*,\s*[^()]*?)?\)/g, (match) =>
+                  // Replace each `var(--x[, fallback])` with its resolved value (if available).
+                  // Fallbacks are preserved unless fully resolvable, enabling partial resolution of chained vars.
+                  value = value.replace(/var\((--[\w-]+)(?:\s*,\s*[^()]*?)?\)/g, (match) =>
                   {
+                     // Extract the CSS variable name (`--x`) from the matched `var(--x[, fallback])` expression.
                      const varName = match.match(/^var\((--[\w-]+)/)?.[1];
                      const resolved = this.#varResolved.get(varName);
 
@@ -779,10 +785,11 @@ class ResolveVars
                   });
                }
 
-               this.#propMap.set(prop, replacement);
-               result[prop] = replacement;
+               this.#propMap.set(prop, value);
+               result[prop] = value;
             }
          }
+         // Unresolved var: check if fallback exists (`var(--x, red)`), and resolve nested fallback chains if present.
          else
          {
             for (const prop of props)
@@ -827,14 +834,15 @@ class ResolveVars
     */
    set(name, value)
    {
+      /* c8 ignore next 1 */
+      if (typeof value !== 'string' || value.length === 0) { return; }
+
       if (this.#resolveData.warnCycles)
       {
          this.#setCycleWarn(name, value);
       }
       else
       {
-         /* c8 ignore next 1 */
-         if (typeof value !== 'string' || value.length === 0) { return; }
          if (this.#varToProp.has(name) && !this.#varResolved.has(name)) { this.#varResolved.set(name, value); }
       }
    }
@@ -862,6 +870,7 @@ class ResolveVars
 
       const next = match[1];
 
+      // Cycle detection: if var is already seen in traversal, then record and warn.
       if (visited.has(next))
       {
          // Format cycle signature for deduping.
@@ -888,6 +897,7 @@ class ResolveVars
 
       visited.add(next);
 
+      // Look up the next variable in the chain to continue DFS. Prefer already-resolved entries.
       const nextValue = this.#varResolved.get(next) ?? this.#parentVars[next];
 
       /* c8 ignore next 1 */
@@ -914,17 +924,20 @@ class ResolveVars
       /* c8 ignore next 1 */ // Prevent runaway recursion or malformed fallback chains.
       if (depth > ResolveVars.#MAX_FALLBACK_DEPTH) { return expr; }
 
+      // Match top-level var(--x, fallback) expression. Non-greedy match on fallback to avoid trailing garbage.
       const match = expr.match(/^var\((?<varName>--[\w-]+)\s*,\s*(?<fallback>.+?)\)$/);
       if (!match?.groups) { return expr; }
 
       const { varName, fallback } = match.groups;
       const resolved = this.#varResolved.get(varName);
 
+      // If the primary variable is resolved, return the substitution directly ignoring fallback.
       if (resolved !== void 0) { return resolved; }
 
       const fallbackTrimmed = fallback.trim();
 
-      // If fallback is another var(...) chain, recurse to resolve innermost-known value.
+      // If fallback itself is a var(...) expression, recurse to evaluate it.
+      // The result is substituted in-place unless final resolution is still a var(...) chain.
       if (fallbackTrimmed.startsWith('var('))
       {
          let nested = this.#resolveNestedFallback(fallbackTrimmed, depth + 1);
@@ -942,7 +955,7 @@ class ResolveVars
          return `var(${varName}, ${nested})`;
       }
 
-      // Otherwise, fallback is a literal value.
+      // Literal fallback: preserve the full var(...) expression with untouched fallback if not further resolvable.
       return `var(${varName}, ${fallbackTrimmed})`;
    }
 
@@ -955,9 +968,6 @@ class ResolveVars
     */
    #setCycleWarn(name, value)
    {
-      /* c8 ignore next 1 */
-      if (typeof value !== 'string' || value.length === 0) { return; }
-
       const resolved = this.#resolveCycleWarn(name, value, new Set([name]), this.#resolveData.seenCycles);
 
       if (resolved !== void 0 && this.#varToProp.has(name) && !this.#varResolved.has(name))
