@@ -764,14 +764,12 @@ class ResolveVars
 
                if (value && varResolved)
                {
-                  // Matches var(--x) or var(--x, fallback). Used to substitute only if --x is resolved.
-                  const VAR_PATTERN  = /var\((--[\w-]+)(?:\s*,\s*[^)]+)?\)/g;
-
-                  // Only replace var(--x) if a resolved value exists; leave full expression otherwise.
-                  const replacement = value.replaceAll(VAR_PATTERN, (match, varName) =>
+                  const replacement = value.replace(/var\((--[\w-]+)(?:\s*,\s*[^()]*?)?\)/g, (match) =>
                   {
+                     const varName = match.match(/^var\((--[\w-]+)/)?.[1];
                      const resolved = this.#varResolved.get(varName);
-                     return resolved !== void 0 ? resolved : match;
+
+                     return resolved ?? match;
                   });
 
                   this.#propMap.set(prop, replacement);
