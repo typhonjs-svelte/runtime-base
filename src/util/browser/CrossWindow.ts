@@ -16,7 +16,10 @@ class CrossWindow
    /**
     * @private
     */
-   constructor() {} // eslint-disable-line no-useless-constructor
+   constructor()
+   {
+      throw new Error('CrossWindow constructor: This is a static class and should not be constructed.');
+   }
 
    /**
     * Class names for all focusable element types.
@@ -210,7 +213,10 @@ class CrossWindow
     */
    static isDocument(target: unknown): target is Document
    {
-      return isObject(target) && Object.prototype.toString.call(target) === '[object Document]';
+      // Match any DOM Document object by its default @@toStringTag.
+      // - HTMLDocument (`[object HTMLDocument]` in modern browsers & JSDOM)
+      // - generic Document (`[object Document]` in older or XML contexts)
+      return isObject(target) && /^\[object (HTML)?Document]$/.test(Object.prototype.toString.call(target));
    }
 
    /**
