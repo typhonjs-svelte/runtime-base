@@ -80,11 +80,11 @@ class AssetValidator
       }
 
       const extensionMatch = targetURL.pathname.match(/\.([a-zA-Z0-9]+)$/);
-      const extension = extensionMatch ? extensionMatch[1].toLowerCase() : null;
+      const extension = extensionMatch ? extensionMatch[1].toLowerCase() : void 0;
 
-      const isExcluded = CrossWindow.isSet(exclude) ? exclude.has(extension) : false;
+      const isExcluded = extension && CrossWindow.isSet(exclude) ? exclude.has(extension) : false;
 
-      let elementType = null;
+      let elementType: 'img' | 'video' | 'svg' | 'audio' | undefined = void 0;
       let valid = false;
 
       if (extension && !isExcluded)
@@ -111,13 +111,13 @@ class AssetValidator
          }
       }
 
-      return {
+      return valid ? {
          src: url,
          url: targetURL,
          extension,
          elementType,
          valid
-      };
+      } : { url, valid: false };
    }
 }
 
@@ -177,6 +177,16 @@ declare namespace AssetValidator {
          url: string | URL;
 
          /**
+          * Extension type
+          */
+         extension?: undefined;
+
+         /**
+          * Key to indicate which element should render the URL.
+          */
+         elementType?: undefined;
+
+         /**
           * Result indicating invalid.
           */
          valid: false;
@@ -199,12 +209,12 @@ declare namespace AssetValidator {
          /**
           * Extension type
           */
-         extension: string;
+         extension?: string;
 
          /**
           * Key to indicate which element should render the URL.
           */
-         elementType: 'img' | 'video' | 'svg' | 'audio';
+         elementType?: 'img' | 'video' | 'svg' | 'audio';
 
          /**
           * Result indicating valid.

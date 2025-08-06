@@ -333,7 +333,7 @@ class CrossWindow
     *
     * @returns Is `target` an Element.
     */
-   static isElement(target): target is Element
+   static isElement(target: unknown): target is Element
    {
       return this.#checkDOMInstanceType(target, Node.ELEMENT_NODE, 'Element');
    }
@@ -510,22 +510,24 @@ class CrossWindow
 
       if (target.nodeType !== nodeType) { return false; }
 
-      const GlobalClass = globalThis[className];
+      const GlobalClass: any = (window as unknown as Record<string, unknown>)[className];
 
       if (GlobalClass && target instanceof GlobalClass) { return true; }
 
-      const activeWindow: Window = this.#hasOwnerDocument(target) ? target?.ownerDocument?.defaultView :
-       // @ts-ignore: Safe in this context.
-       this.getWindow(target, this.#optionsInternalCheckDOM);
+      const activeWindow: Window | undefined | null = this.#hasOwnerDocument(target) ?
+         target?.ownerDocument?.defaultView :
+         // @ts-ignore: Safe in this context.
+         this.getWindow(target, this.#optionsInternalCheckDOM);
 
-      const TargetClass = activeWindow?.[className];
+      const TargetClass: any = (activeWindow as unknown as Record<string, unknown>)?.[className];
 
       return TargetClass && target instanceof TargetClass;
    }
 
    static #hasOwnerDocument(target: unknown): target is Element
    {
-      return target && this.#NodesWithOwnerDocument.has((target as Node)?.nodeType);
+      return typeof target === 'object' && target !== null &&
+       this.#NodesWithOwnerDocument.has((target as Node)?.nodeType);
    }
 }
 

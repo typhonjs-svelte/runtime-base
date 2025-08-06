@@ -25,7 +25,7 @@ export class ClipboardAccess
     */
    static async readText(activeWindow: Window = window): Promise<string | undefined>
    {
-      let result: string;
+      let result: string = '';
 
       if (!CrossWindow.isWindow(activeWindow))
       {
