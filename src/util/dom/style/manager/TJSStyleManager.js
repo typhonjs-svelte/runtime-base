@@ -114,7 +114,19 @@ export class TJSStyleManager
     */
    static connect({ id, version, document = window.document } = {})
    {
+      if (typeof id !== 'string') { throw new TypeError(`'id' is not a string.`); }
 
+      if (!CrossWindow.isDocument(document))
+      {
+         throw new TypeError(`'document' is not an instance of HTMLDocument.`);
+      }
+
+      if (!Number.isFinite(version) || version < this.#MIN_VERSION)
+      {
+         throw new TypeError(`'version' is not a positive number >= ${this.#MIN_VERSION}.`);
+      }
+
+      return this.#initializeConnect(document, id, version);
    }
 
    /**
@@ -164,7 +176,7 @@ export class TJSStyleManager
          if (force || (version > current.version))
          {
             current.element?.remove?.();
-            return this.#initializeNew(document, id, rules, version, layerName);
+            return this.#initializeCreate(document, id, rules, version, layerName);
          }
          else
          {
@@ -174,7 +186,7 @@ export class TJSStyleManager
       }
       else
       {
-         return this.#initializeNew(document, id, rules, version, layerName);
+         return this.#initializeCreate(document, id, rules, version, layerName);
       }
    }
 
@@ -304,9 +316,96 @@ export class TJSStyleManager
 
    // Internal Implementation ----------------------------------------------------------------------------------------
 
-   static #initializeConnect(document, id, rules, version, layerName)
+   /**
+    * TODO: semver verification, possible throwing of errors
+    *
+    * @param {Document} document - Target Document.
+    *
+    * @param {string} id - Associated CSS ID
+    *
+    * @param {number} version -
+    *
+    * @returns {TJSStyleManager | undefined} Style manager connected to existing element / style rules.
+    */
+   static #initializeConnect(document, id, version)
    {
+      /** @type {HTMLStyleElement} */
+      const styleElement = document.querySelector(`head style#${id}`);
 
+      if (!styleElement) { return void 0; }
+
+      const existingRules = styleElement?._tjsRules;
+      const existingVersion = styleElement?._tjsVersion;
+      const existingLayerName = styleElement?._tjsLayerName;
+
+      let targetSheet = styleElement?.sheet;
+
+      if (!isObject(existingRules)) { return void 0; }
+
+      if (!Number.isInteger(existingVersion)) { return void 0; }
+
+      if (existingLayerName !== void 0 && typeof existingLayerName !== 'string') { return void 0; }
+
+      if (!CrossWindow.isCSSStyleSheet(targetSheet)) { return void 0; }
+
+      const cssRuleMap = new Map();
+
+      // Reverse the rule object to find the actual CSS rules below.
+      const reverseRuleMap = new Map(Object.entries(existingRules).map(([key, value]) => [value, key]));
+
+      try
+      {
+         if (typeof existingLayerName)
+         {
+            let foundLayer = false;
+
+            for (const rule of targetSheet.cssRules)
+            {
+               if (CrossWindow.isCSSLayerBlockRule(rule) && rule.name === existingLayerName)
+               {
+                  targetSheet = rule;
+                  foundLayer = true;
+               }
+            }
+
+            if (!foundLayer) { return void 0; }
+         }
+
+         for (const cssRule of targetSheet.cssRules)
+         {
+            if (!CrossWindow.isCSSStyleRule(cssRule)) { continue; }
+
+            const selector = cssRule?.selectorText;
+
+            if (reverseRuleMap.has(selector))
+            {
+               const ruleName = reverseRuleMap.get(selector);
+
+               cssRuleMap.set(ruleName, new CSSRuleManager(cssRule, ruleName, selector));
+
+               reverseRuleMap.delete(selector);
+            }
+         }
+
+         // Check if all registered rules have been found.
+         if (reverseRuleMap.size > 0) { return void 0; }
+
+         return new TJSStyleManager({
+            cssRuleMap,
+            id,
+            version,
+            layerName: existingLayerName,
+            styleElement,
+            token: TJSStyleManager.#CTOR_TOKEN
+         });
+      }
+      catch (error)
+      {
+         console.error(`TyphonJS Runtime [TJSStyleManager error]: Please update your browser to the latest version.`,
+          error);
+      }
+
+      return void 0;
    }
 
    /**
@@ -322,7 +421,7 @@ export class TJSStyleManager
     *
     * @returns {TJSStyleManager | undefined} New TJSStyleManager instance.
     */
-   static #initializeNew(document, id, rules, version, layerName)
+   static #initializeCreate(document, id, rules, version, layerName)
    {
       const styleElement = document.createElement('style');
       styleElement.id = id;
@@ -362,7 +461,8 @@ export class TJSStyleManager
 
          return new TJSStyleManager({
             cssRuleMap,
-            id, version,
+            id,
+            version,
             layerName,
             styleElement,
             token: TJSStyleManager.#CTOR_TOKEN
