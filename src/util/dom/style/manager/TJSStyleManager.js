@@ -1,7 +1,6 @@
 import { CrossWindow }     from '#runtime/util/browser';
 import { isObject }        from '#runtime/util/object';
 
-import { StyleManager }    from './StyleManager.js';
 import { CSSRuleManager}   from './CSSRuleManager.js';
 
 /**
@@ -26,11 +25,42 @@ export class TJSStyleManager
    static #MIN_VERSION = 0;
 
    /**
-    * @hideconstructor
+    * Provides a token allowing internal instance construction.
+    *
+    * @type {symbol}
     */
-   constructor()
+   static #CTOR_TOKEN = Symbol('TJSStyleManager.CTOR_TOKEN');
+
+   /** @type {Map<string, import('./types').CSSRuleManager>} */
+   #cssRuleMap;
+
+   /** @type {string} */
+   #id;
+
+   /** @type {string} */
+   #layerName;
+
+   /** @type {HTMLStyleElement} */
+   #styleElement;
+
+   /** @type {number} */
+   #version;
+
+   /**
+    * @private
+    */
+   constructor({ cssRuleMap, id, styleElement, version, layerName, token } = {})
    {
-      throw new Error('TJSStyleManager constructor: This is a static class and should not be constructed.');
+      if (token !== TJSStyleManager.#CTOR_TOKEN)
+      {
+         throw new Error('TJSStyleManager constructor: Please use the static `create` or `connect` methods.');
+      }
+
+      this.#cssRuleMap = cssRuleMap;
+      this.#id = id;
+      this.#layerName = layerName;
+      this.#styleElement = styleElement;
+      this.#version = version;
    }
 
    /**
@@ -100,7 +130,7 @@ export class TJSStyleManager
     *
     * @param {number}   [opts.version] - An integer representing the version / level of styles being managed.
     *
-    * @returns {StyleManager | undefined} Created style manager instance or undefined if already exists.
+    * @returns {TJSStyleManager | undefined} Created style manager instance or undefined if already exists.
     */
    static create({ id, rules, version, layerName, document = window.document, force = false } = {})
    {
@@ -128,38 +158,153 @@ export class TJSStyleManager
 
       const current = this.exists({ id, document });
 
-      console.log(`!!! TJSStyleManager.create - 0 - id: ${id}; current: `, JSON.stringify(current));
-
       if (isObject(current))
       {
-         console.log(`!!! TJSStyleManager.create - A`);
-
          // Remove all existing CSS rules / text if the version is greater than the existing version or `force` is true.
          if (force || (version > current.version))
          {
-            console.log(`!!! TJSStyleManager.create - A1`);
-
             current.element?.remove?.();
             return this.#initializeNew(document, id, rules, version, layerName);
          }
          else
          {
-            console.log(`!!! TJSStyleManager.create - A2`);
             // A style manager already exists that is a greater version than requested.
             return void 0;
          }
       }
       else
       {
-         console.log(`!!! TJSStyleManager.create - B`);
-
          return this.#initializeNew(document, id, rules, version, layerName);
       }
    }
 
+   /**
+    * Determines if this TJSStyleManager is still connected / available.
+    *
+    * @returns {boolean} Is TJSStyleManager connected.
+    */
+   get isConnected()
+   {
+      return !!this.#styleElement?.isConnected;
+   }
+
+   /**
+    * @returns {string} Provides an accessor to get the `textContent` for the style sheet.
+    */
+   get textContent()
+   {
+      return this.#styleElement?.textContent;
+   }
+
+   /**
+    * @returns {number} Returns the version of this instance.
+    */
+   get version()
+   {
+      return this.#version;
+   }
+
+   /**
+    * Provides a copy constructor to duplicate an existing TJSStyleManager instance into a new document.
+    *
+    * Note: This is used to support the `PopOut` module.
+    *
+    * @param {Document} [document] Target browser document to clone into.
+    *
+    * @param {boolean} [force] When true, force the cloning of the style manager into the target document.
+    *
+    * @returns {TJSStyleManager | undefined} New style manager instance or undefined if not connected.
+    */
+   clone({ document = window.document, force = false } = {})
+   {
+      if (!this.isConnected) { return; }
+
+      const rules = {};
+
+      for (const key of this.#cssRuleMap.keys())
+      {
+         rules[key] = this.#cssRuleMap.get(key).selector;
+      }
+
+      const newStyleManager = TJSStyleManager.create({
+         id: this.#id,
+         version: this.#version,
+         layerName: this.#layerName,
+         rules,
+         document,
+         force,
+      });
+
+      if (newStyleManager)
+      {
+         for (const key of this.#cssRuleMap.keys())
+         {
+            if (newStyleManager.#cssRuleMap.has(key))
+            {
+               newStyleManager.#cssRuleMap.get(key).cssText = this.#cssRuleMap.get(key).cssText;
+            }
+         }
+
+         return newStyleManager;
+      }
+
+      return void 0;
+   }
+
+   /**
+    * @returns {MapIterator<[string, import('./types').CSSRuleManager]>} CSSRuleManager entries.
+    */
+   entries()
+   {
+      return this.#cssRuleMap.entries();
+   }
+
+   /**
+    * Retrieves an associated {@link CSSRuleManager} by name.
+    *
+    * @param {string}   ruleName - Rule name.
+    *
+    * @returns {import('./types').CSSRuleManager | undefined} Associated rule manager for given name or undefined if the
+    *          rule name is not defined or manager is unconnected.
+    */
+   get(ruleName)
+   {
+      if (!this.isConnected) { return; }
+
+      return this.#cssRuleMap.get(ruleName);
+   }
+
+   /**
+    * Returns whether a {@link CSSRuleManger} exists for the given name.
+    *
+    * @param {string}   ruleName - Rule name.
+    *
+    * @returns {boolean} Is there a CSS rule manager with the given name.
+    */
+   has(ruleName)
+   {
+      return this.#cssRuleMap.has(ruleName);
+   }
+
+   /**
+    * @returns {MapIterator<string>} CSSRuleManager keys.
+    */
+   keys()
+   {
+      return this.#cssRuleMap.keys();
+   }
+
+   /**
+    * @returns {MapIterator<import('./types').CSSRuleManager>}
+    */
+   values()
+   {
+      return this.#cssRuleMap.values();
+   }
+
    // Internal Implementation ----------------------------------------------------------------------------------------
 
-   #initializeConnect(document, id, rules, version, layerName)
+   static #initializeConnect(document, id, rules, version, layerName)
    {
 
    }
@@ -175,7 +320,7 @@ export class TJSStyleManager
     *
     * @param {string} layerName -
     *
-    * @returns {StyleManager | undefined} New StyleManager instance.
+    * @returns {TJSStyleManager | undefined} New TJSStyleManager instance.
     */
    static #initializeNew(document, id, rules, version, layerName)
    {
@@ -215,7 +360,13 @@ export class TJSStyleManager
             cssRuleMap.set(ruleName, new CSSRuleManager(cssRule, ruleName, selector));
          }
 
-         return new StyleManager({ cssRuleMap, id, version, layerName, styleElement})
+         return new TJSStyleManager({
+            cssRuleMap,
+            id, version,
+            layerName,
+            styleElement,
+            token: TJSStyleManager.#CTOR_TOKEN
+         });
       }
       catch (error)
       {
