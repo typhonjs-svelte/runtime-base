@@ -23,7 +23,7 @@ export class StyleParse
     *
     * @param [options] - Optional settings.
     *
-    * @param [options.camelCase=false] - Whether to convert property names to camelCase.
+    * @param [options.camelCase=false] - Whether to convert property names to camel case.
     *
     * @returns Parsed object of CSS properties.
     */
