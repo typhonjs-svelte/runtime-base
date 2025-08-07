@@ -187,7 +187,7 @@ class CrossWindow
     *
     * @returns Is `target` a CSSStyleRule.
     */
-   static isCSSStyleRule(target: unknown): target is CSSLayerBlockRule
+   static isCSSStyleRule(target: unknown): target is CSSStyleRule
    {
       return isObject(target) && Object.prototype.toString.call(target) === '[object CSSStyleRule]';
    }
