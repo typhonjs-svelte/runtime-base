@@ -54,43 +54,30 @@ import {
  * consider replacing this logic with a dedicated AST parser and visitor pattern. An AST-based approach would offer more
  * flexibility and maintainability at the cost of slightly increased complexity and larger runtime memory footprint.
  */
-export class StyleSheetResolve
+class StyleSheetResolve
 {
    /**
     * Internal tracking of frozen state; once frozen, no more modifications are possible.
-    *
-    * @type {boolean}
     */
-   #frozen = false;
+   #frozen: boolean = false;
 
    /**
     * Parsed selector to associated style properties.
-    *
-    * @type {Map<string, { [key: string]: string }>}
     */
-   #sheetMap = new Map();
+   #sheetMap: Map<string, { [key: string]: string }> = new Map();
 
    /**
     * Parse a CSSStyleSheet instance with the given options or accept a pre-filled Map generating a new
     * `StyleSheetResolve` instance.
     *
-    * @param {CSSStyleSheet | Map<string, { [key: string]: string }>}   [styleSheetOrMap] - The stylesheet instance to
-    *        parse or an existing parsed stylesheet Map.
+    * @param styleSheetOrMap - The stylesheet instance to parse or an existing parsed stylesheet Map.
     *
-    * @param {object} [options] - Options for parsing stylesheet.
-    *
-    * @param {Iterable<RegExp>}  [options.excludeSelectorParts] - A list of RegExp instance used to exclude CSS
-    *        selector parts from parsed stylesheet data.
-    *
-    * @param {Iterable<RegExp>}  [options.includeCSSLayers] - A list of RegExp instance used to specifically include
-    *        in parsing for specific allowed CSS layers if present in the stylesheet.
-    *
-    * @param {Set<string>}  [options.includeSelectorPartSet] - A Set of strings to exactly match selector parts
-    *        to include in parsed stylesheet data.
+    * @param [options] - Options for parsing stylesheet.
     *
     * @returns {StyleSheetResolve} New instance with the given parsed data.
     */
-   static parse(styleSheetOrMap, options = {})
+   static parse(styleSheetOrMap: CSSStyleSheet | Map<string, { [key: string]: string }>,
+    options: StyleSheetResolve.Options.Parse = {}): StyleSheetResolve
    {
       return new StyleSheetResolve().parse(styleSheetOrMap, options);
    }
@@ -103,17 +90,17 @@ export class StyleSheetResolve
    // Accessors ------------------------------------------------------------------------------------------------------
 
    /**
-    * @returns {boolean} Current frozen state; when true no more modifications are possible.
+    * @returns Current frozen state; when true no more modifications are possible.
     */
-   get frozen()
+   get frozen(): boolean
    {
       return this.#frozen;
    }
 
    /**
-    * @returns {number} Returns the size / count of selector properties tracked.
+    * @returns Returns the size / count of selector properties tracked.
     */
-   get size()
+   get size(): number
    {
       return this.#sheetMap.size;
    }
@@ -123,10 +110,9 @@ export class StyleSheetResolve
    /**
     * Allows usage in `for of` loops directly.
     *
-    * @returns {MapIterator<[string, {[p: string]: string}]>} Entries Map iterator.
-    * @yields
+    * @returns Entries Map iterator.
     */
-   *[Symbol.iterator]()
+   *[Symbol.iterator](): MapIterator<[string, {[key: string]: string}]>
    {
       // Use `entries()` to make a shallow copy of data.
       yield* this.entries();
@@ -147,9 +133,9 @@ export class StyleSheetResolve
    /**
     * Clones this instance returning a new `StyleSheetResolve` instance with a copy of the data.
     *
-    * @returns {StyleSheetResolve} Cloned instance.
+    * @returns Cloned instance.
     */
-   clone()
+   clone(): StyleSheetResolve
    {
       return StyleSheetResolve.parse(this.#clone(this.#sheetMap));
    }
@@ -157,11 +143,11 @@ export class StyleSheetResolve
    /**
     * Deletes an entry in the parsed stylesheet Map.
     *
-    * @param {string}   selector - Selector key to delete.
+    * @param   selector - Selector key to delete.
     *
-    * @returns {boolean} Success state.
+    * @returns Success state.
     */
-   delete(selector)
+   delete(selector: string): boolean
    {
       if (this.#frozen) { throw new Error('Cannot modify a frozen StyleSheetResolve instance.'); }
 
@@ -174,7 +160,7 @@ export class StyleSheetResolve
     * @returns {MapIterator<[string, { [key: string]: string }]>} Tracked CSS selector key / value iterator.
     * @yields
     */
-   *entries()
+   *entries(): MapIterator<[string, { [key: string]: string }]>
    {
       // Ensure a shallow copy of style properties.
       for (const key of this.#sheetMap.keys()) { yield [key, { ...this.#sheetMap.get(key) }]; }
@@ -200,26 +186,14 @@ export class StyleSheetResolve
     * combined result. You may also provide additional selectors as the `resolve` option to substitute any CSS variables
     * in the target selector(s).
     *
-    * @param {string | Iterable<string>}   selector - A selector or array of selectors to retrieve.
+    * @param selector - A selector or list of selectors to retrieve.
     *
-    * @param {object}   [options] - Options.
+    * @param [options] - Options.
     *
-    * @param {boolean}  [options.camelCase=false] - When true, property keys will be in camel case.
-    *
-    * @param {number}   [options.depth] - Resolution depth for CSS variable substitution. By default, the depth is the
-    * length of the provided `resolve` selectors, but you may opt to provide a specific depth even with multiple
-    * resolution selectors.
-    *
-    * @param {string | Iterable<string>} [options.resolve] - Additional selectors as CSS variable resolution sources.
-    *
-    * @param {boolean} [options.warnCycles=false] - When true and resolving CSS variables cyclic / self-referential CSS
-    *        variable associations are detected.
-    *
-    * @param {boolean} [options.warnResolve=false] - When true, missing parent-selector in fallback-chain are logged.
-    *
-    * @returns {{ [key: string]: string } | undefined} Style properties object.
+    * @returns Style properties object or undefined.
     */
-   get(selector, { camelCase = false, depth, resolve, warnCycles = false, warnResolve = false } = {})
+   get(selector: string | Iterable<string>, { camelCase = false, depth, resolve, warnCycles = false,
+    warnResolve = false }: StyleSheetResolve.Options.Get = {}): { [key: string]: string } | undefined
    {
       if (typeof selector !== 'string' && !isIterable(selector))
       {
@@ -263,8 +237,7 @@ export class StyleSheetResolve
 
          depth = typeof depth === 'number' ? depth : Math.max(1, resolveList.length);
 
-         /** @type {import('./types').ResolveData} */
-         const resolveData = {
+         const resolveData: ResolveData = {
             parentNotFound: new Set(),
             seenCycles: new Set(),
             warnCycles
@@ -301,26 +274,16 @@ export class StyleSheetResolve
     * Gets a specific property value from the given `selector` and `property` key. Try and use a direct selector
     * match otherwise all keys are iterated to find a selector string that includes `selector`.
     *
-    * @param {string | string[]}   selector - Selector to find.
+    * @param   selector - A selector or list of selectors to retrieve.
     *
-    * @param {string}   property - Specific property to locate.
+    * @param   property - Specific property to locate.
     *
-    * @param {object}   [options] - Options.
+    * @param   [options] - Options.
     *
-    * @param {number}   [options.depth] - Resolution depth for CSS variable substitution. By default, the depth is the
-    *        length of the provided `resolve` selectors, but you may opt to provide a specific depth even with multiple
-    *        resolution selectors.
-    *
-    * @param {string | string[]} [options.resolve] - Additional selectors as CSS variable resolution sources.
-    *
-    * @param {boolean} [options.warnCycles=false] - When true and resolving CSS variables cyclic / self-referential CSS
-    *        variable associations are detected.
-    *
-    * @param {boolean} [options.warnResolve=false] - When true, missing parent-selector in fallback-chain are logged.
-    *
-    * @returns {string | undefined} Style property value.
+    * @returns Style property value.
     */
-   getProperty(selector, property, options)
+   getProperty(selector: string | Iterable<string>, property: string, options: StyleSheetResolve.Options.Get):
+    string | undefined
    {
       const data = this.get(selector, options);
 
@@ -330,19 +293,19 @@ export class StyleSheetResolve
    /**
     * Test if `StyleSheetResolve` tracks the given selector.
     *
-    * @param {string}   selector - CSS selector to check.
+    * @param   selector - CSS selector to check.
     *
-    * @returns {boolean} StyleSheetResolve tracks the given selector.
+    * @returns StyleSheetResolve tracks the given selector.
     */
-   has(selector)
+   has(selector: string): boolean
    {
       return this.#sheetMap.has(selector);
    }
 
    /**
-    * @returns {MapIterator<string>} Tracked CSS selector keys iterator.
+    * @returns Tracked CSS selector keys iterator.
     */
-   keys()
+   keys(): MapIterator<string>
    {
       return this.#sheetMap.keys();
    }
@@ -352,16 +315,14 @@ export class StyleSheetResolve
     * source of the merge overrides existing properties. You may choose to preserve existing values along with
     * specifying exact selector matches.
     *
-    * @param {StyleSheetResolve} source - Another instance to merge from.
+    * @param   source - Another instance to merge from.
     *
-    * @param {object} [options] - Options.
+    * @param   [options] - Options.
     *
-    * @param {boolean} [options.exactMatch=false] - Only merge if selector part keys match exactly.
-    *
-    * @param {'override' | 'preserve'} [options.strategy='override'] - By default, the source overrides existing values.
-    *        You may also provide a `preserve` strategy which only merges property keys that do not exist already.
+    * @returns This instance.
     */
-   merge(source, { exactMatch = false, strategy = 'override' } = {})
+   merge(source: StyleSheetResolve, { exactMatch = false, strategy = 'override' }:
+    StyleSheetResolve.Options.Merge = {}): this
    {
       if (this.#frozen) { throw new Error('Cannot modify a frozen StyleSheetResolve instance.'); }
 
@@ -383,28 +344,21 @@ export class StyleSheetResolve
 
          this.#sheetMap.set(selectorPart, merged);
       }
+
+      return this;
    }
 
    /**
     * Clears existing stylesheet mapping and parses the given stylesheet or Map.
     *
-    * @param {CSSStyleSheet | Map<string, { [key: string]: string }>}   styleSheetOrMap - The stylesheet element to
-    *        parse or an existing parsed stylesheet Map.
+    * @param   styleSheetOrMap - The stylesheet element to parse or an existing parsed stylesheet Map.
     *
-    * @param {object} [options] - Options for parsing stylesheet.
+    * @param   [options] - Options for parsing stylesheet.
     *
-    * @param {Iterable<RegExp>}  [options.excludeSelectorParts] - A list of RegExp instance used to exclude CSS
-    *        selector parts from parsed stylesheet data.
-    *
-    * @param {Iterable<RegExp>}  [options.includeCSSLayers] - A list of RegExp instance used to specifically include
-    *        in parsing for specific allowed CSS layers if present in the stylesheet.
-    *
-    * @param {Set<string>}  [options.includeSelectorPartSet] - A Set of strings to exactly match selector parts
-    *        to include in parsed stylesheet data.
-    *
-    * @returns {this} This instance.
+    * @returns This instance.
     */
-   parse(styleSheetOrMap, options = {})
+   parse(styleSheetOrMap: CSSStyleSheet | Map<string, { [key: string]: string }>,
+    options: StyleSheetResolve.Options.Parse = {}): this
    {
       this.#sheetMap.clear();
 
@@ -437,7 +391,7 @@ export class StyleSheetResolve
       }
       else if (CrossWindow.isMap(styleSheetOrMap))
       {
-         this.#sheetMap = this.#clone(styleSheetOrMap);
+         this.#sheetMap = this.#clone(styleSheetOrMap as Map<string, { [key: string]: string }>);
       }
 
       return this;
@@ -446,11 +400,11 @@ export class StyleSheetResolve
    /**
     * Directly sets a selector key with the given style properties object.
     *
-    * @param {string}   selector - A single selector key to set.
+    * @param   selector - A single selector key to set.
     *
-    * @param {{ [key: string]: string }}  styleObj - Style data object of property / value pairs.
+    * @param   styleObj - Style data object of property / value pairs.
     */
-   set(selector, styleObj)
+   set(selector: string, styleObj: { [key: string]: string })
    {
       if (this.#frozen) { throw new Error('Cannot modify a frozen StyleSheetResolve instance.'); }
 
@@ -465,13 +419,14 @@ export class StyleSheetResolve
    /**
     * Shallow clone of source Map into target Map.
     *
-    * @param {Map<string, { [key: string]: string }>} sourceMap - Source Map.
+    * @param   sourceMap - Source Map.
     *
-    * @param {Map<string, { [key: string]: string }>} [targetMap] - Target Map.
+    * @param   [targetMap] - Target Map.
     *
-    * @returns {Map<string, { [key: string]: string }>} Shallow copy cloned Map.
+    * @returns Shallow copy cloned Map.
     */
-   #clone(sourceMap, targetMap = new Map())
+   #clone(sourceMap: Map<string, { [key: string]: string }>,
+    targetMap: Map<string, { [key: string]: string }> = new Map()): Map<string, { [key: string]: string }>
    {
       // Shallow copy.
       for (const [selector, props] of sourceMap.entries()) { targetMap.set(selector, { ...props }); }
@@ -482,23 +437,14 @@ export class StyleSheetResolve
    /**
     * Parses the given CSSStyleSheet instance.
     *
-    * @param {CSSStyleSheet}  styleSheet - The stylesheet to parse.
+    * @param styleSheet - The stylesheet to parse.
     *
-    * @param {object} [opts] - Options for parsing stylesheet.
-    *
-    * @param {Iterable<RegExp>}  [opts.excludeSelectorParts] - A list of RegExp instance used to exclude CSS
-    *        selector parts from parsed stylesheet data.
-    *
-    * @param {Iterable<RegExp>}  [opts.includeCSSLayers] - A list of RegExp instance used to specifically include
-    *        in parsing for specific allowed CSS layers if present in the stylesheet.
-    *
-    * @param {Set<string>}  [opts.includeSelectorPartSet] - A Set of strings to exactly match selector parts
-    *        to include in parsed stylesheet data.
+    * @param [opts] - Options for parsing stylesheet.
     */
-   #parse(styleSheet, opts)
+   #parse(styleSheet: CSSStyleSheet, opts: StyleSheetResolve.Options.Parse)
    {
-      // Convert to consistent array data.
-      const options = {
+      // Convert to consistent sanitized options data data.
+      const options: ProcessOptions = {
          excludeSelectorParts: isIterable(opts.excludeSelectorParts) ? Array.from(opts.excludeSelectorParts) : [],
          includeCSSLayers: isIterable(opts.includeCSSLayers) ? Array.from(opts.includeCSSLayers) : [],
          includeSelectorPartSet: CrossWindow.isSet(opts.includeSelectorPartSet) ? opts.includeSelectorPartSet :
@@ -506,7 +452,7 @@ export class StyleSheetResolve
       }
 
       // Parse each CSSStyleRule and build the map of selectors to properties.
-      for (const rule of styleSheet.cssRules)
+      for (const rule of Array.from(styleSheet.cssRules))
       {
          // For mock testing `cssRules` uses a basic test.
          if (CrossWindow.isCSSLayerBlockRule(rule) && typeof rule.cssRules === 'object')
@@ -525,11 +471,11 @@ export class StyleSheetResolve
     *
     * Extracts property declarations from within a selector block: `"div { color: red; background: blue; }"`.
     *
-    * @param {string}   cssText - CSS text to parse from `CSSStyleRule`.
+    * @param   cssText - CSS text to parse from `CSSStyleRule`.
     *
-    * @returns {{ [key: string]: string }} Parsed `cssText`.
+    * @returns Parsed `cssText`.
     */
-   #parseCssText(cssText)
+   #parseCssText(cssText: string): { [key: string]: string }
    {
       const match = cssText.match(/{([^}]*)}/);
       /* c8 ignore next 1 */
@@ -550,20 +496,13 @@ export class StyleSheetResolve
    /**
     * Recursively parses / processes a CSSLayerBlockRule and encountered CSSStyleRule entries.
     *
-    * @param {CSSLayerBlockRule} blockRule - The `CSSLayerBlockRule` to parse.
+    * @param   blockRule - The `CSSLayerBlockRule` to parse.
     *
-    * @param {string}   parentLayerName - Name of parent CSS layer.
+    * @param   parentLayerName - Name of parent CSS layer.
     *
-    * @param {object}   opts - Sanitized options.
-    *
-    * @param {RegExp[]} opts.excludeSelectorParts - Array of RegExp to filter via exclusion CSS selector parts.
-    *
-    * @param {RegExp[]} opts.includeCSSLayers - Array of RegExp to filter via inclusion for CSS layer names.
-    *
-    * @param {Set<string>}  opts.includeSelectorPartSet - A Set of strings to exactly match selector parts
-    *        to include in parsed stylesheet data.
+    * @param   opts - Sanitized process options.
     */
-   #processLayerBlockRule(blockRule, parentLayerName, opts)
+   #processLayerBlockRule(blockRule: CSSLayerBlockRule, parentLayerName: string, opts: ProcessOptions)
    {
       /* c8 ignore next 1 */  // For mock testing `cssRules` uses a basic test.
       if (!CrossWindow.isCSSLayerBlockRule(blockRule) || typeof blockRule?.cssRules !== 'object') { return; }
@@ -572,7 +511,7 @@ export class StyleSheetResolve
 
       const layerBlockRules = [];
 
-      for (const rule of blockRule.cssRules)
+      for (const rule of Array.from(blockRule.cssRules))
       {
          if (CrossWindow.isCSSLayerBlockRule(rule)) { layerBlockRules.push(rule); }
 
@@ -592,18 +531,11 @@ export class StyleSheetResolve
    /**
     * Processes a `CSSStyleRule`.
     *
-    * @param {CSSStyleRule} styleRule - Style rule to parse.
+    * @param   styleRule - Style rule to parse.
     *
-    * @param {object}   opts - Sanitized options.
-    *
-    * @param {RegExp[]} opts.excludeSelectorParts - Array of RegExp to filter via exclusion CSS selector parts.
-    *
-    * @param {RegExp[]} opts.includeCSSLayers - Array of RegExp to filter via inclusion for CSS layer names.
-    *
-    * @param {Set<string>}  opts.includeSelectorPartSet - A Set of strings to exactly match selector parts
-    *        to include in parsed stylesheet data.
+    * @param   opts - ProcessOptions.
     */
-   #processStyleRule(styleRule, opts)
+   #processStyleRule(styleRule: CSSStyleRule, opts: ProcessOptions)
    {
       /* c8 ignore next 1 */
       if (typeof styleRule.selectorText !== 'string') { return; }
@@ -635,16 +567,16 @@ export class StyleSheetResolve
     * Resolves intermediate CSS variables defined in the `result` style properties object with data from the given
     * `resolve` selector(s).
     *
-    * @param {{ [key: string]: string }} result - Copy of source selector style properties to resolve.
+    * @param   result - Copy of source selector style properties to resolve.
     *
-    * @param {string[]} resolve - Parent CSS variable resolution selectors.
+    * @param   resolve - Parent CSS variable resolution selectors.
     *
-    * @param {import('./types').ResolveData} resolveData - Resolution data.
+    * @param   resolveData - Resolution data.
     */
-   #resolve(result, resolve, resolveData)
+   #resolve(result: { [key: string]: string }, resolve: string[], resolveData: ResolveData)
    {
       // Collect all parent-defined CSS variables.
-      const parentVars = {};
+      const parentVars: { [key: string]: string } = {};
 
       for (const entry of resolve)
       {
@@ -676,51 +608,79 @@ export class StyleSheetResolve
 }
 
 /**
+ * Process options sanitized and converted for internal usage.
+ */
+type ProcessOptions = {
+   /**
+    * Array of RegExp to filter via exclusion CSS selector parts.
+    */
+   excludeSelectorParts: RegExp[];
+
+   /**
+    * Array of RegExp to filter via inclusion for CSS layer names.
+    */
+   includeCSSLayers: RegExp[];
+
+   /**
+    * A Set of strings to exactly match selector parts to include in parsed stylesheet data.
+    */
+   includeSelectorPartSet: Set<string>;
+}
+
+/**
+ * Additional tracking data passed to CSS variable resolution path.
+ */
+type ResolveData = {
+   /**
+    * Stores resolution parents that are not found.
+    */
+   parentNotFound: Set<string>;
+
+   /**
+    * Dedupes warnings for cyclic dependency warnings.
+    */
+   seenCycles: Set<string>;
+
+   /**
+    * Cyclic dependency warnings enabled.
+    */
+   warnCycles: boolean;
+}
+
+/**
  * Encapsulates CSS variable resolution logic and data.
  */
 class ResolveVars
 {
-   static #MAX_FALLBACK_DEPTH = 10;
+   static readonly #MAX_FALLBACK_DEPTH = 10;
 
    /**
     * Initial style properties w/ CSS variables to track.
-    *
-    * @type {Map<string, string>}
     */
-   #propMap = new Map();
+   #propMap = new Map<string, string>();
 
    /**
     * Reverse lookup for CSS variable name to associated property.
-    *
-    * @type {Map<string, Set<string>>}
     */
-   #varToProp = new Map();
+   #varToProp = new Map<string, Set<string>>();
 
    /**
     * Resolved CSS variable from parent selector properties.
-    *
-    * @type {Map<string, string>}
     */
-   #varResolved = new Map();
+   #varResolved = new Map<string, string>();
+
+   readonly #parentVars: { [key: string]: string };
+
+   #resolveData: ResolveData;
 
    /**
-    * @type {{ [key: string]: string }}
-    */
-   #parentVars;
-
-   /**
-    * @type {import('./types').ResolveData}
-    */
-   #resolveData;
-
-   /**
-    * @param {{ [key: string]: string }} initial - Initial style entry to resolve.
+    * @param initial - Initial style entry to resolve.
     *
-    * @param {{ [key: string]: string }} parentVars - All parent resolution vars.
+    * @param parentVars - All parent resolution vars.
     *
-    * @param {import('./types').ResolveData} resolveData - Resolution data.
+    * @param resolveData - Resolution data.
     */
-   constructor(initial, parentVars, resolveData)
+   constructor(initial: { [key: string]: string }, parentVars: { [key: string]: string }, resolveData: ResolveData)
    {
       this.#parentVars = parentVars;
       this.#resolveData = resolveData;
@@ -751,9 +711,9 @@ class ResolveVars
     * Supports chained fallbacks like: var(--a, var(--b, var(--c, red))) and resolving variables in statements like
     * `calc(1rem + var(--x))`.
     *
-    * @returns {{ [key: string]: string }} All fields that have been resolved.
+    * @returns All fields that have been resolved.
     */
-   get resolved()
+   get resolved(): { [key: string]: string }
    {
       const result = {};
 
@@ -812,9 +772,9 @@ class ResolveVars
    }
 
    /**
-    * @returns {number} Unresolved field count.
+    * @returns Unresolved field count.
     */
-   get unresolvedCount()
+   get unresolvedCount(): number
    {
       let count = 0;
 
@@ -829,11 +789,11 @@ class ResolveVars
    /**
     * Sets the parent selector defined CSS variable for resolution.
     *
-    * @param {string}   name - CSS variable name
+    * @param name - CSS variable name
     *
-    * @param {string}   value - Value of target CSS variable.
+    * @param value - Value of target CSS variable.
     */
-   set(name, value)
+   set(name: string, value: string)
    {
       /* c8 ignore next 1 */
       if (typeof value !== 'string' || value.length === 0) { return; }
@@ -854,17 +814,15 @@ class ResolveVars
     * Performs DFS traversal to detect cycles in CSS variable resolution. Tracks the resolution path and emits a
     * warning if a cycle is found. Each affected property is reported once with its originating chain.
     *
-    * @param {string}   name - CSS variable name
+    * @param   value - Value of target CSS variable.
     *
-    * @param {string}   value - Value of target CSS variable.
+    * @param   visited - Visited CSS variables.
     *
-    * @param {Set<string>} visited - Visited CSS variables.
+    * @param   seenCycles - Dedupe cyclic dependency warnings.
     *
-    * @param {Set<string>} seenCycles - Dedupe cyclic dependency warnings.
-    *
-    * @returns {string | undefined} Resolution result or undefined.
+    * @returns Resolution result or undefined.
     */
-   #resolveCycleWarn(name, value, visited, seenCycles)
+   #resolveCycleWarn(value: string, visited: Set<string>, seenCycles: Set<string>): string | undefined
    {
       const match = value.match(/^var\((--[\w-]+)\)$/);
       if (!match) { return value; }
@@ -904,7 +862,7 @@ class ResolveVars
       /* c8 ignore next 1 */
       if (typeof nextValue !== 'string') { return void 0; }
 
-      return this.#resolveCycleWarn(next, nextValue, visited, seenCycles);
+      return this.#resolveCycleWarn(nextValue, visited, seenCycles);
    }
 
    /**
@@ -914,13 +872,13 @@ class ResolveVars
     * - Recursively evaluates nested fallbacks if they are var(...).
     * - Limits recursion depth to prevent cycles or stack overflow.
     *
-    * @param {string}   expr - CSS var expression to resolve.
+    * @param   expr - CSS var expression to resolve.
     *
-    * @param {number}   depth - Recursion guard
+    * @param   depth - Recursion guard
     *
-    * @returns {string} Nested fallback resolution result.
+    * @returns Nested fallback resolution result.
     */
-   #resolveNestedFallback(expr, depth = 0)
+   #resolveNestedFallback(expr: string, depth: number = 0): string
    {
       /* c8 ignore next 1 */ // Prevent runaway recursion or malformed fallback chains.
       if (depth > ResolveVars.#MAX_FALLBACK_DEPTH) { return expr; }
@@ -963,13 +921,13 @@ class ResolveVars
    /**
     * Sets the parent selector defined CSS variable for resolution with additional cyclic dependency metrics.
     *
-    * @param {string}   name - CSS variable name
+    * @param   name - CSS variable name
     *
-    * @param {string}   value - Value of target CSS variable.
+    * @param   value - Value of target CSS variable.
     */
-   #setCycleWarn(name, value)
+   #setCycleWarn(name: string, value: string)
    {
-      const resolved = this.#resolveCycleWarn(name, value, new Set([name]), this.#resolveData.seenCycles);
+      const resolved = this.#resolveCycleWarn(value, new Set([name]), this.#resolveData.seenCycles);
 
       if (resolved !== void 0 && this.#varToProp.has(name) && !this.#varResolved.has(name))
       {
@@ -977,3 +935,93 @@ class ResolveVars
       }
    }
 }
+
+/**
+ * Provides various options types for {@link StyleSheetResolve}.
+ */
+declare namespace StyleSheetResolve {
+   /**
+    * Provides various options types for {@link StyleSheetResolve}.
+    */
+   export namespace Options {
+      /**
+       * Optional options for {@link StyleSheetResolve.get} and {@link StyleSheetResolve.getProperty}.
+       */
+      type Get = {
+         /**
+          * When true, returned property keys will be in camel case.
+          *
+          * @defaultValue `false`
+          */
+         camelCase?: boolean;
+
+         /**
+          * Resolution depth for CSS variable substitution. By default, the depth is the length of the provided
+          * `resolve` selectors, but you may opt to provide a specific depth even with multiple resolution selectors.
+          */
+         depth?: number;
+
+         /**
+          * Additional parent selectors as CSS variable resolution sources.
+          */
+         resolve?: string | Iterable<string>;
+
+         /**
+          * When true and resolving CSS variables cyclic / self-referential CSS variable associations are detected.
+          *
+          * @defaultValue `false`
+          */
+         warnCycles?: boolean;
+
+         /**
+          * When true, missing parent-selector in fallback-chain are logged.
+          *
+          * @defaultValue `false`
+          */
+         warnResolve?: boolean;
+      }
+
+      /**
+       * Optional options for {@link StyleSheetResolve.merge}.
+       */
+      type Merge = {
+         /**
+          * Only merge if selector part keys match exactly.
+          *
+          * @defaultValue `false`.
+          */
+         exactMatch?: boolean;
+
+         /**
+          * By default, the source overrides existing values. You may also provide a `preserve` strategy which only
+          * merges property keys that do not exist already.
+          *
+          * @defaultValue `override`
+          */
+         strategy?: 'override' | 'preserve';
+      }
+
+      /**
+       * Optional options for {@link StyleSheetResolve.parse}.
+       */
+      type Parse = {
+         /**
+          * A list of RegExp instance used to exclude CSS selector parts from parsed stylesheet data.
+          */
+         excludeSelectorParts?: Iterable<RegExp>;
+
+         /**
+          * A list of RegExp instance used to specifically include in parsing for specific allowed CSS layers if
+          * present in the stylesheet.
+          */
+         includeCSSLayers?: Iterable<RegExp>;
+
+         /**
+          * A Set of strings to exactly match selector parts to include in parsed stylesheet data.
+          */
+         includeSelectorPartSet?: Set<string>;
+      }
+   }
+}
+
+export { StyleSheetResolve }

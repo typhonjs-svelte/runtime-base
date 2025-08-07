@@ -1,31 +1,39 @@
 import {
    isIterable,
-   isObject }           from '#runtime/util/object';
+   isObject }                    from '#runtime/util/object';
 
-import { StyleParse }   from '../parse/index.js';
+import { StyleParse }            from '../parse';
+
+import type { TJSStyleManager }  from './TJSStyleManager';
 
 /**
- * @implements {import('./types').CSSRuleManager>}
+ *
  */
-export class CSSRuleManager
+export class CSSRuleManager implements TJSStyleManager.CSSRuleManager
 {
-   /** @type {CSSStyleRule} */
-   #cssRule;
-
-   /** @type {string} */
-   #selector;
-
-   /** @type {string} */
-   #name;
+   /**
+    *
+    */
+   #cssRule: CSSStyleRule;
 
    /**
-    * @param {CSSStyleRule} cssRule -
     *
-    * @param {string} name -
-    *
-    * @param {string} selector -
     */
-   constructor(cssRule, name, selector)
+   readonly #selector: string;
+
+   /**
+    *
+    */
+   readonly #name: string;
+
+   /**
+    * @param   cssRule -
+    *
+    * @param   name -
+    *
+    * @param   selector -
+    */
+   constructor(cssRule: CSSStyleRule, name: string, selector: string)
    {
       if (typeof name !== 'string') { throw new TypeError(`CSSRuleManager error: 'name' is not a string.`); }
       if (typeof selector !== 'string') { throw new TypeError(`CSSRuleManager error: 'selector' is not a string.`); }
@@ -36,10 +44,9 @@ export class CSSRuleManager
    }
 
    /**
-    * @returns {string | undefined} Provides an accessor to get the `cssText` for the style sheet or undefined if not
-    *          connected.
+    * @returns Provides an accessor to get the `cssText` for the style sheet or undefined if not connected.
     */
-   get cssText()
+   get cssText(): string | undefined
    {
       return this.isConnected ? this.#cssRule.style.cssText : void 0;
    }
@@ -47,9 +54,9 @@ export class CSSRuleManager
    /**
     * Determines if this CSSRuleManager is still connected / available.
     *
-    * @returns {boolean} Is CSSRuleManager connected.
+    * @returns Is CSSRuleManager connected.
     */
-   get isConnected()
+   get isConnected(): boolean
    {
       const sheet = this.#cssRule?.parentStyleSheet;
       const owner = sheet?.ownerNode;
@@ -58,25 +65,25 @@ export class CSSRuleManager
    }
 
    /**
-    * @returns {string} Name of this CSSRuleManager indexed by associated TJSStyleManager.
+    * @returns Name of this CSSRuleManager indexed by associated TJSStyleManager.
     */
-   get name()
+   get name(): string
    {
       return this.#name;
    }
 
    /**
-    * @returns {string} The associated selector for this CSS rule.
+    * @returns The associated selector for this CSS rule.
     */
-   get selector()
+   get selector(): string
    {
       return this.#selector;
    }
 
    /**
-    * @param {string} cssText - Provides an accessor to set the `cssText` for the style rule.
+    * @param   cssText - Provides an accessor to set the `cssText` for the style rule.
     */
-   set cssText(cssText)
+   set cssText(cssText: string)
    {
       if (!this.isConnected) { return; }
 
@@ -86,9 +93,9 @@ export class CSSRuleManager
    /**
     * Retrieves an object with the current CSS rule data.
     *
-    * @returns {{ [key: string]: string } | undefined} Current CSS rule data or undefined if not connected.
+    * @returns Current CSS rule data or undefined if not connected.
     */
-   get()
+   get(): { [key: string]: string } | undefined
    {
       return this.isConnected ? StyleParse.cssText(this.#cssRule.style.cssText) : void 0;
    }
@@ -96,11 +103,11 @@ export class CSSRuleManager
    /**
     * Gets a particular CSS variable.
     *
-    * @param {string}   key - CSS variable property key.
+    * @param   key - CSS variable property key.
     *
-    * @returns {string | undefined} Returns CSS variable value or undefined if not connected.
+    * @returns Returns CSS variable value or undefined if not connected.
     */
-   getProperty(key)
+   getProperty(key: string): string | undefined
    {
       if (!this.isConnected) { return; }
 
@@ -112,11 +119,11 @@ export class CSSRuleManager
    /**
     * Returns whether this CSS rule manager has a given property key.
     *
-    * @param {string}   key - CSS variable property key.
+    * @param   key - CSS variable property key.
     *
-    * @returns {boolean} Property key exists / is defined.
+    * @returns Property key exists / is defined.
     */
-   hasProperty(key)
+   hasProperty(key: string): boolean
    {
       if (!this.isConnected) { return false; }
 
@@ -128,11 +135,11 @@ export class CSSRuleManager
    /**
     * Set rules by property / value; useful for CSS variables.
     *
-    * @param {{ [key: string]: string }}  rules - An object with property / value string pairs to load.
+    * @param   rules - An object with property / value string pairs to load.
     *
-    * @param {boolean}                 [overwrite=true] - When true overwrites any existing values.
+    * @param   [overwrite=true] - When true overwrites any existing values; default: `true`.
     */
-   setProperties(rules, overwrite = true)
+   setProperties(rules: { [key: string]: string }, overwrite: boolean = true)
    {
       if (!this.isConnected) { return; }
 
@@ -166,13 +173,13 @@ export class CSSRuleManager
    /**
     * Sets a particular property.
     *
-    * @param {string}   key - CSS variable property key.
+    * @param key - CSS variable property key.
     *
-    * @param {string}   value - CSS variable value.
+    * @param value - CSS variable value.
     *
-    * @param {boolean}  [overwrite=true] - Overwrite any existing value.
+    * @param [overwrite=true] - When true overwrites any existing value; default: `true`.
     */
-   setProperty(key, value, overwrite = true)
+   setProperty(key: string, value: string, overwrite: boolean = true)
    {
       if (!this.isConnected) { return; }
 
@@ -201,9 +208,9 @@ export class CSSRuleManager
    /**
     * Removes the property keys specified. If `keys` is an iterable list then all property keys in the list are removed.
     *
-    * @param {Iterable<string>} keys - The property keys to remove.
+    * @param keys - The property keys to remove.
     */
-   removeProperties(keys)
+   removeProperties(keys: Iterable<string>)
    {
       if (!this.isConnected) { return; }
 
@@ -216,13 +223,13 @@ export class CSSRuleManager
    }
 
    /**
-    * Removes a particular CSS variable.
+    * Removes a particular CSS property.
     *
-    * @param {string}   key - CSS variable property key.
+    * @param key - CSS property key.
     *
-    * @returns {string | undefined} CSS variable value when removed.
+    * @returns CSS value when removed.
     */
-   removeProperty(key)
+   removeProperty(key: string): string | undefined
    {
       if (!this.isConnected) { return; }
 

@@ -6,9 +6,9 @@ export class StyleParse
    static #regexPixels = /(\d+)\s*px/;
 
    /**
-    * @hideconstructor
+    * @private
     */
-   constructor()
+   private constructor()
    {
       throw new Error('StyleParse constructor: This is a static class and should not be constructed.');
    }
@@ -19,15 +19,15 @@ export class StyleParse
     * Intended for parsing raw `style=""` attributes or standalone CSS declaration blocks (IE
     * `"color: red; font-size: 14px"`).
     *
-    * @param {string} cssText - Inline CSS style text to parse.
+    * @param cssText - Inline CSS style text to parse.
     *
-    * @param {object} [options] - Optional settings.
+    * @param [options] - Optional settings.
     *
-    * @param {boolean} [options.camelCase=false] - Whether to convert property names to camelCase.
+    * @param [options.camelCase=false] - Whether to convert property names to camelCase.
     *
-    * @returns {{ [key: string]: string }} Parsed object of CSS properties.
+    * @returns Parsed object of CSS properties.
     */
-   static cssText(cssText, { camelCase = false } = {})
+   static cssText(cssText: string, { camelCase = false }: { camelCase?: boolean } = {}): { [key: string]: string }
    {
       if (typeof cssText !== 'string') { return {}; }
 
@@ -57,11 +57,11 @@ export class StyleParse
    /**
     * Parses a pixel string / computed styles. Ex. `100px` returns `100`.
     *
-    * @param {string}   value - Value to parse.
+    * @param   value - Value to parse.
     *
-    * @returns {number|undefined} The integer component of a pixel string.
+    * @returns The integer component of a pixel string.
     */
-   static pixels(value)
+   static pixels(value: string): number | undefined
    {
       if (typeof value !== 'string') { return void 0; }
 
@@ -74,18 +74,18 @@ export class StyleParse
    /**
     * Returns the pixel value for `1rem` based on the root document element. You may apply an optional multiplier.
     *
-    * @param {number} [multiplier=1] - Optional multiplier to apply to `rem` pixel value; default: 1.
+    * @param [multiplier=1] - Optional multiplier to apply to `rem` pixel value; default: 1.
     *
-    * @param {object} [options] - Optional parameters.
+    * @param [options] - Optional parameters.
     *
-    * @param {Document} [options.targetDocument=document] The target DOM {@link Document} if different from the main
+    * @param [options.targetDocument=document] The target DOM {@link Document} if different from the main
     *        browser global `document`.
     *
-    * @returns {number} The pixel value for `1rem` with or without a multiplier based on the root document element.
+    * @returns The pixel value for `1rem` with or without a multiplier based on the root document element.
     */
-   static remPixels(multiplier = 1, { targetDocument = document } = {})
+   static remPixels(multiplier: number = 1, { targetDocument = document }: { targetDocument?: Document } = {}): number
    {
       return targetDocument?.documentElement ?
-       multiplier * parseFloat(globalThis.getComputedStyle(targetDocument.documentElement).fontSize) : void 0;
+       multiplier * parseFloat(window.getComputedStyle(targetDocument.documentElement).fontSize) : void 0;
    }
 }
