@@ -455,7 +455,7 @@ class StyleSheetResolve
       for (const rule of Array.from(styleSheet.cssRules))
       {
          // For mock testing `cssRules` uses a basic test.
-         if (CrossWindow.isCSSLayerBlockRule(rule) && typeof rule.cssRules === 'object')
+         if (CrossWindow.isCSSLayerBlockRule(rule))
          {
             this.#processLayerBlockRule(rule, void 0, options);
          }
@@ -504,9 +504,6 @@ class StyleSheetResolve
     */
    #processLayerBlockRule(blockRule: CSSLayerBlockRule, parentLayerName: string | undefined, opts: ProcessOptions)
    {
-      /* c8 ignore next 1 */  // For mock testing `cssRules` uses a basic test.
-      if (!CrossWindow.isCSSLayerBlockRule(blockRule) || typeof blockRule?.cssRules !== 'object') { return; }
-
       const fullname = typeof parentLayerName === 'string' ? `${parentLayerName}.${blockRule.name}` : blockRule.name;
 
       const layerBlockRules = [];
@@ -1027,4 +1024,5 @@ declare namespace StyleSheetResolve {
    }
 }
 
+// @ts-ignore // strict checking doesn't like the intentional dual namespace / class export.
 export { StyleSheetResolve }
