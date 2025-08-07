@@ -83,11 +83,11 @@ export class CSSRuleManager implements TJSStyleManager.CSSRuleManager
    /**
     * @param   cssText - Provides an accessor to set the `cssText` for the style rule.
     */
-   set cssText(cssText: string)
+   set cssText(cssText: string | undefined)
    {
       if (!this.isConnected) { return; }
 
-      this.#cssRule.style.cssText = cssText;
+      this.#cssRule.style.cssText = typeof cssText === 'string' ? cssText : '';
    }
 
    /**
@@ -109,11 +109,13 @@ export class CSSRuleManager implements TJSStyleManager.CSSRuleManager
     */
    getProperty(key: string): string | undefined
    {
-      if (!this.isConnected) { return; }
+      if (!this.isConnected) { return void 0; }
 
       if (typeof key !== 'string') { throw new TypeError(`CSSRuleManager error: 'key' is not a string.`); }
 
-      return this.#cssRule.style.getPropertyValue(key);
+      const result = this.#cssRule.style.getPropertyValue(key);
+
+      return result !== '' ? result : void 0;
    }
 
    /**
@@ -227,14 +229,16 @@ export class CSSRuleManager implements TJSStyleManager.CSSRuleManager
     *
     * @param key - CSS property key.
     *
-    * @returns CSS value when removed.
+    * @returns CSS value when removed or undefined if non-existent.
     */
    removeProperty(key: string): string | undefined
    {
-      if (!this.isConnected) { return; }
+      if (!this.isConnected) { return void 0; }
 
       if (typeof key !== 'string') { throw new TypeError(`CSSRuleManager error: 'key' is not a string.`); }
 
-      return this.#cssRule.style.removeProperty(key);
+      const result = this.#cssRule.style.removeProperty(key);
+
+      return result !== '' ? result : void 0;
    }
 }

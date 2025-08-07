@@ -6,8 +6,7 @@
     "moduleResolution" : "Bundler",
     "target": "ES2022",
 
-    "strict": false,
-    "strictNullChecks": false,
+    "strict": true
   },
   "include": [
     "./**/*"

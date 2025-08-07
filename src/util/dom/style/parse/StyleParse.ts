@@ -31,7 +31,7 @@ export class StyleParse
    {
       if (typeof cssText !== 'string') { return {}; }
 
-      const result = {};
+      const result: { [key: string]: string } = {};
 
       for (const entry of cssText.split(';'))
       {
@@ -83,7 +83,8 @@ export class StyleParse
     *
     * @returns The pixel value for `1rem` with or without a multiplier based on the root document element.
     */
-   static remPixels(multiplier: number = 1, { targetDocument = document }: { targetDocument?: Document } = {}): number
+   static remPixels(multiplier: number = 1, { targetDocument = window.document }: { targetDocument?: Document } = {}):
+    number | undefined
    {
       return targetDocument?.documentElement ?
        multiplier * parseFloat(window.getComputedStyle(targetDocument.documentElement).fontSize) : void 0;

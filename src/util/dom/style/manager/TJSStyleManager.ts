@@ -40,7 +40,7 @@ class TJSStyleManager
    /**
     *
     */
-   readonly #layerName: string;
+   readonly #layerName: string | undefined;
 
    /**
     *
@@ -57,7 +57,7 @@ class TJSStyleManager
     */
    private constructor({ cssRuleMap, id, styleElement, version, layerName, token }:
     { cssRuleMap: Map<string, TJSStyleManager.CSSRuleManager>; id: string; styleElement: HTMLStyleElement;
-     version: number; layerName: string; token: symbol })
+     version: number; layerName?: string; token: symbol })
    {
       if (token !== TJSStyleManager.#CTOR_TOKEN)
       {
@@ -207,7 +207,7 @@ class TJSStyleManager
    /**
     * @returns Provides an accessor to get the `textContent` for the style sheet.
     */
-   get textContent(): string
+   get textContent(): string | null
    {
       return this.#styleElement?.textContent;
    }
@@ -233,11 +233,12 @@ class TJSStyleManager
    {
       if (!this.isConnected) { return; }
 
-      const rules = {};
+      const rules: { [key: string]: string } = {};
 
       for (const key of this.#cssRuleMap.keys())
       {
-         rules[key] = this.#cssRuleMap.get(key).selector;
+         const selector = this.#cssRuleMap.get(key)?.selector;
+         if (selector) { rules[key] = selector }
       }
 
       const newStyleManager = TJSStyleManager.#createImpl({
@@ -255,7 +256,10 @@ class TJSStyleManager
          {
             if (newStyleManager.#cssRuleMap.has(key))
             {
-               newStyleManager.#cssRuleMap.get(key).cssText = this.#cssRuleMap.get(key).cssText;
+               const value = this.#cssRuleMap.get(key)?.cssText;
+               const targetRuleManager = newStyleManager.#cssRuleMap.get(key);
+
+               if (value && targetRuleManager) { targetRuleManager.cssText = value; }
             }
          }
 
@@ -319,7 +323,7 @@ class TJSStyleManager
    // Internal Implementation ----------------------------------------------------------------------------------------
 
    /**
-    * TODO: semver verification, possible throwing of errors
+    * TODO: semver verification, logging warnings
     *
     * @param document - Target Document.
     *
@@ -334,12 +338,13 @@ class TJSStyleManager
       const styleElement = document.querySelector<TJSStyleManager.TJSStyleElement>(`head style#${id}`);
 
       if (!styleElement) { return void 0; }
+      if (styleElement.sheet === null) { return void 0; }
 
       const existingRules = styleElement?._tjsRules;
       const existingVersion = styleElement?._tjsVersion;
       const existingLayerName = styleElement?._tjsLayerName;
 
-      let targetSheet: StyleSheet | CSSLayerBlockRule = styleElement?.sheet;
+      let targetSheet: CSSStyleSheet | CSSLayerBlockRule = styleElement.sheet;
 
       if (!isObject(existingRules)) { return void 0; }
 
@@ -380,7 +385,7 @@ class TJSStyleManager
 
             if (reverseRuleMap.has(selector))
             {
-               const ruleName = reverseRuleMap.get(selector);
+               const ruleName = reverseRuleMap.get(selector) as string;
 
                cssRuleMap.set(ruleName, new CSSRuleManager(cssRule, ruleName, selector));
 
@@ -410,21 +415,24 @@ class TJSStyleManager
    }
 
    /**
-    * @param {Document} document - Target Document.
+    * TODO: semver verification, logging warnings
     *
-    * @param {string} id - Associated CSS ID
+    * @param document - Target Document.
     *
-    * @param {{ [key: string]: string }} rules -
+    * @param id - Associated CSS ID
     *
-    * @param {number} version -
+    * @param rules -
     *
-    * @param {string} layerName -
+    * @param version -
     *
-    * @returns {TJSStyleManager | undefined} New TJSStyleManager instance.
+    * @param layerName -
+    *
+    * @returns New TJSStyleManager instance.
     */
-   static #initializeCreate(document, id, rules, version, layerName)
+   static #initializeCreate(document: Document, id: string, rules: { [key: string]: string }, version: number,
+    layerName: string | undefined): TJSStyleManager | undefined
    {
-      const styleElement = document.createElement('style');
+      const styleElement = (document.createElement('style') as TJSStyleManager.TJSStyleElement);
       styleElement.id = id;
       styleElement.setAttribute('data-version', String(version));
 
@@ -434,7 +442,9 @@ class TJSStyleManager
 
       document.head.append(styleElement);
 
-      let targetSheet;
+      let targetSheet: CSSStyleSheet | CSSLayerBlockRule | null;
+
+      if (styleElement.sheet === null) { return void 0; }
 
       const cssRuleMap = new Map();
 
@@ -443,21 +453,24 @@ class TJSStyleManager
          if (layerName)
          {
             const index = styleElement.sheet.insertRule(`@layer ${layerName} {}`);
-            targetSheet = styleElement.sheet.cssRules[index];
+            targetSheet = styleElement.sheet.cssRules[index] as CSSLayerBlockRule;
          }
          else
          {
             targetSheet = styleElement.sheet;
          }
 
-         for (const ruleName in rules)
+         if (rules)
          {
-            const selector = rules[ruleName];
-            const index = targetSheet.insertRule(`${selector} {}`);
+            for (const ruleName in rules)
+            {
+               const selector = rules[ruleName];
+               const index = targetSheet.insertRule(`${selector} {}`);
 
-            const cssRule = /** @type {CSSStyleRule} */ targetSheet.cssRules[index];
+               const cssRule = targetSheet.cssRules[index] as CSSStyleRule;
 
-            cssRuleMap.set(ruleName, new CSSRuleManager(cssRule, ruleName, selector));
+               cssRuleMap.set(ruleName, new CSSRuleManager(cssRule, ruleName, selector));
+            }
          }
 
          return new TJSStyleManager({
@@ -541,16 +554,16 @@ declare namespace TJSStyleManager {
          id: string;
 
          /**
+          * An integer representing the version / level of styles being managed.
+          */
+         version: number;
+
+         /**
           * Target document to load styles into.
           *
           * @defaultValue `window.document`
           */
          document?: Document;
-
-         /**
-          * An integer representing the version / level of styles being managed.
-          */
-         version?: number;
       }
 
       /**
@@ -561,6 +574,11 @@ declare namespace TJSStyleManager {
           * Required CSS ID providing a link to a specific style sheet element.
           */
          id: string;
+
+         /**
+          * CSS Rules configuration. Rule name / selector.
+          */
+         rules: { [key: string]: string };
 
          /**
           * Required integer representing the version / level of styles being managed.
@@ -578,11 +596,6 @@ declare namespace TJSStyleManager {
           * Optional CSS layer name defining the top level CSS layer containing all rules.
           */
          layerName?: string;
-
-         /**
-          * Optional CSS Rules configuration.
-          */
-         rules?: { [key: string]: string };
       }
 
       /**
@@ -608,12 +621,12 @@ declare namespace TJSStyleManager {
       /**
        * @returns Provides an accessor to get the `cssText` for the style sheet.
        */
-      get cssText(): string;
+      get cssText(): string | undefined;
 
       /**
        * @param cssText - Provides an accessor to set the `cssText` for the style rule.
        */
-      set cssText(cssText: string);
+      set cssText(cssText: string | undefined);
 
       /**
        * Determines if this CSSRuleManager is still connected / available.
@@ -635,18 +648,18 @@ declare namespace TJSStyleManager {
       /**
        * Retrieves an object with the current CSS rule data.
        *
-       * @returns Current CSS rule data.
+       * @returns Current CSS rule data or undefined if not connected.
        */
-      get(): { [key: string]: string };
+      get(): { [key: string]: string } | undefined;
 
       /**
        * Gets a particular CSS variable.
        *
        * @param key - CSS variable property key.
        *
-       * @returns Returns CSS variable value.
+       * @returns Returns CSS variable value or undefined if non-existent.
        */
-      getProperty(key: string): string;
+      getProperty(key: string): string | undefined;
 
       /**
        * Returns whether this CSS rule manager has a given property key.
@@ -689,9 +702,9 @@ declare namespace TJSStyleManager {
        *
        * @param key - CSS property key.
        *
-       * @returns CSS value when removed.
+       * @returns CSS value when removed or undefined if non-existent.
        */
-      removeProperty(key: string): string;
+      removeProperty(key: string): string | undefined;
    }
 
    /**
@@ -704,4 +717,5 @@ declare namespace TJSStyleManager {
    }
 }
 
+// @ts-ignore
 export { TJSStyleManager }

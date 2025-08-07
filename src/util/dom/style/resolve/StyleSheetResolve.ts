@@ -215,7 +215,7 @@ class StyleSheetResolve
       if (typeof warnCycles !== 'boolean') { throw new TypeError(`'warnCycles' must be a boolean.`); }
       if (typeof warnResolve !== 'boolean') { throw new TypeError(`'warnResolve' must be a boolean.`); }
 
-      let result = void 0;
+      let result: { [key: string]: string } | undefined = void 0;
 
       if (isIterable(selector))
       {
@@ -260,7 +260,7 @@ class StyleSheetResolve
       // Potentially convert property keys to camel case.
       if (result && camelCase)
       {
-         const toCamelCase = (str) => str.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+         const toCamelCase = (str: string) => str.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
 
          result = Object.fromEntries(
             Object.entries(result).map(([key, val]) => [toCamelCase(key), val])
@@ -502,7 +502,7 @@ class StyleSheetResolve
     *
     * @param   opts - Sanitized process options.
     */
-   #processLayerBlockRule(blockRule: CSSLayerBlockRule, parentLayerName: string, opts: ProcessOptions)
+   #processLayerBlockRule(blockRule: CSSLayerBlockRule, parentLayerName: string | undefined, opts: ProcessOptions)
    {
       /* c8 ignore next 1 */  // For mock testing `cssRules` uses a basic test.
       if (!CrossWindow.isCSSLayerBlockRule(blockRule) || typeof blockRule?.cssRules !== 'object') { return; }
@@ -698,7 +698,7 @@ class ResolveVars
             for (const entry of vars)
             {
                if (!this.#varToProp.has(entry)) { this.#varToProp.set(entry, new Set()); }
-               this.#varToProp.get(entry).add(prop);
+               this.#varToProp.get(entry)?.add(prop);
             }
          }
       }
@@ -715,7 +715,7 @@ class ResolveVars
     */
    get resolved(): { [key: string]: string }
    {
-      const result = {};
+      const result: { [key: string]: string } = {};
 
       // Attempt to resolve each CSS variable found in style properties. If resolution is known, then substitute it
       // otherwise check for fallback chains.
@@ -724,14 +724,16 @@ class ResolveVars
          const props = this.#varToProp.get(entry);
          const varResolved = this.#varResolved.get(entry);
 
+         if (!props) { continue; }
+
          // Direct resolution: replace all `var(--x)` forms in all dependent properties with the resolved value.
          if (varResolved)
          {
             for (const prop of props)
             {
-               let value = this.#propMap.get(prop);
+               let value = this.#propMap.get(prop) as string;
 
-               if (value.includes(`var(${entry}`))
+               if (value?.includes(`var(${entry}`))
                {
                   // Replace each `var(--x[, fallback])` with its resolved value (if available).
                   // Fallbacks are preserved unless fully resolvable, enabling partial resolution of chained vars.
@@ -739,7 +741,7 @@ class ResolveVars
                   {
                      // Extract the CSS variable name (`--x`) from the matched `var(--x[, fallback])` expression.
                      const varName = match.match(/^var\((--[\w-]+)/)?.[1];
-                     const resolved = this.#varResolved.get(varName);
+                     const resolved = this.#varResolved.get(varName as string);
 
                      /* c8 ignore next 1 */ // `?? match` is a sanity fallback.
                      return resolved ?? match;
@@ -755,10 +757,10 @@ class ResolveVars
          {
             for (const prop of props)
             {
-               const value = this.#propMap.get(prop);
+               const value = this.#propMap.get(prop) as string;
 
                // Early out if no fallback to resolve.
-               if (!value.includes(`var(${entry},`)) { continue; }
+               if (!value?.includes(`var(${entry},`)) { continue; }
 
                const fallback = this.#resolveNestedFallback(value);
 
