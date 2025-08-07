@@ -724,6 +724,7 @@ class ResolveVars
          const props = this.#varToProp.get(entry);
          const varResolved = this.#varResolved.get(entry);
 
+         /* c8 ignore next 1 */
          if (!props) { continue; }
 
          // Direct resolution: replace all `var(--x)` forms in all dependent properties with the resolved value.
