@@ -753,9 +753,11 @@ declare namespace TJSStyleManager {
        *
        * @param styles - An object with property / value string pairs to load.
        *
-       * @param [overwrite=true] - When true overwrites any existing values; default: `true`.
+       * @param [options] - Options.
+       *
+       * @param [override=true] - When true overrides any existing values; default: `true`.
        */
-      setProperties(styles: TJSStyleManager.Data.StyleProps, overwrite?: boolean): void;
+      setProperties(styles: TJSStyleManager.Data.StyleProps, { override }?: { override?: boolean }): void;
 
       /**
        * Sets a particular property.
@@ -764,9 +766,11 @@ declare namespace TJSStyleManager {
        *
        * @param value - CSS property value.
        *
-       * @param [overwrite=true] - When true overwrites any existing value; default: `true`.
+       * @param [options] - Options.
+       *
+       * @param [options.override=true] - When true overrides any existing value; default: `true`.
        */
-      setProperty(key: string, value: string, overwrite?: boolean): void;
+      setProperty(key: string, value: string, { override }?: { override?: boolean }): void;
 
       /**
        * Removes the property keys specified. If `keys` is an iterable list then all property keys in the list are

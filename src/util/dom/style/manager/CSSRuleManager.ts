@@ -148,37 +148,27 @@ export class CSSRuleManager implements TJSStyleManager.CSSRuleManager
    /**
     * Set rules by property / value; useful for CSS variables.
     *
-    * @param styles - An object with property / value string pairs to load.
+    * @param [options] - Options.
     *
-    * @param [overwrite=true] - When true overwrites any existing values; default: `true`.
+    * @param [override=true] - When true overrides any existing values; default: `true`.
     */
-   setProperties(styles: TJSStyleManager.Data.StyleProps, overwrite: boolean = true)
+   setProperties(styles: TJSStyleManager.Data.StyleProps, { override = true }: { override?: boolean } = {})
    {
       if (!this.isConnected) { return; }
 
       if (!isObject(styles)) { throw new TypeError(`CSSRuleManager error: 'styles' is not an object.`); }
+      if (typeof override !== 'boolean') { throw new TypeError(`CSSRuleManager error: 'override' is not a boolean.`); }
 
-      if (typeof overwrite !== 'boolean')
+      if (override)
       {
-         throw new TypeError(`CSSRuleManager error: 'overwrite' is not a boolean.`);
-      }
-
-      if (overwrite)
-      {
-         for (const [key, value] of Object.entries(styles))
-         {
-            this.#cssRule.style.setProperty(key, value);
-         }
+         for (const [key, value] of Object.entries(styles)) { this.#cssRule.style.setProperty(key, value); }
       }
       else
       {
          // Only set property keys for entries that don't have an existing rule set.
          for (const [key, value] of Object.entries(styles))
          {
-            if (this.#cssRule.style.getPropertyValue(key) === '')
-            {
-               this.#cssRule.style.setProperty(key, value);
-            }
+            if (this.#cssRule.style.getPropertyValue(key) === '') { this.#cssRule.style.setProperty(key, value); }
          }
       }
    }
@@ -190,31 +180,25 @@ export class CSSRuleManager implements TJSStyleManager.CSSRuleManager
     *
     * @param value - CSS property value.
     *
-    * @param [overwrite=true] - When true overwrites any existing value; default: `true`.
+    * @param [options] - Options.
+    *
+    * @param [options.override=true] - When true overrides any existing value; default: `true`.
     */
-   setProperty(key: string, value: string, overwrite: boolean = true)
+   setProperty(key: string, value: string, { override = true }: { override?: boolean } = {})
    {
       if (!this.isConnected) { return; }
 
       if (typeof key !== 'string') { throw new TypeError(`CSSRuleManager error: 'key' is not a string.`); }
-
       if (typeof value !== 'string') { throw new TypeError(`CSSRuleManager error: 'value' is not a string.`); }
+      if (typeof override !== 'boolean') { throw new TypeError(`CSSRuleManager error: 'override' is not a boolean.`); }
 
-      if (typeof overwrite !== 'boolean')
-      {
-         throw new TypeError(`CSSRuleManager error: 'overwrite' is not a boolean.`);
-      }
-
-      if (overwrite)
+      if (override)
       {
          this.#cssRule.style.setProperty(key, value);
       }
       else
       {
-         if (this.#cssRule.style.getPropertyValue(key) === '')
-         {
-            this.#cssRule.style.setProperty(key, value);
-         }
+         if (this.#cssRule.style.getPropertyValue(key) === '') { this.#cssRule.style.setProperty(key, value); }
       }
    }
 
