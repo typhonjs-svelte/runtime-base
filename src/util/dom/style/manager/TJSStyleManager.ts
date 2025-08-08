@@ -1,63 +1,61 @@
 import { CrossWindow }     from '#runtime/util/browser';
 import { isObject }        from '#runtime/util/object';
 
+import {
+   compare,
+   satisfies,
+   validateStrict }        from '#runtime/util/semver';
+
 import { CSSRuleManager }  from './CSSRuleManager';
 
 /**
  * Provides a managed dynamic style sheet / element useful in configuring global CSS variables. When creating an
- * instance of TJSStyleManager, you must provide a CSS ID for the style element added.
+ * instance of TJSStyleManager, you must provide a CSS ID for the style element.
  *
- * Instances of TJSStyleManager can also be versioned by supplying a positive number greater than or equal to `1` via
- * the 'version' option. This version number is assigned to the associated style element. When a TJSStyleManager
- * instance is created and there is an existing instance with a version that is lower than the current new instance,
- * all CSS rules are removed, letting the higher version take precedence. This isn't a perfect system and requires
- * thoughtful construction of CSS variables exposed, but allows multiple independently compiled TRL packages to load
- * the latest CSS variables. It is recommended to always set `overwrite` option of {@link TJSStyleManager.setProperty}
- * and {@link TJSStyleManager.setProperties} to `false` when loading initial values.
+ * Instances of TJSStyleManager must be versioned by supplying a semver version string via the 'version' option. This
+ * version is assigned to the associated style element. When a TJSStyleManager instance is created and there is an
+ * existing instance with a version that is lower than the current new instance, all CSS rules are removed, letting
+ * the higher version take precedence. This isn't a perfect system and requires thoughtful construction of CSS
+ * variables exposed, but allows multiple independently compiled TRL packages to load the latest CSS variables..
  */
 class TJSStyleManager
 {
-   /**
-    * Minimum version of tracked styles.
-    */
-   static #MIN_VERSION: number = 0;
-
    /**
     * Provides a token allowing internal instance construction.
     */
    static #CTOR_TOKEN: symbol = Symbol('TJSStyleManager.CTOR_TOKEN');
 
    /**
-    *
+    * Stores configured CSSRuleManager instance by name.
     */
    #cssRuleMap: Map<string, TJSStyleManager.CSSRuleManager>;
 
    /**
-    *
+    * CSS ID associated with style element.
     */
    readonly #id: string;
 
    /**
-    *
+    * Any associated CSS layer name.
     */
    readonly #layerName: string | undefined;
 
    /**
-    *
+    * The target style element.
     */
    #styleElement: HTMLStyleElement;
 
    /**
-    *
+    * The version of this style manager.
     */
-   readonly #version: number;
+   readonly #version: string;
 
    /**
     * @private
     */
    private constructor({ cssRuleMap, id, styleElement, version, layerName, token }:
     { cssRuleMap: Map<string, TJSStyleManager.CSSRuleManager>; id: string; styleElement: HTMLStyleElement;
-     version: number; layerName?: string; token: symbol })
+     version: string; layerName?: string; token: symbol })
    {
       if (token !== TJSStyleManager.#CTOR_TOKEN)
       {
@@ -93,9 +91,9 @@ class TJSStyleManager
 
       if (existingStyleEl)
       {
-         const existingVersion = Number(existingStyleEl.getAttribute('data-version') ?? 0);
+         const existingVersion = existingStyleEl.getAttribute('data-version') ?? '';
 
-         if (existingVersion >= this.#MIN_VERSION)
+         if (validateStrict(existingVersion))
          {
             return {
                id,
@@ -109,11 +107,11 @@ class TJSStyleManager
    }
 
    /**
-    * Connect to an existing dynamic styles managed element by CSS ID with SemVer check on version compatibility.
+    * Connect to an existing dynamic styles managed element by CSS ID with semver check on version range compatibility.
     *
     * @param   options - Options.
     */
-   static connect({ id, version, document = window.document }: TJSStyleManager.Options.Connect)
+   static connect({ id, range, document = window.document }: TJSStyleManager.Options.Connect)
    {
       if (typeof id !== 'string') { throw new TypeError(`'id' is not a string.`); }
 
@@ -122,12 +120,7 @@ class TJSStyleManager
          throw new TypeError(`'document' is not an instance of HTMLDocument.`);
       }
 
-      if (!Number.isFinite(version) || version < this.#MIN_VERSION)
-      {
-         throw new TypeError(`'version' is not a positive number >= ${this.#MIN_VERSION}.`);
-      }
-
-      return this.#initializeConnect(document, id, version);
+      return this.#initializeConnect(document, id, range);
    }
 
    /**
@@ -138,60 +131,6 @@ class TJSStyleManager
    static create(options: TJSStyleManager.Options.Create): TJSStyleManager | undefined
    {
       return this.#createImpl(options);
-   }
-
-   /**
-    * Internal `create` implementation with additional `force` option to override any version check.
-    *
-    * @param   options - Options.
-    *
-    * @returns Created style manager instance or undefined if already exists with a higher version.
-    */
-   static #createImpl({ id, rules, version, layerName, document = window.document, force = false }:
-    TJSStyleManager.Options.Create & { force?: boolean }): TJSStyleManager | undefined
-   {
-      if (typeof id !== 'string') { throw new TypeError(`'id' is not a string.`); }
-
-      if (!CrossWindow.isDocument(document))
-      {
-         throw new TypeError(`'document' is not an instance of HTMLDocument.`);
-      }
-
-      if (!Number.isFinite(version) || version < this.#MIN_VERSION)
-      {
-         throw new TypeError(`'version' is not a positive number >= ${this.#MIN_VERSION}.`);
-      }
-
-      if (layerName !== void 0 && typeof layerName !== 'string')
-      {
-         throw new TypeError(`'layerName' is not a string.`);
-      }
-
-      if (typeof force !== 'boolean')
-      {
-         throw new TypeError(`'force' is not a boolean.`);
-      }
-
-      const current = this.exists({ id, document });
-
-      if (isObject(current))
-      {
-         // Remove all existing CSS rules / text if the version is greater than the existing version or `force` is true.
-         if (force || (version > current.version))
-         {
-            current.element?.remove?.();
-            return this.#initializeCreate(document, id, rules, version, layerName);
-         }
-         else
-         {
-            // A style manager already exists that is a greater version than requested.
-            return void 0;
-         }
-      }
-      else
-      {
-         return this.#initializeCreate(document, id, rules, version, layerName);
-      }
    }
 
    /**
@@ -215,15 +154,13 @@ class TJSStyleManager
    /**
     * @returns Returns the version of this instance.
     */
-   get version(): number
+   get version(): string
    {
       return this.#version;
    }
 
    /**
     * Provides a copy constructor to duplicate an existing TJSStyleManager instance into a new document.
-    *
-    * Note: This is used to support the `PopOut` module.
     *
     * @param   options - Required clone options.
     *
@@ -233,7 +170,9 @@ class TJSStyleManager
    {
       if (!this.isConnected) { return; }
 
-      const rules: { [key: string]: string } = {};
+      if (!CrossWindow.isDocument(document)) { return; }
+
+      const rules: TJSStyleManager.Data.RulesConfig = {};
 
       for (const key of this.#cssRuleMap.keys())
       {
@@ -270,7 +209,7 @@ class TJSStyleManager
    }
 
    /**
-    * @returns CSSRuleManager entries.
+    * @returns CSSRuleManager entries iterator.
     */
    entries(): MapIterator<[string, TJSStyleManager.CSSRuleManager]>
    {
@@ -305,7 +244,7 @@ class TJSStyleManager
    }
 
    /**
-    * @returns {MapIterator<string>} CSSRuleManager keys.
+    * @returns {MapIterator<string>} CSSRuleManager keys iterator.
     */
    keys(): MapIterator<string>
    {
@@ -323,34 +262,92 @@ class TJSStyleManager
    // Internal Implementation ----------------------------------------------------------------------------------------
 
    /**
-    * TODO: semver verification, logging warnings
+    * Internal `create` implementation with additional `force` option to override any version check.
+    *
+    * @param   options - Options.
+    *
+    * @returns Created style manager instance or undefined if already exists with a higher version.
+    */
+   static #createImpl({ id, rules, version, layerName, document = window.document, force = false }:
+    TJSStyleManager.Options.Create & { force?: boolean }): TJSStyleManager | undefined
+   {
+      if (typeof id !== 'string') { throw new TypeError(`'id' is not a string.`); }
+
+      if (!isObject(rules)) { throw new TypeError(`'rules' is not an object.`); }
+
+      if (!CrossWindow.isDocument(document))
+      {
+         throw new TypeError(`'document' is not an instance of HTMLDocument.`);
+      }
+
+      if (!validateStrict(version))
+      {
+         throw new TypeError(`'version' is not a valid semver string.`);
+      }
+
+      if (layerName !== void 0 && typeof layerName !== 'string')
+      {
+         throw new TypeError(`'layerName' is not a string.`);
+      }
+
+      if (typeof force !== 'boolean')
+      {
+         throw new TypeError(`'force' is not a boolean.`);
+      }
+
+      const current = this.exists({ id, document });
+
+      if (isObject(current))
+      {
+         // Remove all existing CSS rules / text if the version is greater than the existing version or `force` is true.
+         if (force || compare(version, current.version, '>'))
+         {
+            current.element?.remove?.();
+            return this.#initializeCreate(document, id, rules, version, layerName);
+         }
+         else
+         {
+            // A style manager already exists that is a greater version than requested.
+            return void 0;
+         }
+      }
+      else
+      {
+         return this.#initializeCreate(document, id, rules, version, layerName);
+      }
+   }
+
+   /**
+    * TODO: logging warnings
     *
     * @param document - Target Document.
     *
     * @param id - Associated CSS ID
     *
-    * @param version -
+    * @param range - SemVer version or version range.
     *
     * @returns Style manager connected to existing element / style rules or undefined if no connection possible.
     */
-   static #initializeConnect(document: Document, id: string, version: number): TJSStyleManager | undefined
+   static #initializeConnect(document: Document, id: string, range: string): TJSStyleManager | undefined
    {
       const styleElement = document.querySelector<TJSStyleManager.TJSStyleElement>(`head style#${id}`);
 
       if (!styleElement) { return void 0; }
       if (styleElement.sheet === null) { return void 0; }
 
-      const existingRules = styleElement?._tjsRules;
-      const existingVersion = styleElement?._tjsVersion;
-      const existingLayerName = styleElement?._tjsLayerName;
+      const existingRules = styleElement._tjsRules;
+      const existingVersion = styleElement._tjsVersion;
+      const existingLayerName = styleElement._tjsLayerName;
 
       let targetSheet: CSSStyleSheet | CSSLayerBlockRule = styleElement.sheet;
 
       if (!isObject(existingRules)) { return void 0; }
 
-      if (!Number.isInteger(existingVersion)) { return void 0; }
+      if (!validateStrict(existingVersion)) { return void 0; }
 
       if (existingLayerName !== void 0 && typeof existingLayerName !== 'string') { return void 0; }
+
+      if (!satisfies(existingVersion, range)) { return void 0; }
 
       if (!CrossWindow.isCSSStyleSheet(targetSheet)) { return void 0; }
 
@@ -399,7 +396,7 @@ class TJSStyleManager
          return new TJSStyleManager({
             cssRuleMap,
             id,
-            version,
+            version: existingVersion,
             layerName: existingLayerName,
             styleElement,
             token: TJSStyleManager.#CTOR_TOKEN
@@ -415,7 +412,7 @@ class TJSStyleManager
    }
 
    /**
-    * TODO: semver verification, logging warnings
+    * TODO: logging warnings
     *
     * @param document - Target Document.
     *
@@ -429,7 +426,7 @@ class TJSStyleManager
     *
     * @returns New TJSStyleManager instance.
     */
-   static #initializeCreate(document: Document, id: string, rules: { [key: string]: string }, version: number,
+   static #initializeCreate(document: Document, id: string, rules: TJSStyleManager.Data.RulesConfig, version: string,
     layerName: string | undefined): TJSStyleManager | undefined
    {
       const styleElement = (document.createElement('style') as TJSStyleManager.TJSStyleElement);
@@ -495,6 +492,9 @@ class TJSStyleManager
    }
 }
 
+/**
+ * Provides various type definitions and interfaces utilized by {@link TJSStyleManager}.
+ */
 declare namespace TJSStyleManager {
    /**
     * Provides return data types for various methods of {@link TJSStyleManager}.
@@ -512,13 +512,28 @@ declare namespace TJSStyleManager {
          /**
           * Semver version of the dynamic styles.
           */
-         version: number;
+         version: string;
 
          /**
           * Associated {@link HTMLStyleElement}.
           */
          element: HTMLStyleElement;
       }
+
+      /**
+       * Defines the rule name to CSS selector configuration when using {@link TJSStyleManager.create}. Keys are the
+       * rule name that can retrieve a {@link TJSStyleManager.CSSRuleManager} via {@link TJSStyleManager.get}. Values
+       * are the CSS selector to associate with this manager.
+       */
+      type RulesConfig = { [key: string]: string };
+
+      /**
+       * A mapping of CSS style properties. When bulk setting style properties keys must be in hyphen-case
+       * (IE `background-color`). When retrieving bulk style properties you may request keys to be in camel case
+       * (IE `backgroundColor`). Keys are CSS property names. Bulk retrieval is facilitated by
+       * {@link TJSStyleManager.CSSRuleManager.get}. All values are strings as returned from the CSS Object Model.
+       */
+      type StyleProps = { [key: string]: string };
    }
 
    /**
@@ -554,9 +569,10 @@ declare namespace TJSStyleManager {
          id: string;
 
          /**
-          * An integer representing the version / level of styles being managed.
+          * A semver version or range string representing the version / level of styles supported in connecting to
+          * an existing dynamic styles implementation.
           */
-         version: number;
+         range: string;
 
          /**
           * Target document to load styles into.
@@ -578,12 +594,13 @@ declare namespace TJSStyleManager {
          /**
           * CSS Rules configuration. Rule name / selector.
           */
-         rules: { [key: string]: string };
+         rules: TJSStyleManager.Data.RulesConfig;
 
          /**
-          * Required integer representing the version / level of styles being managed.
+          * Required semver string without wildcards / version ranges representing the version / level of styles being
+          * managed.
           */
-         version: number;
+         version: string;
 
          /**
           * Target document to load styles into.
@@ -616,10 +633,13 @@ declare namespace TJSStyleManager {
       }
    }
 
+   /**
+    * Provides the ability to `get` and `set` bulk or single CSS properties to a specific {@link CSSStyleRule}.
+    */
    export interface CSSRuleManager
    {
       /**
-       * @returns Provides an accessor to get the `cssText` for the style sheet.
+       * @returns Provides an accessor to get the `cssText` for the style rule or undefined if not connected.
        */
       get cssText(): string | undefined;
 
@@ -648,23 +668,27 @@ declare namespace TJSStyleManager {
       /**
        * Retrieves an object with the current CSS rule data.
        *
-       * @returns Current CSS rule data or undefined if not connected.
+       * @param [options] - Optional settings.
+       *
+       * @param [options.camelCase=false] - Whether to convert property names to camel case.
+       *
+       * @returns Current CSS style data or undefined if not connected.
        */
-      get(): { [key: string]: string } | undefined;
+      get(options: { camelCase?: boolean }): TJSStyleManager.Data.StyleProps | undefined;
 
       /**
-       * Gets a particular CSS variable.
+       * Gets a particular CSS property value.
        *
-       * @param key - CSS variable property key.
+       * @param key - CSS property key; must be in hyphen-case (IE `background-color`).
        *
-       * @returns Returns CSS variable value or undefined if non-existent.
+       * @returns Returns CSS property value or undefined if non-existent.
        */
       getProperty(key: string): string | undefined;
 
       /**
        * Returns whether this CSS rule manager has a given property key.
        *
-       * @param key - CSS variable property key.
+       * @param key - CSS property key; must be in hyphen-case (IE `background-color`).
        *
        * @returns Property key exists / is defined.
        */
@@ -673,25 +697,26 @@ declare namespace TJSStyleManager {
       /**
        * Set rules by property / value; useful for CSS variables.
        *
-       * @param rules - An object with property / value string pairs to load.
+       * @param styles - An object with property / value string pairs to load.
        *
        * @param [overwrite=true] - When true overwrites any existing values; default: `true`.
        */
-      setProperties(rules: { [key: string]: string }, overwrite?: boolean): void;
+      setProperties(styles: TJSStyleManager.Data.StyleProps, overwrite?: boolean): void;
 
       /**
        * Sets a particular property.
        *
-       * @param key - CSS variable property key.
+       * @param key - CSS property key; must be in hyphen-case (IE `background-color`).
        *
-       * @param value - CSS variable value.
+       * @param value - CSS property value.
        *
        * @param [overwrite=true] - When true overwrites any existing value; default: `true`.
        */
       setProperty(key: string, value: string, overwrite?: boolean): void;
 
       /**
-       * Removes the property keys specified. If `keys` is an iterable list then all property keys in the list are removed.
+       * Removes the property keys specified. If `keys` is an iterable list then all property keys in the list are
+       * removed. The keys must be in hyphen-case (IE `background-color`).
        *
        * @param keys - The property keys to remove.
        */
@@ -700,7 +725,7 @@ declare namespace TJSStyleManager {
       /**
        * Removes a particular CSS property.
        *
-       * @param key - CSS property key.
+       * @param key - CSS property key; must be in hyphen-case (IE `background-color`).
        *
        * @returns CSS value when removed or undefined if non-existent.
        */
@@ -708,14 +733,26 @@ declare namespace TJSStyleManager {
    }
 
    /**
-    * Defines extra data stored directly on an {@link HTMLStyleElement}.
+    * Defines extra data stored directly on an {@link HTMLStyleElement} associated with the dynamic style manager
+    * instance.
     */
    export interface TJSStyleElement extends HTMLStyleElement {
-      _tjsRules: object;
-      _tjsVersion: number;
+      /**
+       * The rules configuration for this dynamic style instance.
+       */
+      _tjsRules: TJSStyleManager.Data.RulesConfig;
+
+      /**
+       * The non-wildcard semver for this dynamic style instance.
+       */
+      _tjsVersion: string;
+
+      /**
+       * Any associated CSS layer name for this dynamic style instance.
+       */
       _tjsLayerName: string | undefined;
    }
 }
 
-// @ts-ignore
+// @ts-ignore // strict checking doesn't like the intentional dual namespace / class export.
 export { TJSStyleManager }

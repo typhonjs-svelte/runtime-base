@@ -1,3 +1,5 @@
+import { CrossWindow }           from '#runtime/util/browser';
+
 import {
    isIterable,
    isObject }                    from '#runtime/util/object';
@@ -7,22 +9,22 @@ import { StyleParse }            from '../parse';
 import type { TJSStyleManager }  from './TJSStyleManager';
 
 /**
- *
+ * Provides the ability to `get` and `set` bulk or single CSS properties to a specific {@link CSSStyleRule}.
  */
 export class CSSRuleManager implements TJSStyleManager.CSSRuleManager
 {
    /**
-    *
+    * The specific rule instance in the association HTMLStyleElement.
     */
    #cssRule: CSSStyleRule;
 
    /**
-    *
+    * The CSS selector for this rule manager.
     */
    readonly #selector: string;
 
    /**
-    *
+    * The name that this rule manager is indexed by in the associated `TJSStyleManager` instance.
     */
    readonly #name: string;
 
@@ -35,6 +37,11 @@ export class CSSRuleManager implements TJSStyleManager.CSSRuleManager
     */
    constructor(cssRule: CSSStyleRule, name: string, selector: string)
    {
+      if (!CrossWindow.isCSSStyleRule(cssRule))
+      {
+         throw new TypeError(`CSSRuleManager error: 'cssRule' is not a CSSStyleRule instance..`);
+      }
+
       if (typeof name !== 'string') { throw new TypeError(`CSSRuleManager error: 'name' is not a string.`); }
       if (typeof selector !== 'string') { throw new TypeError(`CSSRuleManager error: 'selector' is not a string.`); }
 
@@ -44,7 +51,7 @@ export class CSSRuleManager implements TJSStyleManager.CSSRuleManager
    }
 
    /**
-    * @returns Provides an accessor to get the `cssText` for the style sheet or undefined if not connected.
+    * @returns Provides an accessor to get the `cssText` for the style rule or undefined if not connected.
     */
    get cssText(): string | undefined
    {
@@ -93,19 +100,23 @@ export class CSSRuleManager implements TJSStyleManager.CSSRuleManager
    /**
     * Retrieves an object with the current CSS rule data.
     *
-    * @returns Current CSS rule data or undefined if not connected.
+    * @param [options] - Optional settings.
+    *
+    * @param [options.camelCase=false] - Whether to convert property names to camel case.
+    *
+    * @returns Current CSS style data or undefined if not connected.
     */
-   get(): { [key: string]: string } | undefined
+   get(options: { camelCase?: boolean } = {}): TJSStyleManager.Data.StyleProps | undefined
    {
-      return this.isConnected ? StyleParse.cssText(this.#cssRule.style.cssText) : void 0;
+      return this.isConnected ? StyleParse.cssText(this.#cssRule.style.cssText, options) : void 0;
    }
 
    /**
-    * Gets a particular CSS variable.
+    * Gets a particular CSS property value.
     *
-    * @param   key - CSS variable property key.
+    * @param key - CSS property key; must be in hyphen-case (IE `background-color`).
     *
-    * @returns Returns CSS variable value or undefined if not connected.
+    * @returns Returns CSS property value or undefined if non-existent.
     */
    getProperty(key: string): string | undefined
    {
@@ -121,7 +132,7 @@ export class CSSRuleManager implements TJSStyleManager.CSSRuleManager
    /**
     * Returns whether this CSS rule manager has a given property key.
     *
-    * @param   key - CSS variable property key.
+    * @param key - CSS property key; must be in hyphen-case (IE `background-color`).
     *
     * @returns Property key exists / is defined.
     */
@@ -137,15 +148,15 @@ export class CSSRuleManager implements TJSStyleManager.CSSRuleManager
    /**
     * Set rules by property / value; useful for CSS variables.
     *
-    * @param   rules - An object with property / value string pairs to load.
+    * @param styles - An object with property / value string pairs to load.
     *
-    * @param   [overwrite=true] - When true overwrites any existing values; default: `true`.
+    * @param [overwrite=true] - When true overwrites any existing values; default: `true`.
     */
-   setProperties(rules: { [key: string]: string }, overwrite: boolean = true)
+   setProperties(styles: TJSStyleManager.Data.StyleProps, overwrite: boolean = true)
    {
       if (!this.isConnected) { return; }
 
-      if (!isObject(rules)) { throw new TypeError(`CSSRuleManager error: 'rules' is not an object.`); }
+      if (!isObject(styles)) { throw new TypeError(`CSSRuleManager error: 'styles' is not an object.`); }
 
       if (typeof overwrite !== 'boolean')
       {
@@ -154,7 +165,7 @@ export class CSSRuleManager implements TJSStyleManager.CSSRuleManager
 
       if (overwrite)
       {
-         for (const [key, value] of Object.entries(rules))
+         for (const [key, value] of Object.entries(styles))
          {
             this.#cssRule.style.setProperty(key, value);
          }
@@ -162,7 +173,7 @@ export class CSSRuleManager implements TJSStyleManager.CSSRuleManager
       else
       {
          // Only set property keys for entries that don't have an existing rule set.
-         for (const [key, value] of Object.entries(rules))
+         for (const [key, value] of Object.entries(styles))
          {
             if (this.#cssRule.style.getPropertyValue(key) === '')
             {
@@ -175,9 +186,9 @@ export class CSSRuleManager implements TJSStyleManager.CSSRuleManager
    /**
     * Sets a particular property.
     *
-    * @param key - CSS variable property key.
+    * @param key - CSS property key; must be in hyphen-case (IE `background-color`).
     *
-    * @param value - CSS variable value.
+    * @param value - CSS property value.
     *
     * @param [overwrite=true] - When true overwrites any existing value; default: `true`.
     */
@@ -208,7 +219,8 @@ export class CSSRuleManager implements TJSStyleManager.CSSRuleManager
    }
 
    /**
-    * Removes the property keys specified. If `keys` is an iterable list then all property keys in the list are removed.
+    * Removes the property keys specified. If `keys` is an iterable list then all property keys in the list are
+    * removed. The keys must be in hyphen-case (IE `background-color`).
     *
     * @param keys - The property keys to remove.
     */
@@ -227,7 +239,7 @@ export class CSSRuleManager implements TJSStyleManager.CSSRuleManager
    /**
     * Removes a particular CSS property.
     *
-    * @param key - CSS property key.
+    * @param key - CSS property key; must be in hyphen-case (IE `background-color`).
     *
     * @returns CSS value when removed or undefined if non-existent.
     */
