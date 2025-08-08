@@ -70,6 +70,30 @@ class TJSStyleManager
    }
 
    /**
+    * Connect to an existing dynamic styles managed element by CSS ID with semver check on version range compatibility.
+    *
+    * @param   options - Options.
+    */
+   static connect({ id, range, document = window.document, warn = false }: TJSStyleManager.Options.Connect)
+   {
+      if (typeof id !== 'string') { throw new TypeError(`'id' is not a string.`); }
+      if (typeof range !== 'string') { throw new TypeError(`'range' is not a string.`); }
+      if (!CrossWindow.isDocument(document)) { throw new TypeError(`'document' is not an instance of HTMLDocument.`); }
+
+      return this.#initializeConnect(document, id, range, warn);
+   }
+
+   /**
+    * @param   options - Options.
+    *
+    * @returns Created style manager instance or undefined if already exists with a higher version.
+    */
+   static create(options: TJSStyleManager.Options.Create): TJSStyleManager | undefined
+   {
+      return this.#createImpl(options);
+   }
+
+   /**
     * Query and check for an existing dynamic style manager element / instance given a CSS ID.
     *
     * @param   options - Options.
@@ -81,11 +105,7 @@ class TJSStyleManager
     undefined
    {
       if (typeof id !== 'string') { throw new TypeError(`'id' is not a string.`); }
-
-      if (!CrossWindow.isDocument(document))
-      {
-         throw new TypeError(`'document' is not an instance of HTMLDocument.`);
-      }
+      if (!CrossWindow.isDocument(document)) { throw new TypeError(`'document' is not an instance of HTMLDocument.`); }
 
       const existingStyleEl = document.querySelector<HTMLStyleElement>(`head style#${id}`);
 
@@ -104,33 +124,6 @@ class TJSStyleManager
       }
 
       return void 0;
-   }
-
-   /**
-    * Connect to an existing dynamic styles managed element by CSS ID with semver check on version range compatibility.
-    *
-    * @param   options - Options.
-    */
-   static connect({ id, range, document = window.document }: TJSStyleManager.Options.Connect)
-   {
-      if (typeof id !== 'string') { throw new TypeError(`'id' is not a string.`); }
-
-      if (!CrossWindow.isDocument(document))
-      {
-         throw new TypeError(`'document' is not an instance of HTMLDocument.`);
-      }
-
-      return this.#initializeConnect(document, id, range);
-   }
-
-   /**
-    * @param   options - Options.
-    *
-    * @returns Created style manager instance or undefined if already exists with a higher version.
-    */
-   static create(options: TJSStyleManager.Options.Create): TJSStyleManager | undefined
-   {
-      return this.#createImpl(options);
    }
 
    /**
@@ -166,11 +159,15 @@ class TJSStyleManager
     *
     * @returns New style manager instance or undefined if not connected.
     */
-   clone({ document, force = false }: TJSStyleManager.Options.Clone): TJSStyleManager | undefined
+   clone({ document, force = false, warn = false }: TJSStyleManager.Options.Clone): TJSStyleManager | undefined
    {
-      if (!this.isConnected) { return; }
+      if (!this.isConnected)
+      {
+         TJSStyleManager.#log(warn, 'clone', `This style manager instance is not connected for id: ${this.#id}`);
+         return void 0;
+      }
 
-      if (!CrossWindow.isDocument(document)) { return; }
+      if (!CrossWindow.isDocument(document)) { throw new TypeError(`'document' is not an instance of HTMLDocument.`); }
 
       const rules: TJSStyleManager.Data.RulesConfig = {};
 
@@ -187,6 +184,7 @@ class TJSStyleManager
          rules,
          document,
          force,
+         warn
       });
 
       if (newStyleManager)
@@ -268,31 +266,19 @@ class TJSStyleManager
     *
     * @returns Created style manager instance or undefined if already exists with a higher version.
     */
-   static #createImpl({ id, rules, version, layerName, document = window.document, force = false }:
+   static #createImpl({ id, rules, version, layerName, document = window.document, force = false, warn = false }:
     TJSStyleManager.Options.Create & { force?: boolean }): TJSStyleManager | undefined
    {
       if (typeof id !== 'string') { throw new TypeError(`'id' is not a string.`); }
-
       if (!isObject(rules)) { throw new TypeError(`'rules' is not an object.`); }
-
-      if (!CrossWindow.isDocument(document))
-      {
-         throw new TypeError(`'document' is not an instance of HTMLDocument.`);
-      }
-
-      if (!validateStrict(version))
-      {
-         throw new TypeError(`'version' is not a valid semver string.`);
-      }
+      if (!CrossWindow.isDocument(document)) { throw new TypeError(`'document' is not an instance of HTMLDocument.`); }
+      if (!validateStrict(version)) { throw new TypeError(`'version' is not a valid semver string.`); }
+      if (typeof force !== 'boolean') { throw new TypeError(`'force' is not a boolean.`); }
+      if (typeof warn !== 'boolean') { throw new TypeError(`'warn' is not a boolean.`); }
 
       if (layerName !== void 0 && typeof layerName !== 'string')
       {
          throw new TypeError(`'layerName' is not a string.`);
-      }
-
-      if (typeof force !== 'boolean')
-      {
-         throw new TypeError(`'force' is not a boolean.`);
       }
 
       const current = this.exists({ id, document });
@@ -307,6 +293,9 @@ class TJSStyleManager
          }
          else
          {
+            this.#log(warn, 'create',
+             `Could not create instance as one already exists with a higher version for ID: ${id}.`);
+
             // A style manager already exists that is a greater version than requested.
             return void 0;
          }
@@ -318,22 +307,26 @@ class TJSStyleManager
    }
 
    /**
-    * TODO: logging warnings
-    *
     * @param document - Target Document.
     *
     * @param id - Associated CSS ID
     *
     * @param range - SemVer version or version range.
     *
+    * @param warn - When true, log warnings.
+    *
     * @returns Style manager connected to existing element / style rules or undefined if no connection possible.
     */
-   static #initializeConnect(document: Document, id: string, range: string): TJSStyleManager | undefined
+   static #initializeConnect(document: Document, id: string, range: string, warn: boolean = false):
+    TJSStyleManager | undefined
    {
       const styleElement = document.querySelector<TJSStyleManager.TJSStyleElement>(`head style#${id}`);
 
-      if (!styleElement) { return void 0; }
-      if (styleElement.sheet === null) { return void 0; }
+      if (!styleElement || styleElement?.sheet === null)
+      {
+         this.#log(warn, 'connect', `Could not find existing style element for id: ${id}`);
+         return void 0;
+      }
 
       const existingRules = styleElement._tjsRules;
       const existingVersion = styleElement._tjsVersion;
@@ -341,14 +334,31 @@ class TJSStyleManager
 
       let targetSheet: CSSStyleSheet | CSSLayerBlockRule = styleElement.sheet;
 
-      if (!isObject(existingRules)) { return void 0; }
+      if (!isObject(existingRules))
+      {
+         this.#log(warn, 'connect', `Could not find rules configuration on existing style element for id: ${id}`);
+         return void 0;
+      }
 
-      if (!validateStrict(existingVersion)) { return void 0; }
+      if (!validateStrict(existingVersion))
+      {
+         this.#log(warn, 'connect', `Could not find version on existing style element for id: ${id}`);
+         return void 0;
+      }
 
-      if (existingLayerName !== void 0 && typeof existingLayerName !== 'string') { return void 0; }
+      if (existingLayerName !== void 0 && typeof existingLayerName !== 'string')
+      {
+         this.#log(warn, 'connect', `Could not find layer name on existing style element for id: ${id}`);
+         return void 0;
+      }
 
-      if (!satisfies(existingVersion, range)) { return void 0; }
+      if (!satisfies(existingVersion, range))
+      {
+         this.#log(warn, 'connect', `Requested range (${range}) does not satisfy existing version: ${existingVersion}`);
+         return void 0;
+      }
 
+      // TS type guard.
       if (!CrossWindow.isCSSStyleSheet(targetSheet)) { return void 0; }
 
       const cssRuleMap = new Map();
@@ -371,7 +381,13 @@ class TJSStyleManager
                }
             }
 
-            if (!foundLayer) { return void 0; }
+            if (!foundLayer)
+            {
+               this.#log(warn, 'connect', `Could not find CSSLayerBlockRule for existing layer name: ${
+                existingLayerName}`);
+
+               return void 0;
+            }
          }
 
          for (const cssRule of Array.from(targetSheet.cssRules))
@@ -391,7 +407,13 @@ class TJSStyleManager
          }
 
          // Check if all registered rules have been found.
-         if (reverseRuleMap.size > 0) { return void 0; }
+         if (reverseRuleMap.size > 0)
+         {
+            this.#log(warn, 'connect', `Could not find CSSStyleRules for these rule configurations: ${
+             JSON.stringify([...reverseRuleMap])}`);
+
+            return void 0;
+         }
 
          return new TJSStyleManager({
             cssRuleMap,
@@ -412,8 +434,6 @@ class TJSStyleManager
    }
 
    /**
-    * TODO: logging warnings
-    *
     * @param document - Target Document.
     *
     * @param id - Associated CSS ID
@@ -441,6 +461,7 @@ class TJSStyleManager
 
       let targetSheet: CSSStyleSheet | CSSLayerBlockRule | null;
 
+      // Type guard for TS.
       if (styleElement.sheet === null) { return void 0; }
 
       const cssRuleMap = new Map();
@@ -489,6 +510,18 @@ class TJSStyleManager
       }
 
       return void 0;
+   }
+
+   /**
+    * @param   warn - When true, log warnings.
+    *
+    * @param   path - Particular interaction path for warning.
+    *
+    * @param   message - Message to log.
+    */
+   static #log(warn: boolean, path: 'clone' | 'connect' | 'create', message: string): void
+   {
+      if (warn) { console.warn(`[TRL TJSStyleManager] ${path} warning: ${message}`); }
    }
 }
 
@@ -557,6 +590,13 @@ declare namespace TJSStyleManager {
           * @defaultValue `false`
           */
          force?: boolean;
+
+         /**
+          * When true, log warnings on why cloning failed.
+          *
+          * @defaultValue `false`
+          */
+         warn?: boolean;
       }
 
       /**
@@ -580,6 +620,13 @@ declare namespace TJSStyleManager {
           * @defaultValue `window.document`
           */
          document?: Document;
+
+         /**
+          * When true, log warnings on why connecting failed.
+          *
+          * @defaultValue `false`
+          */
+         warn?: boolean;
       }
 
       /**
@@ -613,6 +660,13 @@ declare namespace TJSStyleManager {
           * Optional CSS layer name defining the top level CSS layer containing all rules.
           */
          layerName?: string;
+
+         /**
+          * When true, log warnings on why creation failed.
+          *
+          * @defaultValue `false`
+          */
+         warn?: boolean;
       }
 
       /**
