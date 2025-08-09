@@ -4,6 +4,8 @@ import {
    isIterable,
    isObject }           from '#runtime/util/object';
 
+import { StyleParse }   from '../parse';
+
 /**
  * Dynamically parses and indexes a `CSSStyleSheet` at runtime, exposing a selector-to-style mapping by
  * individual selector parts. CSS variable resolution is also possible which enables the ability to flatten and
@@ -54,7 +56,7 @@ import {
  * consider replacing this logic with a dedicated AST parser and visitor pattern. An AST-based approach would offer more
  * flexibility and maintainability at the cost of slightly increased complexity and larger runtime memory footprint.
  */
-class StyleSheetResolve
+class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
 {
    /**
     * Internal tracking of frozen state; once frozen, no more modifications are possible.
@@ -112,7 +114,7 @@ class StyleSheetResolve
     *
     * @returns Entries Map iterator.
     */
-   *[Symbol.iterator](): MapIterator<[string, {[key: string]: string}]>
+   *[Symbol.iterator](): MapIterator<[string, { [key: string]: string }]>
    {
       // Use `entries()` to make a shallow copy of data.
       yield* this.entries();
@@ -467,33 +469,6 @@ class StyleSheetResolve
    }
 
    /**
-    * Parse a full CSS rule string from `CSSStyleRule.cssText`.
-    *
-    * Extracts property declarations from within a selector block: `"div { color: red; background: blue; }"`.
-    *
-    * @param   cssText - CSS text to parse from `CSSStyleRule`.
-    *
-    * @returns Parsed `cssText`.
-    */
-   #parseCssText(cssText: string): { [key: string]: string }
-   {
-      const match = cssText.match(/{([^}]*)}/);
-      /* c8 ignore next 1 */
-      if (!match) { return {}; }
-
-      return Object.fromEntries(match[1]
-         .split(';')
-         .map((str) => str.trim())
-         .filter(Boolean)
-         .map((decl) =>
-         {
-            const [prop, ...rest] = decl.split(':');
-            return [prop.trim(), rest.join(':').trim()];
-         })
-      );
-   }
-
-   /**
     * Recursively parses / processes a CSSLayerBlockRule and encountered CSSStyleRule entries.
     *
     * @param   blockRule - The `CSSLayerBlockRule` to parse.
@@ -537,7 +512,8 @@ class StyleSheetResolve
       /* c8 ignore next 1 */
       if (typeof styleRule.selectorText !== 'string') { return; }
 
-      const result = this.#parseCssText(styleRule.cssText);
+      // Parse CSSStyleDeclaration.
+      const result = StyleParse.cssText(styleRule.style.cssText);
 
       // Split selector parts and remove disallowed selector parts and empty strings.
       const selectorParts = styleRule.selectorText.split(',')

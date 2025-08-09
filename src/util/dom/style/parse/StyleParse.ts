@@ -14,44 +14,95 @@ export class StyleParse
    }
 
    /**
-    * Parse an inline CSS style text string into an object.
+    * Parse a CSS declaration block / {@link CSSDeclarationBlock} (IE `color: red; font-size: 14px;`) into an object of
+    * property / value pairs.
     *
-    * Intended for parsing raw `style=""` attributes or standalone CSS declaration blocks (IE
-    * `"color: red; font-size: 14px"`).
+    * This implementation is optimized for parsing the output of `CSSStyleRule.style.cssText`, which is always
+    * well-formed according to the CSSOM spec. It is designed to be:
+    * ```
+    * - **Fast**: minimal allocations, no regex in the hot loop.
+    * - **Accurate**: ignores `;` inside quotes or parentheses.
+    * - **Flexible**: supports optional camel case conversion.
+    * - **CSS variable safe**: leaves `--*` properties untouched.
+    *```
     *
-    * @param cssText - Inline CSS style text to parse.
+    * @param cssText - A valid CSS declaration block (no selectors).
     *
-    * @param [options] - Optional settings.
+    * @param [options] - Optional parser settings.
     *
-    * @param [options.camelCase=false] - Whether to convert property names to camel case.
+    * @param [options.camelCase=false] - Convert hyphen-case property names to camel case.
     *
-    * @returns Parsed object of CSS properties.
+    * @returns An object mapping property names to their CSS values.
     */
    static cssText(cssText: string, { camelCase = false }: { camelCase?: boolean } = {}): { [key: string]: string }
    {
-      if (typeof cssText !== 'string') { return {}; }
+      // Reject non-strings or empty input quickly.
+      if (typeof cssText !== 'string' || cssText.length === 0) { return {}; }
 
-      const result: { [key: string]: string } = {};
+      // Quick reject: if there's no `:` there are no declarations.
+      if (cssText.indexOf(':') === -1) { return {}; }
 
-      for (const entry of cssText.split(';'))
+      const out: { [key: string]: string } = {};
+
+      // Index where the current declaration starts.
+      let segStart = 0;
+
+      // Tracks whether we are inside parentheses (url(), calc(), var(), etc.).
+      let parens = 0;
+
+      // Tracks whether we are inside single or double quotes.
+      let inSQ = false;
+      let inDQ = false;
+
+      // Walk through every character in the string.
+      for (let i = 0; i < cssText.length; i++)
       {
-         const index = entry.indexOf(':');
+         const ch = cssText[i];
 
-         if (index !== -1)
+         if (ch === '"' && !inSQ)
          {
-            let key = entry.slice(0, index).trim();
-            const value = entry.slice(index + 1).trim();
-
-            if (key !== '')
+            // Toggle double-quote mode if not in single quotes.
+            inDQ = !inDQ;
+         }
+         else if (ch === '\'' && !inDQ)
+         {
+            // Toggle single-quote mode if not in double quotes.
+            inSQ = !inSQ;
+         }
+         else if (!inSQ && !inDQ)
+         {
+            // Only count parentheses when outside of quotes.
+            if (ch === '(')
             {
-               if (camelCase) { key = key.replace(/-([a-z])/g, (_, c) => c.toUpperCase()); }
-
-               result[key] = value;
+               parens++;
+            }
+            else if (ch === ')')
+            {
+               if (parens > 0) { parens--; }
+            }
+            // Only treat `;` as a declaration terminator if not inside parentheses.
+            else if (ch === ';' && parens === 0)
+            {
+               // Extract the substring for this declaration.
+               if (i > segStart)
+               {
+                  const chunk = cssText.slice(segStart, i).trim();
+                  if (chunk) { this.#cssTextFlushDecl(chunk, out, camelCase); }
+               }
+               // Move start index to the character after the semicolon.
+               segStart = i + 1;
             }
          }
       }
 
-      return result;
+      // Process the last declaration after the loop ends.
+      if (segStart < cssText.length)
+      {
+         const chunk = cssText.slice(segStart).trim();
+         if (chunk) { this.#cssTextFlushDecl(chunk, out, camelCase); }
+      }
+
+      return out;
    }
 
    /**
@@ -88,5 +139,63 @@ export class StyleParse
    {
       return targetDocument?.documentElement ?
        multiplier * parseFloat(window.getComputedStyle(targetDocument.documentElement).fontSize) : void 0;
+   }
+
+   // Internal Implementation ----------------------------------------------------------------------------------------
+
+   /**
+    * Parse a single CSS declaration string into a property / value pair and store it in the output object.
+    *
+    * Note: Used by {@link StyleParse.cssText}.
+    *
+    * This method:
+    * ```
+    * - Splits on the first `:` into property and value parts
+    * - Trims whitespace from both
+    * - Optionally converts hyphen-case to camelCase
+    * - Ignores empty or malformed declarations
+    * ```
+    *
+    * @param chunk - The raw CSS declaration string (IE `"color: red"`).
+    *
+    * @param out - The object to store the parsed property / value pair.
+    *
+    * @param camelCase - Whether to convert hyphen-case keys to camel case.
+    */
+   static #cssTextFlushDecl(chunk: string, out: { [key: string]: string }, camelCase: boolean): void
+   {
+      // Find the first colon — separates property from value.
+      const idx = chunk.indexOf(':');
+      if (idx < 0) { return; }
+
+      // Extract and trim the property name.
+      let key = chunk.slice(0, idx).trim();
+      if (!key) { return; }
+
+      // Extract and trim the value (keep empty string if explicitly set).
+      const value = chunk.slice(idx + 1).trim();
+
+      // Convert to camelCase if requested and not a CSS variable.
+      if (camelCase && !key.startsWith('--'))
+      {
+         let s = '';
+         for (let i = 0; i < key.length; i++)
+         {
+            const code = key.charCodeAt(i);
+            if (code === 45 /* '-' */ && i + 1 < key.length)
+            {
+               i++;
+               s += key[i].toUpperCase();
+            }
+            else
+            {
+               s += key[i];
+            }
+         }
+         key = s;
+      }
+
+      // Store in the output object.
+      out[key] = value;
    }
 }
