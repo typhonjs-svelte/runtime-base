@@ -1,1 +1,1 @@
-export * from './TJSStyleManager';
+export * from './StyleManager';

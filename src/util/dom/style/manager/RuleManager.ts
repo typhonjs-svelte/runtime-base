@@ -1,17 +1,17 @@
-import { CrossWindow }           from '#runtime/util/browser';
+import { CrossWindow }        from '#runtime/util/browser';
 
 import {
    isIterable,
-   isObject }                    from '#runtime/util/object';
+   isObject }                 from '#runtime/util/object';
 
-import { StyleParse }            from '../parse';
+import { StyleParse }         from '../parse';
 
-import type { TJSStyleManager }  from './TJSStyleManager';
+import type { StyleManager }  from './StyleManager';
 
 /**
  * Provides the ability to `get` and `set` bulk or single CSS properties to a specific {@link CSSStyleRule}.
  */
-export class CSSRuleManager implements TJSStyleManager.CSSRuleManager
+export class RuleManager implements StyleManager.RuleManager
 {
    /**
     * The specific rule instance in the association HTMLStyleElement.
@@ -24,7 +24,7 @@ export class CSSRuleManager implements TJSStyleManager.CSSRuleManager
    readonly #selector: string;
 
    /**
-    * The name that this rule manager is indexed by in the associated `TJSStyleManager` instance.
+    * The name that this rule manager is indexed by in the associated `StyleManager` instance.
     */
    readonly #name: string;
 
@@ -39,11 +39,11 @@ export class CSSRuleManager implements TJSStyleManager.CSSRuleManager
    {
       if (!CrossWindow.isCSSStyleRule(cssRule))
       {
-         throw new TypeError(`CSSRuleManager error: 'cssRule' is not a CSSStyleRule instance..`);
+         throw new TypeError(`RuleManager error: 'cssRule' is not a CSSStyleRule instance..`);
       }
 
-      if (typeof name !== 'string') { throw new TypeError(`CSSRuleManager error: 'name' is not a string.`); }
-      if (typeof selector !== 'string') { throw new TypeError(`CSSRuleManager error: 'selector' is not a string.`); }
+      if (typeof name !== 'string') { throw new TypeError(`RuleManager error: 'name' is not a string.`); }
+      if (typeof selector !== 'string') { throw new TypeError(`RuleManager error: 'selector' is not a string.`); }
 
       this.#cssRule = cssRule;
       this.#name = name;
@@ -61,9 +61,9 @@ export class CSSRuleManager implements TJSStyleManager.CSSRuleManager
    }
 
    /**
-    * Determines if this CSSRuleManager is still connected / available.
+    * Determines if this RuleManager is still connected / available.
     *
-    * @returns Is CSSRuleManager connected.
+    * @returns Is RuleManager connected.
     */
    get isConnected(): boolean
    {
@@ -74,7 +74,7 @@ export class CSSRuleManager implements TJSStyleManager.CSSRuleManager
    }
 
    /**
-    * @returns Name of this CSSRuleManager indexed by associated TJSStyleManager.
+    * @returns Name of this RuleManager indexed by associated StyleManager.
     */
    get name(): string
    {
@@ -130,7 +130,7 @@ export class CSSRuleManager implements TJSStyleManager.CSSRuleManager
     *
     * @returns Current CSS style data or undefined if not connected.
     */
-   get(options: { camelCase?: boolean } = {}): TJSStyleManager.Data.StyleProps | undefined
+   get(options: { camelCase?: boolean } = {}): StyleManager.Data.StyleProps | undefined
    {
       return this.isConnected ? StyleParse.cssText(this.#cssRule.style.cssText, options) : void 0;
    }
@@ -146,7 +146,7 @@ export class CSSRuleManager implements TJSStyleManager.CSSRuleManager
    {
       if (!this.isConnected) { return void 0; }
 
-      if (typeof key !== 'string') { throw new TypeError(`CSSRuleManager error: 'key' is not a string.`); }
+      if (typeof key !== 'string') { throw new TypeError(`RuleManager error: 'key' is not a string.`); }
 
       const result = this.#cssRule.style.getPropertyValue(key);
 
@@ -164,7 +164,7 @@ export class CSSRuleManager implements TJSStyleManager.CSSRuleManager
    {
       if (!this.isConnected) { return false; }
 
-      if (typeof key !== 'string') { throw new TypeError(`CSSRuleManager error: 'key' is not a string.`); }
+      if (typeof key !== 'string') { throw new TypeError(`RuleManager error: 'key' is not a string.`); }
 
       return this.#cssRule.style.getPropertyValue(key) !== '';
    }
@@ -186,12 +186,12 @@ export class CSSRuleManager implements TJSStyleManager.CSSRuleManager
     *
     * @param [override=true] - When true overrides any existing values; default: `true`.
     */
-   setProperties(styles: TJSStyleManager.Data.StyleProps, { override = true }: { override?: boolean } = {})
+   setProperties(styles: StyleManager.Data.StyleProps, { override = true }: { override?: boolean } = {})
    {
       if (!this.isConnected) { return; }
 
-      if (!isObject(styles)) { throw new TypeError(`CSSRuleManager error: 'styles' is not an object.`); }
-      if (typeof override !== 'boolean') { throw new TypeError(`CSSRuleManager error: 'override' is not a boolean.`); }
+      if (!isObject(styles)) { throw new TypeError(`RuleManager error: 'styles' is not an object.`); }
+      if (typeof override !== 'boolean') { throw new TypeError(`RuleManager error: 'override' is not a boolean.`); }
 
       if (override)
       {
@@ -222,9 +222,9 @@ export class CSSRuleManager implements TJSStyleManager.CSSRuleManager
    {
       if (!this.isConnected) { return; }
 
-      if (typeof key !== 'string') { throw new TypeError(`CSSRuleManager error: 'key' is not a string.`); }
-      if (typeof value !== 'string') { throw new TypeError(`CSSRuleManager error: 'value' is not a string.`); }
-      if (typeof override !== 'boolean') { throw new TypeError(`CSSRuleManager error: 'override' is not a boolean.`); }
+      if (typeof key !== 'string') { throw new TypeError(`RuleManager error: 'key' is not a string.`); }
+      if (typeof value !== 'string') { throw new TypeError(`RuleManager error: 'value' is not a string.`); }
+      if (typeof override !== 'boolean') { throw new TypeError(`RuleManager error: 'override' is not a boolean.`); }
 
       if (override)
       {
@@ -246,7 +246,7 @@ export class CSSRuleManager implements TJSStyleManager.CSSRuleManager
    {
       if (!this.isConnected) { return; }
 
-      if (!isIterable(keys)) { throw new TypeError(`CSSRuleManager error: 'keys' is not an iterable list.`); }
+      if (!isIterable(keys)) { throw new TypeError(`RuleManager error: 'keys' is not an iterable list.`); }
 
       for (const key of keys)
       {
@@ -265,7 +265,7 @@ export class CSSRuleManager implements TJSStyleManager.CSSRuleManager
    {
       if (!this.isConnected) { return void 0; }
 
-      if (typeof key !== 'string') { throw new TypeError(`CSSRuleManager error: 'key' is not a string.`); }
+      if (typeof key !== 'string') { throw new TypeError(`RuleManager error: 'key' is not a string.`); }
 
       const result = this.#cssRule.style.removeProperty(key);
 
