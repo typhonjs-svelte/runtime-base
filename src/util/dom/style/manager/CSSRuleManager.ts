@@ -50,6 +50,8 @@ export class CSSRuleManager implements TJSStyleManager.CSSRuleManager
       this.#selector = selector;
    }
 
+   // Accessors ------------------------------------------------------------------------------------------------------
+
    /**
     * @returns Provides an accessor to get the `cssText` for the style rule or undefined if not connected.
     */
@@ -95,6 +97,28 @@ export class CSSRuleManager implements TJSStyleManager.CSSRuleManager
       if (!this.isConnected) { return; }
 
       this.#cssRule.style.cssText = typeof cssText === 'string' ? cssText : '';
+   }
+
+   // Iterator -------------------------------------------------------------------------------------------------------
+
+   /**
+    * Allows usage in `for of` loops directly.
+    *
+    * @returns Entries Map iterator.
+    */
+   [Symbol.iterator](): Iterator<[string, string]>
+   {
+      return this.entries();
+   }
+
+   // Methods --------------------------------------------------------------------------------------------------------
+
+   /**
+    * @returns Iterator of CSS property entries in hyphen-case.
+    */
+   entries(): Iterator<[string, string]>
+   {
+      return Object.entries(this.get() ?? {})[Symbol.iterator]();
    }
 
    /**
@@ -146,7 +170,17 @@ export class CSSRuleManager implements TJSStyleManager.CSSRuleManager
    }
 
    /**
-    * Set rules by property / value; useful for CSS variables.
+    * @returns Iterator of CSS property keys in hyphen-case.
+    */
+   keys(): MapIterator<string>
+   {
+      return Object.keys(this.get() ?? {})[Symbol.iterator]();
+   }
+
+   /**
+    * Set CSS properties in bulk by property / value. Must use hyphen-case.
+    *
+    * @param styles - CSS styles object.
     *
     * @param [options] - Options.
     *

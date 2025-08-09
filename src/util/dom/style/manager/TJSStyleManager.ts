@@ -18,7 +18,7 @@ import { CSSRuleManager }  from './CSSRuleManager';
  * the higher version take precedence. This isn't a perfect system and requires thoughtful construction of CSS
  * variables exposed, but allows multiple independently compiled TRL packages to load the latest CSS variables..
  */
-class TJSStyleManager
+class TJSStyleManager implements Iterable<[string, TJSStyleManager.CSSRuleManager]>
 {
    /**
     * Provides a token allowing internal instance construction.
@@ -68,6 +68,8 @@ class TJSStyleManager
       this.#styleElement = styleElement;
       this.#version = version;
    }
+
+   // Static Methods -------------------------------------------------------------------------------------------------
 
    /**
     * Connect to an existing dynamic styles managed element by CSS ID with semver check on version range compatibility.
@@ -126,6 +128,8 @@ class TJSStyleManager
       return void 0;
    }
 
+   // Accessors ------------------------------------------------------------------------------------------------------
+
    /**
     * Determines if this TJSStyleManager style element is still connected / available.
     *
@@ -151,6 +155,20 @@ class TJSStyleManager
    {
       return this.#version;
    }
+
+   // Iterator -------------------------------------------------------------------------------------------------------
+
+   /**
+    * Allows usage in `for of` loops directly.
+    *
+    * @returns Entries Map iterator.
+    */
+   [Symbol.iterator](): MapIterator<[string, TJSStyleManager.CSSRuleManager]>
+   {
+      return this.entries();
+   }
+
+   // Methods --------------------------------------------------------------------------------------------------------
 
    /**
     * Provides a copy constructor to duplicate an existing TJSStyleManager instance into a new document.
@@ -690,7 +708,7 @@ declare namespace TJSStyleManager {
    /**
     * Provides the ability to `get` and `set` bulk or single CSS properties to a specific {@link CSSStyleRule}.
     */
-   export interface CSSRuleManager
+   export interface CSSRuleManager extends Iterable<[string, string]>
    {
       /**
        * @returns Provides an accessor to get the `cssText` for the style rule or undefined if not connected.
@@ -718,6 +736,11 @@ declare namespace TJSStyleManager {
        * @returns The associated selector for this CSS rule.
        */
       get selector(): string;
+
+      /**
+       * @returns Iterator of CSS property entries in hyphen-case.
+       */
+      entries(): Iterator<[string, string]>;
 
       /**
        * Retrieves an object with the current CSS rule data.
@@ -749,9 +772,14 @@ declare namespace TJSStyleManager {
       hasProperty(key: string): boolean;
 
       /**
-       * Set rules by property / value; useful for CSS variables.
+       * @returns Iterator of CSS property keys in hyphen-case.
+       */
+      keys(): Iterator<string>;
+
+      /**
+       * Set CSS properties in bulk by property / value. Must use hyphen-case.
        *
-       * @param styles - An object with property / value string pairs to load.
+       * @param styles - CSS styles object.
        *
        * @param [options] - Options.
        *
