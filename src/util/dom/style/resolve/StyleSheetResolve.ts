@@ -284,7 +284,7 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
     *
     * @returns Style property value.
     */
-   getProperty(selector: string | Iterable<string>, property: string, options: StyleSheetResolve.Options.Get):
+   getProperty(selector: string | Iterable<string>, property: string, options?: StyleSheetResolve.Options.Get):
     string | undefined
    {
       const data = this.get(selector, options);
@@ -516,10 +516,8 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
       const result = StyleParse.cssText(styleRule.style.cssText);
 
       // Split selector parts and remove disallowed selector parts and empty strings.
-      const selectorParts = styleRule.selectorText.split(',')
-         .map((str) => str.trim())
-         .filter((str) => !opts.excludeSelectorParts.some((regex) => regex.test(str)))
-         .filter(Boolean); // Remove empty parts.
+      const selectorParts = StyleParse.selectorText(styleRule.selectorText).filter(
+       (str) => !opts.excludeSelectorParts.some((regex) => regex.test(str)));
 
       if (selectorParts.length)
       {

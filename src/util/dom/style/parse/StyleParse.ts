@@ -141,6 +141,60 @@ export class StyleParse
        multiplier * parseFloat(window.getComputedStyle(targetDocument.documentElement).fontSize) : void 0;
    }
 
+   /**
+    * Split a CSS selector list into individual selectors, honoring commas that appear only at the top level
+    * (IE not inside (), [], or quotes).
+    *
+    * Examples:
+    *   '.a, .b'                                  → ['.a', '.b']
+    *   ':is(.a, .b):not([data-x=","]) .c, .d'    → [':is(.a, .b):not([data-x=","]) .c', '.d']
+    *
+    * @param selectorText - CSSStyleRule.selectorText
+    *
+    * @returns Array of trimmed selector strings.
+    */
+   static selectorText(selectorText: string): string[]
+   {
+      const parts: string[] = [];
+      if (typeof selectorText !== 'string' || selectorText.length === 0) { return parts; }
+
+      let start = 0;
+      let inSQ = false; // '
+      let inDQ = false; // "
+      let paren = 0;    // ()
+      let bracket = 0;  // []
+
+      for (let i = 0; i < selectorText.length; i++)
+      {
+         const ch = selectorText[i];
+
+         // Toggle quote states; don’t nest the other quote type.
+         if (ch === '"' && !inSQ) { inDQ = !inDQ; continue; }
+         if (ch === '\'' && !inDQ) { inSQ = !inSQ; continue; }
+         if (inSQ || inDQ) { continue; }
+
+         // Only track bracket / paren nesting outside quotes.
+         if (ch === '(') { paren++; continue; }
+         if (ch === ')') { if (paren > 0) { paren--; } continue; }
+         if (ch === '[') { bracket++; continue; }
+         if (ch === ']') { if (bracket > 0) { bracket--; } continue; }
+
+         // Top-level comma separates selectors.
+         if (ch === ',' && paren === 0 && bracket === 0)
+         {
+            const piece = selectorText.slice(start, i).trim();
+            if (piece) { parts.push(piece); }
+            start = i + 1;
+         }
+      }
+
+      // Tail
+      const last = selectorText.slice(start).trim();
+      if (last) { parts.push(last); }
+
+      return parts;
+   }
+
    // Internal Implementation ----------------------------------------------------------------------------------------
 
    /**
