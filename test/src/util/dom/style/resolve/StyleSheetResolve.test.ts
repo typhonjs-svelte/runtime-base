@@ -162,6 +162,18 @@ describe('StyleSheetResolve', () =>
                `);
             });
 
+            it('get() (camelCase / does not convert CSS variable key name)', () =>
+            {
+               const result = resolver.get(['.source', '.parent'], {camelCase: true});
+
+               expect(stringify(result)).toMatchInlineSnapshot(`
+                 "{
+                   "backgroundColor": "var(--parent)",
+                   "--parent": "red"
+                 }"
+               `);
+            });
+
             it('getProperty() (can resolve string)', () =>
             {
                const result = resolver.getProperty('.source', 'background-color', {resolve: '.parent'});

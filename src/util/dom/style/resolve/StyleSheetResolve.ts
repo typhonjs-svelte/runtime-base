@@ -265,7 +265,8 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
          const toCamelCase = (str: string) => str.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
 
          result = Object.fromEntries(
-            Object.entries(result).map(([key, val]) => [toCamelCase(key), val])
+            // Do not remap CSS variable keys to camel case.
+            Object.entries(result).map(([key, val]) => [key.startsWith('--') ? key : toCamelCase(key), val])
          );
       }
 
@@ -923,7 +924,7 @@ declare namespace StyleSheetResolve {
        */
       type Get = {
          /**
-          * When true, returned property keys will be in camel case.
+          * When true, returned property keys will be in camel case. CSS variable key names are not converted.
           *
           * @defaultValue `false`
           */
