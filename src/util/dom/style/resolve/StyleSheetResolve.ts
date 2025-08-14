@@ -539,22 +539,27 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
          this.#processStyleRuleUrls(styleRule, result, opts);
       }
 
+      const hasIncludeSet = opts.includeSelectorPartSet.size > 0;
+      const hasExcludeList = opts.excludeSelectorParts.length > 0;
+
       // Split selector parts and remove disallowed selector parts and empty strings.
-      const selectorParts = StyleParse.selectorText(styleRule.selectorText).filter(
-       (str) => !opts.excludeSelectorParts.some((regex) => regex.test(str)));
+      let selectorParts = StyleParse.selectorText(styleRule.selectorText);
 
-      if (selectorParts.length)
+      if (hasExcludeList || hasIncludeSet)
       {
-         const hasIncludeSet = opts.includeSelectorPartSet.size > 0;
+         selectorParts = selectorParts.filter((str) =>
+            str &&
+            (!hasIncludeSet || opts.includeSelectorPartSet.has(str)) &&
+            (!hasExcludeList || !opts.excludeSelectorParts.some((rx) => rx.test(str)))
+         );
+      }
 
-         for (const part of selectorParts)
-         {
-            if (hasIncludeSet && !opts.includeSelectorPartSet.has(part)) { continue; }
-
-            const existing = this.#sheetMap.get(part);
-            const update = Object.assign(existing ?? {}, result);
-            this.#sheetMap.set(part, update);
-         }
+      for (let i = 0; i < selectorParts.length; i++)
+      {
+         const part = selectorParts[i];
+         const existing = this.#sheetMap.get(part);
+         const update = Object.assign(existing ?? {}, result);
+         this.#sheetMap.set(part, update);
       }
    }
 
