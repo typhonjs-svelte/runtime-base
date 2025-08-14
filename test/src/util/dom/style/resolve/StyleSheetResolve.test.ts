@@ -676,6 +676,7 @@ describe('StyleSheetResolve', () =>
                background: url(./images/bg.png);
                mask-image: url("/abs/path.png");
                --image-rel: url('../images/foo.png');
+               --other-domain: url(http://some-other-domain.com/bar.png);
             }
          `);
 
@@ -696,7 +697,8 @@ describe('StyleSheetResolve', () =>
                 "color": "red",
                 "background": "url(\\"/deeper/path/images/bg.png\\")",
                 "mask-image": "url(\\"/abs/path.png\\")",
-                "--image-rel": "url('/deeper/images/foo.png')"
+                "--image-rel": "url('/deeper/images/foo.png')",
+                "--other-domain": "url(http://some-other-domain.com/bar.png)"
               }"
             `);
          });
@@ -716,7 +718,8 @@ describe('StyleSheetResolve', () =>
                 "color": "red",
                 "background": "url(\\"/styles/images/bg.png\\")",
                 "mask-image": "url(\\"/abs/path.png\\")",
-                "--image-rel": "url('/images/foo.png')"
+                "--image-rel": "url('/images/foo.png')",
+                "--other-domain": "url(http://some-other-domain.com/bar.png)"
               }"
             `);
          });
