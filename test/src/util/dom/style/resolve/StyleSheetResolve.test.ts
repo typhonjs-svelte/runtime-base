@@ -665,6 +665,62 @@ describe('StyleSheetResolve', () =>
             `);
          });
       });
+
+      describe('Relative Path URLs', () =>
+      {
+         const sheet = new CSSStyleSheet();
+
+         sheet.insertRule(`
+            .source {
+               color: red;
+               background: url(./images/bg.png);
+               mask-image: url("/abs/path.png");
+               --image-rel: url('../images/foo.png');
+            }
+         `);
+
+         // `happy-dom` doesn't assign toStringTag for the mocked DOM API, but `CrossWindow` requires it for
+         // duck types.
+         Object.defineProperty(Object.getPrototypeOf(sheet), Symbol.toStringTag, { value: 'CSSStyleSheet' });
+         Object.defineProperty(Object.getPrototypeOf(sheet.cssRules[0]), Symbol.toStringTag, { value: 'CSSStyleRule' });
+
+         it('with baseHref', () =>
+         {
+            // Simulates `sheet` as if it is an inline stylesheet.
+            const resolver = StyleSheetResolve.parse(sheet, { baseHref: 'http://localhost:8080/deeper/path/' });
+
+            const result = resolver.get('.source');
+
+            expect(stringify(result)).toMatchInlineSnapshot(`
+              "{
+                "color": "red",
+                "background": "url(\\"/deeper/path/images/bg.png\\")",
+                "mask-image": "url(\\"/abs/path.png\\")",
+                "--image-rel": "url('/deeper/images/foo.png')"
+              }"
+            `);
+         });
+
+         it('style sheet href', () =>
+         {
+            // By defining the CSSStyleSheet `href` which `happy-dom` does not the relative `url()` references are
+            // resolved from this location.
+            Object.defineProperty(sheet, 'href', { value: 'http://localhost:8080/styles/styles.css' });
+
+            const resolver = StyleSheetResolve.parse(sheet, { baseHref: 'http://localhost:8080/' });
+
+            const result = resolver.get('.source');
+
+            expect(stringify(result)).toMatchInlineSnapshot(`
+              "{
+                "color": "red",
+                "background": "url(\\"/styles/images/bg.png\\")",
+                "mask-image": "url(\\"/abs/path.png\\")",
+                "--image-rel": "url('/images/foo.png')"
+              }"
+            `);
+         });
+      });
    });
 
    describe('Errors', () =>
@@ -783,6 +839,13 @@ describe('StyleSheetResolve', () =>
             // @ts-expect-error
             expect(() => StyleSheetResolve.parse(new Map(), null)).to.throw(TypeError,
              `'options' is not an object.`);
+         });
+
+         it('options.baseHref (not string)', () =>
+         {
+            // @ts-expect-error
+            expect(() => StyleSheetResolve.parse(new Map(), { baseHref: null })).to.throw(TypeError,
+             `'baseHref' must be a string.`);
          });
 
          it('options.excludeSelectorParts (not iterable)', () =>

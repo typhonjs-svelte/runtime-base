@@ -59,6 +59,11 @@ import { StyleParse }   from '../parse';
 class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
 {
    /**
+    * Detects relative `url()` references in CSSStyleRule `cssText`.
+    */
+   static #URL_DETECTION_REGEX = /\burl\(\s*(['"]?)(?!data:|https?:|\/|#)/i;
+
+   /**
     * Internal tracking of frozen state; once frozen, no more modifications are possible.
     */
    #frozen: boolean = false;
@@ -373,6 +378,11 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
 
       if (!isObject(options)) { throw new TypeError(`'options' is not an object.`); }
 
+      if (options.baseHref !== void 0 && typeof options.baseHref !== 'string')
+      {
+         throw new TypeError(`'baseHref' must be a string.`);
+      }
+
       if (options.excludeSelectorParts !== void 0 && !isIterable(options.excludeSelectorParts))
       {
          throw new TypeError(`'excludeSelectorParts' must be a list of RegExp instances.`);
@@ -448,6 +458,7 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
    {
       // Convert to consistent sanitized options data data.
       const options: ProcessOptions = {
+         baseHref: opts.baseHref,
          excludeSelectorParts: isIterable(opts.excludeSelectorParts) ? Array.from(opts.excludeSelectorParts) : [],
          includeCSSLayers: isIterable(opts.includeCSSLayers) ? Array.from(opts.includeCSSLayers) : [],
          includeSelectorPartSet: CrossWindow.isSet(opts.includeSelectorPartSet) ? opts.includeSelectorPartSet :
@@ -516,6 +527,12 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
       // Parse CSSStyleDeclaration.
       const result = StyleParse.cssText(styleRule.style.cssText);
 
+      // Only convert `url()` references if `baseHref` option provided and relative `url()` detected in `cssText`.
+      if (opts.baseHref && StyleSheetResolve.#URL_DETECTION_REGEX.test(styleRule.style.cssText))
+      {
+         this.#processStyleRuleUrls(styleRule, result, opts);
+      }
+
       // Split selector parts and remove disallowed selector parts and empty strings.
       const selectorParts = StyleParse.selectorText(styleRule.selectorText).filter(
        (str) => !opts.excludeSelectorParts.some((regex) => regex.test(str)));
@@ -532,6 +549,54 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
             const update = Object.assign(existing ?? {}, result);
             this.#sheetMap.set(part, update);
          }
+      }
+   }
+
+   /**
+    * Resolve relative `url(...)` references in CSS property values based on the stylesheet origin.
+    *
+    * This method rewrites relative paths in `url(...)` to absolute paths (IE `/assets/img.png`) using the
+    * CSSStyleSheet `href` when available or falling back to the provided `baseHref` for inline stylesheets.
+    *
+    * @param styleRule - The CSS rule containing the style declarations.
+    *
+    * @param result - Parsed CSS property key-value map.
+    *
+    * @param opts - Processing options.
+    */
+   #processStyleRuleUrls(styleRule: CSSStyleRule, result: { [key: string]: string }, opts: ProcessOptions)
+   {
+      const sheetHref = styleRule.parentStyleSheet?.href;
+      const baseHref = opts.baseHref as string;
+
+      // Resolve the origin URL from the stylesheet href or fallback to the provided `baseHref`. Any inline stylesheets
+      // will have an undefined `href`.
+      const origin = sheetHref ?? baseHref;
+
+      /* c8 ignore next 1 */
+      if (!origin) { return; }
+
+      for (const [key, val] of Object.entries(result))
+      {
+         // Only process values containing relative url(...) references.
+         if (!val.includes('url(') || !StyleSheetResolve.#URL_DETECTION_REGEX.test(val)) { continue; }
+
+         result[key] = val.replace(/url\((['"]?)([^'")]+)\1\)/g, (_, quote, relPath) =>
+         {
+            try
+            {
+               // Convert the relative path to an absolute pathname using the resolved origin.
+               const abs = new URL(relPath, origin).pathname;
+               return `url(${quote}${abs}${quote})`;
+
+               /* c8 ignore next 6 */
+            }
+            catch
+            {
+               // If resolution fails return the original value unchanged.
+               return `url(${quote}${relPath}${quote})`;
+            }
+         });
       }
    }
 
@@ -583,6 +648,14 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
  * Process options sanitized and converted for internal usage.
  */
 type ProcessOptions = {
+   /**
+    * Enables rewriting of relative `url(...)` references within style declarations. This value is required to
+    * activate URL rewriting and is used as a fallback origin for any stylesheet that lacks a defined
+    * `CSSStyleSheet.href` (IE inline or synthetic stylesheets). If not provided, all `url(...)` references are
+    * left untouched.
+    */
+   baseHref?: string;
+
    /**
     * Array of RegExp to filter via exclusion CSS selector parts.
     */
@@ -980,6 +1053,14 @@ declare namespace StyleSheetResolve {
        * Optional options for {@link StyleSheetResolve.parse}.
        */
       type Parse = {
+         /**
+          * Enables rewriting of relative `url(...)` references within style declarations. This value is required to
+          * activate URL rewriting and is used as a fallback origin for any stylesheet that lacks a defined
+          * `CSSStyleSheet.href` (IE inline or synthetic stylesheets). If not provided, all `url(...)` references are
+          * left untouched.
+          */
+         baseHref?: string;
+
          /**
           * A list of RegExp instance used to exclude CSS selector parts from parsed stylesheet data.
           */
