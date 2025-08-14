@@ -64,6 +64,11 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
    static #URL_DETECTION_REGEX = /\burl\(\s*(['"]?)(?!data:|https?:|\/|#)/i;
 
    /**
+    * Captures contents of `url()` references.
+    */
+   static #URL_REGEX = /url\((['"]?)([^'")]+)\1\)/g;
+
+   /**
     * Internal tracking of frozen state; once frozen, no more modifications are possible.
     */
    #frozen: boolean = false;
@@ -512,9 +517,9 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
          }
       }
 
-      for (const rule of layerBlockRules)
+      for (let i = 0; i < layerBlockRules.length; i++)
       {
-         if (CrossWindow.isCSSLayerBlockRule(rule)) { this.#processLayerBlockRule(rule, fullname, opts); }
+         this.#processLayerBlockRule(layerBlockRules[i], fullname, opts);
       }
    }
 
@@ -578,7 +583,7 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
    #processStyleRuleUrls(styleRule: CSSStyleRule, result: { [key: string]: string }, opts: ProcessOptions)
    {
       const sheetHref = styleRule.parentStyleSheet?.href;
-      const baseHref = opts.baseHref as string;
+      const baseHref = opts.baseHref;
 
       // Resolve the origin URL from the stylesheet href or fallback to the provided `baseHref`. Any inline stylesheets
       // will have an undefined `href`.
@@ -587,27 +592,36 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
       /* c8 ignore next 1 */
       if (!origin) { return; }
 
-      for (const [key, val] of Object.entries(result))
+      for (const key in result)
       {
-         // Only process values containing relative url(...) references.
-         if (!val.includes('url(') || !StyleSheetResolve.#URL_DETECTION_REGEX.test(val)) { continue; }
+         let value = result[key];
 
-         result[key] = val.replace(/url\((['"]?)([^'")]+)\1\)/g, (_, quote, relPath) =>
+         // Fast skip if there's no 'url(' substring.
+         if (value.indexOf('url(') === -1) { continue; }
+
+         // Avoid regex test if no reason to rewrite (IE relative URLs)
+         if (!StyleSheetResolve.#URL_DETECTION_REGEX.test(value)) { continue; }
+
+         // Only assign back to result if value changes.
+         let modified = false;
+
+         value = value.replace(StyleSheetResolve.#URL_REGEX, (match, quote, relPath) =>
          {
             try
             {
                // Convert the relative path to an absolute pathname using the resolved origin.
-               const abs = new URL(relPath, origin).pathname;
-               return `url(${quote}${abs}${quote})`;
-
-               /* c8 ignore next 6 */
+               const absPath = new URL(relPath, origin).pathname;
+               modified = true;
+               return `url(${quote}${absPath}${quote})`;
             }
             catch
             {
                // If resolution fails return the original value unchanged.
-               return `url(${quote}${relPath}${quote})`;
+               return match;
             }
          });
+
+         if (modified) { result[key] = value; }
       }
    }
 
@@ -626,8 +640,10 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
       // Collect all parent-defined CSS variables.
       const parentVars: { [key: string]: string } = {};
 
-      for (const entry of resolve)
+      for (let i = 0; i < resolve.length; i++)
       {
+         const entry = resolve[i];
+
          const parent = this.get(entry);
 
          // Verify that the parent lookup is available otherwise add selector to `not found` Set.
@@ -637,9 +653,9 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
             continue;
          }
 
-         for (const [key, value] of Object.entries(parent))
+         for (const key in parent)
          {
-            if (key.startsWith('--')) { parentVars[key] = value; }
+            if (key.startsWith('--')) { parentVars[key] = parent[key]; }
          }
       }
 
@@ -649,7 +665,7 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
       /* c8 ignore next 1 */
       if (!cssVars.unresolvedCount) { return; }
 
-      for (const [name, value] of Object.entries(parentVars)) { cssVars.set(name, value); }
+      for (const key in parentVars) { cssVars.set(key, parentVars[key]); }
 
       Object.assign(result, cssVars.resolved);
    }
