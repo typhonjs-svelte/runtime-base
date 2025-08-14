@@ -465,9 +465,13 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
           new Set()
       }
 
+      const rules = styleSheet.cssRules;
+
       // Parse each CSSStyleRule and build the map of selectors to properties.
-      for (const rule of Array.from(styleSheet.cssRules))
+      for (let i = 0; i < rules.length; i++)
       {
+         const rule = rules[i];
+
          // For mock testing `cssRules` uses a basic test.
          if (CrossWindow.isCSSLayerBlockRule(rule))
          {
@@ -495,8 +499,10 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
 
       const layerBlockRules = [];
 
-      for (const rule of Array.from(blockRule.cssRules))
+      const rules = blockRule.cssRules;
+      for (let i = 0; i < rules.length; i++)
       {
+         const rule = rules[i];
          if (CrossWindow.isCSSLayerBlockRule(rule)) { layerBlockRules.push(rule); }
 
          if (CrossWindow.isCSSStyleRule(rule) && (opts.includeCSSLayers.length === 0 ||
