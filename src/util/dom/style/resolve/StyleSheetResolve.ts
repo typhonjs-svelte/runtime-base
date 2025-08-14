@@ -724,6 +724,34 @@ type ResolveData = {
  */
 class ResolveVars
 {
+   /**
+    * Detect CSS variable.
+    */
+   static readonly #DETECT_CSS_VAR_REGEX = /--[\w-]+/g;
+
+   /**
+    * Capture CSS variable fallbacks.
+    */
+   static readonly #CSS_VAR_FALLBACK_REGEX = /^var\((?<varName>--[\w-]+)\s*,\s*(?<fallback>.+?)\)$/;
+
+   /**
+    * Replace CSS variable fallbacks.
+    */
+   static readonly #CSS_VAR_FALLBACK_REPLACE_REGEX = /var\((--[\w-]+)(?:\s*,\s*[^()]*?)?\)/g;
+
+   /**
+    * Closed CSS variable.
+    */
+   static readonly #CSS_VAR_REGEX = /^var\((--[\w-]+)\)$/;
+
+   /**
+    * Open CSS variable.
+    */
+   static readonly #CSS_VAR_PARTIAL_REGEX = /^var\((--[\w-]+)/;
+
+   /**
+    * Prevent deep fallback recursion.
+    */
    static readonly #MAX_FALLBACK_DEPTH = 10;
 
    /**
@@ -759,20 +787,24 @@ class ResolveVars
 
       // Build the reverse dependency map of which CSS variables (--x) are referenced by each style property.
       // This enables efficient tracking of what properties depend on what variables.
-      for (const [prop, value] of Object.entries(initial))
+      for (const prop in initial)
       {
-         const vars = [...value.matchAll(/--[\w-]+/g)].map((match) => match[0]);
+         const value = initial[prop];
+         let match: RegExpExecArray | null;
 
-         if (vars.length > 0)
+         ResolveVars.#DETECT_CSS_VAR_REGEX.lastIndex = 0; // Reset if reused
+
+         let found = false;
+
+         while ((match = ResolveVars.#DETECT_CSS_VAR_REGEX.exec(value)))
          {
-            this.#propMap.set(prop, value);
-
-            for (const entry of vars)
-            {
-               if (!this.#varToProp.has(entry)) { this.#varToProp.set(entry, new Set()); }
-               this.#varToProp.get(entry)?.add(prop);
-            }
+            const entry = match[0];
+            if (!this.#varToProp.has(entry)) this.#varToProp.set(entry, new Set());
+            this.#varToProp.get(entry)!.add(prop);
+            found = true;
          }
+
+         if (found) this.#propMap.set(prop, value);
       }
    }
 
@@ -810,10 +842,10 @@ class ResolveVars
                {
                   // Replace each `var(--x[, fallback])` with its resolved value (if available).
                   // Fallbacks are preserved unless fully resolvable, enabling partial resolution of chained vars.
-                  value = value.replace(/var\((--[\w-]+)(?:\s*,\s*[^()]*?)?\)/g, (match) =>
+                  value = value.replace(ResolveVars.#CSS_VAR_FALLBACK_REPLACE_REGEX, (match) =>
                   {
                      // Extract the CSS variable name (`--x`) from the matched `var(--x[, fallback])` expression.
-                     const varName = match.match(/^var\((--[\w-]+)/)?.[1];
+                     const varName = match.match(ResolveVars.#CSS_VAR_PARTIAL_REGEX)?.[1];
                      const resolved = this.#varResolved.get(varName as string);
 
                      /* c8 ignore next 1 */ // `?? match` is a sanity fallback.
@@ -899,7 +931,7 @@ class ResolveVars
     */
    #resolveCycleWarn(value: string, visited: Set<string>, seenCycles: Set<string>): string | undefined
    {
-      const match = value.match(/^var\((--[\w-]+)\)$/);
+      const match = value.match(ResolveVars.#CSS_VAR_REGEX);
       if (!match) { return value; }
 
       const next = match[1];
@@ -959,7 +991,7 @@ class ResolveVars
       if (depth > ResolveVars.#MAX_FALLBACK_DEPTH) { return expr; }
 
       // Match top-level var(--x, fallback) expression. Non-greedy match on fallback to avoid trailing garbage.
-      const match = expr.match(/^var\((?<varName>--[\w-]+)\s*,\s*(?<fallback>.+?)\)$/);
+      const match = expr.match(ResolveVars.#CSS_VAR_FALLBACK_REGEX);
       if (!match?.groups) { return expr; }
 
       const { varName, fallback } = match.groups;
@@ -977,7 +1009,7 @@ class ResolveVars
          let nested = this.#resolveNestedFallback(fallbackTrimmed, depth + 1);
 
          // If the nested result itself is a var(...) with a resolved variable, then resolve again.
-         const innerMatch = nested.match(/^var\((--[\w-]+)\)$/);
+         const innerMatch = nested.match(ResolveVars.#CSS_VAR_REGEX);
          if (innerMatch)
          {
             const innerResolved = this.#varResolved.get(innerMatch[1]);
