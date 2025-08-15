@@ -516,15 +516,20 @@ describe('StyleSheetResolve', () =>
    {
       describe('CSSStyleRule', () =>
       {
-         const sheet = new CSSStyleSheet();
-         sheet.insertRule('.source { color: var(--a); }');
-         sheet.insertRule('.parent { --a: red; }');
+         let sheet: CSSStyleSheet;
 
-         // `happy-dom` doesn't assign toStringTag for the mocked DOM API, but `CrossWindow` requires it for
-         // duck types.
-         Object.defineProperty(Object.getPrototypeOf(sheet), Symbol.toStringTag, { value: 'CSSStyleSheet' });
-         Object.defineProperty(Object.getPrototypeOf(sheet.cssRules[0]), Symbol.toStringTag, { value: 'CSSStyleRule' });
-         Object.defineProperty(Object.getPrototypeOf(sheet.cssRules[1]), Symbol.toStringTag, { value: 'CSSStyleRule' });
+         beforeEach(() =>
+         {
+            sheet = new CSSStyleSheet();
+            sheet.insertRule('.source { color: var(--a); }');
+            sheet.insertRule('.parent { --a: red; }');
+
+            // `happy-dom` doesn't assign toStringTag for the mocked DOM API, but `CrossWindow` requires it for
+            // duck types.
+            Object.defineProperty(Object.getPrototypeOf(sheet), Symbol.toStringTag, { value: 'CSSStyleSheet' });
+            Object.defineProperty(Object.getPrototypeOf(sheet.cssRules[0]), Symbol.toStringTag, { value: 'CSSStyleRule' });
+            Object.defineProperty(Object.getPrototypeOf(sheet.cssRules[1]), Symbol.toStringTag, { value: 'CSSStyleRule' });
+         });
 
          it('resolves parent', () =>
          {
@@ -535,6 +540,23 @@ describe('StyleSheetResolve', () =>
             expect(stringify(result)).toMatchInlineSnapshot(`
               "{
                 "color": "red"
+              }"
+            `);
+         });
+
+         it('resolves parent w/ exiting rule override', () =>
+         {
+            sheet.insertRule('.parent { --a: blue; }');
+            Object.defineProperty(Object.getPrototypeOf(sheet.cssRules[2]), Symbol.toStringTag,
+             { value: 'CSSStyleRule' });
+
+            const resolver = StyleSheetResolve.parse(sheet);
+
+            const result = resolver.get('.source', { resolve: ['.parent'] });
+
+            expect(stringify(result)).toMatchInlineSnapshot(`
+              "{
+                "color": "blue"
               }"
             `);
          });
@@ -687,7 +709,7 @@ describe('StyleSheetResolve', () =>
 
          it('with baseHref', () =>
          {
-            // Simulates `sheet` as if it is an inline stylesheet.
+            // Simulates `sheet` as if it is an inline stylesheet providing a base HREF value for sheet origin.
             const resolver = StyleSheetResolve.parse(sheet, { baseHref: 'http://localhost:8080/deeper/path/' });
 
             const result = resolver.get('.source');
@@ -709,7 +731,7 @@ describe('StyleSheetResolve', () =>
             // resolved from this location.
             Object.defineProperty(sheet, 'href', { value: 'http://localhost:8080/styles/styles.css' });
 
-            const resolver = StyleSheetResolve.parse(sheet, { baseHref: 'http://localhost:8080/' });
+            const resolver = StyleSheetResolve.parse(sheet);
 
             const result = resolver.get('.source');
 
@@ -719,6 +741,24 @@ describe('StyleSheetResolve', () =>
                 "background": "url(\\"/styles/images/bg.png\\")",
                 "mask-image": "url(\\"/abs/path.png\\")",
                 "--image-rel": "url('/images/foo.png')",
+                "--other-domain": "url(http://some-other-domain.com/bar.png)"
+              }"
+            `);
+         });
+
+         it('with urlRewrite (false)', () =>
+         {
+            // Disables relative URL rewriting leaving `url()` values the same.
+            const resolver = StyleSheetResolve.parse(sheet, { urlRewrite: false });
+
+            const result = resolver.get('.source');
+
+            expect(stringify(result)).toMatchInlineSnapshot(`
+              "{
+                "color": "red",
+                "background": "url(\\"./images/bg.png\\")",
+                "mask-image": "url(\\"/abs/path.png\\")",
+                "--image-rel": "url('../images/foo.png')",
                 "--other-domain": "url(http://some-other-domain.com/bar.png)"
               }"
             `);
@@ -870,6 +910,13 @@ describe('StyleSheetResolve', () =>
             // @ts-expect-error
             expect(() => StyleSheetResolve.parse(new Map(), { includeSelectorPartSet: null })).to.throw(TypeError,
              `'includeSelectorPartSet' must be a Set of strings.`);
+         });
+
+         it('options.urlRewrite (not boolean)', () =>
+         {
+            // @ts-expect-error
+            expect(() => StyleSheetResolve.parse(new Map(), { urlRewrite: null })).to.throw(TypeError,
+             `'urlRewrite' must be a boolean.`);
          });
       });
 

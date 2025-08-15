@@ -20,17 +20,24 @@ import { StyleParse }   from '../parse';
  * some variables are undefined. This maintains correctness without introducing ambiguity or needing a complete AST
  * based parser.
  *
+ * By default, when parsing CSSStyleSheet instances relative URL rewriting occurs converting `url(...)` references to
+ * absolute paths based on the `CSSStyleSheet.href` or the `baseHref` parse option for inline / synthetic
+ * CSSStyleSheets. You may turn off relative URL rewriting via setting the `urlRewrite` parse option to `false`.
+ *
  * The goal of this implementation is to realize a regex-based parser with small code size, minimal memory footprint,
  * speed, and reasonable accuracy.
  *
  * Core features:
  * - Parses all or specific relevant `@layer` blocks.
  * - Provides both direct and resolved access to styles via `.get()` and `.getProperty()`.
+ * - Automatically rewrites relative URLs / `url(...)` references to absolute paths.
  *
- * Main Options:
+ * Parse Options:
+ * - Can set a base `href` for inline / synthetic CSSStyleSheets being processed via `baseHref` option.
  * - Can filter out and exclude undesired CSS selector parts for parsing via `excludeSelectorParts` option.
  * - Can filter out and include just desired CSS layers via `includeCSSLayers` option.
  * - Can filter out and include just desired CSS selector parts via `includeSelectorPartSet` option.
+ * - Can disable relative URL rewriting by setting `urlRewrite` option to `false`.
  *
  * Access Options:
  * - Can return style property keys in camel case via `camelCase` option.
@@ -403,6 +410,11 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
          throw new TypeError(`'includeSelectorPartSet' must be a Set of strings.`);
       }
 
+      if (options.urlRewrite !== void 0 && typeof options.urlRewrite !== 'boolean')
+      {
+         throw new TypeError(`'urlRewrite' must be a boolean.`);
+      }
+
       if (CrossWindow.isCSSStyleSheet(styleSheetOrMap))
       {
          this.#parse(styleSheetOrMap, options);
@@ -463,11 +475,12 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
    {
       // Convert to consistent sanitized options data data.
       const options: ProcessOptions = {
-         baseHref: opts.baseHref,
+         baseHref: styleSheet.href ?? opts.baseHref,
          excludeSelectorParts: isIterable(opts.excludeSelectorParts) ? Array.from(opts.excludeSelectorParts) : [],
          includeCSSLayers: isIterable(opts.includeCSSLayers) ? Array.from(opts.includeCSSLayers) : [],
          includeSelectorPartSet: CrossWindow.isSet(opts.includeSelectorPartSet) ? opts.includeSelectorPartSet :
-          new Set()
+          new Set(),
+         urlRewrite: opts.urlRewrite ?? true
       }
 
       const rules = styleSheet.cssRules;
@@ -538,10 +551,11 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
       // Parse CSSStyleDeclaration.
       const result = StyleParse.cssText(styleRule.style.cssText);
 
-      // Only convert `url()` references if `baseHref` option provided and relative `url()` detected in `cssText`.
-      if (opts.baseHref && StyleSheetResolve.#URL_DETECTION_REGEX.test(styleRule.style.cssText))
+      // Only convert `url()` references if `urlRewrite` is true, baseHref` is defined, and relative `url()` detected
+      // in `cssText`.
+      if (opts.urlRewrite && opts.baseHref && StyleSheetResolve.#URL_DETECTION_REGEX.test(styleRule.style.cssText))
       {
-         this.#processStyleRuleUrls(styleRule, result, opts);
+         this.#processStyleRuleUrls(result, opts);
       }
 
       const hasIncludeSet = opts.includeSelectorPartSet.size > 0;
@@ -555,7 +569,7 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
          selectorParts = selectorParts.filter((str) =>
             str &&
             (!hasIncludeSet || opts.includeSelectorPartSet.has(str)) &&
-            (!hasExcludeList || !opts.excludeSelectorParts.some((rx) => rx.test(str)))
+            (!hasExcludeList || !opts.excludeSelectorParts.some((regex) => regex.test(str)))
          );
       }
 
@@ -563,7 +577,7 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
       {
          const part = selectorParts[i];
          const existing = this.#sheetMap.get(part);
-         const update = Object.assign(existing ?? {}, result);
+         const update = existing ? Object.assign(existing, result) : result;
          this.#sheetMap.set(part, update);
       }
    }
@@ -574,23 +588,13 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
     * This method rewrites relative paths in `url(...)` to absolute paths (IE `/assets/img.png`) using the
     * CSSStyleSheet `href` when available or falling back to the provided `baseHref` for inline stylesheets.
     *
-    * @param styleRule - The CSS rule containing the style declarations.
-    *
     * @param result - Parsed CSS property key-value map.
     *
     * @param opts - Processing options.
     */
-   #processStyleRuleUrls(styleRule: CSSStyleRule, result: { [key: string]: string }, opts: ProcessOptions)
+   #processStyleRuleUrls(result: { [key: string]: string }, opts: ProcessOptions)
    {
-      const sheetHref = styleRule.parentStyleSheet?.href;
       const baseHref = opts.baseHref;
-
-      // Resolve the origin URL from the stylesheet href or fallback to the provided `baseHref`. Any inline stylesheets
-      // will have an undefined `href`.
-      const origin = sheetHref ?? baseHref;
-
-      /* c8 ignore next 1 */
-      if (!origin) { return; }
 
       for (const key in result)
       {
@@ -609,10 +613,11 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
          {
             try
             {
-               // Convert the relative path to an absolute pathname using the resolved origin.
-               const absPath = new URL(relPath, origin).pathname;
+               // Convert the relative path to an absolute pathname using the resolved baseHref.
+               const absPath = new URL(relPath, baseHref).pathname;
                modified = true;
                return `url(${quote}${absPath}${quote})`;
+               /* c8 ignore next 6 */
             }
             catch
             {
@@ -676,10 +681,9 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
  */
 type ProcessOptions = {
    /**
-    * Enables rewriting of relative `url(...)` references within style declarations. This value is required to
-    * activate URL rewriting and is used as a fallback origin for any stylesheet that lacks a defined
-    * `CSSStyleSheet.href` (IE inline or synthetic stylesheets). If not provided, all `url(...)` references are
-    * left untouched.
+    * This value is used as the base `HREF` and is used as a fallback origin for any stylesheet that lacks a defined
+    * `CSSStyleSheet.href` (IE inline or synthetic stylesheets). You may provide it when processing inline stylesheets
+    * when URL rewriting is necessary.
     */
    baseHref?: string;
 
@@ -697,6 +701,14 @@ type ProcessOptions = {
     * A Set of strings to exactly match selector parts to include in parsed stylesheet data.
     */
    includeSelectorPartSet: Set<string>;
+
+   /**
+    * When false, relative URL rewriting is disabled. Relative URL rewriting based on the `CSSStyleSheet.href` or
+    * provided `baseHref` option is enabled by default.
+    *
+    * @defaultValue `true`
+    */
+   urlRewrite?: boolean;
 }
 
 /**
@@ -1113,10 +1125,9 @@ declare namespace StyleSheetResolve {
        */
       type Parse = {
          /**
-          * Enables rewriting of relative `url(...)` references within style declarations. This value is required to
-          * activate URL rewriting and is used as a fallback origin for any stylesheet that lacks a defined
-          * `CSSStyleSheet.href` (IE inline or synthetic stylesheets). If not provided, all `url(...)` references are
-          * left untouched.
+          * This value is used as the base `HREF` and is used as a fallback origin for any stylesheet that lacks a
+          * defined `CSSStyleSheet.href` (IE inline or synthetic stylesheets). You may provide it when processing inline
+          * stylesheets when URL rewriting is necessary.
           */
          baseHref?: string;
 
@@ -1135,6 +1146,14 @@ declare namespace StyleSheetResolve {
           * A Set of strings to exactly match selector parts to include in parsed stylesheet data.
           */
          includeSelectorPartSet?: Set<string>;
+
+         /**
+          * When false, relative URL rewriting is disabled. Relative URL rewriting based on the `CSSStyleSheet.href` or
+          * provided `baseHref` option is enabled by default.
+          *
+          * @defaultValue `true`
+          */
+         urlRewrite?: boolean;
       }
    }
 }
