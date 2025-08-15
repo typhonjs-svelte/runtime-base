@@ -360,9 +360,15 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
          throw new TypeError(`'source' is not a StyleSheetResolve instance.`);
       }
 
-      for (const [selectorPart, incoming] of source)
+      for (const selectorPart of source.keys())
       {
          if (exactMatch && !this.#sheetMap.has(selectorPart)) { continue; }
+
+         // Directly retrieve the stored object.
+         const incoming = source.#sheetMap.get(selectorPart);
+
+         /* c8 ignore next 1 */ // Sanity check.
+         if (!incoming) { continue; }
 
          /* c8 ignore next 1 */  // `?? {}` is for sanity.
          const current = this.#sheetMap.get(selectorPart) ?? {};
