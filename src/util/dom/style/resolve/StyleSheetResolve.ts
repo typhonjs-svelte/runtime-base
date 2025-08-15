@@ -847,7 +847,7 @@ class ResolveVars
             {
                let value = this.#propMap.get(prop) as string;
 
-               if (value?.includes(`var(${entry}`))
+               if (value.indexOf(`var(${entry}`) !== -1)
                {
                   // Replace each `var(--x[, fallback])` with its resolved value (if available).
                   // Fallbacks are preserved unless fully resolvable, enabling partial resolution of chained vars.
@@ -874,7 +874,7 @@ class ResolveVars
                const value = this.#propMap.get(prop) as string;
 
                // Early out if no fallback to resolve.
-               if (!value?.includes(`var(${entry},`)) { continue; }
+               if (value.indexOf(`var(${entry}`) === -1) { continue; }
 
                const fallback = this.#resolveNestedFallback(value);
 
