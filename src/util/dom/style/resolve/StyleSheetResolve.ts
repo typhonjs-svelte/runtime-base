@@ -567,20 +567,8 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
          this.#processStyleRuleUrls(result, opts);
       }
 
-      const hasIncludeSet = opts.includeSelectorPartSet.size > 0;
-      const hasExcludeList = opts.excludeSelectorParts.length > 0;
-
       // Split selector parts and remove disallowed selector parts and empty strings.
-      let selectorParts = StyleParse.selectorText(styleRule.selectorText);
-
-      if (hasExcludeList || hasIncludeSet)
-      {
-         selectorParts = selectorParts.filter((str) =>
-            str &&
-            (!hasIncludeSet || opts.includeSelectorPartSet.has(str)) &&
-            (!hasExcludeList || !opts.excludeSelectorParts.some((regex) => regex.test(str)))
-         );
-      }
+      const selectorParts = StyleParse.selectorText(styleRule.selectorText, opts);
 
       for (let i = 0; i < selectorParts.length; i++)
       {
