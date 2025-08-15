@@ -565,25 +565,28 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
       /* c8 ignore next 1 */
       if (typeof styleRule.selectorText !== 'string') { return; }
 
-      // Parse CSSStyleDeclaration.
-      const result = StyleParse.cssText(styleRule.style.cssText);
-
-      // Only convert `url()` references if `urlRewrite` is true, baseHref` is defined, and relative `url()` detected
-      // in `cssText`.
-      if (opts.urlRewrite && opts.baseHref && StyleSheetResolve.#URL_DETECTION_REGEX.test(styleRule.style.cssText))
-      {
-         this.#processStyleRuleUrls(result, opts);
-      }
-
       // Split selector parts and remove disallowed selector parts and empty strings.
       const selectorParts = StyleParse.selectorText(styleRule.selectorText, opts);
 
-      for (let i = 0; i < selectorParts.length; i++)
+      if (selectorParts.length)
       {
-         const part = selectorParts[i];
-         const existing = this.#sheetMap.get(part);
-         const update = existing ? Object.assign(existing, result) : result;
-         this.#sheetMap.set(part, update);
+         // Parse CSSStyleDeclaration.
+         const result = StyleParse.cssText(styleRule.style.cssText);
+
+         // Only convert `url()` references if `urlRewrite` is true, baseHref` is defined, and relative `url()` detected
+         // in `cssText`.
+         if (opts.urlRewrite && opts.baseHref && StyleSheetResolve.#URL_DETECTION_REGEX.test(styleRule.style.cssText))
+         {
+            this.#processStyleRuleUrls(result, opts);
+         }
+
+         for (let i = 0; i < selectorParts.length; i++)
+         {
+            const part = selectorParts[i];
+            const existing = this.#sheetMap.get(part);
+            const update = existing ? Object.assign(existing, result) : result;
+            this.#sheetMap.set(part, update);
+         }
       }
    }
 
