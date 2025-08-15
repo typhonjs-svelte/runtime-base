@@ -853,7 +853,7 @@ describe('StyleSheetResolve', () =>
 
          beforeEach(() => resolver = new StyleSheetResolve());
 
-         it('frozen target', () =>
+         it('frozen', () =>
          {
             resolver.freeze();
 
@@ -868,8 +868,18 @@ describe('StyleSheetResolve', () =>
          });
       });
 
-      describe('parse() types', () =>
+      describe('parse()', () =>
       {
+         it('frozen', () =>
+         {
+            const resolver = new StyleSheetResolve();
+
+            resolver.freeze();
+
+            expect(() => resolver.parse(new Map())).to.throw(Error,
+             `Cannot modify a frozen StyleSheetResolve instance.`);
+         });
+
          it('styleSheetOrMap (not Map or CSSStyleSheet)', () =>
          {
             // @ts-expect-error

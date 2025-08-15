@@ -389,6 +389,8 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
    parse(styleSheetOrMap: CSSStyleSheet | Map<string, { [key: string]: string }>,
     options: StyleSheetResolve.Options.Parse = {}): this
    {
+      if (this.#frozen) { throw new Error('Cannot modify a frozen StyleSheetResolve instance.'); }
+
       this.#sheetMap.clear();
 
       if (!CrossWindow.isCSSStyleSheet(styleSheetOrMap) && !CrossWindow.isMap(styleSheetOrMap))
