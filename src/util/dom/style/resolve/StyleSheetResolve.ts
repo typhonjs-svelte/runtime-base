@@ -66,6 +66,11 @@ import { StyleParse }   from '../parse';
 class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
 {
    /**
+    * Detects hyphen-case separator for camel case property key conversion.
+    */
+   static #HYPHEN_CASE_REGEX = /-([a-z])/g;
+
+   /**
     * Detects relative `url()` references in CSSStyleRule `cssText`.
     */
    static #URL_DETECTION_REGEX = /\burl\(\s*(['"]?)(?!data:|https?:|\/|#)/i;
@@ -279,20 +284,24 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
       // Potentially convert property keys to camel case.
       if (result && camelCase)
       {
-         const toCamelCase = (str: string) => str.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+         const remapped: { [key: string]: string } = {};
 
-         result = Object.fromEntries(
-            // Do not remap CSS variable keys to camel case.
-            Object.entries(result).map(([key, val]) => [key.startsWith('--') ? key : toCamelCase(key), val])
-         );
+         const toUpper = (_: any, str: string) => str.toUpperCase();
+
+         for (const key in result)
+         {
+            const mappedKey = key.startsWith('--') ? key : key.replace(StyleSheetResolve.#HYPHEN_CASE_REGEX, toUpper);
+            remapped[mappedKey] = result[key];
+         }
+
+         result = remapped;
       }
 
       return result;
    }
 
    /**
-    * Gets a specific property value from the given `selector` and `property` key. Try and use a direct selector
-    * match otherwise all keys are iterated to find a selector string that includes `selector`.
+    * Gets a specific property value from the given `selector` and `property` key.
     *
     * @param   selector - A selector or list of selectors to retrieve.
     *
