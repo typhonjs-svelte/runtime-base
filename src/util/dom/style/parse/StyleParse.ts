@@ -1,3 +1,5 @@
+import { CrossWindow } from '#runtime/util/browser';
+
 /**
  * Provides resources for parsing style strings.
  */
@@ -143,20 +145,30 @@ export class StyleParse
 
    /**
     * Split a CSS selector list into individual selectors, honoring commas that appear only at the top level
-    * (IE not inside (), [], or quotes).
+    * (IE not inside (), [], or quotes). Additional options provide inclusion / exclusion filtering of selector parts.
     *
     * Examples:
     *   '.a, .b'                                  → ['.a', '.b']
     *   ':is(.a, .b):not([data-x=","]) .c, .d'    → [':is(.a, .b):not([data-x=","]) .c', '.d']
     *
-    * @param selectorText - CSSStyleRule.selectorText
+    * @param selectorText - `CSSStyleRule.selectorText` to parse.
     *
-    * @returns Array of trimmed selector strings.
+    * @param [options] - Optional filtering options.
+    *
+    * @param [options.excludeSelectorParts] - An array of RegExp instances to filter by exclusion.
+    *
+    * @param [options.includeSelectorPartSet] - A Set of strings to filter by inclusion.
+    *
+    * @returns Array of trimmed selector strings w/ optional filtering of parts.
     */
-   static selectorText(selectorText: string): string[]
+   static selectorText(selectorText: string, { excludeSelectorParts, includeSelectorPartSet }:
+    { excludeSelectorParts?: RegExp[], includeSelectorPartSet?: Set<string>} = {}): string[]
    {
       const parts: string[] = [];
       if (typeof selectorText !== 'string' || selectorText.length === 0) { return parts; }
+
+      const hasExclude = Array.isArray(excludeSelectorParts) && excludeSelectorParts.length > 0;
+      const hasInclude = CrossWindow.isSet(includeSelectorPartSet) && includeSelectorPartSet.size > 0;
 
       let start = 0;
       let inSQ = false; // '
@@ -183,14 +195,22 @@ export class StyleParse
          if (ch === ',' && paren === 0 && bracket === 0)
          {
             const piece = selectorText.slice(start, i).trim();
-            if (piece) { parts.push(piece); }
+            if (piece && (!hasInclude || includeSelectorPartSet.has(piece)) &&
+             (!hasExclude || !excludeSelectorParts.some((rx) => rx.test(piece))))
+            {
+               parts.push(piece);
+            }
             start = i + 1;
          }
       }
 
-      // Tail
+      // Final segment.
       const last = selectorText.slice(start).trim();
-      if (last) { parts.push(last); }
+      if (last && (!hasInclude || includeSelectorPartSet.has(last)) &&
+       (!hasExclude || !excludeSelectorParts.some((rx) => rx.test(last))))
+      {
+         parts.push(last);
+      }
 
       return parts;
    }
