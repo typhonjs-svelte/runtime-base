@@ -755,10 +755,11 @@ const rollupConfigs = [
    },
    {
       input: {
-         input: 'src/util/dom/style/index.js',
+         input: 'src/util/dom/style/index.ts',
          plugins: [
             importsExternal(),
             resolve(resolveOptions),
+            typescript({ tsconfig: './src/util/dom/style/tsconfig.json' }),
             generateDTS.plugin(dtsPluginOptions)
          ]
       },
