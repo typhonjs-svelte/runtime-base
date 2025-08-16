@@ -5,4 +5,5 @@ npm-debug.log
 coverage/
 debug/
 docs/
+html/
 node_modules/
