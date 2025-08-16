@@ -10,7 +10,12 @@ import { StyleSheetResolve }  from '#runtime-test/util/dom/style';
 const stringify = (value: [] | {} | undefined) => value ? JSON.stringify(value, null, 2) : '';
 
 // `happy-dom` doesn't implement `CSSLayerBlockRule`, but we can reuse `CSSStyleSheet`.
-class CSSLayerBlockRule extends CSSStyleSheet { constructor(options?: object) { super(options); }}
+class CSSLayerBlockRule extends CSSStyleSheet
+{
+   name: string | undefined = void 0;
+
+   constructor(options?: object) { super(options); }
+}
 
 describe('StyleSheetResolve', () =>
 {
@@ -590,7 +595,6 @@ describe('StyleSheetResolve', () =>
          const baseSheet = new CSSStyleSheet();
 
          const mockLayerRule = new CSSLayerBlockRule();
-         // @ts-expect-error
          mockLayerRule.name = 'testing';
          mockLayerRule.insertRule('.source { color: var(--a); }');
          mockLayerRule.insertRule('.parent { --a: red; }');
@@ -632,11 +636,9 @@ describe('StyleSheetResolve', () =>
          const baseSheet = new CSSStyleSheet();
 
          const mockLayerRule = new CSSLayerBlockRule();
-         // @ts-expect-error
          mockLayerRule.name = 'testing';
 
          const mockLayerRule2 = new CSSLayerBlockRule();
-         // @ts-expect-error
          mockLayerRule2.name = 'depth2';
 
          mockLayerRule2.insertRule('.source { color: var(--a); }');
