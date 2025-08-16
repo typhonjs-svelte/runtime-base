@@ -507,14 +507,15 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
       {
          const rule = rules[i];
 
-         // For mock testing `cssRules` uses a basic test.
-         if (CrossWindow.isCSSLayerBlockRule(rule))
+         switch(rule.constructor.name)
          {
-            this.#processLayerBlockRule(rule, void 0, options);
-         }
-         else if (CrossWindow.isCSSStyleRule(rule))
-         {
-            this.#processStyleRule(rule, options);
+            case 'CSSLayerBlockRule':
+               this.#processLayerBlockRule(rule as CSSLayerBlockRule, void 0, options);
+               break;
+
+            case 'CSSStyleRule':
+               this.#processStyleRule(rule as CSSStyleRule, options);
+               break;
          }
       }
    }
@@ -532,18 +533,25 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
    {
       const fullname = typeof parentLayerName === 'string' ? `${parentLayerName}.${blockRule.name}` : blockRule.name;
 
-      const layerBlockRules = [];
+      const includeLayer = opts.includeCSSLayers.length === 0 ||
+       opts.includeCSSLayers.some((regex) => regex.test(fullname));
+
+      const layerBlockRules: CSSLayerBlockRule[] = [];
 
       const rules = blockRule.cssRules;
       for (let i = 0; i < rules.length; i++)
       {
          const rule = rules[i];
-         if (CrossWindow.isCSSLayerBlockRule(rule)) { layerBlockRules.push(rule); }
 
-         if (CrossWindow.isCSSStyleRule(rule) && (opts.includeCSSLayers.length === 0 ||
-          opts.includeCSSLayers.some((regex) => regex.test(fullname))))
+         switch(rule.constructor.name)
          {
-            this.#processStyleRule(rule, opts);
+            case 'CSSLayerBlockRule':
+               layerBlockRules.push(rule as CSSLayerBlockRule);
+               break;
+
+            case 'CSSStyleRule':
+               if (includeLayer) { this.#processStyleRule(rule as CSSStyleRule, opts); }
+               break;
          }
       }
 

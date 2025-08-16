@@ -9,6 +9,9 @@ import { StyleSheetResolve }  from '#runtime-test/util/dom/style';
 
 const stringify = (value: [] | {} | undefined) => value ? JSON.stringify(value, null, 2) : '';
 
+// `happy-dom` doesn't implement `CSSLayerBlockRule`, but we can reuse `CSSStyleSheet`.
+class CSSLayerBlockRule extends CSSStyleSheet { constructor(options?: object) { super(options); }}
+
 describe('StyleSheetResolve', () =>
 {
    describe('Accessors / Iterator / Methods', () =>
@@ -523,12 +526,6 @@ describe('StyleSheetResolve', () =>
             sheet = new CSSStyleSheet();
             sheet.insertRule('.source { color: var(--a); }');
             sheet.insertRule('.parent { --a: red; }');
-
-            // `happy-dom` doesn't assign toStringTag for the mocked DOM API, but `CrossWindow` requires it for
-            // duck types.
-            Object.defineProperty(Object.getPrototypeOf(sheet), Symbol.toStringTag, { value: 'CSSStyleSheet' });
-            Object.defineProperty(Object.getPrototypeOf(sheet.cssRules[0]), Symbol.toStringTag, { value: 'CSSStyleRule' });
-            Object.defineProperty(Object.getPrototypeOf(sheet.cssRules[1]), Symbol.toStringTag, { value: 'CSSStyleRule' });
          });
 
          it('resolves parent', () =>
@@ -547,8 +544,6 @@ describe('StyleSheetResolve', () =>
          it('resolves parent w/ exiting rule override', () =>
          {
             sheet.insertRule('.parent { --a: blue; }');
-            Object.defineProperty(Object.getPrototypeOf(sheet.cssRules[2]), Symbol.toStringTag,
-             { value: 'CSSStyleRule' });
 
             const resolver = StyleSheetResolve.parse(sheet);
 
@@ -594,26 +589,17 @@ describe('StyleSheetResolve', () =>
       {
          const baseSheet = new CSSStyleSheet();
 
-         const mockLayerRule = new CSSStyleSheet();
+         const mockLayerRule = new CSSLayerBlockRule();
          // @ts-expect-error
          mockLayerRule.name = 'testing';
          mockLayerRule.insertRule('.source { color: var(--a); }');
          mockLayerRule.insertRule('.parent { --a: red; }');
-
-         // Override prototype to spoof [object CSSLayerBlockRule]
-         Object.defineProperty(mockLayerRule, Symbol.toStringTag, { value: 'CSSLayerBlockRule' });
 
          // @ts-expect-error  // Can push w/ `happy-dom`.
          baseSheet.cssRules.push(mockLayerRule);
 
          // `happy-dom` doesn't assign toStringTag for the mocked DOM API, but `CrossWindow` requires it for duck types.
          Object.defineProperty(Object.getPrototypeOf(baseSheet), Symbol.toStringTag, { value: 'CSSStyleSheet' });
-
-         Object.defineProperty(Object.getPrototypeOf(mockLayerRule.cssRules[0]), Symbol.toStringTag,
-            { value: 'CSSStyleRule' });
-
-         Object.defineProperty(Object.getPrototypeOf(mockLayerRule.cssRules[1]), Symbol.toStringTag,
-            { value: 'CSSStyleRule' });
 
          it('resolves', () =>
          {
@@ -645,34 +631,21 @@ describe('StyleSheetResolve', () =>
       {
          const baseSheet = new CSSStyleSheet();
 
-         const mockLayerRule = new CSSStyleSheet();
+         const mockLayerRule = new CSSLayerBlockRule();
          // @ts-expect-error
          mockLayerRule.name = 'testing';
 
-         const mockLayerRule2 = new CSSStyleSheet();
+         const mockLayerRule2 = new CSSLayerBlockRule();
          // @ts-expect-error
          mockLayerRule2.name = 'depth2';
 
          mockLayerRule2.insertRule('.source { color: var(--a); }');
          mockLayerRule2.insertRule('.parent { --a: red; }');
 
-         // Override prototype to spoof [object CSSLayerBlockRule]
-         Object.defineProperty(mockLayerRule, Symbol.toStringTag, { value: 'CSSLayerBlockRule' });
-         Object.defineProperty(mockLayerRule2, Symbol.toStringTag, { value: 'CSSLayerBlockRule' });
-
          // @ts-expect-error // Can push w/ `happy-dom`.
          mockLayerRule.cssRules.push(mockLayerRule2);
          // @ts-expect-error
          baseSheet.cssRules.push(mockLayerRule);
-
-         // `happy-dom` doesn't assign toStringTag for the mocked DOM API, but `CrossWindow` requires it for duck types.
-         Object.defineProperty(Object.getPrototypeOf(baseSheet), Symbol.toStringTag, { value: 'CSSStyleSheet' });
-
-         Object.defineProperty(Object.getPrototypeOf(mockLayerRule2.cssRules[0]), Symbol.toStringTag,
-            { value: 'CSSStyleRule' });
-
-         Object.defineProperty(Object.getPrototypeOf(mockLayerRule2.cssRules[1]), Symbol.toStringTag,
-            { value: 'CSSStyleRule' });
 
          it('resolves', () =>
          {
@@ -701,11 +674,6 @@ describe('StyleSheetResolve', () =>
                --other-domain: url(http://some-other-domain.com/bar.png);
             }
          `);
-
-         // `happy-dom` doesn't assign toStringTag for the mocked DOM API, but `CrossWindow` requires it for
-         // duck types.
-         Object.defineProperty(Object.getPrototypeOf(sheet), Symbol.toStringTag, { value: 'CSSStyleSheet' });
-         Object.defineProperty(Object.getPrototypeOf(sheet.cssRules[0]), Symbol.toStringTag, { value: 'CSSStyleRule' });
 
          it('with baseHref', () =>
          {
