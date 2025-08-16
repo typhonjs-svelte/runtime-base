@@ -482,6 +482,26 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
       return targetMap;
    }
 
+   #isMediaQueryPrefersOnly(mediaList: MediaList): boolean
+   {
+      const prefersRegex = /^\s*\(?\s*prefers-[^)]+:[^)]+\)?\s*$/i;
+
+      for (let i = 0; i < mediaList.length; i++)
+      {
+         const query = mediaList[i];
+
+         // Split top-level 'and' parts; don't attempt to handle nested parens—just enough for 99% cases.
+         const parts = query.split(/\s+and\s+/i);
+
+         for (const part of parts)
+         {
+            if (!prefersRegex.test(part)) { return false; }
+         }
+      }
+
+      return mediaList.length > 0;
+   }
+
    /**
     * Parses the given CSSStyleSheet instance.
     *
@@ -514,6 +534,10 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
          {
             case 'CSSLayerBlockRule':
                this.#processLayerBlockRule(rule as CSSLayerBlockRule, void 0, allStyleRules, options);
+               break;
+
+            case 'CSSMediaRule':
+               this.#processMediaRule(rule as CSSMediaRule, allStyleRules, options);
                break;
 
             case 'CSSStyleRule':
@@ -567,6 +591,64 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
       for (let i = 0; i < layerBlockRules.length; i++)
       {
          this.#processLayerBlockRule(layerBlockRules[i], fullname, allStyleRules, opts);
+      }
+   }
+
+   /**
+    * Recursively parses / processes a CSSMediaRule and encountered CSSStyleRule entries.
+    *
+    * @param   mediaRule - The `CSSMediaRule` to parse.
+    *
+    * @param   allStyleRules - All style rules to process.
+    *
+    * @param   opts - Sanitized process options.
+    */
+   #processMediaRule(mediaRule: CSSMediaRule, allStyleRules: CSSStyleRule[], opts: ProcessOptions)
+   {
+      // Skip if it doesn’t match the current environment (IE prefers-color-scheme)
+      if (!window.matchMedia(mediaRule.media.mediaText).matches)
+      {
+         return;
+      }
+
+      const prefersRegex = /^\s*\(?\s*prefers-[^)]+(?:\s*:\s*[^)]+)?\)?\s*$/i;
+
+      let prefersOnly = true;
+
+      for (let i = 0; i < mediaRule.media.length; i++)
+      {
+         const query = mediaRule.media[i];
+
+         // Split top-level 'and' parts; don't attempt to handle nested parens—just enough for 99% cases.
+         const parts = query.split(/\s+and\s+/i);
+
+         for (const part of parts)
+         {
+            if (!prefersRegex.test(part)) { prefersOnly = false; }
+         }
+      }
+
+      if (!prefersOnly) { return; }
+
+      const rules = mediaRule.cssRules;
+      for (let i = 0; i < rules.length; i++)
+      {
+         const rule = rules[i];
+
+         switch(rule.constructor.name)
+         {
+            case 'CSSLayerBlockRule':
+               this.#processLayerBlockRule(rule as CSSLayerBlockRule, void 0, allStyleRules, opts);
+               break;
+
+            case 'CSSMediaRule':
+               this.#processMediaRule(rule as CSSMediaRule, allStyleRules, opts);
+               break;
+
+            case 'CSSStyleRule':
+               allStyleRules.push(rule as unknown as CSSStyleRule);
+               break;
+         }
       }
    }
 
