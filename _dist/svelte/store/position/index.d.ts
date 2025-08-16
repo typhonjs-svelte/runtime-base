@@ -524,7 +524,9 @@ declare namespace AnimationAPI {
    */
   type QuickTweenOptions = {
     /**
-     * Duration in seconds; default: 1
+     * Duration in seconds.
+     *
+     * @defaultValue `1`
      */
     duration?: number;
     /**
@@ -554,7 +556,15 @@ declare namespace AnimationAPI {
    */
   type TweenOptions = QuickTweenOptions & {
     /**
-     * Delay in seconds before animation starts; default: 0
+     * When false, this animation can not be cancelled. Any `strategy` is ignored.
+     *
+     * @defaultValue `true`
+     */
+    cancelable?: boolean;
+    /**
+     * Delay in seconds before animation starts.
+     *
+     * @defaultValue `0`
      */
     delay?: number;
     /**
@@ -905,6 +915,11 @@ declare namespace StateAPI {
        */
       animateTo?: boolean;
       /**
+       * When false, any animation can not be cancelled.
+       * @defaultValue `true`
+       */
+      cancelable?: boolean;
+      /**
        * Duration in seconds.
        */
       duration?: number;
@@ -1009,6 +1024,8 @@ declare class PositionStateAPI implements StateAPI {
    *
    * @param [options.animateTo=false] - Animate to restore data.
    *
+   * @param [options.cancelable=true] - When false, any animation can not be cancelled.
+   *
    * @param [options.duration=0.1] - Duration in seconds.
    *
    * @param [options.ease='linear'] - Easing function name or function.
@@ -1022,6 +1039,7 @@ declare class PositionStateAPI implements StateAPI {
     silent,
     async,
     animateTo,
+    cancelable,
     duration,
     ease,
   }: StateAPI.Options.Restore): Data.TJSPositionDataExtra | Promise<Data.TJSPositionDataExtra | undefined> | undefined;
@@ -1825,7 +1843,7 @@ declare class TJSPosition implements TJSPosition.WritableExt {
   static copyData(source: Partial<Data.TJSPositionData>, target: Data.TJSPositionData): Data.TJSPositionData;
   /**
    * Returns a duplicate of a given position instance copying any options and validators. The position parent is not
-   * copied and a new one must be set manually via the {@link TJSPosition.parent} setter.
+   * copied, and a new one must be set manually via the {@link TJSPosition.parent} setter.
    *
    * @param position - A position instance.
    *
@@ -1835,10 +1853,10 @@ declare class TJSPosition implements TJSPosition.WritableExt {
    */
   static duplicate(position: TJSPosition, options?: TJSPosition.Options.ConfigAll): TJSPosition;
   /**
-   * @param [parentOrOptions] - A  potential parent element or object w/ `elementTarget` accessor. You may also forego
-   *        setting the parent and pass in the options object.
+   * @param [parentOrOptions] - A potential parent element or object w/ `elementTarget` accessor. You may also forego
+   *        setting the parent and pass in the configuration options object.
    *
-   * @param [options] - The options object.
+   * @param [options] - The configuration options object.
    */
   constructor(
     parentOrOptions?: TJSPosition.PositionParent | TJSPosition.Options.ConfigAll,
@@ -1910,7 +1928,7 @@ declare class TJSPosition implements TJSPosition.WritableExt {
   /**
    * Sets the enabled state.
    *
-   * @param enabled - New enabled state.
+   * @param enabled - Newly enabled state.
    */
   set enabled(enabled: boolean);
   /**
@@ -2064,16 +2082,16 @@ declare class TJSPosition implements TJSPosition.WritableExt {
    */
   set zIndex(zIndex: number | null);
   /**
-   * Assigns current position data to given object `data` object. By default, `null` position data is not assigned.
-   * Other options allow configuration of the data assigned including setting default numeric values for any properties
-   * that are null.
+   * Assigns current position data to the given object `data` object. By default, `null` position data is not assigned.
+   * Other options allow configuration of the data assigned, including setting default numeric values for any
+   * properties that are null.
    *
    * @param [data] - Target to assign current position data.
    *
    * @param [options] - Defines options for specific keys and substituting null for numeric default values. By
    *        default, nullable keys are included.
    *
-   * @returns Passed in object with current position data.
+   * @returns Any passed in data object with current position data.
    */
   get(
     data?: {
@@ -2092,7 +2110,7 @@ declare class TJSPosition implements TJSPosition.WritableExt {
    * The initial set call with a target element will always set width / height as this is necessary for correct
    * calculations.
    *
-   * When a target element is present updated styles are applied after validation. To modify the behavior of set
+   * When a target element is present, updated styles are applied after validation. To modify the behavior of set,
    * implement one or more validator functions and add them via the validator API available from
    * {@link TJSPosition.validators}.
    *

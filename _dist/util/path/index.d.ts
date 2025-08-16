@@ -1,7 +1,7 @@
 /**
  * Returns the given URL string with any route prefix applied.
  *
- * Note: This is replaced for the given distribution of TRL depending on the server environment.
+ * Note: This is just a stub implementation and must be implemented for final TRL packaging depending on the platform.
  *
  * @param {string}   url - Bare URL string path.
  *

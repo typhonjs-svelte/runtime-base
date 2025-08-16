@@ -660,7 +660,7 @@ class AnimationManager {
     static cancel(position, cancelFn = AnimationManager.cancelFn) {
         for (let cntr = AnimationManager.#activeList.length; --cntr >= 0;) {
             const data = AnimationManager.#activeList[cntr];
-            if (data.position === position && cancelFn(data)) {
+            if (data.cancelable && data.position === position && cancelFn(data)) {
                 AnimationManager.#activeList.splice(cntr, 1);
                 data.cancelled = true;
                 this.#cleanupData(data);
@@ -668,7 +668,7 @@ class AnimationManager {
         }
         for (let cntr = AnimationManager.#pendingList.length; --cntr >= 0;) {
             const data = AnimationManager.#pendingList[cntr];
-            if (data.position === position && cancelFn(data)) {
+            if (data.cancelable && data.position === position && cancelFn(data)) {
                 AnimationManager.#pendingList.splice(cntr, 1);
                 data.cancelled = true;
                 this.#cleanupData(data);
@@ -832,8 +832,6 @@ class TJSPositionData {
      * @param [opts.width] -
      *
      * @param [opts.zIndex] -
-     *
-     * @param [opts.rotation] - Alias for `rotateZ`.
      */
     constructor({ height = null, left = null, maxHeight = null, maxWidth = null, minHeight = null, minWidth = null, rotateX = null, rotateY = null, rotateZ = null, scale = null, translateX = null, translateY = null, translateZ = null, top = null, transformOrigin = null, width = null, zIndex = null } = {}) {
         this.height = height;
@@ -2182,6 +2180,8 @@ class AnimationScheduler {
      *
      * @param el -
      *
+     * @param cancelable -
+     *
      * @param delay -
      *
      * @param ease -
@@ -2196,7 +2196,7 @@ class AnimationScheduler {
      *
      * @returns An AnimationControl instance or null if none created.
      */
-    static #addAnimation(position, initial, destination, duration, el, delay, ease, interpolate = lerp, transformOrigin, transformOriginInitial, cleanup) {
+    static #addAnimation(position, initial, destination, duration, el, cancelable, delay, ease, interpolate = lerp, transformOrigin, transformOriginInitial, cleanup) {
         // Set initial data for transform values that are often null by default.
         TJSPositionDataUtil.setNumericDefaults(initial);
         TJSPositionDataUtil.setNumericDefaults(destination);
@@ -2218,6 +2218,7 @@ class AnimationScheduler {
         const animationData = {
             active: true,
             cleanup,
+            cancelable,
             cancelled: false,
             control: void 0,
             current: 0,
@@ -2270,7 +2271,7 @@ class AnimationScheduler {
         if (parent !== void 0 && typeof parent?.options?.positionable === 'boolean' && !parent?.options?.positionable) {
             return null;
         }
-        let { delay = 0, duration = 1, ease = 'cubicOut', strategy, transformOrigin } = options;
+        let { cancelable = true, delay = 0, duration = 1, ease = 'cubicOut', strategy, transformOrigin } = options;
         // Handle any defined scheduling strategy.
         if (strategy !== void 0) {
             if (this.#handleStrategy(position, strategy) === null) {
@@ -2310,7 +2311,7 @@ class AnimationScheduler {
             }
         }
         ConvertStringData.process(initial, this.#data, el);
-        return this.#addAnimation(position, initial, destination, duration, el, delay, ease, lerp, transformOrigin, transformOriginInitial, cleanup);
+        return this.#addAnimation(position, initial, destination, duration, el, cancelable, delay, ease, lerp, transformOrigin, transformOriginInitial, cleanup);
     }
     /**
      * Provides a tween from given position data to the given position.
@@ -2340,7 +2341,7 @@ class AnimationScheduler {
         if (parent !== void 0 && typeof parent?.options?.positionable === 'boolean' && !parent?.options?.positionable) {
             return null;
         }
-        let { delay = 0, duration = 1, ease = 'cubicOut', strategy, transformOrigin } = options;
+        let { cancelable = true, delay = 0, duration = 1, ease = 'cubicOut', strategy, transformOrigin } = options;
         // Handle any defined scheduling strategy.
         if (strategy !== void 0) {
             if (this.#handleStrategy(position, strategy) === null) {
@@ -2385,7 +2386,7 @@ class AnimationScheduler {
         }
         ConvertStringData.process(initial, this.#data, el);
         ConvertStringData.process(destination, this.#data, el);
-        return this.#addAnimation(position, initial, destination, duration, el, delay, ease, lerp, transformOrigin, transformOriginInitial, cleanup);
+        return this.#addAnimation(position, initial, destination, duration, el, cancelable, delay, ease, lerp, transformOrigin, transformOriginInitial, cleanup);
     }
     /**
      * Provides a tween to given position data from the current position.
@@ -2410,7 +2411,7 @@ class AnimationScheduler {
         if (parent !== void 0 && typeof parent?.options?.positionable === 'boolean' && !parent?.options?.positionable) {
             return null;
         }
-        let { delay = 0, duration = 1, ease = 'cubicOut', strategy, transformOrigin } = options;
+        let { cancelable = true, delay = 0, duration = 1, ease = 'cubicOut', strategy, transformOrigin } = options;
         // Handle any defined scheduling strategy.
         if (strategy !== void 0) {
             if (this.#handleStrategy(position, strategy) === null) {
@@ -2449,7 +2450,7 @@ class AnimationScheduler {
             }
         }
         ConvertStringData.process(destination, this.#data, el);
-        return this.#addAnimation(position, initial, destination, duration, el, delay, ease, lerp, transformOrigin, transformOriginInitial, cleanup);
+        return this.#addAnimation(position, initial, destination, duration, el, cancelable, delay, ease, lerp, transformOrigin, transformOriginInitial, cleanup);
     }
     // Internal implementation ----------------------------------------------------------------------------------------
     /**
@@ -2618,6 +2619,7 @@ class AnimationAPIImpl {
         const newData = Object.assign({}, initial);
         const animationData = {
             active: true,
+            cancelable: true,
             cancelled: false,
             control: void 0,
             current: 0,
@@ -3659,13 +3661,15 @@ class PositionStateAPI {
      *
      * @param [options.animateTo=false] - Animate to restore data.
      *
+     * @param [options.cancelable=true] - When false, any animation can not be cancelled.
+     *
      * @param [options.duration=0.1] - Duration in seconds.
      *
      * @param [options.ease='linear'] - Easing function name or function.
      *
      * @returns Any saved position data.
      */
-    restore({ name, remove = false, properties, silent = false, async = false, animateTo = false, duration = 0.1, ease = 'linear' }) {
+    restore({ name, remove = false, properties, silent = false, async = false, animateTo = false, cancelable = true, duration = 0.1, ease = 'linear' }) {
         if (typeof name !== 'string') {
             throw new TypeError(`TJSPosition - restore error: 'name' is not a string.`);
         }
@@ -3698,11 +3702,11 @@ class PositionStateAPI {
                 }
                 // Return a Promise with saved data that resolves after animation ends.
                 if (async) {
-                    return this.#position.animate.to(data, { duration, ease }).finished.then(() => dataSaved);
+                    return this.#position.animate.to(data, { cancelable, duration, ease }).finished.then(() => dataSaved);
                 }
                 else // Animate synchronously.
                  {
-                    this.#position.animate.to(data, { duration, ease });
+                    this.#position.animate.to(data, { cancelable, duration, ease });
                 }
             }
             else {
@@ -4788,7 +4792,7 @@ class TJSPosition {
     }
     /**
      * Returns a duplicate of a given position instance copying any options and validators. The position parent is not
-     * copied and a new one must be set manually via the {@link TJSPosition.parent} setter.
+     * copied, and a new one must be set manually via the {@link TJSPosition.parent} setter.
      *
      * @param position - A position instance.
      *
@@ -4807,13 +4811,13 @@ class TJSPosition {
         return newPosition;
     }
     /**
-     * @param [parentOrOptions] - A  potential parent element or object w/ `elementTarget` accessor. You may also forego
-     *        setting the parent and pass in the options object.
+     * @param [parentOrOptions] - A potential parent element or object w/ `elementTarget` accessor. You may also forego
+     *        setting the parent and pass in the configuration options object.
      *
-     * @param [options] - The options object.
+     * @param [options] - The configuration options object.
      */
     constructor(parentOrOptions, options) {
-        // Test if `parent` is a plain object; if so treat as options object.
+        // Test if `parent` is a plain object; if so, treat as the configuration options object.
         if (isPlainObject(parentOrOptions)) {
             options = parentOrOptions;
         }
@@ -4875,7 +4879,7 @@ class TJSPosition {
         subscribeIgnoreFirst(this.#stores.resizeObserved, (resizeData) => {
             const parent = this.#parent;
             const el = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
-            // Only invoke set if there is a target element and the resize data has a valid offset width & height.
+            // Only invoke set if there is a target element, and the resize data has a valid offset width & height.
             if (A11yHelper.isFocusTarget(el) && Number.isFinite(resizeData?.offsetWidth) &&
                 Number.isFinite(resizeData?.offsetHeight)) {
                 this.set();
@@ -4981,7 +4985,7 @@ class TJSPosition {
     /**
      * Sets the enabled state.
      *
-     * @param enabled - New enabled state.
+     * @param enabled - Newly enabled state.
      */
     set enabled(enabled) {
         if (typeof enabled !== 'boolean') {
@@ -5002,7 +5006,7 @@ class TJSPosition {
         // Reset any stored default data & the style cache.
         this.#state.remove({ name: '#defaultData' });
         this.#styleCache.reset();
-        // If a parent is defined then invoke set to update any parent element.
+        // If a parent is defined, then invoke set to update any parent element.
         if (parent) {
             this.set(this.#data);
         }
@@ -5191,16 +5195,16 @@ class TJSPosition {
         this.#stores.zIndex.set(zIndex);
     }
     /**
-     * Assigns current position data to given object `data` object. By default, `null` position data is not assigned.
-     * Other options allow configuration of the data assigned including setting default numeric values for any properties
-     * that are null.
+     * Assigns current position data to the given object `data` object. By default, `null` position data is not assigned.
+     * Other options allow configuration of the data assigned, including setting default numeric values for any
+     * properties that are null.
      *
      * @param [data] - Target to assign current position data.
      *
      * @param [options] - Defines options for specific keys and substituting null for numeric default values. By
      *        default, nullable keys are included.
      *
-     * @returns Passed in object with current position data.
+     * @returns Any passed in data object with current position data.
      */
     get(data = {}, options = {}) {
         const keys = options?.keys;
@@ -5259,7 +5263,7 @@ class TJSPosition {
      * The initial set call with a target element will always set width / height as this is necessary for correct
      * calculations.
      *
-     * When a target element is present updated styles are applied after validation. To modify the behavior of set
+     * When a target element is present, updated styles are applied after validation. To modify the behavior of set,
      * implement one or more validator functions and add them via the validator API available from
      * {@link TJSPosition.validators}.
      *
@@ -5440,8 +5444,6 @@ class TJSPosition {
         const resizeObservable = widthIsObservable || heightIsObservable;
         if (this.#resizeObservable !== resizeObservable) {
             this.#resizeObservable = resizeObservable;
-            // Set store on next clock tick.
-            // setTimeout(() => this.#styleCache.stores.resizeObservable.set(resizeObservable), 0);
             this.#styleCache.stores.resizeObservable.set(resizeObservable);
         }
         if (el) {
@@ -5450,13 +5452,13 @@ class TJSPosition {
             if (!isObject(defaultData)) {
                 this.#state.save({ name: '#defaultData', ...Object.assign({}, data) });
             }
-            // If `immediateElementUpdate` is true then update the element immediately. This is for rAF based library
+            // If `immediateElementUpdate` is true, then update the element immediately. This is for rAF based library
             // integrations like GSAP and updates coming from AnimationManager.
             if (immediateElementUpdate) {
                 UpdateElementManager.immediate(el, this.#updateElementData);
                 this.#updateElementPromise = Promise.resolve(globalThis.performance.now());
             }
-            // Else if not queued then queue an update for the next rAF callback.
+            // Else, if not queued then queue an update for the next rAF callback.
             else if (!this.#updateElementData.queued) {
                 this.#updateElementPromise = UpdateElementManager.add(el, this.#updateElementData);
             }
@@ -5539,7 +5541,7 @@ class TJSPosition {
     #updatePosition({ 
     // Directly supported parameters
     left, top, maxWidth, maxHeight, minWidth, minHeight, width, height, rotateX, rotateY, rotateZ, scale, transformOrigin, translateX, translateY, translateZ, zIndex, 
-    // Aliased parameters
+    // Aliased parameters.
     rotation, ...rest }, parent, el, styleCache) {
         let currentPosition = TJSPositionDataUtil.copyData(this.#data, _a.#updateDataCopy);
         // Update width if an explicit value is passed, or if no width value is set on the element.
@@ -5621,8 +5623,8 @@ class TJSPosition {
         if (NumberGuard.isFiniteOrNull(rotateY)) {
             currentPosition.rotateY = rotateY;
         }
-        // Handle alias for rotateZ. First check if `rotateZ` is valid and different from the current value. Next check if
-        // `rotation` is valid and use it for `rotateZ`.
+        // Handle alias for rotateZ. First check if `rotateZ` is valid and different from the current value. Next, check
+        // if `rotation` is valid and use it for `rotateZ`.
         if (rotateZ !== currentPosition.rotateZ && (NumberGuard.isFiniteOrNull(rotateZ))) {
             currentPosition.rotateZ = rotateZ;
         }
@@ -5649,7 +5651,7 @@ class TJSPosition {
             currentPosition.zIndex = typeof zIndex === 'number' ? Math.round(zIndex) : zIndex;
         }
         const validatorData = this.#validatorData;
-        // If there are any validators allow them to potentially modify position data or reject the update.
+        // If there are any validators, allow them to potentially modify position data or reject the update.
         if (this.#validators.enabled && validatorData.length) {
             const validationData = _a.#validationData;
             validationData.parent = parent;
