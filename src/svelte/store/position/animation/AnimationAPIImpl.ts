@@ -211,6 +211,7 @@ export class AnimationAPIImpl implements AnimationAPI
 
       const animationData: AnimationData = {
          active: true,
+         cancelable: true,
          cancelled: false,
          control: void 0,
          current: 0,

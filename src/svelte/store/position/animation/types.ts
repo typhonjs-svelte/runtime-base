@@ -312,7 +312,9 @@ declare namespace AnimationAPI {
     */
    export type QuickTweenOptions = {
       /**
-       * Duration in seconds; default: 1
+       * Duration in seconds.
+       *
+       * @defaultValue `1`
        */
       duration?: number;
 
@@ -347,7 +349,16 @@ declare namespace AnimationAPI {
     */
    export type TweenOptions = QuickTweenOptions & {
       /**
-       * Delay in seconds before animation starts; default: 0
+       * When false, this animation can not be cancelled. Any `strategy` is ignored.
+       *
+       * @defaultValue `true`
+       */
+      cancelable?: boolean;
+
+      /**
+       * Delay in seconds before animation starts.
+       *
+       * @defaultValue `0`
        */
       delay?: number;
 

@@ -48,6 +48,8 @@ export class AnimationScheduler
     *
     * @param el -
     *
+    * @param cancelable -
+    *
     * @param delay -
     *
     * @param ease -
@@ -63,7 +65,7 @@ export class AnimationScheduler
     * @returns An AnimationControl instance or null if none created.
     */
    static #addAnimation(position: TJSPosition, initial: object, destination: object, duration: number, el: Element,
-    delay: number, ease: EasingFunction, interpolate: InterpolateFunction<number> = lerp,
+    cancelable: boolean, delay: number, ease: EasingFunction, interpolate: InterpolateFunction<number> = lerp,
      transformOrigin: TransformAPI.TransformOrigin,
       transformOriginInitial: TransformAPI.TransformOrigin, cleanup: AnimationCleanupFunction):
        AnimationControl | null
@@ -91,6 +93,7 @@ export class AnimationScheduler
       const animationData: AnimationData = {
          active: true,
          cleanup,
+         cancelable,
          cancelled: false,
          control: void 0,
          current: 0,
@@ -156,7 +159,7 @@ export class AnimationScheduler
          return null;
       }
 
-      let { delay = 0, duration = 1, ease = 'cubicOut', strategy, transformOrigin } = options;
+      let { cancelable = true, delay = 0, duration = 1, ease = 'cubicOut', strategy, transformOrigin } = options;
 
       // Handle any defined scheduling strategy.
       if (strategy !== void 0)
@@ -217,8 +220,8 @@ export class AnimationScheduler
 
       ConvertStringData.process(initial, this.#data, el);
 
-      return this.#addAnimation(position, initial, destination, duration, el, delay, ease, lerp, transformOrigin,
-       transformOriginInitial, cleanup);
+      return this.#addAnimation(position, initial, destination, duration, el, cancelable, delay, ease, lerp,
+       transformOrigin, transformOriginInitial, cleanup);
    }
 
    /**
@@ -237,8 +240,8 @@ export class AnimationScheduler
     * @returns An AnimationControl instance or null if none created.
     */
    static fromTo(position: TJSPosition, fromData: Data.TJSPositionDataRelative,
-                 toData: Data.TJSPositionDataRelative, options: AnimationAPI.TweenOptions = {},
-                 cleanup?: AnimationCleanupFunction): AnimationControl | null
+    toData: Data.TJSPositionDataRelative, options: AnimationAPI.TweenOptions = {},
+     cleanup?: AnimationCleanupFunction): AnimationControl | null
    {
       if (!isObject(fromData))
       {
@@ -259,7 +262,7 @@ export class AnimationScheduler
          return null;
       }
 
-      let { delay = 0, duration = 1, ease = 'cubicOut', strategy, transformOrigin } = options;
+      let { cancelable = true, delay = 0, duration = 1, ease = 'cubicOut', strategy, transformOrigin } = options;
 
       // Handle any defined scheduling strategy.
       if (strategy !== void 0)
@@ -329,8 +332,8 @@ export class AnimationScheduler
       ConvertStringData.process(initial, this.#data, el);
       ConvertStringData.process(destination, this.#data, el);
 
-      return this.#addAnimation(position, initial, destination, duration, el, delay, ease, lerp, transformOrigin,
-       transformOriginInitial, cleanup);
+      return this.#addAnimation(position, initial, destination, duration, el, cancelable, delay, ease, lerp,
+       transformOrigin, transformOriginInitial, cleanup);
    }
 
    /**
@@ -363,7 +366,7 @@ export class AnimationScheduler
          return null;
       }
 
-      let { delay = 0, duration = 1, ease = 'cubicOut', strategy, transformOrigin } = options;
+      let { cancelable = true, delay = 0, duration = 1, ease = 'cubicOut', strategy, transformOrigin } = options;
 
       // Handle any defined scheduling strategy.
       if (strategy !== void 0)
@@ -423,8 +426,8 @@ export class AnimationScheduler
 
       ConvertStringData.process(destination, this.#data, el);
 
-      return this.#addAnimation(position, initial, destination, duration, el, delay, ease, lerp, transformOrigin,
-       transformOriginInitial, cleanup);
+      return this.#addAnimation(position, initial, destination, duration, el, cancelable, delay, ease, lerp,
+       transformOrigin, transformOriginInitial, cleanup);
    }
 
    // Internal implementation ----------------------------------------------------------------------------------------

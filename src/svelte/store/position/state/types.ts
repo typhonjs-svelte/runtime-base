@@ -182,6 +182,12 @@ declare namespace StateAPI {
          animateTo?: boolean;
 
          /**
+          * When false, any animation can not be cancelled.
+          * @defaultValue `true`
+          */
+         cancelable?: boolean;
+
+         /**
           * Duration in seconds.
           */
          duration?: number;

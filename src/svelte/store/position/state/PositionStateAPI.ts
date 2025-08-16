@@ -167,14 +167,16 @@ export class PositionStateAPI implements StateAPI
     *
     * @param [options.animateTo=false] - Animate to restore data.
     *
+    * @param [options.cancelable=true] - When false, any animation can not be cancelled.
+    *
     * @param [options.duration=0.1] - Duration in seconds.
     *
     * @param [options.ease='linear'] - Easing function name or function.
     *
     * @returns Any saved position data.
     */
-   restore({ name, remove = false, properties, silent = false, async = false, animateTo = false, duration = 0.1,
-    ease = 'linear' }: StateAPI.Options.Restore): Data.TJSPositionDataExtra |
+   restore({ name, remove = false, properties, silent = false, async = false, animateTo = false, cancelable = true,
+    duration = 0.1, ease = 'linear' }: StateAPI.Options.Restore): Data.TJSPositionDataExtra |
      Promise<Data.TJSPositionDataExtra | undefined>  | undefined
    {
       if (typeof name !== 'string') { throw new TypeError(`TJSPosition - restore error: 'name' is not a string.`); }
@@ -213,11 +215,11 @@ export class PositionStateAPI implements StateAPI
             // Return a Promise with saved data that resolves after animation ends.
             if (async)
             {
-               return this.#position.animate.to(data, { duration, ease }).finished.then(() => dataSaved);
+               return this.#position.animate.to(data, { cancelable, duration, ease }).finished.then(() => dataSaved);
             }
             else  // Animate synchronously.
             {
-               this.#position.animate.to(data, { duration, ease });
+               this.#position.animate.to(data, { cancelable, duration, ease });
             }
          }
          else

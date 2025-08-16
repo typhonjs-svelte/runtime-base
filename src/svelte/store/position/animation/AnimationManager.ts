@@ -200,7 +200,7 @@ export class AnimationManager
       for (let cntr: number = AnimationManager.#activeList.length; --cntr >= 0;)
       {
          const data: AnimationData = AnimationManager.#activeList[cntr];
-         if (data.position === position && cancelFn(data))
+         if (data.cancelable && data.position === position && cancelFn(data))
          {
             AnimationManager.#activeList.splice(cntr, 1);
             data.cancelled = true;
@@ -211,7 +211,7 @@ export class AnimationManager
       for (let cntr: number = AnimationManager.#pendingList.length; --cntr >= 0;)
       {
          const data: AnimationData = AnimationManager.#pendingList[cntr];
-         if (data.position === position && cancelFn(data))
+         if (data.cancelable && data.position === position && cancelFn(data))
          {
             AnimationManager.#pendingList.splice(cntr, 1);
             data.cancelled = true;

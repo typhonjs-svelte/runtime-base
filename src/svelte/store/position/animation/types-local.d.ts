@@ -20,14 +20,19 @@ export type AnimationData = {
    active: boolean;
 
    /**
-    * Associated cleanup function.
+    * Is the animation cancelable.
     */
-   cleanup?: AnimationCleanupFunction;
+   cancelable: boolean;
 
    /**
     * Animation cancelled state.
     */
    cancelled: boolean;
+
+   /**
+    * Associated cleanup function.
+    */
+   cleanup?: AnimationCleanupFunction;
 
    /**
     * Associated AnimationControl.
