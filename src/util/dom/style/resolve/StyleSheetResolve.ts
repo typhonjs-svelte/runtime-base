@@ -5,6 +5,7 @@ import {
    isObject }           from '#runtime/util/object';
 
 import { StyleParse }   from '../parse';
+import {CSSStyleRule} from "happy-dom";
 
 /**
  * Dynamically parses and indexes a `CSSStyleSheet` at runtime, exposing a selector-to-style mapping by
@@ -502,7 +503,9 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
 
       const rules = styleSheet.cssRules;
 
-      // Parse each CSSStyleRule and build the map of selectors to properties.
+      const allStyleRules: CSSStyleRule[] = [];
+
+      // Collect all CSSStyleRules.
       for (let i = 0; i < rules.length; i++)
       {
          const rule = rules[i];
@@ -510,14 +513,17 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
          switch(rule.constructor.name)
          {
             case 'CSSLayerBlockRule':
-               this.#processLayerBlockRule(rule as CSSLayerBlockRule, void 0, options);
+               this.#processLayerBlockRule(rule as CSSLayerBlockRule, void 0, allStyleRules, options);
                break;
 
             case 'CSSStyleRule':
-               this.#processStyleRule(rule as CSSStyleRule, options);
+               allStyleRules.push(rule as unknown as CSSStyleRule);
                break;
          }
       }
+
+      // Bulk process all CSSStyleRules and build the map of selectors to properties.
+      this.#processStyleRules(allStyleRules, options);
    }
 
    /**
@@ -527,9 +533,12 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
     *
     * @param   parentLayerName - Name of parent CSS layer.
     *
+    * @param   allStyleRules - All style rules to process.
+    *
     * @param   opts - Sanitized process options.
     */
-   #processLayerBlockRule(blockRule: CSSLayerBlockRule, parentLayerName: string | undefined, opts: ProcessOptions)
+   #processLayerBlockRule(blockRule: CSSLayerBlockRule, parentLayerName: string | undefined,
+    allStyleRules: CSSStyleRule[], opts: ProcessOptions)
    {
       const fullname = typeof parentLayerName === 'string' ? `${parentLayerName}.${blockRule.name}` : blockRule.name;
 
@@ -550,50 +559,59 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
                break;
 
             case 'CSSStyleRule':
-               if (includeLayer) { this.#processStyleRule(rule as CSSStyleRule, opts); }
+               if (includeLayer) { allStyleRules.push(rule as unknown as CSSStyleRule); }
                break;
          }
       }
 
       for (let i = 0; i < layerBlockRules.length; i++)
       {
-         this.#processLayerBlockRule(layerBlockRules[i], fullname, opts);
+         this.#processLayerBlockRule(layerBlockRules[i], fullname, allStyleRules, opts);
       }
    }
 
    /**
-    * Processes a `CSSStyleRule`.
+    * Processes all collected `CSSStyleRules`.
     *
-    * @param   styleRule - Style rule to parse.
+    * @param   allStyleRules - Style rules to parse.
     *
     * @param   opts - ProcessOptions.
     */
-   #processStyleRule(styleRule: CSSStyleRule, opts: ProcessOptions)
+   #processStyleRules(allStyleRules: CSSStyleRule[], opts: ProcessOptions)
    {
-      /* c8 ignore next 1 */
-      if (typeof styleRule.selectorText !== 'string') { return; }
-
-      // Split selector parts and remove disallowed selector parts and empty strings.
-      const selectorParts = StyleParse.selectorText(styleRule.selectorText, opts);
-
-      if (selectorParts.length)
+      for (let i = 0; i < allStyleRules.length; i++)
       {
-         // Parse CSSStyleDeclaration.
-         const result = StyleParse.cssText(styleRule.style.cssText);
+         const styleRule = allStyleRules[i];
 
-         // Only convert `url()` references if `urlRewrite` is true, baseHref` is defined, and relative `url()` detected
-         // in `cssText`.
-         if (opts.urlRewrite && opts.baseHref && StyleSheetResolve.#URL_DETECTION_REGEX.test(styleRule.style.cssText))
-         {
-            this.#processStyleRuleUrls(result, opts);
-         }
+         // Split selector parts and remove disallowed selector parts and empty strings.
+         const selectorParts = StyleParse.selectorText(styleRule.selectorText, opts);
 
-         for (let i = 0; i < selectorParts.length; i++)
+         if (selectorParts.length)
          {
-            const part = selectorParts[i];
-            const existing = this.#sheetMap.get(part);
-            const update = existing ? Object.assign(existing, result) : result;
-            this.#sheetMap.set(part, update);
+            // Parse CSSStyleDeclaration.
+            const result = StyleParse.cssText(styleRule.style.cssText);
+
+            // Only convert `url()` references if `urlRewrite` is true, baseHref` is defined, and relative `url()`
+            // detected in `cssText`.
+            if (opts.urlRewrite && opts.baseHref &&
+             StyleSheetResolve.#URL_DETECTION_REGEX.test(styleRule.style.cssText))
+            {
+               this.#processStyleRuleUrls(result, opts);
+            }
+
+            for (let j = selectorParts.length; --j >= 0;)
+            {
+               const part = selectorParts[j];
+
+               if (this.#sheetMap.has(part))
+               {
+                  Object.assign(this.#sheetMap.get(part)!, result);
+               }
+               else
+               {
+                  this.#sheetMap.set(part, result);
+               }
+            }
          }
       }
    }
