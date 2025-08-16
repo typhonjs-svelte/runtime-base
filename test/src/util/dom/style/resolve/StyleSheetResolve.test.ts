@@ -9,10 +9,13 @@ import { StyleSheetResolve }  from '#runtime-test/util/dom/style';
 
 const stringify = (value: [] | {} | undefined) => value ? JSON.stringify(value, null, 2) : '';
 
+// `happy-dom` doesn't assign toStringTag for the mocked DOM API, but `CrossWindow` requires it for duck types.
+Object.defineProperty(CSSStyleSheet.prototype, Symbol.toStringTag, { value: 'CSSStyleSheet' });
+
 // `happy-dom` doesn't implement `CSSLayerBlockRule`, but we can reuse `CSSStyleSheet`.
 class CSSLayerBlockRule extends CSSStyleSheet
 {
-   name: string | undefined = void 0;
+   name?: string;
 
    constructor(options?: object) { super(options); }
 }
@@ -592,18 +595,31 @@ describe('StyleSheetResolve', () =>
 
       describe('CSSLayerBlockRule (single)', () =>
       {
-         const baseSheet = new CSSStyleSheet();
+         let baseSheet: CSSStyleSheet;
+         let mockLayerRule: CSSLayerBlockRule;
 
-         const mockLayerRule = new CSSLayerBlockRule();
-         mockLayerRule.name = 'testing';
-         mockLayerRule.insertRule('.source { color: var(--a); }');
-         mockLayerRule.insertRule('.parent { --a: red; }');
+         beforeEach(() =>
+         {
+            baseSheet = new CSSStyleSheet();
 
-         // @ts-expect-error  // Can push w/ `happy-dom`.
-         baseSheet.cssRules.push(mockLayerRule);
+            mockLayerRule = new CSSLayerBlockRule();
+            mockLayerRule.name = 'testing';
+            mockLayerRule.insertRule('.source { color: var(--a); }');
+            mockLayerRule.insertRule('.parent { --a: red; }');
 
-         // `happy-dom` doesn't assign toStringTag for the mocked DOM API, but `CrossWindow` requires it for duck types.
-         Object.defineProperty(Object.getPrototypeOf(baseSheet), Symbol.toStringTag, { value: 'CSSStyleSheet' });
+            // @ts-expect-error  // Can push w/ `happy-dom`.
+            baseSheet.cssRules.push(mockLayerRule);
+         });
+
+         it('includeCSSLayers option', () =>
+         {
+            const resolver = StyleSheetResolve.parse(baseSheet, { includeCSSLayers: [/BOGUS/] });
+
+            const result = resolver.get('.source', { resolve: ['.parent'] });
+
+            // No CSS layers processed due to `includeCSSLayers`.
+            expect(result).toEqual(void 0);
+         });
 
          it('resolves', () =>
          {
@@ -620,14 +636,28 @@ describe('StyleSheetResolve', () =>
             `);
          });
 
-         it('includeCSSLayers option', () =>
+         it('resolves (w/ media query)', () =>
          {
-            const resolver = StyleSheetResolve.parse(baseSheet, { includeCSSLayers: [/BOGUS/] });
+            mockLayerRule.insertRule('@media (prefers-reduced-transparency) { .parent { --a: blue; } }');
 
-            const result = resolver.get('.source', { resolve: ['.parent'] });
+            const oldFn = window.matchMedia;
 
-            // No CSS layers processed due to `includeCSSLayers`.
-            expect(result).toEqual(void 0);
+            // @ts-expect-error - Forcing a simulated media query match.
+            window.matchMedia = () => ({ matches: true });
+
+            const resolver = StyleSheetResolve.parse(baseSheet);
+
+            window.matchMedia = oldFn;
+
+            const result = resolver.get('.source', {
+               resolve: ['.parent']
+            });
+
+            expect(stringify(result)).toMatchInlineSnapshot(`
+              "{
+                "color": "blue"
+              }"
+            `);
          });
       });
 
@@ -654,6 +684,100 @@ describe('StyleSheetResolve', () =>
             const resolver = StyleSheetResolve.parse(baseSheet);
 
             const result = resolver.get('.source', { resolve: ['.parent'] });
+
+            expect(stringify(result)).toMatchInlineSnapshot(`
+              "{
+                "color": "red"
+              }"
+            `);
+         });
+      });
+
+      describe('CSSMediaRule', () =>
+      {
+         let sheet: CSSStyleSheet;
+
+         beforeEach(() =>
+         {
+            sheet = new CSSStyleSheet();
+            sheet.insertRule('.source { color: blue; }');
+         });
+
+         it('no media query match', () =>
+         {
+            // The default `happy-dom` environment won't match `prefers-reduced-transparency`.
+
+            sheet.insertRule('@media (prefers-reduced-transparency) { .source { color: red; } }');
+
+            const resolver = StyleSheetResolve.parse(sheet);
+
+            const result = resolver.get('.source');
+
+            expect(stringify(result)).toMatchInlineSnapshot(`
+              "{
+                "color": "blue"
+              }"
+            `);
+         });
+
+         it('unsupported query (multi-part)', () =>
+         {
+            sheet.insertRule('@media screen and (prefers-reduced-transparency) { .source { color: red; } }');
+
+            const oldFn = window.matchMedia;
+
+            // @ts-expect-error - Forcing a simulated media query match.
+            window.matchMedia = () => ({ matches: true });
+
+            const resolver = StyleSheetResolve.parse(sheet);
+
+            window.matchMedia = oldFn;
+
+            const result = resolver.get('.source');
+
+            expect(stringify(result)).toMatchInlineSnapshot(`
+              "{
+                "color": "blue"
+              }"
+            `);
+         });
+
+         it('mediaQuery option (false)', () =>
+         {
+            sheet.insertRule('@media (prefers-reduced-transparency) { .source { color: red; } }');
+
+            const oldFn = window.matchMedia;
+
+            // @ts-expect-error - Forcing a simulated media query match.
+            window.matchMedia = () => ({ matches: true });
+
+            const resolver = StyleSheetResolve.parse(sheet, { mediaQuery: false });
+
+            window.matchMedia = oldFn;
+
+            const result = resolver.get('.source');
+
+            expect(stringify(result)).toMatchInlineSnapshot(`
+              "{
+                "color": "blue"
+              }"
+            `);
+         });
+
+         it('resolves (match)', () =>
+         {
+            sheet.insertRule('@media (prefers-reduced-transparency) { .source { color: red; } }');
+
+            const oldFn = window.matchMedia;
+
+            // @ts-expect-error - Forcing a simulated media query match.
+            window.matchMedia = () => ({ matches: true });
+
+            const resolver = StyleSheetResolve.parse(sheet);
+
+            window.matchMedia = oldFn;
+
+            const result = resolver.get('.source');
 
             expect(stringify(result)).toMatchInlineSnapshot(`
               "{
@@ -890,6 +1014,13 @@ describe('StyleSheetResolve', () =>
             // @ts-expect-error
             expect(() => StyleSheetResolve.parse(new Map(), { includeSelectorPartSet: null })).to.throw(TypeError,
              `'includeSelectorPartSet' must be a Set of strings.`);
+         });
+
+         it('options.mediaQuery (not boolean)', () =>
+         {
+            // @ts-expect-error
+            expect(() => StyleSheetResolve.parse(new Map(), { mediaQuery: null })).to.throw(TypeError,
+             `'mediaQuery' must be a boolean.`);
          });
 
          it('options.urlRewrite (not boolean)', () =>

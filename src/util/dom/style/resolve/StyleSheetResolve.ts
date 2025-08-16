@@ -5,7 +5,6 @@ import {
    isObject }           from '#runtime/util/object';
 
 import { StyleParse }   from '../parse';
-import {CSSStyleRule} from "happy-dom";
 
 /**
  * Dynamically parses and indexes a `CSSStyleSheet` at runtime, exposing a selector-to-style mapping by
@@ -24,6 +23,13 @@ import {CSSStyleRule} from "happy-dom";
  * By default, when parsing CSSStyleSheet instances relative URL rewriting occurs converting `url(...)` references to
  * absolute paths based on the `CSSStyleSheet.href` or the `baseHref` parse option for inline / synthetic
  * CSSStyleSheets. You may turn off relative URL rewriting via setting the `urlRewrite` parse option to `false`.
+ *
+ * By default, simple media queries / `@media` rules are parsed when all conditions are `prefers-*` features and the
+ * media query matches at runtime via `window.matchMedia(...)`. Mixed conditions (IE with screen, width, etc.) are
+ * ignored by design. Only direct style rules under a media query are parsed. You may turn off media query parsing via
+ * setting the `mediaQuery` parse option to false.
+ *
+ * --------
  *
  * The goal of this implementation is to realize a regex-based parser with small code size, minimal memory footprint,
  * speed, and reasonable accuracy.
@@ -70,6 +76,11 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
     * Detects hyphen-case separator for camel case property key conversion.
     */
    static #HYPHEN_CASE_REGEX = /-([a-z])/g;
+
+   /**
+    * Detects just a single `(prefers-*)` CSSMediaRule condition.
+    */
+   static #MEDIA_RULE_PREFERS = /^\s*\(?\s*prefers-[^)]+(?:\s*:\s*[^)]+)?\)?\s*$/i;
 
    /**
     * Detects relative `url()` references in CSSStyleRule `cssText`.
@@ -428,6 +439,11 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
          throw new TypeError(`'includeSelectorPartSet' must be a Set of strings.`);
       }
 
+      if (options.mediaQuery !== void 0 && typeof options.mediaQuery !== 'boolean')
+      {
+         throw new TypeError(`'mediaQuery' must be a boolean.`);
+      }
+
       if (options.urlRewrite !== void 0 && typeof options.urlRewrite !== 'boolean')
       {
          throw new TypeError(`'urlRewrite' must be a boolean.`);
@@ -482,26 +498,6 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
       return targetMap;
    }
 
-   #isMediaQueryPrefersOnly(mediaList: MediaList): boolean
-   {
-      const prefersRegex = /^\s*\(?\s*prefers-[^)]+:[^)]+\)?\s*$/i;
-
-      for (let i = 0; i < mediaList.length; i++)
-      {
-         const query = mediaList[i];
-
-         // Split top-level 'and' parts; don't attempt to handle nested parens—just enough for 99% cases.
-         const parts = query.split(/\s+and\s+/i);
-
-         for (const part of parts)
-         {
-            if (!prefersRegex.test(part)) { return false; }
-         }
-      }
-
-      return mediaList.length > 0;
-   }
-
    /**
     * Parses the given CSSStyleSheet instance.
     *
@@ -518,6 +514,7 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
          includeCSSLayers: isIterable(opts.includeCSSLayers) ? Array.from(opts.includeCSSLayers) : [],
          includeSelectorPartSet: CrossWindow.isSet(opts.includeSelectorPartSet) ? opts.includeSelectorPartSet :
           new Set(),
+         mediaQuery: opts.mediaQuery ?? true,
          urlRewrite: opts.urlRewrite ?? true
       }
 
@@ -582,6 +579,10 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
                layerBlockRules.push(rule as CSSLayerBlockRule);
                break;
 
+            case 'CSSMediaRule':
+               this.#processMediaRule(rule as CSSMediaRule, allStyleRules, opts);
+               break;
+
             case 'CSSStyleRule':
                if (includeLayer) { allStyleRules.push(rule as unknown as CSSStyleRule); }
                break;
@@ -595,7 +596,7 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
    }
 
    /**
-    * Recursively parses / processes a CSSMediaRule and encountered CSSStyleRule entries.
+    * Simple processing of a CSSMediaRule and directly nested CSSStyleRule entries.
     *
     * @param   mediaRule - The `CSSMediaRule` to parse.
     *
@@ -605,30 +606,13 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
     */
    #processMediaRule(mediaRule: CSSMediaRule, allStyleRules: CSSStyleRule[], opts: ProcessOptions)
    {
-      // Skip if it doesn’t match the current environment (IE prefers-color-scheme)
-      if (!window.matchMedia(mediaRule.media.mediaText).matches)
-      {
-         return;
-      }
+      if (!opts.mediaQuery) { return; }
 
-      const prefersRegex = /^\s*\(?\s*prefers-[^)]+(?:\s*:\s*[^)]+)?\)?\s*$/i;
+      // Skip if the media rule does not match the current environment.
+      if (!window.matchMedia(mediaRule.media.mediaText).matches) { return; }
 
-      let prefersOnly = true;
-
-      for (let i = 0; i < mediaRule.media.length; i++)
-      {
-         const query = mediaRule.media[i];
-
-         // Split top-level 'and' parts; don't attempt to handle nested parens—just enough for 99% cases.
-         const parts = query.split(/\s+and\s+/i);
-
-         for (const part of parts)
-         {
-            if (!prefersRegex.test(part)) { prefersOnly = false; }
-         }
-      }
-
-      if (!prefersOnly) { return; }
+      // Currently just singular `(prefers-*)` conditions are allowed.
+      if (!StyleSheetResolve.#MEDIA_RULE_PREFERS.test(mediaRule.media.mediaText)) { return; }
 
       const rules = mediaRule.cssRules;
       for (let i = 0; i < rules.length; i++)
@@ -637,14 +621,6 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
 
          switch(rule.constructor.name)
          {
-            case 'CSSLayerBlockRule':
-               this.#processLayerBlockRule(rule as CSSLayerBlockRule, void 0, allStyleRules, opts);
-               break;
-
-            case 'CSSMediaRule':
-               this.#processMediaRule(rule as CSSMediaRule, allStyleRules, opts);
-               break;
-
             case 'CSSStyleRule':
                allStyleRules.push(rule as unknown as CSSStyleRule);
                break;
@@ -817,6 +793,13 @@ type ProcessOptions = {
     * A Set of strings to exactly match selector parts to include in parsed stylesheet data.
     */
    includeSelectorPartSet: Set<string>;
+
+   /**
+    * When false, media query / `@media` parsing is disabled.
+    *
+    * @defaultValue `true`
+    */
+   mediaQuery?: boolean;
 
    /**
     * When false, relative URL rewriting is disabled. Relative URL rewriting based on the `CSSStyleSheet.href` or
@@ -1262,6 +1245,13 @@ declare namespace StyleSheetResolve {
           * A Set of strings to exactly match selector parts to include in parsed stylesheet data.
           */
          includeSelectorPartSet?: Set<string>;
+
+         /**
+          * When false, media query / `@media` parsing is disabled.
+          *
+          * @defaultValue `true`
+          */
+         mediaQuery?: boolean;
 
          /**
           * When false, relative URL rewriting is disabled. Relative URL rewriting based on the `CSSStyleSheet.href` or
