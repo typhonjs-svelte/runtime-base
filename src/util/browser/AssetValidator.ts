@@ -1,3 +1,5 @@
+import { Frozen }       from '#runtime/util';
+
 import { CrossWindow }  from './CrossWindow';
 
 import { URLParser }    from './URLParser';
@@ -7,8 +9,15 @@ import { URLParser }    from './URLParser';
  */
 class AssetValidator
 {
-   /** Supported media types. */
-   static #allMediaTypes: Set<AssetValidator.Options.MediaTypes> = new Set(['audio', 'img', 'svg', 'video']);
+   /** Default media types. */
+   static #mediaTypes: AssetValidator.DefaultMediaTypes = Object.freeze({
+      all: Frozen.Set<AssetValidator.Options.MediaTypes>(['audio', 'img', 'svg', 'video']),
+      audio: Frozen.Set<AssetValidator.Options.MediaTypes>(['audio']),
+      img: Frozen.Set<AssetValidator.Options.MediaTypes>(['img']),
+      img_svg: Frozen.Set<AssetValidator.Options.MediaTypes>(['img', 'svg']),
+      img_svg_video: Frozen.Set<AssetValidator.Options.MediaTypes>(['img', 'svg', 'video']),
+      video: Frozen.Set<AssetValidator.Options.MediaTypes>(['video']),
+   });
 
    /** Supported audio extensions. */
    static #audioExtensions = new Set(['mp3', 'wav', 'ogg', 'aac', 'flac', 'webm']);
@@ -25,14 +34,22 @@ class AssetValidator
    /**
     * @private
     */
-   constructor() {} // eslint-disable-line no-useless-constructor
+   constructor()
+   {
+      throw new Error('AssetValidator constructor: This is a static class and should not be constructed.');
+   }
+
+   /**
+    * Provides several readonly default media type Sets useful for the `mediaTypes` option.
+    */
+   static get MediaTypes(): AssetValidator.DefaultMediaTypes
+   {
+      return this.#mediaTypes;
+   }
 
    /**
     * Parses the provided file path to determine the media type and validity based on the file extension. Certain
     * extensions can be excluded in addition to filtering by specified media types.
-    *
-    * @privateRemarks
-    * TODO: create type information when made public.
     *
     * @param options - Options.
     *
@@ -42,7 +59,7 @@ class AssetValidator
     * @throws {TypeError} If the provided `url` is not a string or URL, `routePrefix` is not a string,
     *         `exclude` is not a Set, or `mediaTypes` is not a Set.
     */
-   static parseMedia({ url, routePrefix, exclude, mediaTypes = this.#allMediaTypes, raiseException = false }:
+   static parseMedia({ url, routePrefix, exclude, mediaTypes = this.#mediaTypes.all, raiseException = false }:
     AssetValidator.Options.ParseMedia): AssetValidator.Data.ParsedMediaResult
    {
       const throws = typeof raiseException === 'boolean' ? raiseException : true;
@@ -121,10 +138,48 @@ class AssetValidator
    }
 }
 
+Object.freeze(AssetValidator);
+
 /**
  * Defines various options and data types for {@link AssetValidator}.
  */
 declare namespace AssetValidator {
+   /**
+    * Provides several default {@link AssetValidator.Options.MediaTypes} Sets that are commonly used.
+    */
+   export type DefaultMediaTypes = Readonly<{
+      /**
+       * All supported media types 'audio' | 'img' | 'svg' | 'video'.
+       */
+      all: ReadonlySet<AssetValidator.Options.MediaTypes>;
+
+      /**
+       * Only media type 'audio'.
+       */
+      audio: ReadonlySet<AssetValidator.Options.MediaTypes>;
+
+      /**
+       * Only media type 'img'.
+       */
+      img: ReadonlySet<AssetValidator.Options.MediaTypes>;
+
+      /**
+       * Only media types 'img' | 'svg'.
+       */
+      img_svg: ReadonlySet<AssetValidator.Options.MediaTypes>;
+
+      /**
+       * Only media types 'img' | 'svg' | 'video'.
+       */
+
+      img_svg_video: ReadonlySet<AssetValidator.Options.MediaTypes>;
+
+      /**
+       * Only media type 'video'.
+       */
+      video: ReadonlySet<AssetValidator.Options.MediaTypes>;
+   }>;
+
    export namespace Options {
       /**
        * Valid media types to parse / define for {@link AssetValidator.parseMedia}`.
@@ -150,7 +205,7 @@ declare namespace AssetValidator {
           *
           * @defaultValue `'audio', 'img', 'svg', 'video'`
           */
-         mediaTypes?: Set<MediaTypes>;
+         mediaTypes?: ReadonlySet<MediaTypes> | Set<MediaTypes>;
 
          /**
           * When true exceptions are thrown.
