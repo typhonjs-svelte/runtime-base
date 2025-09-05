@@ -8,11 +8,12 @@ declare class AssetValidator {
    */
   constructor();
   /**
+   * Provides several readonly default media type Sets useful for the `mediaTypes` option.
+   */
+  static get MediaTypes(): AssetValidator.DefaultMediaTypes;
+  /**
    * Parses the provided file path to determine the media type and validity based on the file extension. Certain
    * extensions can be excluded in addition to filtering by specified media types.
-   *
-   * @privateRemarks
-   * TODO: create type information when made public.
    *
    * @param options - Options.
    *
@@ -34,6 +35,35 @@ declare class AssetValidator {
  * Defines various options and data types for {@link AssetValidator}.
  */
 declare namespace AssetValidator {
+  /**
+   * Provides several default {@link AssetValidator.Options.MediaTypes} Sets that are commonly used.
+   */
+  type DefaultMediaTypes = Readonly<{
+    /**
+     * All supported media types 'audio' | 'img' | 'svg' | 'video'.
+     */
+    all: ReadonlySet<AssetValidator.Options.MediaTypes>;
+    /**
+     * Only media type 'audio'.
+     */
+    audio: ReadonlySet<AssetValidator.Options.MediaTypes>;
+    /**
+     * Only media type 'img'.
+     */
+    img: ReadonlySet<AssetValidator.Options.MediaTypes>;
+    /**
+     * Only media types 'img' | 'svg'.
+     */
+    img_svg: ReadonlySet<AssetValidator.Options.MediaTypes>;
+    /**
+     * Only media types 'img' | 'svg' | 'video'.
+     */
+    img_svg_video: ReadonlySet<AssetValidator.Options.MediaTypes>;
+    /**
+     * Only media type 'video'.
+     */
+    video: ReadonlySet<AssetValidator.Options.MediaTypes>;
+  }>;
   namespace Options {
     /**
      * Valid media types to parse / define for {@link AssetValidator.parseMedia}`.
@@ -56,7 +86,7 @@ declare namespace AssetValidator {
        *
        * @defaultValue `'audio', 'img', 'svg', 'video'`
        */
-      mediaTypes?: Set<MediaTypes>;
+      mediaTypes?: ReadonlySet<MediaTypes> | Set<MediaTypes>;
       /**
        * When true exceptions are thrown.
        *

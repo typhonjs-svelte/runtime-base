@@ -1,4 +1,29 @@
 /**
+ * Provides strictly readonly collections at runtime including {@link ReadonlyMap} and {@link ReadonlySet}.
+ *
+ * The protection level provided is for accidental modification. A determined caller could still mutate via
+ * `Map.prototype.set.call(frozenMap, ...)` or `Set.prototype.add.call(frozenSet, ...)`.
+ */
+declare class Frozen {
+  /**
+   * @param {Iterable<[K, V]>} entries - Target Map or iterable of [key, value] pairs.
+   *
+   * @returns {ReadonlyMap<K, V>} A strictly ReadonlyMap.
+   *
+   * @template K, V
+   */
+  static Map<K, V>(entries: Iterable<[K, V]>): ReadonlyMap<K, V>;
+  /**
+   * @param {Iterable<T>} data - Target Set or iterable list.
+   *
+   * @returns {ReadonlySet<T>} A strictly ReadonlySet.
+   *
+   * @template T
+   */
+  static Set<T>(data: Iterable<T>): ReadonlySet<T>;
+}
+
+/**
  * Provides various utilities for generating hash codes for strings and UUIDs.
  *
  * This class should not be constructed as it only contains static methods.
@@ -136,4 +161,4 @@ declare class Timing {
   }): (event: Event) => void;
 }
 
-export { Hashing, Strings, Timing };
+export { Frozen, Hashing, Strings, Timing };

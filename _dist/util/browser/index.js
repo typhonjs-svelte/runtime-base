@@ -1,3 +1,4 @@
+import { Frozen } from '@typhonjs-svelte/runtime-base/util';
 import { isObject } from '@typhonjs-svelte/runtime-base/util/object';
 
 /**
@@ -554,8 +555,15 @@ class URLParser {
  * Provides a utility to validate media file types and determine the appropriate HTML element type for rendering.
  */
 class AssetValidator {
-    /** Supported media types. */
-    static #allMediaTypes = new Set(['audio', 'img', 'svg', 'video']);
+    /** Default media types. */
+    static #mediaTypes = Object.freeze({
+        all: Frozen.Set(['audio', 'img', 'svg', 'video']),
+        audio: Frozen.Set(['audio']),
+        img: Frozen.Set(['img']),
+        img_svg: Frozen.Set(['img', 'svg']),
+        img_svg_video: Frozen.Set(['img', 'svg', 'video']),
+        video: Frozen.Set(['video']),
+    });
     /** Supported audio extensions. */
     static #audioExtensions = new Set(['mp3', 'wav', 'ogg', 'aac', 'flac', 'webm']);
     /** Supported image extensions. */
@@ -567,13 +575,18 @@ class AssetValidator {
     /**
      * @private
      */
-    constructor() { } // eslint-disable-line no-useless-constructor
+    constructor() {
+        throw new Error('AssetValidator constructor: This is a static class and should not be constructed.');
+    }
+    /**
+     * Provides several readonly default media type Sets useful for the `mediaTypes` option.
+     */
+    static get MediaTypes() {
+        return this.#mediaTypes;
+    }
     /**
      * Parses the provided file path to determine the media type and validity based on the file extension. Certain
      * extensions can be excluded in addition to filtering by specified media types.
-     *
-     * @privateRemarks
-     * TODO: create type information when made public.
      *
      * @param options - Options.
      *
@@ -583,7 +596,7 @@ class AssetValidator {
      * @throws {TypeError} If the provided `url` is not a string or URL, `routePrefix` is not a string,
      *         `exclude` is not a Set, or `mediaTypes` is not a Set.
      */
-    static parseMedia({ url, routePrefix, exclude, mediaTypes = this.#allMediaTypes, raiseException = false }) {
+    static parseMedia({ url, routePrefix, exclude, mediaTypes = this.#mediaTypes.all, raiseException = false }) {
         const throws = typeof raiseException === 'boolean' ? raiseException : true;
         if (typeof url !== 'string' && !CrossWindow.isURL(url)) {
             if (throws) {
@@ -658,6 +671,7 @@ class AssetValidator {
         } : { url, valid: false };
     }
 }
+Object.freeze(AssetValidator);
 
 /**
  * Provides utility methods for checking browser capabilities.
