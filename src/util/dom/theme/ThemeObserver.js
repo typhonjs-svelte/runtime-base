@@ -14,7 +14,8 @@ class ThemeObserver
     * All readable theme stores.
     *
     * @type {Readonly<({
-    *    theme: Readonly<import('svelte/store').Readable<string>>
+    *    themeName: Readonly<import('svelte/store').Readable<string>>
+    *    themeToken: Readonly<import('svelte/store').Readable<string>>
     * })>}
     */
    static #stores;
@@ -22,16 +23,23 @@ class ThemeObserver
    /**
     * Internal setter for theme stores.
     *
-    * @type {{ theme: Function }}
+    * @type {{ themeName: Function, themeToken: Function }}
     */
    static #storeSet;
 
    /**
-    * Current theme.
+    * Current theme name.
     *
     * @type {string}
     */
-   static #theme = '';
+   static #themeName = '';
+
+   /**
+    * Current theme token.
+    *
+    * @type {string}
+    */
+   static #themeToken = '';
 
    /**
     * @hideconstructor
@@ -42,24 +50,35 @@ class ThemeObserver
    }
 
    /**
-    * @returns {Readonly<{ theme: Readonly<import('svelte/store').Readable<string>> }>} Current core theme stores.
+    * @returns {Readonly<({
+    *    themeName: Readonly<import('svelte/store').Readable<string>>
+    *    themeToken: Readonly<import('svelte/store').Readable<string>>
+    * })>} Current platform theme stores.
     */
    static get stores() { return this.#stores; }
 
    /**
-    * @returns {string} Current theme CSS class.
+    * @returns {string} Current theme name; may be different from the theme token.
     */
-   static get theme()
+   static get themeName()
    {
-      return this.#theme;
+      return this.#themeName;
    }
 
    /**
-    * Verify that the given `theme` name or complete CSS class is the current theme.
+    * @returns {string} Current theme token - CSS class or data attribute value.
+    */
+   static get themeToken()
+   {
+      return this.#themeToken;
+   }
+
+   /**
+    * Verify that the given `theme` name or token is the current platform theme.
     *
-    * @param {string} theme - A theme name or complete CSS class name to verify.
+    * @param {string} theme - A theme name or token to verify.
     *
-    * @returns {boolean} If the requested theme match the current theme.
+    * @returns {boolean} If the requested theme matches the current platform theme.
     */
    static isTheme(theme)
    {
@@ -67,17 +86,17 @@ class ThemeObserver
    }
 
    /**
-    * Detect if theming classes are present in the given iterable list.
+    * Detect if theming tokens (CSS class, etc.) are present in the given iterable list.
     *
-    * @param {Iterable<string>}  classes - CSS class list to verify if theming classes are included.
+    * @param {Iterable<string>}  tokens - a token list to verify if any theming tokens are included.
     *
     * @param {object} [options] - Optional parameters.
     *
-    * @param {boolean} [options.strict=false] - When true, all theming classes required if multiple are verified.
+    * @param {boolean} [options.strict=false] - When true, all theming tokens required if multiple are verified.
     *
-    * @returns {boolean} True if theming classes present.
+    * @returns {boolean} True if theming tokens present.
     */
-   static hasThemedClasses(classes, { strict = false } = {})
+   static hasThemedTokens(tokens, { strict = false } = {})
    {
       return false;
    }
@@ -91,33 +110,36 @@ class ThemeObserver
    {
       if (this.#stores !== void 0) { return; }
 
-      const themeStore = writable(this.#theme);
+      const themeName = writable(this.#themeName);
+      const themeToken = writable(this.#themeToken);
 
       this.#stores = Object.freeze({
-         theme: Object.freeze({ subscribe: themeStore.subscribe }),
+         themeName: Object.freeze({ subscribe: themeName.subscribe }),
+         themeToken: Object.freeze({ subscribe: themeToken.subscribe }),
       });
 
       this.#storeSet = {
-         theme: themeStore.set,
+         themeName: themeName.set,
+         themeToken: themeToken.set,
       };
    }
 
    /**
-    * Determine the nearest theme CSS classes from the given element.
+    * Determine the nearest theme tokens (CSS classes, etc.) from the given element.
     *
     * @param {object} options - Required options.
     *
     * @param {Element} options.element - A DOM element.
     *
-    * @param {Set<string>} [options.output] - An optional source Set of existing CSS classes.
+    * @param {Set<string>} [options.output] - An optional source Set of existing tokens.
     *
-    * @param {boolean} [options.override=true] - When true, override any existing theme classes
+    * @param {boolean} [options.override=true] - When true, override any existing theme tokens.
     *
-    * @param {boolean} [options.strict=false] - When true, ensure all required theming classes in output.
+    * @param {boolean} [options.strict=false] - When true, ensure all required theming tokens in output.
     *
-    * @returns {Iterable<string>} Any theming CSS classes found from the given element.
+    * @returns {Iterable<string>} Any theming tokens found from the given element.
     */
-   static nearestThemedClasses({ element, output = new Set(), override = true, strict = false })
+   static nearestThemedTokens({ element, output = new Set(), override = true, strict = false })
    {
       if (!CrossWindow.isSet(output)) { throw new TypeError(`'output' is not a Set.`); }
 
