@@ -7,22 +7,56 @@ import { localize }  from '#runtime/util/i18n';
  *
  * @param {HTMLElement} node - Target element.
  *
- * @param {string}  tooltip - The tooltip to set.
+ * @param {TooltipOptions} options - Options.
  *
- * @returns {import('svelte/action').ActionReturn<string>} Lifecycle functions.
+ * @returns {import('svelte/action').ActionReturn<TooltipOptions>} Lifecycle functions.
  */
-export function popoverTooltip(node, tooltip)
+export function popoverTooltip(node, { tooltip, ariaLabel = false })
 {
-   node.title = typeof tooltip === 'string' ? localize(tooltip) : null;
+   function setAttributes()
+   {
+      if (typeof tooltip === 'string')
+      {
+         const value = localize(tooltip);
+
+         node.setAttribute('title', value);
+
+         if (ariaLabel)
+         {
+            node.setAttribute('aria-label', value);
+         }
+         else
+         {
+            node.removeAttribute('aria-label');
+         }
+      }
+      else
+      {
+         node.removeAttribute('title');
+         node.removeAttribute('aria-label');
+      }
+   }
+
+   setAttributes();
 
    return {
       /**
-       * @param {string}  newTooltip - Update tooltip.
+       * @param {TooltipOptions}  options - Update tooltip.
        */
-      update: (newTooltip) =>
+      update: (options) =>
       {
-         tooltip = newTooltip;
-         node.title = typeof tooltip === 'string' ? localize(tooltip) : null;
+         tooltip = typeof options?.tooltip === 'string' ? options.tooltip : void 0;
+         ariaLabel = typeof options?.ariaLabel === 'boolean' ? options.ariaLabel : false;
+
+         setAttributes();
       }
    };
 }
+
+/**
+ * @typedef {object} TooltipOptions
+ *
+ * @property {string} [tooltip] Tooltip value or language key.
+ *
+ * @property {boolean} [ariaLabel=false] When true, the tooltip value is also set to the `aria-label` attribute.
+ */
