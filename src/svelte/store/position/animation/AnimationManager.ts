@@ -36,7 +36,7 @@ export class AnimationManager
    /**
     * Provides the `this` context for {@link AnimationManager.animate} to be scheduled on rAF.
     */
-   static #animateBound: FrameRequestCallback = (timeFrame: number): void => this.animate(timeFrame);
+   static #animateBound: FrameRequestCallback = AnimationManager.animate.bind(AnimationManager);
 
    /**
     */
