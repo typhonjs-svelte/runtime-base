@@ -94,7 +94,7 @@ function draggable(node: HTMLElement, { position, enabled = true, button = 0, st
    {
       // Drag handlers
       node.addEventListener(...handlers.dragDown);
-      node.classList.add('draggable');
+      node.classList.add('tjs-draggable');
    }
 
    /**
@@ -108,7 +108,7 @@ function draggable(node: HTMLElement, { position, enabled = true, button = 0, st
       node.removeEventListener(...handlers.dragDown);
       node.removeEventListener(...handlers.dragMove);
       node.removeEventListener(...handlers.dragUp);
-      node.classList.remove('draggable');
+      node.classList.remove('tjs-draggable');
    }
 
    if (enabled)
