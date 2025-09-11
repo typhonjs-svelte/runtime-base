@@ -30,9 +30,12 @@ export class TJSTransforms implements TransformAPI
 
    /**
     * Defines the keys of TJSPositionData that are transform keys.
+    *
+    * Note: `rotateZ` is the most likely transform applied in 2D context. Putting it first makes `hasTransform` slightly
+    * quicker.
     */
    static #transformKeys: Readonly<Array<Data.TransformKeys>> = Object.freeze([
-      'rotateX', 'rotateY', 'rotateZ', 'scale', 'translateX', 'translateY', 'translateZ'
+      'rotateZ', 'scale', 'rotateX', 'rotateY', 'translateX', 'translateY', 'translateZ'
    ]);
 
    /**
@@ -731,9 +734,9 @@ export class TJSTransforms implements TransformAPI
     */
    hasTransform(data: Partial<Data.TJSPositionData>): boolean
    {
-      for (const key of TJSTransforms.#transformKeys)
+      for (let cntr: number = 0; cntr < TJSTransforms.#transformKeys.length; cntr++)
       {
-         if (Number.isFinite(data[key])) { return true; }
+         if (Number.isFinite(data[TJSTransforms.#transformKeys[cntr]])) { return true; }
       }
 
       return false;
