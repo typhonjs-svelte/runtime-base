@@ -146,7 +146,7 @@ export class AnimationManager
          const data: AnimationData = AnimationManager.#activeList[cntr];
 
          // Remove any animations that have been canceled.
-         if (data.cancelled || (data.el !== void 0 && !data.el.isConnected))
+         if (data.cancelled)
          {
             AnimationManager.#activeList.splice(cntr, 1);
             this.#cleanupData(data);

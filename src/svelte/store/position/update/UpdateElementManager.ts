@@ -88,7 +88,7 @@ export class UpdateElementManager
          updateData.queued = false;
 
          // Early out if the element is no longer connected to the DOM / shadow root.
-         if (!el.isConnected) { continue; }
+         // if (!el.isConnected) { continue; }
 
          if (updateData.options.ortho)
          {
@@ -123,9 +123,6 @@ export class UpdateElementManager
     */
    static immediate(el: HTMLElement, updateData: UpdateElementData): void
    {
-      // Early out if the element is no longer connected to the DOM / shadow root.
-      if (!el.isConnected) { return; }
-
       if (updateData.options.ortho)
       {
          UpdateElementManager.#updateElementOrtho(el, updateData);

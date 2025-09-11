@@ -866,8 +866,7 @@ class TJSPosition implements TJSPosition.WritableExt
       // Find the target HTML element and verify that it is connected storing it in `el`.
       const targetEl: HTMLElement = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
 
-      const el: HTMLElement | undefined = A11yHelper.isFocusTarget(targetEl) && targetEl.isConnected ? targetEl :
-       void 0;
+      const el: HTMLElement | undefined = A11yHelper.isFocusTarget(targetEl) ? targetEl : void 0;
 
       const changeSet: PositionChangeSet = this.#positionChangeSet;
       const styleCache: TJSPositionStyleCache = this.#styleCache;
