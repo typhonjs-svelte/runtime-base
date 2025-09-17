@@ -482,6 +482,23 @@ const rollupConfigs = [
    },
    {
       input: {
+         input: 'src/svelte/reactivity/index.ts',
+         plugins: [
+            importsExternal(),
+            resolve(resolveOptions),
+            typescript({ tsconfig: './src/svelte/reactivity/tsconfig.json' }),
+            generateDTS.plugin(dtsPluginOptions)
+         ]
+      },
+      output: {
+         file: '_dist/svelte/reactivity/index.js',
+         format: 'es',
+         generatedCode: { constBindings: true },
+         sourcemap
+      }
+   },
+   {
+      input: {
          input: 'src/svelte/store/dom/input/index.js',
          plugins: [
             importsExternal(),
