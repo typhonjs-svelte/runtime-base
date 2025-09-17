@@ -433,6 +433,11 @@ class TJSPosition implements TJSPosition.WritableExt
    get parent(): TJSPosition.PositionParent | undefined { return this.#parent; }
 
    /**
+    * Returns the resize observable state which is `true` whenever `width` or `height` is `auto` or `inherit`.
+    */
+   get resizeObservable(): boolean { return this.#resizeObservable; }
+
+   /**
     * Returns the state API.
     *
     * @returns TJSPosition state API.
@@ -475,7 +480,12 @@ class TJSPosition implements TJSPosition.WritableExt
          throw new TypeError(`'enabled' is not a boolean.`);
       }
 
-      this.#enabled = enabled;
+      if (this.#enabled !== enabled)
+      {
+         this.#enabled = enabled;
+
+         if (enabled) { this.set(this.#data); }
+      }
    }
 
    /**
