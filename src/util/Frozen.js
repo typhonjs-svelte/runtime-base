@@ -15,7 +15,7 @@ class Frozen
    }
 
    /**
-    * @param {Iterable<[K, V]>} entries - Target Map or iterable of [key, value] pairs.
+    * @param {Iterable<[K, V]>} [entries] - Target Map or iterable of [key, value] pairs.
     *
     * @returns {ReadonlyMap<K, V>} A strictly ReadonlyMap.
     *
@@ -33,7 +33,7 @@ class Frozen
    }
 
    /**
-    * @param {Iterable<T>} data - Target Set or iterable list.
+    * @param {Iterable<T>} [data] - Target Set or iterable list.
     *
     * @returns {ReadonlySet<T>} A strictly ReadonlySet.
     *
