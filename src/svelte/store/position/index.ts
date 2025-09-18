@@ -8,4 +8,5 @@
  */
 
 export * from './action';
+export * from './ContainerQueryTypes';
 export * from './TJSPosition';
