@@ -41,7 +41,7 @@ describe('SvelteSet', () =>
          set = new SvelteSet<number>();
       });
 
-      it('subscribe receives initial value and subsequent updates', () =>
+      it('Subscribe receives initial value and subsequent updates', () =>
       {
          const spy = vi.fn<(v: SubValue<number>) => void>();
          const unsub = set.subscribe(spy);
@@ -73,12 +73,12 @@ describe('SvelteSet', () =>
 
          unsub();
 
-         // further changes after unsubscribe should not notify
+         // Further changes after unsubscribe should not notify.
          set.add(7);
          expect(spy).toHaveBeenCalledTimes(3);
       });
 
-      it('multiple subscribers are notified', () =>
+      it('Multiple subscribers are notified', () =>
       {
          const a = vi.fn();
          const b = vi.fn();
@@ -86,7 +86,7 @@ describe('SvelteSet', () =>
          const ua = set.subscribe(a);
          const ub = set.subscribe(b);
 
-         // initial for both
+         // Initial for both.
          expect(a).toHaveBeenCalledTimes(1);
          expect(b).toHaveBeenCalledTimes(1);
 
@@ -104,20 +104,20 @@ describe('SvelteSet', () =>
          ub();
       });
 
-      it('clear empties and emits only when needed', () =>
+      it('Clear empties and emits only when needed', () =>
       {
          const spy = vi.fn();
          const unsub = set.subscribe(spy);
 
          expect(spy).toHaveBeenCalledTimes(1);
-         set.clear(); // already empty => ideally no emit
+         set.clear(); // Already empty => ideally no emit.
          expect(spy).toHaveBeenCalledTimes(1);
 
          set.add(1);
          set.add(2);
          expect(spy).toHaveBeenCalledTimes(3);
 
-         set.clear(); // now non-empty => should emit once
+         set.clear(); // Now non-empty => should emit once.
          expect(spy).toHaveBeenCalledTimes(4);
          expect((spy.mock.calls[3][0] as Set<number>).size).toBe(0);
 
