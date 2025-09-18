@@ -27,7 +27,8 @@ describe('SvelteSet', () =>
 
       it('Error', () =>
       {
-         expect(() => new SvelteSet<string>(null)).to.throw(TypeError, `'data' must be an iterable list.`);
+         // @ts-expect-error
+         expect(() => new SvelteSet<string>(null)).to.throw(TypeError, `'entries' must be an iterable list.`);
       });
    });
 

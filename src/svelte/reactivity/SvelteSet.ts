@@ -17,18 +17,18 @@ export class SvelteSet<T> extends Set<T> implements Readable<SvelteSet<T>>
     */
    #subscribers: Subscriber<SvelteSet<T>>[] = [];
 
-   constructor(data?: Iterable<T>)
+   constructor(entries?: Iterable<T>)
    {
       super();
 
-      if (data !== void 0 && !isIterable(data))
+      if (entries !== void 0 && !isIterable(entries))
       {
-         throw new TypeError(`'data' must be an iterable list.`);
+         throw new TypeError(`'entries' must be an iterable list.`);
       }
 
-      if (data)
+      if (entries)
       {
-         for (const entry of data) { super.add(entry); }
+         for (const entry of entries) { super.add(entry); }
       }
    }
 
