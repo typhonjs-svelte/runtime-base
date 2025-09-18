@@ -31,6 +31,8 @@ export class TJSPositionStyleCache
       resizeContentWidth: Writable<number | undefined>,
       resizeObserved: Writable<ResizeObserverData.ResizeObject>,
       resizeObservable: Writable<boolean>,
+      resizeObservableHeight: Writable<boolean>,
+      resizeObservableWidth: Writable<boolean>,
       resizeOffsetHeight: Writable<number | undefined>,
       resizeOffsetWidth: Writable<number | undefined>
    }
@@ -68,6 +70,8 @@ export class TJSPositionStyleCache
          resizeContentWidth: propertyStore(storeResizeObserved, 'contentWidth'),
          resizeObserved: storeResizeObserved,
          resizeObservable: writable(false),
+         resizeObservableHeight: writable(false),
+         resizeObservableWidth: writable(false),
          resizeOffsetHeight: propertyStore(storeResizeObserved, 'offsetHeight'),
          resizeOffsetWidth: propertyStore(storeResizeObserved, 'offsetWidth')
       };

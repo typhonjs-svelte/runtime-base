@@ -170,6 +170,16 @@ interface Stores {
    resizeObservable: Readable<boolean>;
 
    /**
+    * Readable store indicating when `height` is `auto` or `inherit`.
+    */
+   resizeObservableHeight: Readable<boolean>;
+
+   /**
+    * Readable store indicating when `width` is `auto` or `inherit`.
+    */
+   resizeObservableWidth: Readable<boolean>;
+
+   /**
     * Readable store for `offsetHeight`.
     */
    resizeOffsetHeight: Readable<number | undefined>;

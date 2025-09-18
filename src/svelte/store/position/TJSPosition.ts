@@ -120,6 +120,18 @@ class TJSPosition implements TJSPosition.WritableExt
    #resizeObservable: boolean = false;
 
    /**
+    * Tracks the current state if this position instance is a candidate for resize observation by the `resizeObserver`
+    * action. This is `true` when `height` is `auto` or `inherit`.
+    */
+   #resizeObservableHeight: boolean = false;
+
+   /**
+    * Tracks the current state if this position instance is a candidate for resize observation by the `resizeObserver`
+    * action. This is `true` when `width` is `auto` or `inherit`.
+    */
+   #resizeObservableWidth: boolean = false;
+
+   /**
     */
    readonly #stores: TJSPosition.API.Stores;
 
@@ -307,6 +319,8 @@ class TJSPosition implements TJSPosition.WritableExt
          resizeContentHeight: { subscribe: this.#styleCache.stores.resizeContentHeight.subscribe },
          resizeContentWidth: { subscribe: this.#styleCache.stores.resizeContentWidth.subscribe },
          resizeObservable: { subscribe: this.#styleCache.stores.resizeObservable.subscribe },
+         resizeObservableHeight: { subscribe: this.#styleCache.stores.resizeObservableHeight.subscribe },
+         resizeObservableWidth: { subscribe: this.#styleCache.stores.resizeObservableWidth.subscribe },
          resizeOffsetHeight: { subscribe: this.#styleCache.stores.resizeOffsetHeight.subscribe },
          resizeOffsetWidth: { subscribe: this.#styleCache.stores.resizeOffsetWidth.subscribe },
          transform: { subscribe: updateData.storeTransform.subscribe },
@@ -436,6 +450,16 @@ class TJSPosition implements TJSPosition.WritableExt
     * Returns the resize observable state which is `true` whenever `width` or `height` is `auto` or `inherit`.
     */
    get resizeObservable(): boolean { return this.#resizeObservable; }
+
+   /**
+    * Returns the resize observable state which is `true` whenever `height` is `auto` or `inherit`.
+    */
+   get resizeObservableHeight(): boolean { return this.#resizeObservableHeight; }
+
+   /**
+    * Returns the resize observable state which is `true` whenever `width` is `auto` or `inherit`.
+    */
+   get resizeObservableWidth(): boolean { return this.#resizeObservableWidth; }
 
    /**
     * Returns the state API.
@@ -1069,6 +1093,18 @@ class TJSPosition implements TJSPosition.WritableExt
       {
          this.#resizeObservable = resizeObservable;
          this.#styleCache.stores.resizeObservable.set(resizeObservable);
+      }
+
+      if (this.#resizeObservableHeight !== heightIsObservable)
+      {
+         this.#resizeObservableHeight = heightIsObservable;
+         this.#styleCache.stores.resizeObservableHeight.set(heightIsObservable);
+      }
+
+      if (this.#resizeObservableWidth !== widthIsObservable)
+      {
+         this.#resizeObservableWidth = widthIsObservable;
+         this.#styleCache.stores.resizeObservableWidth.set(widthIsObservable);
       }
 
       if (el)
