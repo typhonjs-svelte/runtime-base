@@ -422,22 +422,8 @@ declare function modify(text: string, path: JSONPath, value: any, options: Modif
 declare function applyEdits(text: string, edits: EditResult): string;
 
 export {
-  type Edit,
-  type EditResult,
-  type FormattingOptions,
-  type JSONPath,
-  type JSONScanner,
-  type JSONVisitor,
-  type Location,
-  type ModificationOptions,
-  type Node,
-  type NodeType,
-  type ParseError,
   ParseErrorCode,
-  type ParseOptions,
-  type Range,
   ScanError,
-  type Segment,
   SyntaxKind,
   applyEdits,
   createScanner,
@@ -453,4 +439,20 @@ export {
   printParseErrorCode,
   stripComments,
   visit,
+};
+export type {
+  Edit,
+  EditResult,
+  FormattingOptions,
+  JSONPath,
+  JSONScanner,
+  JSONVisitor,
+  Location,
+  ModificationOptions,
+  Node,
+  NodeType,
+  ParseError,
+  ParseOptions,
+  Range,
+  Segment,
 };

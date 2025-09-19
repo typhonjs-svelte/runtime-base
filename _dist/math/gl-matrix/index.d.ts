@@ -4958,24 +4958,5 @@ declare class Vec4 extends Float32Array {
   static equals(a: Readonly<Vec4Like>, b: Readonly<Vec4Like>): boolean;
 }
 
-export {
-  type FloatArray,
-  Mat2,
-  type Mat2Like,
-  Mat2d,
-  type Mat2dLike,
-  Mat3,
-  type Mat3Like,
-  Mat4,
-  type Mat4Like,
-  Quat,
-  Quat2,
-  type Quat2Like,
-  type QuatLike,
-  Vec2,
-  type Vec2Like,
-  Vec3,
-  type Vec3Like,
-  Vec4,
-  type Vec4Like,
-};
+export { Mat2, Mat2d, Mat3, Mat4, Quat, Quat2, Vec2, Vec3, Vec4 };
+export type { FloatArray, Mat2Like, Mat2dLike, Mat3Like, Mat4Like, Quat2Like, QuatLike, Vec2Like, Vec3Like, Vec4Like };

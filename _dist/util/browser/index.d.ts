@@ -227,6 +227,12 @@ declare class CrossWindow {
    */
   constructor();
   /**
+   * Convenience method to test if the given target element is the current active element.
+   *
+   * @param target - Element to test as current active element.
+   */
+  static isActiveElement(target: Element): boolean;
+  /**
    * Convenience method to retrieve the `document.activeElement` value in the current Window context of a DOM Node /
    * Element, EventTarget, Document, or Window.
    *

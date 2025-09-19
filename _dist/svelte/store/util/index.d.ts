@@ -147,15 +147,5 @@ declare function subscribeFirstRest(
   update: any,
 ): svelte_store.Unsubscriber;
 
-export {
-  type IOWritable,
-  type MinimalIOWritable,
-  type MinimalWritable,
-  type MinimalWritableFn,
-  type WritableFn,
-  isMinimalWritableStore,
-  isReadableStore,
-  isWritableStore,
-  subscribeFirstRest,
-  subscribeIgnoreFirst,
-};
+export { isMinimalWritableStore, isReadableStore, isWritableStore, subscribeFirstRest, subscribeIgnoreFirst };
+export type { IOWritable, MinimalIOWritable, MinimalWritable, MinimalWritableFn, WritableFn };

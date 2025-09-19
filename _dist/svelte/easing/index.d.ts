@@ -84,4 +84,5 @@ declare function getEasingFunc(
   },
 ): _runtime_svelte_easing.EasingFunction;
 
-export { type EasingFunctionName, type EasingReference, easingFunc, easingList, getEasingFunc };
+export { easingFunc, easingList, getEasingFunc };
+export type { EasingFunctionName, EasingReference };

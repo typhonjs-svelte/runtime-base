@@ -237,4 +237,5 @@ type A11yFocusSource = {
   y?: number;
 };
 
-export { type A11yFocusSource, A11yHelper, type FocusableElement, type FocusableElementOptions };
+export { A11yHelper };
+export type { A11yFocusSource, FocusableElement, FocusableElementOptions };

@@ -26,4 +26,5 @@ type StackingContext = {
   reason: string;
 };
 
-export { type StackingContext, getStackingContext };
+export { getStackingContext };
+export type { StackingContext };

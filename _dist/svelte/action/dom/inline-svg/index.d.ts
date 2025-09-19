@@ -58,4 +58,5 @@ type InlineSvgActionReturn = ActionReturn<InlineSvgParameter>;
  */
 declare function inlineSvg(node: SVGElement, param: InlineSvgParameter): InlineSvgActionReturn;
 
-export { type InlineSvgAction, type InlineSvgActionReturn, type InlineSvgConfig, type InlineSvgParameter, inlineSvg };
+export { inlineSvg };
+export type { InlineSvgAction, InlineSvgActionReturn, InlineSvgConfig, InlineSvgParameter };

@@ -28,6 +28,7 @@ interface Options {
   maxOwnStructures?: number;
   mapAsEmptyObject?: boolean;
   setAsEmptyObject?: boolean;
+  allowArraysInMapKeys?: boolean;
   writeFunction?: () => any;
   /** @deprecated use int64AsType: 'number' */
   int64AsNumber?: boolean;
@@ -95,13 +96,11 @@ export {
   Decoder,
   Encoder,
   FLOAT32_OPTIONS,
-  type Options,
   Packr,
   PackrStream,
   RESERVE_START_SPACE,
   RESET_BUFFER_MODE,
   REUSE_BUFFER_MODE,
-  type UnpackOptions,
   Unpackr,
   UnpackrStream,
   addExtension,
@@ -114,3 +113,4 @@ export {
   unpack,
   unpackMultiple,
 };
+export type { Extension, Options, UnpackOptions };

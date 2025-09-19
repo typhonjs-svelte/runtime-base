@@ -31,4 +31,5 @@ interface InterpolateFunction<T> {
  */
 type InterpolateFunctionName = 'lerp';
 
-export { type InterpolateFunction, type InterpolateFunctionName, lerp };
+export { lerp };
+export type { InterpolateFunction, InterpolateFunctionName };

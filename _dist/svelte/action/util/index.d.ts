@@ -28,4 +28,5 @@ declare function dynamicAction(
   { action, data }?: DynamicActionOptions,
 ): svelte_action.ActionReturn<DynamicActionOptions>;
 
-export { type DynamicActionOptions, dynamicAction };
+export { dynamicAction };
+export type { DynamicActionOptions };

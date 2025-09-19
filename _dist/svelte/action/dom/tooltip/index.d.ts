@@ -7,10 +7,24 @@ import * as svelte_action from 'svelte/action';
  *
  * @param {HTMLElement} node - Target element.
  *
- * @param {string}  tooltip - The tooltip to set.
+ * @param {TooltipOptions} options - Options.
  *
- * @returns {import('svelte/action').ActionReturn<string>} Lifecycle functions.
+ * @returns {import('svelte/action').ActionReturn<TooltipOptions>} Lifecycle functions.
  */
-declare function popoverTooltip(node: HTMLElement, tooltip: string): svelte_action.ActionReturn<string>;
+declare function popoverTooltip(
+  node: HTMLElement,
+  { tooltip, ariaLabel }: TooltipOptions,
+): svelte_action.ActionReturn<TooltipOptions>;
+type TooltipOptions = {
+  /**
+   * Tooltip value or language key.
+   */
+  tooltip?: string;
+  /**
+   * When true, the tooltip value is also set to the `aria-label` attribute.
+   */
+  ariaLabel?: boolean;
+};
 
 export { popoverTooltip };
+export type { TooltipOptions };

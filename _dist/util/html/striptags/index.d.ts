@@ -14,4 +14,5 @@ declare class StateMachine {
 }
 declare function striptags(text: string, options?: Partial<StateMachineOptions>): string;
 
-export { DefaultStateMachineOptions, StateMachine, type StateMachineOptions, striptags };
+export { DefaultStateMachineOptions, StateMachine, striptags };
+export type { StateMachineOptions };

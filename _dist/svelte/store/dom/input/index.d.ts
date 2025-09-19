@@ -111,4 +111,5 @@ type KeyStoreOptions = {
   stopPropagation?: boolean;
 };
 
-export { KeyStore, type KeyStoreOptions };
+export { KeyStore };
+export type { KeyStoreOptions };

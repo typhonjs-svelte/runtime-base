@@ -2,7 +2,9 @@
  * Provides a reactive compound store and related actions for advanced and optimized positioning of elements including
  * essential animation / tweening and validation of positional changes. {@link TJSPosition} is the main reactive store
  * along with the {@link applyPosition} and {@link draggable} actions to respectively attach a `TJSPosition` instance
- * to an element in a Svelte template and make it draggable.
+ * to an element in a Svelte template and make it draggable. Additionally, {@link CQPositionValidate} provides an
+ * adjunct reactive store to perform validation of a `TJSPosition` instance validating container query types
+ * (`inline-size` / `size`) against the positional state that may cause indeterminate states for container queries.
  *
  * @packageDocumentation
  */
@@ -1687,6 +1689,14 @@ interface Stores {
    */
   resizeObservable: Readable<boolean>;
   /**
+   * Readable store indicating when `height` is `auto` or `inherit`.
+   */
+  resizeObservableHeight: Readable<boolean>;
+  /**
+   * Readable store indicating when `width` is `auto` or `inherit`.
+   */
+  resizeObservableWidth: Readable<boolean>;
+  /**
    * Readable store for `offsetHeight`.
    */
   resizeOffsetHeight: Readable<number | undefined>;
@@ -1901,6 +1911,18 @@ declare class TJSPosition implements TJSPosition.WritableExt {
    * @returns The current position parent instance.
    */
   get parent(): TJSPosition.PositionParent | undefined;
+  /**
+   * Returns the resize observable state which is `true` whenever `width` or `height` is `auto` or `inherit`.
+   */
+  get resizeObservable(): boolean;
+  /**
+   * Returns the resize observable state which is `true` whenever `height` is `auto` or `inherit`.
+   */
+  get resizeObservableHeight(): boolean;
+  /**
+   * Returns the resize observable state which is `true` whenever `width` is `auto` or `inherit`.
+   */
+  get resizeObservableWidth(): boolean;
   /**
    * Returns the state API.
    *
@@ -2158,18 +2180,16 @@ declare namespace TJSPosition {
   export namespace API {
     export {
       AnimationAPI as Animation,
-      type AnimationGroupAPI as AnimationGroup,
       Data,
-      type DefaultInitial,
-      type DefaultValidators,
       StateAPI as State,
       System,
-      type Stores,
       TransformAPI as Transform,
       ValidatorAPI as Validators,
     };
+    export type { AnimationGroupAPI as AnimationGroup, DefaultInitial, DefaultValidators, Stores };
   }
-  export { Options, type Positionable, type PositionGroup, type PositionParent, type WritableExt };
+  export { Options };
+  export type { Positionable, PositionGroup, PositionParent, WritableExt };
 }
 
 /**
@@ -2217,4 +2237,53 @@ declare namespace draggable {
   }) => Action.DraggableOptionsStore;
 }
 
-export { TJSPosition, applyPosition, draggable };
+/**
+ * Provides an adjunct store to track an associated {@link TJSPosition} state that affects the validity of container
+ * query types that perform size queries. When `width` or `height` is `auto` or `inherit` the size query containers may
+ * be invalid. {@link CQPositionValidate.validate} also checks if the browser supports container queries.
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_containment/Container_queries#using_container_size_queries
+ */
+declare class CQPositionValidate implements Readable<CQPositionValidate> {
+  #private;
+  /**
+   * @param [position] - Associated TJSPosition instance.
+   */
+  constructor(position?: TJSPosition);
+  /**
+   * Manually destroy and cleanup associations to any subscribers and TJSPosition instance.
+   */
+  destroy(): void;
+  /**
+   * Returns the associated TJSPosition instance.
+   */
+  getPosition(): TJSPosition | undefined;
+  /**
+   * Set a new TJSPosition instance to monitor.
+   *
+   * @param position - New TJSPosition instance to associate.
+   */
+  setPosition(position: TJSPosition): void;
+  /**
+   * Returns the serialized state tracking supported container types.
+   */
+  toJSON(): {
+    inlineSize: boolean;
+    normal: boolean;
+    size: boolean;
+  };
+  /**
+   * @param cqType - The container query type to validate against current associated {@link TJSPosition} state.
+   *
+   * @returns Whether the browser and associated TJSPosition current state supports the requested container query type.
+   */
+  validate(cqType: string): boolean;
+  /**
+   * @param handler - Callback function that is invoked on update / changes.
+   *
+   * @returns Unsubscribe function.
+   */
+  subscribe(handler: Subscriber<CQPositionValidate>): Unsubscriber;
+}
+
+export { CQPositionValidate, TJSPosition, applyPosition, draggable };

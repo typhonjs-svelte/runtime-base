@@ -77,4 +77,5 @@ declare class ModuleLoadError extends Error {
   code: string;
 }
 
-export { ModuleLoadError, ModuleLoader, type ModuleLoaderObj };
+export { ModuleLoadError, ModuleLoader };
+export type { ModuleLoaderObj };

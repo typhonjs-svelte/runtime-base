@@ -6,21 +6,21 @@
  */
 declare class Frozen {
   /**
-   * @param {Iterable<[K, V]>} entries - Target Map or iterable of [key, value] pairs.
+   * @param {Iterable<[K, V]>} [entries] - Target Map or iterable of [key, value] pairs.
    *
    * @returns {ReadonlyMap<K, V>} A strictly ReadonlyMap.
    *
    * @template K, V
    */
-  static Map<K, V>(entries: Iterable<[K, V]>): ReadonlyMap<K, V>;
+  static Map<K, V>(entries?: Iterable<[K, V]>): ReadonlyMap<K, V>;
   /**
-   * @param {Iterable<T>} data - Target Set or iterable list.
+   * @param {Iterable<T>} [data] - Target Set or iterable list.
    *
    * @returns {ReadonlySet<T>} A strictly ReadonlySet.
    *
    * @template T
    */
-  static Set<T>(data: Iterable<T>): ReadonlySet<T>;
+  static Set<T>(data?: Iterable<T>): ReadonlySet<T>;
 }
 
 /**

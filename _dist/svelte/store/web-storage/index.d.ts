@@ -311,16 +311,5 @@ declare const localStores: StorageStores;
  */
 declare const sessionStores: StorageStores;
 
-export {
-  type StorageDerived,
-  type StorageReadable,
-  type StorageStores,
-  type StorageWritable,
-  TJSLocalStorage,
-  TJSSessionStorage,
-  TJSWebStorage,
-  type WebStorage,
-  localStores,
-  sessionStores,
-  storeGenerator,
-};
+export { TJSLocalStorage, TJSSessionStorage, TJSWebStorage, localStores, sessionStores, storeGenerator };
+export type { StorageDerived, StorageReadable, StorageStores, StorageWritable, WebStorage };

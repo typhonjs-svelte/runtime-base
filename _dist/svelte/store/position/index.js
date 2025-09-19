@@ -1,11 +1,11 @@
 import { hasSetter, isIterable, isObject, isPlainObject } from '@typhonjs-svelte/runtime-base/util/object';
 import { getEasingFunc } from '@typhonjs-svelte/runtime-base/svelte/easing';
 import { A11yHelper } from '@typhonjs-svelte/runtime-base/util/a11y';
+import { CrossWindow, BrowserSupports } from '@typhonjs-svelte/runtime-base/util/browser';
 import { radToDeg, degToRad, clamp } from '@typhonjs-svelte/runtime-base/math/util';
 import { subscribeIgnoreFirst } from '@typhonjs-svelte/runtime-base/svelte/store/util';
 import { propertyStore } from '@typhonjs-svelte/runtime-base/svelte/store/writable-derived';
 import { lerp } from '@typhonjs-svelte/runtime-base/math/interpolate';
-import { CrossWindow } from '@typhonjs-svelte/runtime-base/util/browser';
 import { Vec3, Mat4 } from '@typhonjs-svelte/runtime-base/math/gl-matrix';
 import { writable } from 'svelte/store';
 import { StyleParse } from '@typhonjs-svelte/runtime-base/util/dom/style';
@@ -106,7 +106,7 @@ function draggable(node, { position, enabled = true, button = 0, storeDragging =
     function activateListeners() {
         // Drag handlers
         node.addEventListener(...handlers.dragDown);
-        node.classList.add('draggable');
+        node.classList.add('tjs-draggable');
     }
     /**
      * Removes listeners.
@@ -119,7 +119,7 @@ function draggable(node, { position, enabled = true, button = 0, storeDragging =
         node.removeEventListener(...handlers.dragDown);
         node.removeEventListener(...handlers.dragMove);
         node.removeEventListener(...handlers.dragUp);
-        node.classList.remove('draggable');
+        node.classList.remove('tjs-draggable');
     }
     if (enabled) {
         activateListeners();
@@ -538,7 +538,7 @@ class AnimationManager {
     /**
      * Provides the `this` context for {@link AnimationManager.animate} to be scheduled on rAF.
      */
-    static #animateBound = (timeFrame) => this.animate(timeFrame);
+    static #animateBound = AnimationManager.animate.bind(AnimationManager);
     /**
      */
     static #pendingList = [];
@@ -622,7 +622,7 @@ class AnimationManager {
         for (let cntr = AnimationManager.#activeList.length; --cntr >= 0;) {
             const data = AnimationManager.#activeList[cntr];
             // Remove any animations that have been canceled.
-            if (data.cancelled || (data.el !== void 0 && !data.el.isConnected)) {
+            if (data.cancelled) {
                 AnimationManager.#activeList.splice(cntr, 1);
                 this.#cleanupData(data);
                 continue;
@@ -1360,6 +1360,8 @@ class TJSPositionStyleCache {
             resizeContentWidth: propertyStore(storeResizeObserved, 'contentWidth'),
             resizeObserved: storeResizeObserved,
             resizeObservable: writable(false),
+            resizeObservableHeight: writable(false),
+            resizeObservableWidth: writable(false),
             resizeOffsetHeight: propertyStore(storeResizeObserved, 'offsetHeight'),
             resizeOffsetWidth: propertyStore(storeResizeObserved, 'offsetWidth')
         };
@@ -1458,9 +1460,12 @@ class TJSTransforms {
     #orderList = [];
     /**
      * Defines the keys of TJSPositionData that are transform keys.
+     *
+     * Note: `rotateZ` is the most likely transform applied in 2D context. Putting it first makes `hasTransform` slightly
+     * quicker.
      */
     static #transformKeys = Object.freeze([
-        'rotateX', 'rotateY', 'rotateZ', 'scale', 'translateX', 'translateY', 'translateZ'
+        'rotateZ', 'scale', 'rotateX', 'rotateY', 'translateX', 'translateY', 'translateZ'
     ]);
     /**
      * Validates that a given key is a transform key.
@@ -2033,8 +2038,8 @@ class TJSTransforms {
      * @returns Whether the given TJSPositionData has transforms.
      */
     hasTransform(data) {
-        for (const key of TJSTransforms.#transformKeys) {
-            if (Number.isFinite(data[key])) {
+        for (let cntr = 0; cntr < TJSTransforms.#transformKeys.length; cntr++) {
+            if (Number.isFinite(data[TJSTransforms.#transformKeys[cntr]])) {
                 return true;
             }
         }
@@ -4490,9 +4495,7 @@ class UpdateElementManager {
             // Reset queued state.
             updateData.queued = false;
             // Early out if the element is no longer connected to the DOM / shadow root.
-            if (!el.isConnected) {
-                continue;
-            }
+            // if (!el.isConnected) { continue; }
             if (updateData.options.ortho) {
                 UpdateElementManager.#updateElementOrtho(el, updateData);
             }
@@ -4517,10 +4520,6 @@ class UpdateElementManager {
      * @param updateData - An UpdateElementData instance.
      */
     static immediate(el, updateData) {
-        // Early out if the element is no longer connected to the DOM / shadow root.
-        if (!el.isConnected) {
-            return;
-        }
         if (updateData.options.ortho) {
             UpdateElementManager.#updateElementOrtho(el, updateData);
         }
@@ -4712,6 +4711,16 @@ class TJSPosition {
      */
     #resizeObservable = false;
     /**
+     * Tracks the current state if this position instance is a candidate for resize observation by the `resizeObserver`
+     * action. This is `true` when `height` is `auto` or `inherit`.
+     */
+    #resizeObservableHeight = false;
+    /**
+     * Tracks the current state if this position instance is a candidate for resize observation by the `resizeObserver`
+     * action. This is `true` when `width` is `auto` or `inherit`.
+     */
+    #resizeObservableWidth = false;
+    /**
      */
     #stores;
     /**
@@ -4861,6 +4870,8 @@ class TJSPosition {
             resizeContentHeight: { subscribe: this.#styleCache.stores.resizeContentHeight.subscribe },
             resizeContentWidth: { subscribe: this.#styleCache.stores.resizeContentWidth.subscribe },
             resizeObservable: { subscribe: this.#styleCache.stores.resizeObservable.subscribe },
+            resizeObservableHeight: { subscribe: this.#styleCache.stores.resizeObservableHeight.subscribe },
+            resizeObservableWidth: { subscribe: this.#styleCache.stores.resizeObservableWidth.subscribe },
             resizeOffsetHeight: { subscribe: this.#styleCache.stores.resizeOffsetHeight.subscribe },
             resizeOffsetWidth: { subscribe: this.#styleCache.stores.resizeOffsetWidth.subscribe },
             transform: { subscribe: updateData.storeTransform.subscribe },
@@ -4957,6 +4968,18 @@ class TJSPosition {
      */
     get parent() { return this.#parent; }
     /**
+     * Returns the resize observable state which is `true` whenever `width` or `height` is `auto` or `inherit`.
+     */
+    get resizeObservable() { return this.#resizeObservable; }
+    /**
+     * Returns the resize observable state which is `true` whenever `height` is `auto` or `inherit`.
+     */
+    get resizeObservableHeight() { return this.#resizeObservableHeight; }
+    /**
+     * Returns the resize observable state which is `true` whenever `width` is `auto` or `inherit`.
+     */
+    get resizeObservableWidth() { return this.#resizeObservableWidth; }
+    /**
      * Returns the state API.
      *
      * @returns TJSPosition state API.
@@ -4991,7 +5014,12 @@ class TJSPosition {
         if (typeof enabled !== 'boolean') {
             throw new TypeError(`'enabled' is not a boolean.`);
         }
-        this.#enabled = enabled;
+        if (this.#enabled !== enabled) {
+            this.#enabled = enabled;
+            if (enabled) {
+                this.set(this.#data);
+            }
+        }
     }
     /**
      * Sets the associated {@link TJSPosition.PositionParent} instance. Resets the style cache and default data.
@@ -5303,8 +5331,7 @@ class TJSPosition {
         const transforms = this.#transforms;
         // Find the target HTML element and verify that it is connected storing it in `el`.
         const targetEl = A11yHelper.isFocusTarget(parent) ? parent : parent?.elementTarget;
-        const el = A11yHelper.isFocusTarget(targetEl) && targetEl.isConnected ? targetEl :
-            void 0;
+        const el = A11yHelper.isFocusTarget(targetEl) ? targetEl : void 0;
         const changeSet = this.#positionChangeSet;
         const styleCache = this.#styleCache;
         if (el) {
@@ -5445,6 +5472,14 @@ class TJSPosition {
         if (this.#resizeObservable !== resizeObservable) {
             this.#resizeObservable = resizeObservable;
             this.#styleCache.stores.resizeObservable.set(resizeObservable);
+        }
+        if (this.#resizeObservableHeight !== heightIsObservable) {
+            this.#resizeObservableHeight = heightIsObservable;
+            this.#styleCache.stores.resizeObservableHeight.set(heightIsObservable);
+        }
+        if (this.#resizeObservableWidth !== widthIsObservable) {
+            this.#resizeObservableWidth = widthIsObservable;
+            this.#styleCache.stores.resizeObservableWidth.set(widthIsObservable);
         }
         if (el) {
             const defaultData = this.#state.getDefault();
@@ -5687,5 +5722,166 @@ class TJSPosition {
 }
 _a = TJSPosition;
 
-export { TJSPosition, applyPosition, draggable };
+/**
+ * Provides an adjunct store to track an associated {@link TJSPosition} state that affects the validity of container
+ * query types that perform size queries. When `width` or `height` is `auto` or `inherit` the size query containers may
+ * be invalid. {@link CQPositionValidate.validate} also checks if the browser supports container queries.
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_containment/Container_queries#using_container_size_queries
+ */
+class CQPositionValidate {
+    /**
+     * Associated TJSPosition.
+     */
+    #position;
+    /**
+     * Stores the subscribers.
+     */
+    #subscribers = [];
+    /**
+     * Unsubscriber when subscribed to backing SvelteSet.
+     */
+    #unsubscribe = [];
+    #resizeObservableHeight = false;
+    #resizeObservableWidth = false;
+    #updateStateBound;
+    /**
+     * @param [position] - Associated TJSPosition instance.
+     */
+    constructor(position) {
+        this.#updateStateBound = this.#updateState.bind(this);
+        if (position) {
+            this.setPosition(position);
+        }
+    }
+    /**
+     * Manually destroy and cleanup associations to any subscribers and TJSPosition instance.
+     */
+    destroy() {
+        this.#cleanup();
+    }
+    /**
+     * Returns the associated TJSPosition instance.
+     */
+    getPosition() {
+        return this.#deref();
+    }
+    /**
+     * Set a new TJSPosition instance to monitor.
+     *
+     * @param position - New TJSPosition instance to associate.
+     */
+    setPosition(position) {
+        const current = this.#deref();
+        if (position === current) {
+            return;
+        }
+        this.#cleanup();
+        this.#position = void 0;
+        if (position instanceof TJSPosition) {
+            this.#position = new WeakRef(position);
+            if (this.#subscribers.length) {
+                this.#unsubscribe.push(position.stores.resizeObservableHeight.subscribe(this.#updateStateBound));
+                this.#unsubscribe.push(position.stores.resizeObservableWidth.subscribe(this.#updateStateBound));
+            }
+        }
+    }
+    /**
+     * Returns the serialized state tracking supported container types.
+     */
+    toJSON() {
+        return {
+            inlineSize: !this.#resizeObservableWidth,
+            normal: true,
+            size: !this.#resizeObservableWidth && !this.#resizeObservableHeight
+        };
+    }
+    /**
+     * @param cqType - The container query type to validate against current associated {@link TJSPosition} state.
+     *
+     * @returns Whether the browser and associated TJSPosition current state supports the requested container query type.
+     */
+    validate(cqType) {
+        if (!BrowserSupports.containerQueries) {
+            return false;
+        }
+        const hasPosition = this.#deref() !== void 0;
+        switch (cqType) {
+            case 'inline-size':
+                return hasPosition && !this.#resizeObservableWidth;
+            case 'normal':
+                return true;
+            case 'size':
+                return hasPosition && !this.#resizeObservableWidth && !this.#resizeObservableHeight;
+        }
+        return false;
+    }
+    // Store subscriber implementation --------------------------------------------------------------------------------
+    /**
+     * @param handler - Callback function that is invoked on update / changes.
+     *
+     * @returns Unsubscribe function.
+     */
+    subscribe(handler) {
+        const currentIdx = this.#subscribers.findIndex((sub) => sub === handler);
+        if (currentIdx === -1) {
+            this.#subscribers.push(handler);
+            if (this.#subscribers.length === 1) {
+                const position = this.#deref();
+                if (position) {
+                    this.#unsubscribe.push(position.stores.resizeObservableHeight.subscribe(this.#updateStateBound));
+                    this.#unsubscribe.push(position.stores.resizeObservableWidth.subscribe(this.#updateStateBound));
+                }
+            }
+            handler(this);
+        }
+        // Return unsubscribe function.
+        return () => {
+            const index = this.#subscribers.findIndex((sub) => sub === handler);
+            if (index >= 0) {
+                this.#subscribers.splice(index, 1);
+                if (this.#subscribers.length === 0) {
+                    this.#cleanup();
+                }
+            }
+        };
+    }
+    // Internal Implementation ----------------------------------------------------------------------------------------
+    #cleanup(notify = false) {
+        for (const unsubscribe of this.#unsubscribe) {
+            unsubscribe();
+        }
+        this.#unsubscribe.length = 0;
+        this.#resizeObservableHeight = false;
+        this.#resizeObservableWidth = false;
+        if (notify) {
+            this.#updateSubscribers();
+        }
+    }
+    #deref() {
+        const position = this.#position?.deref();
+        if (!position) {
+            this.#cleanup(true);
+        }
+        return position;
+    }
+    #updateState() {
+        const position = this.#deref();
+        if (position) {
+            this.#resizeObservableHeight = position.resizeObservableHeight;
+            this.#resizeObservableWidth = position.resizeObservableWidth;
+        }
+        this.#updateSubscribers();
+    }
+    /**
+     * Updates subscribers.
+     */
+    #updateSubscribers() {
+        for (let cntr = 0; cntr < this.#subscribers.length; cntr++) {
+            this.#subscribers[cntr](this);
+        }
+    }
+}
+
+export { CQPositionValidate, TJSPosition, applyPosition, draggable };
 //# sourceMappingURL=index.js.map

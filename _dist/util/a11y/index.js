@@ -16,6 +16,14 @@ class A11yHelper
    static #globalDebug = false;
 
    /**
+    * @private
+    */
+   constructor()
+   {
+      throw new Error('A11yHelper constructor: This is a static class and should not be constructed.');
+   }
+
+   /**
     * @returns {boolean} Global debugging enabled.
     */
    static get debug() { return this.#globalDebug; }

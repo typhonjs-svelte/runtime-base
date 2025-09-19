@@ -47,4 +47,5 @@ type UseTinykeysData = {
   options?: _runtime_util_dom_input_tinykeys.KeyBindingOptions;
 };
 
-export { type UseTinykeysData, keyforward, useTinykeys };
+export { keyforward, useTinykeys };
+export type { UseTinykeysData };

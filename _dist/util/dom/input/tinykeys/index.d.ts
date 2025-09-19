@@ -111,13 +111,5 @@ declare function tinykeys(
   { event, capture, timeout }?: KeyBindingOptions,
 ): () => void;
 
-export {
-  type KeyBindingHandlerOptions,
-  type KeyBindingMap,
-  type KeyBindingOptions,
-  type KeyBindingPress,
-  createKeybindingsHandler,
-  matchKeyBindingPress,
-  parseKeybinding,
-  tinykeys,
-};
+export { createKeybindingsHandler, matchKeyBindingPress, parseKeybinding, tinykeys };
+export type { KeyBindingHandlerOptions, KeyBindingMap, KeyBindingOptions, KeyBindingPress };

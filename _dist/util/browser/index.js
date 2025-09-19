@@ -51,6 +51,18 @@ class CrossWindow {
     static #optionsInternalCheckDOM = { throws: false };
     // DOM Querying ---------------------------------------------------------------------------------------------------
     /**
+     * Convenience method to test if the given target element is the current active element.
+     *
+     * @param target - Element to test as current active element.
+     */
+    static isActiveElement(target) {
+        // Duck type if target has known defined `ownerDocument` property.
+        if (this.#hasOwnerDocument(target)) {
+            return target?.ownerDocument?.activeElement === target;
+        }
+        return false;
+    }
+    /**
      * Convenience method to retrieve the `document.activeElement` value in the current Window context of a DOM Node /
      * Element, EventTarget, Document, or Window.
      *
@@ -478,7 +490,9 @@ class URLParser {
     /**
      * @private
      */
-    constructor() { } // eslint-disable-line no-useless-constructor
+    constructor() {
+        throw new Error('URLParser constructor: This is a static class and should not be constructed.');
+    }
     /**
      * Parses a URL string converting it to a fully qualified URL. If URL is an existing URL instance, it is returned
      * immediately. Optionally, you may construct a fully qualified URL from a relative base origin / path or with a
@@ -685,7 +699,9 @@ class BrowserSupports {
     /**
      * @private
      */
-    constructor() { } // eslint-disable-line no-useless-constructor
+    constructor() {
+        throw new Error('BrowserSupports constructor: This is a static class and should not be constructed.');
+    }
     /**
      * Check for container query support.
      *
@@ -706,7 +722,9 @@ class ClipboardAccess {
     /**
      * @private
      */
-    constructor() { } // eslint-disable-line no-useless-constructor
+    constructor() {
+        throw new Error('ClipboardAccess constructor: This is a static class and should not be constructed.');
+    }
     /**
      * Uses `navigator.clipboard` if available to read text from the clipboard.
      *

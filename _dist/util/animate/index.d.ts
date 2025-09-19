@@ -39,4 +39,5 @@ interface BasicAnimation {
   cancel(): void;
 }
 
-export { type BasicAnimation, type BasicAnimationState, nextAnimationFrame };
+export { nextAnimationFrame };
+export type { BasicAnimation, BasicAnimationState };

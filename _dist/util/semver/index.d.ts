@@ -75,4 +75,5 @@ declare const validate: (version: string) => boolean;
  */
 declare const validateStrict: (version: string) => boolean;
 
-export { type CompareOperator, compare, compareVersions, satisfies, validate, validateStrict };
+export { compare, compareVersions, satisfies, validate, validateStrict };
+export type { CompareOperator };

@@ -161,4 +161,5 @@ declare class TJSDefaultTransition {
  */
 type TransitionFunction = (node: Element, namedParameters?: object) => svelte_transition.TransitionConfig;
 
-export { TJSDefaultTransition, type TransitionFunction, rotate, rotateFade, slideFade, toAnimation };
+export { TJSDefaultTransition, rotate, rotateFade, slideFade, toAnimation };
+export type { TransitionFunction };
