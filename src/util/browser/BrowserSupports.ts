@@ -11,7 +11,10 @@ export class BrowserSupports
    /**
     * @private
     */
-   constructor() {} // eslint-disable-line no-useless-constructor
+   constructor()
+   {
+      throw new Error('BrowserSupports constructor: This is a static class and should not be constructed.');
+   }
 
    /**
     * Check for container query support.

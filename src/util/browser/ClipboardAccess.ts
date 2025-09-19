@@ -11,7 +11,10 @@ export class ClipboardAccess
    /**
     * @private
     */
-   constructor() {} // eslint-disable-line no-useless-constructor
+   constructor()
+   {
+      throw new Error('ClipboardAccess constructor: This is a static class and should not be constructed.');
+   }
 
    /**
     * Uses `navigator.clipboard` if available to read text from the clipboard.

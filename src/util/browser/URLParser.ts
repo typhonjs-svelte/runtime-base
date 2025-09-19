@@ -8,7 +8,10 @@ export class URLParser
    /**
     * @private
     */
-   constructor() {} // eslint-disable-line no-useless-constructor
+   constructor()
+   {
+      throw new Error('URLParser constructor: This is a static class and should not be constructed.');
+   }
 
    /**
     * Parses a URL string converting it to a fully qualified URL. If URL is an existing URL instance, it is returned
