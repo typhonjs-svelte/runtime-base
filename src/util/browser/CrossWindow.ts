@@ -506,6 +506,23 @@ class CrossWindow
       return !!(types as Set<string>)?.has(target?.constructor?.name);
    }
 
+   // Errors ---------------------------------------------------------------------------------------------------------
+
+   /**
+    * Provides basic duck type checking and error name for {@link DOMException}.
+    *
+    * @param target - Error to test for constructor name.
+    *
+    * @param [name] Specific error name.
+    *
+    * @returns Is target a DOMException matching the error name.
+    */
+   static isDOMException(target: unknown, name: string): boolean
+   {
+      return isObject(target) && Object.prototype.toString.call(target) === '[object DOMException]' &&
+       target.name === name;
+   }
+
    // Internal implementation ----------------------------------------------------------------------------------------
 
    /**
