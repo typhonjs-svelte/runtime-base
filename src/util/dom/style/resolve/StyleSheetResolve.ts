@@ -204,17 +204,21 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
 
    /**
     * Freezes this instance disallowing further modifications to the stylesheet data.
+    *
+    * @returns This instance.
     */
-   freeze()
+   freeze(): this
    {
       /* c8 ignore next 1 */
-      if (this.#frozen) { return; }
+      if (this.#frozen) { return this; }
 
       this.#frozen = true;
 
       for (const props of this.#sheetMap.values()) { Object.freeze(props); }
 
       Object.freeze(this.#sheetMap);
+
+      return this;
    }
 
    /**
