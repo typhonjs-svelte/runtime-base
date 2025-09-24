@@ -511,11 +511,13 @@ class CrossWindow
    /**
     * Provides basic duck type checking and error name for {@link DOMException}.
     *
-    * @param target - Error to test for constructor name.
+    * @param target - Error to duck type test.
     *
-    * @param [name] Specific error name.
+    * @param name - Specific error name.
     *
     * @returns Is target a DOMException matching the error name.
+    *
+    * @see https://developer.mozilla.org/en-US/docs/Web/API/DOMException#error_names
     */
    static isDOMException(target: unknown, name: string): boolean
    {
