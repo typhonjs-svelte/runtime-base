@@ -446,6 +446,22 @@ class CrossWindow {
         }
         return !!types?.has(target?.constructor?.name);
     }
+    // Errors ---------------------------------------------------------------------------------------------------------
+    /**
+     * Provides basic duck type checking and error name for {@link DOMException}.
+     *
+     * @param target - Error to duck type test.
+     *
+     * @param name - Specific error name.
+     *
+     * @returns Is target a DOMException matching the error name.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/DOMException#error_names
+     */
+    static isDOMException(target, name) {
+        return isObject(target) && Object.prototype.toString.call(target) === '[object DOMException]' &&
+            target.name === name;
+    }
     // Internal implementation ----------------------------------------------------------------------------------------
     /**
      * Internal generic DOM `instanceof` check. First will attempt to find the class name by `globalThis` falling back

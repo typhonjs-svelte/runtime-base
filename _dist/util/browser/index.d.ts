@@ -489,6 +489,18 @@ declare class CrossWindow {
    * @returns Does the provided object constructor name match the types provided.
    */
   static isCtorName(target: unknown, types: string | Set<string>): boolean;
+  /**
+   * Provides basic duck type checking and error name for {@link DOMException}.
+   *
+   * @param target - Error to duck type test.
+   *
+   * @param name - Specific error name.
+   *
+   * @returns Is target a DOMException matching the error name.
+   *
+   * @see https://developer.mozilla.org/en-US/docs/Web/API/DOMException#error_names
+   */
+  static isDOMException(target: unknown, name: string): boolean;
 }
 declare namespace CrossWindow {
   /**

@@ -626,8 +626,10 @@ declare class StyleSheetResolve
   >;
   /**
    * Freezes this instance disallowing further modifications to the stylesheet data.
+   *
+   * @returns This instance.
    */
-  freeze(): void;
+  freeze(): this;
   /**
    * Gets all properties associated with the given selector(s). You may combine multiple selectors for a
    * combined result. You may also provide additional selectors as the `resolve` option to substitute any CSS variables

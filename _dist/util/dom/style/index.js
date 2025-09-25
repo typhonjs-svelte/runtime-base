@@ -1113,17 +1113,20 @@ class StyleSheetResolve {
     }
     /**
      * Freezes this instance disallowing further modifications to the stylesheet data.
+     *
+     * @returns This instance.
      */
     freeze() {
         /* c8 ignore next 1 */
         if (this.#frozen) {
-            return;
+            return this;
         }
         this.#frozen = true;
         for (const props of this.#sheetMap.values()) {
             Object.freeze(props);
         }
         Object.freeze(this.#sheetMap);
+        return this;
     }
     /**
      * Gets all properties associated with the given selector(s). You may combine multiple selectors for a
