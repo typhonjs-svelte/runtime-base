@@ -1,6 +1,7 @@
 import { resizeObserver } from '@typhonjs-svelte/runtime-base/svelte/action/dom/observer';
 import { isMinimalWritableStore, subscribeFirstRest } from '@typhonjs-svelte/runtime-base/svelte/store/util';
 import { Timing } from '@typhonjs-svelte/runtime-base/util';
+import { nextAnimationFrame } from '@typhonjs-svelte/runtime-base/util/animate';
 import { tick } from 'svelte';
 import { writable } from 'svelte/store';
 
@@ -31,32 +32,40 @@ function applyScrolltop(element, store)
     *
     * @param {number}   value -
     */
-   function storeUpdate(value)
+   async function storeUpdate(value)
    {
       if (!Number.isFinite(value)) { return; }
 
-      // For some reason for scrollTop to take on first update from a new element setTimeout is necessary.
-      setTimeout(() => element.scrollTop = value, 0);
+      await nextAnimationFrame(2);  // Ensure DOM is patched.
+
+      if (!element.isConnected) { return; }  // Element might have been replaced.
+
+      element.scrollTop = Math.max(0, value);
    }
 
+   /** @type {Function} */
    let unsubscribe = store.subscribe(storeUpdate);
+
+   // Ignore first resize callback.
+   let ignoreResize = true;
 
    const resizeControl = resizeObserver(element, Timing.debounce(() =>
    {
+      // Ignore first resize observed callback.
+      if (ignoreResize) { ignoreResize = false; return; }
+
       if (element.isConnected) { store.set(element.scrollTop); }
-   }, 500));
+   }, 750));
 
    /**
     * Save target `scrollTop` to the current set store.
-    *
-    * @param {Event} event -
     */
-   function onScroll(event)
+   function onScroll()
    {
-      store.set(event.target.scrollTop);
+      if (element.isConnected) { store.set(element.scrollTop); }
    }
 
-   const debounceFn = Timing.debounce((e) => onScroll(e), 500);
+   const debounceFn = Timing.debounce((e) => onScroll(), 750);
 
    element.addEventListener('scroll', debounceFn);
 
@@ -67,7 +76,7 @@ function applyScrolltop(element, store)
        */
       update: (newStore) =>
       {
-         unsubscribe();
+         unsubscribe?.();
          store = newStore;
 
          if (!isMinimalWritableStore(store))
@@ -80,8 +89,9 @@ function applyScrolltop(element, store)
 
       destroy: () =>
       {
+         ignoreResize = true;
          element.removeEventListener('scroll', debounceFn);
-         unsubscribe();
+         unsubscribe?.();
          resizeControl.destroy();
       }
    };
