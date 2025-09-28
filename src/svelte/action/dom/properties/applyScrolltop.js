@@ -47,7 +47,7 @@ export function applyScrolltop(element, store)
    // Ignore first resize callback.
    let ignoreResize = true;
 
-   cons`t resizeControl = resizeObserver(element, Timing.debounce(() =>
+   const resizeControl = resizeObserver(element, Timing.debounce(() =>
    {
       // Ignore first resize observed callback.
       if (ignoreResize) { ignoreResize = false; return; }
