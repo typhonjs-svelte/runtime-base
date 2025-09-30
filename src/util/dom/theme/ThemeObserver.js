@@ -129,7 +129,7 @@ class ThemeObserver
     *
     * @param {object} options - Required options.
     *
-    * @param {Element} options.element - A DOM element.
+    * @param {Element | EventTarget} options.element - A DOM element.
     *
     * @param {Set<string>} [options.output] - An optional source Set of existing tokens.
     *
