@@ -464,6 +464,9 @@ export class A11yHelper
    /**
     * Tests if the given element is focusable.
     *
+    * Note: A special case for focus testing occurs when an element has `tabindex` of `-1` _and_ the
+    * `tjs-a11y-focusable` class.
+    *
     * @param {unknown} el - Element to test.
     *
     * @param {object} [options] - Optional parameters.
@@ -497,7 +500,10 @@ export class A11yHelper
        (contenteditableAttr === '' || contenteditableAttr === 'true');
 
       const tabindexAttr = globalThis.parseInt(el.getAttribute('tabindex'));
-      const tabindexFocusable = Number.isInteger(tabindexAttr) && tabindexAttr >= 0;
+
+      // Focusable when `tabindex` is >= 0 or when `tabindex` is `-1` and the `tjs-a11y-focusable` class is present.
+      const tabindexFocusable = Number.isInteger(tabindexAttr) && (tabindexAttr >= 0 ||
+       (tabindexAttr === -1 && el.classList.contains('tjs-a11y-focusable')));
 
       if (contenteditableFocusable || tabindexFocusable || CrossWindow.isFocusableHTMLElement(el))
       {
