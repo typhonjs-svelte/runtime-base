@@ -1,25 +1,69 @@
 import * as svelte_action from 'svelte/action';
-import * as _runtime_svelte_store_util from '@typhonjs-svelte/runtime-base/svelte/store/util';
+import { MinimalWritable } from '@typhonjs-svelte/runtime-base/svelte/store/util';
+
+declare namespace DOMPropActionOptions {
+  /**
+   * Options for {@link applyScroll} action.
+   */
+  interface ApplyScroll {
+    /**
+     * Store that serializes element `scrollLeft` value.
+     */
+    scrollLeft?: MinimalWritable<number>;
+    /**
+     * Store that serializes element `scrollTop` value.
+     */
+    scrollTop?: MinimalWritable<number>;
+  }
+  /**
+   * Options for the {@link toggleDetails} action.
+   */
+  interface ToggleDetails {
+    /**
+     * A minimal writable boolean store for details element open state.
+     */
+    store?: MinimalWritable<boolean>;
+    /**
+     * When true, animate close / open state with WAAPI.
+     *
+     * @defaultValue `true`
+     */
+    animate?: boolean;
+    /**
+     * When false, click events are not handled.
+     *
+     * @defaultValue `true`
+     */
+    clickActive?: boolean;
+    /**
+     * When false, store changes and click events are not handled.
+     *
+     * @defaultValue `true`
+     */
+    enabled?: boolean;
+  }
+}
 
 /**
- * Provides an action to save `scrollTop` of an element with a vertical scrollbar. This action should be used on the
- * scrollable element and must include a writable store that holds the active store for the current `scrollTop` value.
- * You may switch the stores externally and this action will set the `scrollTop` based on the newly set store. This is
- * useful for instance providing a select box that controls the scrollable container.
+ * Provides an action to save `scrollTop` / `scrollLeft` of an element with scrollbars. This action should be used on
+ * the scrollable element and must include writable stores that holds the active store for the current `scrollTop` /
+ * `scrollLeft` value.
  *
- * @param {HTMLElement} element - The target scrollable HTML element.
+ * You may switch the stores externally and this action will update based on the newly set store. This is useful for
+ * instance providing a select box that controls the scrollable container switching between multiple lists of data
+ * serializing scroll position between each.
  *
- * @param {import('#runtime/svelte/store/util').MinimalWritable<number>}   store - A minimal writable store that stores
- *        the element scrollTop.
+ * @param {HTMLElement} node - The target scrollable HTML element.
  *
- * @returns {(import('svelte/action').ActionReturn<
- *    import('#runtime/svelte/store/util').MinimalWritable<number>
- * >)} Lifecycle functions.
+ * @param {import('./types').DOMPropActionOptions.ApplyScroll} options - Options.
+ *
+ * @returns {(import('svelte/action').ActionReturn<import('./types').DOMPropActionOptions.ApplyScroll>)} Lifecycle
+ *          functions.
  */
-declare function applyScrolltop(
-  element: HTMLElement,
-  store: _runtime_svelte_store_util.MinimalWritable<number>,
-): svelte_action.ActionReturn<_runtime_svelte_store_util.MinimalWritable<number>>;
+declare function applyScroll(
+  node: HTMLElement,
+  options?: DOMPropActionOptions.ApplyScroll,
+): svelte_action.ActionReturn<DOMPropActionOptions.ApplyScroll>;
 
 /**
  * Provides a toggle action for `details` HTML elements. The boolean store when provided controls open / closed state.
@@ -32,33 +76,16 @@ declare function applyScrolltop(
  * When the action is triggered to close the details element a data attribute `closing` is set to `true`. This allows
  * any associated closing transitions to start immediately.
  *
- * @param {HTMLDetailsElement} details - The details element.
+ * @param {HTMLDetailsElement} details - The `details` element.
  *
- * @param {object} opts - Options parameters.
+ * @param {import('./types').DOMPropActionOptions.ToggleDetails} - Options.
  *
- * @param {import('#runtime/svelte/store/util').MinimalWritable<boolean>} opts.store - A minimal writable boolean store.
- *
- * @param {boolean} [opts.animate=true] - When true animate close / open state with WAAPI.
- *
- * @param {boolean} [opts.clickActive=true] - When false click events are not handled.
- *
- * @param {boolean} [opts.enabled=true] - When false store changes and click events are not handled.
- *
- * @returns {import('svelte/action').ActionReturn} Lifecycle functions.
+ * @returns {import('svelte/action').ActionReturn<import('./types').DOMPropActionOptions.ToggleDetails>} Lifecycle
+ *          functions.
  */
 declare function toggleDetails(
   details: HTMLDetailsElement,
-  {
-    store,
-    animate,
-    clickActive,
-    enabled,
-  }?: {
-    store: _runtime_svelte_store_util.MinimalWritable<boolean>;
-    animate?: boolean;
-    clickActive?: boolean;
-    enabled?: boolean;
-  },
-): svelte_action.ActionReturn;
+  { store, animate, clickActive, enabled }?: DOMPropActionOptions.ToggleDetails,
+): svelte_action.ActionReturn<DOMPropActionOptions.ToggleDetails>;
 
-export { applyScrolltop, toggleDetails };
+export { DOMPropActionOptions, applyScroll, toggleDetails };

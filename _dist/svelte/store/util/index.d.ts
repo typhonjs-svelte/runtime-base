@@ -87,9 +87,9 @@ type WritableFn<T, Args extends unknown[], R> = Writable<T> & ((...args: Args) =
  *
  * @param {*}  store - variable to test that might be a store.
  *
- * @returns {boolean} Whether the variable tested has the shape of a store.
+ * @returns {store is import('svelte/store').Readable<unknown>} Whether the variable tested has the shape of a store.
  */
-declare function isReadableStore(store: any): boolean;
+declare function isReadableStore(store: any): store is svelte_store.Readable<unknown>;
 /**
  * Provides a basic test for a given variable to test if it has the shape of a minimal writable store by having a
  * `subscribe` and `set` functions.
@@ -98,9 +98,10 @@ declare function isReadableStore(store: any): boolean;
  *
  * @param {*}  store - variable to test that might be a store.
  *
- * @returns {boolean} Whether the variable tested has the shape of a {@link MinimalWritable} store.
+ * @returns {store is import('./types').MinimalWritable<unknown>} Whether the variable tested has the shape of a
+ *          {@link MinimalWritable} store.
  */
-declare function isMinimalWritableStore(store: any): boolean;
+declare function isMinimalWritableStore(store: any): store is MinimalWritable<unknown>;
 /**
  * Provides a basic test for a given variable to test if it has the shape of a writable store by having a `subscribe`
  * `set`, and `update` functions.
@@ -110,9 +111,10 @@ declare function isMinimalWritableStore(store: any): boolean;
  *
  * @param {*}  store - variable to test that might be a store.
  *
- * @returns {boolean} Whether the variable tested has the shape of a store.
+ * @returns {store is import('svelte/store').Writable<unknown>} Whether the variable tested has the shape of a writable
+ *          store.
  */
-declare function isWritableStore(store: any): boolean;
+declare function isWritableStore(store: any): store is svelte_store.Writable<unknown>;
 /**
  * Subscribes to the given store with the update function provided and ignores the first automatic
  * update. All future updates are dispatched to the update function.

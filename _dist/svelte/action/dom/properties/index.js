@@ -2,97 +2,153 @@ import { resizeObserver } from '@typhonjs-svelte/runtime-base/svelte/action/dom/
 import { isMinimalWritableStore, subscribeFirstRest } from '@typhonjs-svelte/runtime-base/svelte/store/util';
 import { Timing } from '@typhonjs-svelte/runtime-base/util';
 import { nextAnimationFrame } from '@typhonjs-svelte/runtime-base/util/animate';
+import { isObject } from '@typhonjs-svelte/runtime-base/util/object';
 import { tick } from 'svelte';
 import { writable } from 'svelte/store';
 
 /**
- * Provides an action to save `scrollTop` of an element with a vertical scrollbar. This action should be used on the
- * scrollable element and must include a writable store that holds the active store for the current `scrollTop` value.
- * You may switch the stores externally and this action will set the `scrollTop` based on the newly set store. This is
- * useful for instance providing a select box that controls the scrollable container.
+ * Provides an action to save `scrollTop` / `scrollLeft` of an element with scrollbars. This action should be used on
+ * the scrollable element and must include writable stores that holds the active store for the current `scrollTop` /
+ * `scrollLeft` value.
  *
- * @param {HTMLElement} element - The target scrollable HTML element.
+ * You may switch the stores externally and this action will update based on the newly set store. This is useful for
+ * instance providing a select box that controls the scrollable container switching between multiple lists of data
+ * serializing scroll position between each.
  *
- * @param {import('#runtime/svelte/store/util').MinimalWritable<number>}   store - A minimal writable store that stores
- *        the element scrollTop.
+ * @param {HTMLElement} node - The target scrollable HTML element.
  *
- * @returns {(import('svelte/action').ActionReturn<
- *    import('#runtime/svelte/store/util').MinimalWritable<number>
- * >)} Lifecycle functions.
+ * @param {import('./types').DOMPropActionOptions.ApplyScroll} options - Options.
+ *
+ * @returns {(import('svelte/action').ActionReturn<import('./types').DOMPropActionOptions.ApplyScroll>)} Lifecycle
+ *          functions.
  */
-function applyScrolltop(element, store)
+function applyScroll(node, options = {})
 {
-   if (!isMinimalWritableStore(store))
+   const storeUpdateLeft = (value) => storeUpdate(value, 'scrollLeft');
+   const storeUpdateTop = (value) => storeUpdate(value, 'scrollTop');
+
+   /** @type {import('#runtime/svelte/store/util').MinimalWritable<number>} */
+   let storeLeft, storeTop;
+
+   /** @type {Function} */
+   let unsubscribeLeft, unsubscribeTop;
+
+   /**
+    * Save element `scrollLeft` / `scrollTop` to the current stores.
+    */
+   function onScroll()
    {
-      throw new TypeError(`applyScrolltop error: 'store' must be a minimal writable Svelte store.`);
+      if (node.isConnected)
+      {
+         storeLeft?.set?.(node.scrollLeft);
+         storeTop?.set?.(node.scrollTop);
+      }
    }
 
    /**
-    * Updates element `scrollTop`.
+    * Update `scrollLeft` / `scrollTop` stores from options and configures subscribers.
     *
-    * @param {number}   value -
+    * @param {import('./types').DOMPropActionOptions.ApplyScroll} newOptions -
     */
-   async function storeUpdate(value)
+   function setOptions(newOptions)
+   {
+      if (!isObject(newOptions)) { throw new TypeError(`applyScroll error: 'options' must be an object.`); }
+
+      if (newOptions.scrollLeft !== void 0 && !isMinimalWritableStore(newOptions.scrollLeft))
+      {
+         throw new TypeError(`applyScroll error: 'storeLeft' must be a minimal writable Svelte store.`);
+      }
+
+      if (newOptions.scrollTop !== void 0 && !isMinimalWritableStore(newOptions.scrollTop))
+      {
+         throw new TypeError(`applyScroll error: 'scrollTop' must be a minimal writable Svelte store.`);
+      }
+
+      if (storeLeft !== newOptions.scrollLeft)
+      {
+         unsubscribeLeft?.();
+         unsubscribeLeft = void 0;
+         storeLeft = newOptions.scrollLeft;
+
+         if (isMinimalWritableStore(storeLeft)) { unsubscribeLeft = storeLeft.subscribe(storeUpdateLeft); }
+      }
+
+      if (storeTop !== newOptions.scrollTop)
+      {
+         unsubscribeTop?.();
+         unsubscribeTop = void 0;
+         storeTop = newOptions.scrollTop;
+
+         if (isMinimalWritableStore(storeTop)) { unsubscribeTop = storeTop.subscribe(storeUpdateTop); }
+      }
+   }
+
+   /**
+    * Updates element `scrollLeft` / `scrollTop`.
+    *
+    * @param {number}   value - Value to set.
+    *
+    * @param {'scrollLeft' | 'scrollTop'} prop - Property to update.
+    */
+   async function storeUpdate(value, prop)
    {
       if (!Number.isFinite(value)) { return; }
 
       await nextAnimationFrame(2);  // Ensure DOM is patched.
 
-      if (!element.isConnected) { return; }  // Element might have been replaced.
+      if (!node.isConnected) { return; }  // Element might have been replaced.
 
-      element.scrollTop = Math.max(0, value);
+      node[prop] = Math.max(0, value);
    }
 
-   /** @type {Function} */
-   let unsubscribe = store.subscribe(storeUpdate);
+   // Immediate initialization ---------------------------------------------------------------------------------------
+
+   setOptions(options);
 
    // Ignore first resize callback.
    let ignoreResize = true;
 
-   const resizeControl = resizeObserver(element, Timing.debounce(() =>
+   let resizeControl = resizeObserver(node, Timing.debounce(() =>
    {
       // Ignore first resize observed callback.
       if (ignoreResize) { ignoreResize = false; return; }
 
-      if (element.isConnected) { store.set(element.scrollTop); }
+      if (node.isConnected)
+      {
+         storeLeft?.set?.(node.scrollLeft);
+         storeTop?.set?.(node.scrollTop);
+      }
    }, 750));
 
-   /**
-    * Save target `scrollTop` to the current set store.
-    */
-   function onScroll()
-   {
-      if (element.isConnected) { store.set(element.scrollTop); }
-   }
-
+   // Setup debounced scroll event handler.
    const debounceFn = Timing.debounce((e) => onScroll(), 750);
 
-   element.addEventListener('scroll', debounceFn);
+   node.addEventListener('scroll', debounceFn);
+
+   // Action return --------------------------------------------------------------------------------------------------
 
    return {
       /**
-       * @param {import('#runtime/svelte/store/util').MinimalWritable<number>} newStore - A minimal writable store that
-       *        stores the element scrollTop.
+       * @param {import('./types').DOMPropActionOptions.ApplyScroll} newOptions - New options.
        */
-      update: (newStore) =>
-      {
-         unsubscribe?.();
-         store = newStore;
-
-         if (!isMinimalWritableStore(store))
-         {
-            throw new TypeError(`applyScrolltop.update error: 'store' must be a minimal writable Svelte store.`);
-         }
-
-         unsubscribe = store.subscribe(storeUpdate);
-      },
+      update: (newOptions) => setOptions(newOptions),
 
       destroy: () =>
       {
          ignoreResize = true;
-         element.removeEventListener('scroll', debounceFn);
-         unsubscribe?.();
+
+         node.removeEventListener('scroll', debounceFn);
+
          resizeControl.destroy();
+         resizeControl = void 0;
+
+         storeLeft = void 0;
+         storeTop = void 0;
+
+         unsubscribeLeft?.();
+         unsubscribeTop?.();
+         unsubscribeLeft = void 0;
+         unsubscribeTop = void 0;
       }
    };
 }
@@ -108,19 +164,12 @@ function applyScrolltop(element, store)
  * When the action is triggered to close the details element a data attribute `closing` is set to `true`. This allows
  * any associated closing transitions to start immediately.
  *
- * @param {HTMLDetailsElement} details - The details element.
+ * @param {HTMLDetailsElement} details - The `details` element.
  *
- * @param {object} opts - Options parameters.
+ * @param {import('./types').DOMPropActionOptions.ToggleDetails} - Options.
  *
- * @param {import('#runtime/svelte/store/util').MinimalWritable<boolean>} opts.store - A minimal writable boolean store.
- *
- * @param {boolean} [opts.animate=true] - When true animate close / open state with WAAPI.
- *
- * @param {boolean} [opts.clickActive=true] - When false click events are not handled.
- *
- * @param {boolean} [opts.enabled=true] - When false store changes and click events are not handled.
- *
- * @returns {import('svelte/action').ActionReturn} Lifecycle functions.
+ * @returns {import('svelte/action').ActionReturn<import('./types').DOMPropActionOptions.ToggleDetails>} Lifecycle
+ *          functions.
  */
 function toggleDetails(details, { store, animate = true, clickActive = true, enabled = true } = {})
 {
@@ -329,5 +378,5 @@ function toggleDetails(details, { store, animate = true, clickActive = true, ena
    };
 }
 
-export { applyScrolltop, toggleDetails };
+export { applyScroll, toggleDetails };
 //# sourceMappingURL=index.js.map

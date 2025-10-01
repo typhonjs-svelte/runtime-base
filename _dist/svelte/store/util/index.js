@@ -6,7 +6,7 @@
  *
  * @param {*}  store - variable to test that might be a store.
  *
- * @returns {boolean} Whether the variable tested has the shape of a store.
+ * @returns {store is import('svelte/store').Readable<unknown>} Whether the variable tested has the shape of a store.
  */
 function isReadableStore(store)
 {
@@ -30,7 +30,8 @@ function isReadableStore(store)
  *
  * @param {*}  store - variable to test that might be a store.
  *
- * @returns {boolean} Whether the variable tested has the shape of a {@link MinimalWritable} store.
+ * @returns {store is import('./types').MinimalWritable<unknown>} Whether the variable tested has the shape of a
+ *          {@link MinimalWritable} store.
  */
 function isMinimalWritableStore(store)
 {
@@ -55,7 +56,8 @@ function isMinimalWritableStore(store)
  *
  * @param {*}  store - variable to test that might be a store.
  *
- * @returns {boolean} Whether the variable tested has the shape of a store.
+ * @returns {store is import('svelte/store').Writable<unknown>} Whether the variable tested has the shape of a writable
+ *          store.
  */
 function isWritableStore(store)
 {

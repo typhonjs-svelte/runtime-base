@@ -119,6 +119,9 @@ declare class A11yHelper {
   /**
    * Tests if the given element is focusable.
    *
+   * Note: A special case for focus testing occurs when an element has `tabindex` of `-1` _and_ the
+   * `tjs-a11y-focusable` class.
+   *
    * @param {unknown} el - Element to test.
    *
    * @param {object} [options] - Optional parameters.
