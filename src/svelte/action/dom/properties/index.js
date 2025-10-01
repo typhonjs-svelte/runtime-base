@@ -1,2 +1,2 @@
-export * from './applyScrolltop.js';
+export * from './applyScroll.js';
 export * from './toggleDetails.js';

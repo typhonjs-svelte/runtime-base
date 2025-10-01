@@ -16,19 +16,12 @@ import {
  * When the action is triggered to close the details element a data attribute `closing` is set to `true`. This allows
  * any associated closing transitions to start immediately.
  *
- * @param {HTMLDetailsElement} details - The details element.
+ * @param {HTMLDetailsElement} details - The `details` element.
  *
- * @param {object} opts - Options parameters.
+ * @param {import('./types').DOMPropActionOptions.ToggleDetails} - Options.
  *
- * @param {import('#runtime/svelte/store/util').MinimalWritable<boolean>} opts.store - A minimal writable boolean store.
- *
- * @param {boolean} [opts.animate=true] - When true animate close / open state with WAAPI.
- *
- * @param {boolean} [opts.clickActive=true] - When false click events are not handled.
- *
- * @param {boolean} [opts.enabled=true] - When false store changes and click events are not handled.
- *
- * @returns {import('svelte/action').ActionReturn} Lifecycle functions.
+ * @returns {import('svelte/action').ActionReturn<import('./types').DOMPropActionOptions.ToggleDetails>} Lifecycle
+ *          functions.
  */
 export function toggleDetails(details, { store, animate = true, clickActive = true, enabled = true } = {})
 {
