@@ -338,12 +338,12 @@ export class A11yHelper
           `A11yHelper.getFocusSource error: 'event' is not a KeyboardEvent, MouseEvent, or PointerEvent.`);
       }
 
-      if (x !== void 0 && !Number.isInteger(x))
+      if (x !== void 0 && !Number.isFinite(x))
       {
          throw new TypeError(`A11yHelper.getFocusSource error: 'x' is not a number.`);
       }
 
-      if (y !== void 0 && !Number.isInteger(y))
+      if (y !== void 0 && !Number.isFinite(y))
       {
          throw new TypeError(`A11yHelper.getFocusSource error: 'y' is not a number.`);
       }
