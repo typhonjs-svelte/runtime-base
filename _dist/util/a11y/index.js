@@ -62,7 +62,12 @@ class A11yHelper
     */
    static applyFocusSource(options)
    {
-      if (!isObject(options)) { return; }
+      if (!isObject(options))
+      {
+         if (this.debug) { console.debug(`A11yHelper.applyFocusSource debug - options is not an object: `, options); }
+
+         return;
+      }
 
       // Handle the case of receiving an object with embedded `focusSource`.
       const focusOpts = isObject(options?.focusSource) ? options.focusSource : options;
