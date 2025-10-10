@@ -466,7 +466,7 @@ class TJSPosition implements TJSPosition.WritableExt
     *
     * @returns TJSPosition state API.
     */
-   get state(): PositionStateAPI { return this.#state; }
+   get state(): TJSPosition.API.State { return this.#state; }
 
    /**
     * Returns the derived writable stores for individual data variables.

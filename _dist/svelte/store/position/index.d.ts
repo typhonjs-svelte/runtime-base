@@ -10,11 +10,11 @@
  */
 
 import { ActionReturn } from 'svelte/action';
-import { EasingReference } from '@typhonjs-svelte/runtime-base/svelte/easing';
 import { Writable, Subscriber, Invalidator, Unsubscriber, Readable, Updater } from 'svelte/store';
-import { Mat4, Vec3 } from '@typhonjs-svelte/runtime-base/math/gl-matrix';
 import { InterpolateFunctionName } from '@typhonjs-svelte/runtime-base/math/interpolate';
+import { EasingReference } from '@typhonjs-svelte/runtime-base/svelte/easing';
 import { BasicAnimation } from '@typhonjs-svelte/runtime-base/util/animate';
+import { Mat4, Vec3 } from '@typhonjs-svelte/runtime-base/math/gl-matrix';
 import { IOWritable } from '@typhonjs-svelte/runtime-base/svelte/store/util';
 import { ResizeObserverData } from '@typhonjs-svelte/runtime-base/util/dom/observer';
 
@@ -226,6 +226,126 @@ declare namespace TransformAPI {
    */
   interface TransformOriginWritable extends Writable<TransformOrigin> {
     get values(): Readonly<TransformOrigin[]>;
+  }
+}
+
+/**
+ * Defines the data objects / interfaces used by various TJSPosition APIs.
+ */
+declare namespace Data {
+  /**
+   * Defines the primary TJSPosition data object used by various TJSPosition APIs. To externally create a new instance
+   * use the static accessor `TJSPosition.Data`.
+   */
+  interface TJSPositionData {
+    height: number | 'auto' | 'inherit' | null;
+    left: number | null;
+    maxHeight: number | null;
+    maxWidth: number | null;
+    minHeight: number | null;
+    minWidth: number | null;
+    rotateX: number | null;
+    rotateY: number | null;
+    rotateZ: number | null;
+    scale: number | null;
+    top: number | null;
+    transformOrigin: TransformAPI.TransformOrigin | null;
+    translateX: number | null;
+    translateY: number | null;
+    translateZ: number | null;
+    width: number | 'auto' | 'inherit' | null;
+    zIndex: number | null;
+  }
+  /**
+   * Defines a TJSPositionData instance that has extra properties / attributes.
+   */
+  interface TJSPositionDataExtra extends Partial<TJSPositionData> {
+    [key: string]: any;
+  }
+  /**
+   * Defines the keys in `TJSPositionData` that are transform keys.
+   */
+  type TransformKeys = 'rotateX' | 'rotateY' | 'rotateZ' | 'scale' | 'translateX' | 'translateY' | 'translateZ';
+  /**
+   * Defines an extension to {@link Data.TJSPositionData} where each animatable property defined by
+   * {@link AnimationAPI.AnimationKey} can also be a string. Relative adjustments to animatable properties should be
+   * a string the form of '+=', '-=', or '*=' and float / numeric value. IE '+=0.2'. {@link TJSPosition.set} will
+   * apply the `addition`, `subtraction`, or `multiplication` operation specified against the current value of the
+   * given property. Various unit types are also supported including: `%`, `%~`, `px`, `rad`, `turn`:
+   *
+   * ```
+   * - `no unit type` - The natural value for each property is adjusted which may be `px` for properties like `width`
+   * or degrees for rotation based properties.
+   *
+   * - `%`: Properties such as `width` are calculated against the parent elements client bounds. Other properties such
+   * as rotation are a percentage bound by 360 degrees.
+   *
+   * - `%~`: Relative percentage. Properties are calculated as a percentage of the current value of the property.
+   * IE `width: '150%~` results in `150%` of the current width value.
+   *
+   * - `px`: Only properties that support `px` will be adjusted all other properties like rotation will be rejected
+   * with a warning.
+   *
+   * - `rad`: Only rotation properties may be specified and the rotation is performed in `radians`.
+   *
+   * - `turn`: Only rotation properties may be specified and rotation is performed in respect to the `turn` CSS
+   * specification. `1turn` is 360 degrees. `0.25turn` is 90 degrees.
+   * ```
+   *
+   * Additional properties may be added that are not specified by {@link TJSPositionData} and are forwarded through
+   * {@link ValidatorAPI.ValidationData} as the `rest` property allowing extra data to be sent to any
+   * custom validator.
+   */
+  type TJSPositionDataRelative = Partial<
+    {
+      [P in keyof TJSPositionData as P extends AnimationAPI.AnimationKey ? P : never]: TJSPositionData[P] | string;
+    } & {
+      [P in keyof TJSPositionData as P extends AnimationAPI.AnimationKey ? never : P]: TJSPositionData[P];
+    }
+  > & {
+    [key: string]: any;
+  };
+  /**
+   * Defines the constructor function for {@link TJSPositionData}.
+   */
+  interface TJSPositionDataConstructor {
+    new ({
+      height,
+      left,
+      maxHeight,
+      maxWidth,
+      minHeight,
+      minWidth,
+      rotateX,
+      rotateY,
+      rotateZ,
+      scale,
+      translateX,
+      translateY,
+      translateZ,
+      top,
+      transformOrigin,
+      width,
+      zIndex,
+    }?: {
+      height?: number | 'auto' | 'inherit' | null;
+      left?: number | null;
+      maxHeight?: number | null;
+      maxWidth?: number | null;
+      minHeight?: number | null;
+      minWidth?: number | null;
+      rotateX?: number | null;
+      rotateY?: number | null;
+      rotateZ?: number | null;
+      scale?: number | null;
+      top?: number | null;
+      transformOrigin?: TransformAPI.TransformOrigin | null;
+      translateX?: number | null;
+      translateY?: number | null;
+      translateZ?: number | null;
+      width?: number | 'auto' | 'inherit' | null;
+      zIndex?: number | null;
+    }): TJSPositionData;
   }
 }
 
@@ -625,451 +745,6 @@ declare namespace AnimationAPI {
 }
 
 /**
- * Defines the data objects / interfaces used by various TJSPosition APIs.
- */
-declare namespace Data {
-  /**
-   * Defines the primary TJSPosition data object used by various TJSPosition APIs. To externally create a new instance
-   * use the static accessor `TJSPosition.Data`.
-   */
-  interface TJSPositionData {
-    height: number | 'auto' | 'inherit' | null;
-    left: number | null;
-    maxHeight: number | null;
-    maxWidth: number | null;
-    minHeight: number | null;
-    minWidth: number | null;
-    rotateX: number | null;
-    rotateY: number | null;
-    rotateZ: number | null;
-    scale: number | null;
-    top: number | null;
-    transformOrigin: TransformAPI.TransformOrigin | null;
-    translateX: number | null;
-    translateY: number | null;
-    translateZ: number | null;
-    width: number | 'auto' | 'inherit' | null;
-    zIndex: number | null;
-  }
-  /**
-   * Defines a TJSPositionData instance that has extra properties / attributes.
-   */
-  interface TJSPositionDataExtra extends Partial<TJSPositionData> {
-    [key: string]: any;
-  }
-  /**
-   * Defines the keys in `TJSPositionData` that are transform keys.
-   */
-  type TransformKeys = 'rotateX' | 'rotateY' | 'rotateZ' | 'scale' | 'translateX' | 'translateY' | 'translateZ';
-  /**
-   * Defines an extension to {@link Data.TJSPositionData} where each animatable property defined by
-   * {@link AnimationAPI.AnimationKey} can also be a string. Relative adjustments to animatable properties should be
-   * a string the form of '+=', '-=', or '*=' and float / numeric value. IE '+=0.2'. {@link TJSPosition.set} will
-   * apply the `addition`, `subtraction`, or `multiplication` operation specified against the current value of the
-   * given property. Various unit types are also supported including: `%`, `%~`, `px`, `rad`, `turn`:
-   *
-   * ```
-   * - `no unit type` - The natural value for each property is adjusted which may be `px` for properties like `width`
-   * or degrees for rotation based properties.
-   *
-   * - `%`: Properties such as `width` are calculated against the parent elements client bounds. Other properties such
-   * as rotation are a percentage bound by 360 degrees.
-   *
-   * - `%~`: Relative percentage. Properties are calculated as a percentage of the current value of the property.
-   * IE `width: '150%~` results in `150%` of the current width value.
-   *
-   * - `px`: Only properties that support `px` will be adjusted all other properties like rotation will be rejected
-   * with a warning.
-   *
-   * - `rad`: Only rotation properties may be specified and the rotation is performed in `radians`.
-   *
-   * - `turn`: Only rotation properties may be specified and rotation is performed in respect to the `turn` CSS
-   * specification. `1turn` is 360 degrees. `0.25turn` is 90 degrees.
-   * ```
-   *
-   * Additional properties may be added that are not specified by {@link TJSPositionData} and are forwarded through
-   * {@link ValidatorAPI.ValidationData} as the `rest` property allowing extra data to be sent to any
-   * custom validator.
-   */
-  type TJSPositionDataRelative = Partial<
-    {
-      [P in keyof TJSPositionData as P extends AnimationAPI.AnimationKey ? P : never]: TJSPositionData[P] | string;
-    } & {
-      [P in keyof TJSPositionData as P extends AnimationAPI.AnimationKey ? never : P]: TJSPositionData[P];
-    }
-  > & {
-    [key: string]: any;
-  };
-  /**
-   * Defines the constructor function for {@link TJSPositionData}.
-   */
-  interface TJSPositionDataConstructor {
-    new ({
-      height,
-      left,
-      maxHeight,
-      maxWidth,
-      minHeight,
-      minWidth,
-      rotateX,
-      rotateY,
-      rotateZ,
-      scale,
-      translateX,
-      translateY,
-      translateZ,
-      top,
-      transformOrigin,
-      width,
-      zIndex,
-    }?: {
-      height?: number | 'auto' | 'inherit' | null;
-      left?: number | null;
-      maxHeight?: number | null;
-      maxWidth?: number | null;
-      minHeight?: number | null;
-      minWidth?: number | null;
-      rotateX?: number | null;
-      rotateY?: number | null;
-      rotateZ?: number | null;
-      scale?: number | null;
-      top?: number | null;
-      transformOrigin?: TransformAPI.TransformOrigin | null;
-      translateX?: number | null;
-      translateY?: number | null;
-      translateZ?: number | null;
-      width?: number | 'auto' | 'inherit' | null;
-      zIndex?: number | null;
-    }): TJSPositionData;
-  }
-}
-
-interface StateAPI {
-  /**
-   * Clears all saved position data except any default state.
-   */
-  clear(): void;
-  /**
-   * Gets any stored saved position data by name.
-   *
-   * @param options - Options.
-   *
-   * @param options.name - Saved data name.
-   *
-   * @returns Any saved position data.
-   */
-  get({ name }: { name: string }): Data.TJSPositionDataExtra | undefined;
-  /**
-   * Returns any associated default position data.
-   *
-   * @returns Any saved default position data.
-   */
-  getDefault(): Data.TJSPositionDataExtra | undefined;
-  /**
-   * @returns The saved position data names / keys.
-   */
-  keys(): IterableIterator<string>;
-  /**
-   * Removes and returns any position data by name.
-   *
-   * @param options - Options.
-   *
-   * @param options.name - Name to remove and retrieve.
-   *
-   * @returns Any saved position data.
-   */
-  remove({ name }: { name: string }): Data.TJSPositionDataExtra | undefined;
-  /**
-   * Resets position instance to default data and invokes set.
-   *
-   * @param [options] - Optional parameters.
-   *
-   * @param [options.keepZIndex=false] - When true keeps current z-index.
-   *
-   * @param [options.invokeSet=true] - When true invokes set method.
-   *
-   * @returns Operation successful.
-   */
-  reset({ keepZIndex, invokeSet }: { keepZIndex?: boolean; invokeSet?: boolean }): boolean;
-  /**
-   * Restores a saved positional state returning the data. Several optional parameters are available to control
-   * whether the restore action occurs silently (no store / inline styles updates), animates to the stored data, or
-   * simply sets the stored data. Restoring via {@link AnimationAPI.to} allows specification of the duration and
-   * easing along with configuring a Promise to be returned if awaiting the end of the animation.
-   *
-   * @param options - Parameters
-   *
-   * @param options.name - Saved data set name.
-   *
-   * @param [options.remove=false] - Remove data set.
-   *
-   * @param [options.properties] - Specific properties to set / animate.
-   *
-   * @param [options.silent] - Set position data directly; no store or style updates.
-   *
-   * @param [options.async=false] - If animating return a Promise that resolves with any saved data.
-   *
-   * @param [options.animateTo=false] - Animate to restore data.
-   *
-   * @param [options.duration=0.1] - Duration in seconds.
-   *
-   * @param [options.ease='linear'] - Easing function name or function.
-   *
-   * @returns Any saved position data.
-   */
-  restore({
-    name,
-    remove,
-    properties,
-    silent,
-    async,
-    animateTo,
-    duration,
-    ease,
-  }: {
-    name: string;
-    remove?: boolean;
-    properties?: Iterable<string>;
-    silent?: boolean;
-    async?: boolean;
-    animateTo?: boolean;
-    duration?: number;
-    ease?: EasingReference;
-  }): Data.TJSPositionDataExtra | Promise<Data.TJSPositionDataExtra | undefined> | undefined;
-  /**
-   * Saves current position state with the opportunity to add extra data to the saved state. Simply include extra
-   * properties in `options` to save extra data.
-   *
-   * @param options - Options.
-   *
-   * @param options.name - name to index this saved data.
-   *
-   * @param [optionsGet] - Additional options for {@link TJSPosition.get} when serializing position state. By default,
-   *        `nullable` values are included.
-   *
-   * @returns Current position data.
-   */
-  save(
-    {
-      name,
-      ...extra
-    }: {
-      name: string;
-      [key: string]: any;
-    },
-    optionsGet: TJSPosition.Options.Get,
-  ): Data.TJSPositionDataExtra;
-  /**
-   * Directly sets a saved position state. Simply include extra properties in `options` to set extra data.
-   *
-   * @param options - Options.
-   *
-   * @param options.name - name to index this saved data.
-   */
-  set({ name, ...data }: { name: string; [key: string]: any }): void;
-}
-declare namespace StateAPI {
-  namespace Options {
-    /**
-     * Options for `TJSPosition.state.reset`.
-     */
-    type Reset = {
-      /**
-       * When true keeps current z-index.
-       * @defaultValue `false`
-       */
-      keepZIndex?: boolean;
-      /**
-       * When true invokes set method.
-       * @defaultValue `true`
-       */
-      invokeSet?: boolean;
-    };
-    /**
-     * Options for `TJSPosition.state.restore`.
-     */
-    type Restore = {
-      /**
-       * Saved data name.
-       */
-      name: string;
-      /**
-       * Deletes data set.
-       * @defaultValue `false`
-       */
-      remove?: boolean;
-      /**
-       * Specific properties to set / animate.
-       */
-      properties?: Iterable<string>;
-      /**
-       * Set position data directly; no store or style updates.
-       */
-      silent?: boolean;
-      /**
-       * If animating return a Promise that resolves with any saved data.
-       * @defaultValue `false`
-       */
-      async?: boolean;
-      /**
-       * Animate to restore data.
-       * @defaultValue `false`
-       */
-      animateTo?: boolean;
-      /**
-       * When false, any animation can not be cancelled.
-       * @defaultValue `true`
-       */
-      cancelable?: boolean;
-      /**
-       * Duration in seconds.
-       */
-      duration?: number;
-      /**
-       * Easing function name or function.
-       * @defaultValue `linear`
-       */
-      ease?: EasingReference;
-    };
-    /**
-     * Options for `TJSPosition.state.save`. You may include extra data that is serialized with position state.
-     */
-    type Save = {
-      /**
-       * Name to index this saved data.
-       */
-      name: string;
-      [key: string]: any;
-    };
-    /**
-     * Options for `TJSPosition.state.set`. You may include extra data that is serialized with position state.
-     */
-    type Set = {
-      /**
-       * Name to index this saved data.
-       */
-      name: string;
-      [key: string]: any;
-    };
-  }
-}
-
-/**
- *
- */
-declare class PositionStateAPI implements StateAPI {
-  #private;
-  constructor(position: TJSPosition, data: Data.TJSPositionData, transforms: TransformAPI);
-  /**
-   * Clears all saved position data except any default state.
-   */
-  clear(): void;
-  /**
-   * Returns any stored save state by name.
-   *
-   * @param options - Options.
-   *
-   * @param options.name - Saved data name.
-   *
-   * @returns Any saved position data.
-   */
-  get({ name }: { name: string }): Data.TJSPositionDataExtra | undefined;
-  /**
-   * Returns any associated default position data.
-   *
-   * @returns Any saved default position data.
-   */
-  getDefault(): Data.TJSPositionDataExtra | undefined;
-  /**
-   * @returns The saved position data names / keys.
-   */
-  keys(): MapIterator<string>;
-  /**
-   * Removes and returns any position data by name.
-   *
-   * @param options - Options.
-   *
-   * @param options.name - Name to remove and retrieve.
-   *
-   * @returns Any saved position data.
-   */
-  remove({ name }: { name: string }): Data.TJSPositionDataExtra | undefined;
-  /**
-   * Resets position instance to default data and invokes set.
-   *
-   * @param [options] - Optional parameters.
-   *
-   * @param [options.keepZIndex=false] - When true keeps current z-index.
-   *
-   * @param [options.invokeSet=true] - When true invokes set method.
-   *
-   * @returns Operation successful.
-   */
-  reset({ keepZIndex, invokeSet }?: StateAPI.Options.Reset): boolean;
-  /**
-   * Restores a saved positional state returning the data. Several optional parameters are available to control
-   * whether the restore action occurs silently (no store / inline styles updates), animates to the stored data, or
-   * simply sets the stored data. Restoring via {@link AnimationAPI.to} allows specification of the duration and
-   * easing along with configuring a Promise to be returned if awaiting the end of the animation.
-   *
-   * @param options - Parameters
-   *
-   * @param options.name - Saved data set name.
-   *
-   * @param [options.remove=false] - Deletes data set.
-   *
-   * @param [options.properties] - Specific properties to set / animate.
-   *
-   * @param [options.silent] - Set position data directly; no store or style updates.
-   *
-   * @param [options.async=false] - If animating return a Promise that resolves with any saved data.
-   *
-   * @param [options.animateTo=false] - Animate to restore data.
-   *
-   * @param [options.cancelable=true] - When false, any animation can not be cancelled.
-   *
-   * @param [options.duration=0.1] - Duration in seconds.
-   *
-   * @param [options.ease='linear'] - Easing function name or function.
-   *
-   * @returns Any saved position data.
-   */
-  restore({
-    name,
-    remove,
-    properties,
-    silent,
-    async,
-    animateTo,
-    cancelable,
-    duration,
-    ease,
-  }: StateAPI.Options.Restore): Data.TJSPositionDataExtra | Promise<Data.TJSPositionDataExtra | undefined> | undefined;
-  /**
-   * Saves current position state with the opportunity to add extra data to the saved state. Simply include extra
-   * properties in `options` to save extra data.
-   *
-   * @param options - Options.
-   *
-   * @param options.name - name to index this saved data.
-   *
-   * @param [optionsGet] - Additional options for {@link TJSPosition.get} when serializing position state. By default,
-   *        `nullable` values are included.
-   *
-   * @returns Current position data plus any extra data stored.
-   */
-  save({ name, ...extra }: StateAPI.Options.Save, optionsGet?: TJSPosition.Options.Get): Data.TJSPositionDataExtra;
-  /**
-   * Directly sets a saved position state. Simply include extra properties in `options` to set extra data.
-   *
-   * @param opts - Options.
-   *
-   * @param opts.name - name to index this saved data.
-   */
-  set({ name, ...data }: StateAPI.Options.Set): void;
-}
-
-/**
  * Provides the validator API implementation for {@link TJSPosition.validators}. You may add one or more validator
  * functions which evaluate changes in the associated {@link TJSPosition} instance. This allows standard validation
  * for browser bounds / transform checking available via {@link TJSPosition.Validators} or custom validators added which
@@ -1328,6 +1003,216 @@ declare namespace Action {
      * Resets tween options to initial values.
      */
     resetTweenOptions(): void;
+  }
+}
+
+interface StateAPI {
+  /**
+   * Clears all saved position data except any default state.
+   */
+  clear(): void;
+  /**
+   * Gets any stored saved position data by name.
+   *
+   * @param options - Options.
+   *
+   * @param options.name - Saved data name.
+   *
+   * @returns Any saved position data.
+   */
+  get({ name }: { name: string }): Data.TJSPositionDataExtra | undefined;
+  /**
+   * Returns any associated default position data.
+   *
+   * @returns Any saved default position data.
+   */
+  getDefault(): Data.TJSPositionDataExtra | undefined;
+  /**
+   * @returns The saved position data names / keys.
+   */
+  keys(): IterableIterator<string>;
+  /**
+   * Removes and returns any position data by name.
+   *
+   * @param options - Options.
+   *
+   * @param options.name - Name to remove and retrieve.
+   *
+   * @returns Any saved position data.
+   */
+  remove({ name }: { name: string }): Data.TJSPositionDataExtra | undefined;
+  /**
+   * Resets position instance to default data and invokes set.
+   *
+   * @param [options] - Optional parameters.
+   *
+   * @param [options.keepZIndex=false] - When true keeps current z-index.
+   *
+   * @param [options.invokeSet=true] - When true invokes set method.
+   *
+   * @returns Operation successful.
+   */
+  reset({ keepZIndex, invokeSet }: { keepZIndex?: boolean; invokeSet?: boolean }): boolean;
+  /**
+   * Restores a saved positional state returning the data. Several optional parameters are available to control
+   * whether the restore action occurs silently (no store / inline styles updates), animates to the stored data, or
+   * simply sets the stored data. Restoring via {@link AnimationAPI.to} allows specification of the duration and
+   * easing along with configuring a Promise to be returned if awaiting the end of the animation.
+   *
+   * @param options - Parameters
+   *
+   * @param options.name - Saved data set name.
+   *
+   * @param [options.remove=false] - Remove data set.
+   *
+   * @param [options.properties] - Specific properties to set / animate.
+   *
+   * @param [options.silent] - Set position data directly; no store or style updates.
+   *
+   * @param [options.async=false] - If animating return a Promise that resolves with any saved data.
+   *
+   * @param [options.animateTo=false] - Animate to restore data.
+   *
+   * @param [options.duration=0.1] - Duration in seconds.
+   *
+   * @param [options.ease='linear'] - Easing function name or function.
+   *
+   * @returns Any saved position data.
+   */
+  restore({
+    name,
+    remove,
+    properties,
+    silent,
+    async,
+    animateTo,
+    duration,
+    ease,
+  }: {
+    name: string;
+    remove?: boolean;
+    properties?: Iterable<string>;
+    silent?: boolean;
+    async?: boolean;
+    animateTo?: boolean;
+    duration?: number;
+    ease?: EasingReference;
+  }): Data.TJSPositionDataExtra | Promise<Data.TJSPositionDataExtra | undefined> | undefined;
+  /**
+   * Saves current position state with the opportunity to add extra data to the saved state. Simply include extra
+   * properties in `options` to save extra data.
+   *
+   * @param options - Options.
+   *
+   * @param options.name - name to index this saved data.
+   *
+   * @param [optionsGet] - Additional options for {@link TJSPosition.get} when serializing position state. By default,
+   *        `nullable` values are included.
+   *
+   * @returns Current position data.
+   */
+  save(
+    {
+      name,
+      ...extra
+    }: {
+      name: string;
+      [key: string]: any;
+    },
+    optionsGet: TJSPosition.Options.Get,
+  ): Data.TJSPositionDataExtra;
+  /**
+   * Directly sets a saved position state. Simply include extra properties in `options` to set extra data.
+   *
+   * @param options - Options.
+   *
+   * @param options.name - name to index this saved data.
+   */
+  set({ name, ...data }: { name: string; [key: string]: any }): void;
+}
+declare namespace StateAPI {
+  namespace Options {
+    /**
+     * Options for `TJSPosition.state.reset`.
+     */
+    type Reset = {
+      /**
+       * When true keeps current z-index.
+       * @defaultValue `false`
+       */
+      keepZIndex?: boolean;
+      /**
+       * When true invokes set method.
+       * @defaultValue `true`
+       */
+      invokeSet?: boolean;
+    };
+    /**
+     * Options for `TJSPosition.state.restore`.
+     */
+    type Restore = {
+      /**
+       * Saved data name.
+       */
+      name: string;
+      /**
+       * Deletes data set.
+       * @defaultValue `false`
+       */
+      remove?: boolean;
+      /**
+       * Specific properties to set / animate.
+       */
+      properties?: Iterable<string>;
+      /**
+       * Set position data directly; no store or style updates.
+       */
+      silent?: boolean;
+      /**
+       * If animating return a Promise that resolves with any saved data.
+       * @defaultValue `false`
+       */
+      async?: boolean;
+      /**
+       * Animate to restore data.
+       * @defaultValue `false`
+       */
+      animateTo?: boolean;
+      /**
+       * When false, any animation can not be cancelled.
+       * @defaultValue `true`
+       */
+      cancelable?: boolean;
+      /**
+       * Duration in seconds.
+       */
+      duration?: number;
+      /**
+       * Easing function name or function.
+       * @defaultValue `linear`
+       */
+      ease?: EasingReference;
+    };
+    /**
+     * Options for `TJSPosition.state.save`. You may include extra data that is serialized with position state.
+     */
+    type Save = {
+      /**
+       * Name to index this saved data.
+       */
+      name: string;
+      [key: string]: any;
+    };
+    /**
+     * Options for `TJSPosition.state.set`. You may include extra data that is serialized with position state.
+     */
+    type Set = {
+      /**
+       * Name to index this saved data.
+       */
+      name: string;
+      [key: string]: any;
+    };
   }
 }
 
@@ -1928,7 +1813,7 @@ declare class TJSPosition implements TJSPosition.WritableExt {
    *
    * @returns TJSPosition state API.
    */
-  get state(): PositionStateAPI;
+  get state(): TJSPosition.API.State;
   /**
    * Returns the derived writable stores for individual data variables.
    *
