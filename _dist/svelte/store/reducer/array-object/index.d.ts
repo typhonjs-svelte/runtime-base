@@ -228,11 +228,7 @@ declare class CrudArrayObjectStore<
   /**
    * @param options - CrudArrayObjectStore options.
    */
-  constructor({
-    crudDispatch,
-    extraData,
-    ...rest
-  }: CrudArrayObjectStore.Options.Config<S> & ArrayObjectStore.Options.Config<S>);
+  constructor({ crudDispatch, extraData, ...rest }: CrudArrayObjectStore.Options.Config<S>);
   /**
    * Removes all child store entries.
    */
@@ -277,7 +273,9 @@ declare namespace CrudArrayObjectStore {
       /**
        * Optional additional data that is dispatched with `CrudDispatch` callbacks.
        */
-      extraData?: object;
+      extraData?: {
+        [key: string]: any;
+      };
     }
     /**
      * A function that accepts an object w/ 'action', 'moduleId', 'key' properties and optional 'id' / UUIDv4 string

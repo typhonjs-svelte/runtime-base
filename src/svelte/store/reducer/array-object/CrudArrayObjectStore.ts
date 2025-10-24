@@ -16,13 +16,12 @@ class CrudArrayObjectStore<S extends CrudArrayObjectStore.Data.BaseObjectEntrySt
 
    /**
     */
-   readonly #extraData: object;
+   readonly #extraData: { [key: string]: any };
 
    /**
     * @param options - CrudArrayObjectStore options.
     */
-   constructor({ crudDispatch, extraData, ...rest }: CrudArrayObjectStore.Options.Config<S> &
-    ArrayObjectStore.Options.Config<S>)
+   constructor({ crudDispatch, extraData, ...rest }: CrudArrayObjectStore.Options.Config<S>)
    {
       // 'manualUpdate' is set to true if 'crudUpdate' is defined, but can be overridden by `...rest`.
       super({
@@ -145,7 +144,7 @@ declare namespace CrudArrayObjectStore {
          /**
           * Optional additional data that is dispatched with `CrudDispatch` callbacks.
           */
-         extraData?: object;
+         extraData?: { [key: string]: any };
       }
 
       /**
