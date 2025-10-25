@@ -36,7 +36,7 @@ class ArrayObjectStore<S extends ArrayObjectStore.Data.BaseObjectEntryStore<any>
 
    /**
     */
-   readonly #dataReducer: DynArrayReducer<S> | undefined;
+   readonly #dataReducer?: DynArrayReducer<S>;
 
    /**
     */
