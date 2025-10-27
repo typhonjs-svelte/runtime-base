@@ -189,7 +189,7 @@ class ArrayObjectStore {
         if (!isObject(entryData)) {
             throw new TypeError(`'entryData' is not an object.`);
         }
-        if (typeof entryData.id !== 'string') {
+        if (!Hashing.isUuidv4(entryData.id)) {
             entryData.id = Hashing.uuidv4();
         }
         if (this.#data.findIndex((entry) => entry.id === entryData.id) >= 0) {
