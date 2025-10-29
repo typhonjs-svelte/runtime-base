@@ -33,7 +33,7 @@ export abstract class ObjectEntryStore<T extends ArrayObjectStore.Data.BaseArray
     *
     * @param arrayStore - The source ArrayObjectStore instance.
     */
-   static duplicate(data: object, arrayStore: ArrayObjectStore<any>): void {}  // eslint-disable-line no-unused-vars
+   static duplicate<S extends ArrayObjectStore<any>>(data: object, arrayStore: S): void {}  // eslint-disable-line no-unused-vars
 
    /**
     * @param data -

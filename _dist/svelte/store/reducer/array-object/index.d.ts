@@ -19,7 +19,7 @@ declare abstract class ObjectEntryStore<
    *
    * @param arrayStore - The source ArrayObjectStore instance.
    */
-  static duplicate(data: object, arrayStore: ArrayObjectStore<any>): void;
+  static duplicate<S extends ArrayObjectStore<any>>(data: object, arrayStore: S): void;
   /**
    * @param data -
    */
