@@ -1,4 +1,5 @@
 import * as filters     from './filter';
+import * as sort        from './sort';
 
 import type {
    MinimalWritable,
@@ -22,12 +23,21 @@ class DynReducerHelper
     * @returns All available filters.
     */
    static get filters(): DynReducerHelper.Filters { return filters; }
+
+   /**
+    * Returns the following sort functions:
+    * - objectByProp
+    *
+    * @returns All available sort functions.
+    */
+   static get sort(): DynReducerHelper.Sort { return sort; }
 }
 
 /**
  * Defines the available resources of {@link DynReducerHelper}.
  */
 declare namespace DynReducerHelper {
+   import objectByProp = DynReducerHelper.SortFn.objectByProp;
    /**
     * All available returned filter functions.
     */
@@ -74,6 +84,26 @@ declare namespace DynReducerHelper {
             store?: MinimalWritable<string>
          }
       ) => FilterFn.regexObjectQuery
+   }
+
+   /**
+    * All available returned sort functions.
+    */
+   export namespace SortFn {
+      export import ObjectByProp = sort.ObjectByProp;
+
+      /**
+       * The returned filter function from `sortByProp` helper.
+       */
+      export type objectByProp<T extends { [key: string]: any }> = ObjectByProp<T>;
+   }
+
+   /**
+    * All available sort functions.
+    */
+   export interface Sort {
+      objectByProp: <T extends { [key: string]: any }>(options: { store?: MinimalWritable<any> }) =>
+       SortFn.ObjectByProp<T>
    }
 }
 

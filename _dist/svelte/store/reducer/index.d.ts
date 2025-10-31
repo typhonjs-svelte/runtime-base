@@ -593,11 +593,15 @@ declare namespace DynReducer {
        */
       get length(): number;
       /**
-       * Manually invoke an update of the index.
+       * Manually updates associated dynamic reducer indexer.
        *
-       * @param [force] - Force update to any subscribers.
+       * @param [options] - Optional settings or any arbitrary value.
+       *
+       * @param [options.force] - Force an update the index regardless of hash calculations.
+       *
+       * @param [options.reversed] - Potentially change reversed state.
        */
-      update(force?: boolean): void;
+      update: DynReducer.Data.IndexUpdateFn;
       /**
        * @returns Current hash value of the index.
        */
@@ -670,7 +674,9 @@ declare namespace DynReducer {
        * @param indexUpdate - Callback function that is invoked on update / changes. Receives `index update`
        *        function.
        */
-      subscribe?: (indexUpdate: IndexUpdateFn) => () => void;
+      subscribe?:
+        | ((this: void, indexUpdate: IndexUpdateFn) => () => void)
+        | ((this: void, run: (value: any) => void) => () => void);
     }
     /**
      * Defines object / options for creating a derived list reducer.
@@ -735,7 +741,9 @@ declare namespace DynReducer {
        *
        * @param indexUpdate - Callback function that is invoked on update / changes.
        */
-      subscribe?: (indexUpdate: IndexUpdateFn) => () => void;
+      subscribe?:
+        | ((this: void, indexUpdate: IndexUpdateFn) => () => void)
+        | ((this: void, run: (value: any) => void) => () => void);
     };
     /**
      * Filter function that takes an element argument and returns a truthy value to keep it.
@@ -757,14 +765,27 @@ declare namespace DynReducer {
        *
        * @param indexUpdate - Callback function that is invoked on update / changes. Receives `this` reference.
        */
-      subscribe?: (indexUpdate: IndexUpdateFn) => () => void;
+      subscribe?:
+        | ((this: void, indexUpdate: IndexUpdateFn) => () => void)
+        | ((this: void, run: (value: any) => void) => () => void);
     }
     /**
      * Updates associated dynamic reducer indexer.
      *
-     * @param [force] - Force an update the index regardless of hash calculations.
+     * @param [options] - Optional settings or any arbitrary value.
+     *
+     * @param [options.force] - Force an update the index regardless of hash calculations.
+     *
+     * @param [options.reversed] - Potentially change reversed state.
      */
-    type IndexUpdateFn = (force?: boolean) => void;
+    type IndexUpdateFn = (
+      options?:
+        | {
+            force?: boolean;
+            reversed?: boolean;
+          }
+        | unknown,
+    ) => void;
     /**
      * Defines object / options for creating a top-level DynArrayReducer. Useful for consumers of the
      * `dynamic-reducer` library to implement a `create` method similar to derived reducers.
@@ -822,7 +843,9 @@ declare namespace DynReducer {
        *
        * @param indexUpdate - Callback function that is invoked on update / changes.
        */
-      subscribe?: (indexUpdate: IndexUpdateFn) => () => void;
+      subscribe?:
+        | ((this: void, indexUpdate: IndexUpdateFn) => () => void)
+        | ((this: void, run: (value: any) => void) => () => void);
     };
   }
   /**
@@ -1206,6 +1229,13 @@ declare class DynReducerHelper {
    * @returns All available filters.
    */
   static get filters(): DynReducerHelper.Filters;
+  /**
+   * Returns the following sort functions:
+   * - objectByProp
+   *
+   * @returns All available sort functions.
+   */
+  static get sort(): DynReducerHelper.Sort;
 }
 /**
  * Defines the available resources of {@link DynReducerHelper}.
@@ -1264,6 +1294,32 @@ declare namespace DynReducerHelper {
         store?: MinimalWritable<string>;
       },
     ) => FilterFn.regexObjectQuery;
+  }
+  /**
+   * All available returned sort functions.
+   */
+  namespace SortFn {
+    export import ObjectByProp = sort.ObjectByProp;
+    /**
+     * The returned filter function from `sortByProp` helper.
+     */
+    type objectByProp<
+      T extends {
+        [key: string]: any;
+      },
+    > = ObjectByProp<T>;
+  }
+  /**
+   * All available sort functions.
+   */
+  interface Sort {
+    objectByProp: <
+      T extends {
+        [key: string]: any;
+      },
+    >(options: {
+      store?: MinimalWritable<any>;
+    }) => SortFn.ObjectByProp<T>;
   }
 }
 

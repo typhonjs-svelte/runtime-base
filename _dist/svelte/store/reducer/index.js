@@ -1,7 +1,7 @@
 import { writable, get } from 'svelte/store';
 import { isMinimalWritableStore } from '@typhonjs-svelte/runtime-base/svelte/store/util';
 import { Strings } from '@typhonjs-svelte/runtime-base/util';
-import { isIterable, safeAccess } from '@typhonjs-svelte/runtime-base/util/object';
+import { isIterable, safeAccess, isObject } from '@typhonjs-svelte/runtime-base/util/object';
 
 class DynReducerUtils {
     /**
@@ -264,14 +264,18 @@ class AdapterDerived {
     /**
      * Updates all managed derived reducer indexes.
      *
-     * @param [force=false] - Force an update to subscribers.
+     * @param [options] - Optional settings or any arbitrary value.
+     *
+     * @param [options.force=false] - Force an update the index regardless of hash calculations.
+     *
+     * @param [options.reversed] - Potentially change reversed state.
      */
-    update(force = false) {
+    update(options) {
         if (this.#destroyed) {
             return;
         }
         for (const reducer of this.#derived.values()) {
-            reducer.index.update(force);
+            reducer.index.update(options);
         }
     }
 }
@@ -641,9 +645,7 @@ class IndexerAPI {
      */
     length;
     /**
-     * Manually invoke an update of the index.
-     *
-     * @param force - Force update to any subscribers.
+     * Updates associated dynamic reducer indexer.
      */
     update;
     constructor(adapterIndexer) {
@@ -691,7 +693,7 @@ class ArrayIndexer extends AdapterIndexer {
             const dataA = data?.[a];
             const dataB = data?.[b];
             /* c8 ignore next */
-            return dataA && dataB ? this.sortData.compareFn(dataA, dataB) : 0;
+            return dataA !== void 0 && dataB !== void 0 ? this.sortData.compareFn(dataA, dataB) : 0;
         };
     }
     /**
@@ -747,11 +749,20 @@ class ArrayIndexer extends AdapterIndexer {
      * Update the reducer indexes. If there are changes subscribers are notified. If data order is changed externally
      * pass in true to force an update to subscribers.
      *
-     * @param [force=false] - When true forces an update to subscribers.
+     * @param [options] - Optional settings or any arbitrary value.
+     *
+     * @param [options.force=false] - Force an update the index regardless of hash calculations.
+     *
+     * @param [options.reversed] - Potentially change reversed state.
      */
-    update(force = false) {
+    update(options) {
         if (this.destroyed) {
             return;
+        }
+        let { force = false, reversed = void 0 } = (typeof options === 'object' && options !== null ? options : {});
+        if (typeof reversed === 'boolean' && this.indexData.reversed !== reversed) {
+            force = true;
+            this.indexData.reversed = reversed;
         }
         const oldIndex = this.indexData.index;
         const oldHash = this.indexData.hash;
@@ -779,7 +790,7 @@ class ArrayIndexer extends AdapterIndexer {
         }
         this.calcHashUpdate(oldIndex, oldHash, force);
         // Update all derived reducers.
-        this.derivedAdapter?.update(force);
+        this.derivedAdapter?.update(options);
     }
 }
 
@@ -899,7 +910,7 @@ class DynArrayReducerDerived {
         }
         this.#index.indexData.reversed = reversed;
         // Recalculate index and force an update to any subscribers.
-        this.index.update(true);
+        this.index.update({ force: true });
     }
     /**
      * Removes all derived reducers, subscriptions, and cleans up all resources.
@@ -908,7 +919,7 @@ class DynArrayReducerDerived {
         this.#destroyed = true;
         // Remove any external data reference and perform a final update.
         this.#array = null;
-        this.index.update(true);
+        this.index.update({ force: true });
         // Remove all subscriptions.
         this.#subscribers.length = 0;
         this.#derived.destroy();
@@ -1154,7 +1165,7 @@ class DynArrayReducer {
         }
         this.#index.indexData.reversed = reversed;
         // Recalculate index and force an update to any subscribers.
-        this.index.update(true);
+        this.index.update({ force: true });
     }
     /**
      * Removes all derived reducers, subscriptions, and cleans up all resources.
@@ -1167,7 +1178,7 @@ class DynArrayReducer {
         this.#derived.destroy();
         // Set the backing data to null and provide a final update.
         this.#array = [null];
-        this.index.update(true);
+        this.index.update({ force: true });
         // Remove all subscriptions.
         this.#subscribers.length = 0;
         this.#filters.clear();
@@ -1221,7 +1232,7 @@ class DynArrayReducer {
         // Force clear the index and always rebuild.
         this.#index.indexData.index = null;
         // Recalculate index and force an update to any subscribers.
-        this.index.update(true);
+        this.index.update({ force: true });
     }
     /**
      * Add a subscriber to this DynArrayReducer instance.
@@ -1294,7 +1305,7 @@ class MapIndexer extends AdapterIndexer {
             const dataA = data?.get(a);
             const dataB = data?.get(b);
             /* c8 ignore next */
-            return dataA && dataB ? this.sortData.compareFn(dataA, dataB) : 0;
+            return dataA !== void 0 && dataB !== void 0 ? this.sortData.compareFn(dataA, dataB) : 0;
         };
     }
     /**
@@ -1359,11 +1370,20 @@ class MapIndexer extends AdapterIndexer {
      * Update the reducer indexes. If there are changes subscribers are notified. If data order is changed externally
      * pass in true to force an update to subscribers.
      *
-     * @param [force=false] - When true forces an update to subscribers.
+     * @param [options] - Optional settings or any arbitrary value.
+     *
+     * @param [options.force=false] - Force an update the index regardless of hash calculations.
+     *
+     * @param [options.reversed] - Potentially change reversed state.
      */
-    update(force = false) {
+    update(options) {
         if (this.destroyed) {
             return;
+        }
+        let { force = false, reversed = void 0 } = (typeof options === 'object' && options !== null ? options : {});
+        if (typeof reversed === 'boolean' && this.indexData.reversed !== reversed) {
+            force = true;
+            this.indexData.reversed = reversed;
         }
         const oldIndex = this.indexData.index;
         const oldHash = this.indexData.hash;
@@ -1391,7 +1411,7 @@ class MapIndexer extends AdapterIndexer {
         }
         this.calcHashUpdate(oldIndex, oldHash, force);
         // Update all derived reducers.
-        this.derivedAdapter?.update(force);
+        this.derivedAdapter?.update(options);
     }
 }
 
@@ -1515,7 +1535,7 @@ class DynMapReducerDerived {
         }
         this.#index.indexData.reversed = reversed;
         // Recalculate index and force an update to any subscribers.
-        this.index.update(true);
+        this.index.update({ force: true });
     }
     /**
      * Removes all derived reducers, subscriptions, and cleans up all resources.
@@ -1524,7 +1544,7 @@ class DynMapReducerDerived {
         this.#destroyed = true;
         // Remove any external data reference and perform a final update.
         this.#map = [null];
-        this.#index.update(true);
+        this.#index.update({ force: true });
         // Remove all subscriptions.
         this.#subscribers.length = 0;
         this.#derived.destroy();
@@ -1767,7 +1787,7 @@ class DynMapReducer {
         }
         this.#index.indexData.reversed = reversed;
         // Recalculate index and force an update to any subscribers.
-        this.index.update(true);
+        this.index.update({ force: true });
     }
     /**
      * Removes all derived reducers, subscriptions, and cleans up all resources.
@@ -1780,7 +1800,7 @@ class DynMapReducer {
         this.#derived.destroy();
         // Set the backing data to null and provide a final update.
         this.#map = [null];
-        this.index.update(true);
+        this.index.update({ force: true });
         // Remove all subscriptions.
         this.#subscribers.length = 0;
         this.#filters.clear();
@@ -1838,7 +1858,7 @@ class DynMapReducer {
         // Force clear the index and always rebuild.
         this.#index.indexData.index = null;
         // Recalculate index and force an update to any subscribers.
-        this.index.update(true);
+        this.index.update({ force: true });
     }
     /**
      * Add a subscriber to this DynMapReducer instance.
@@ -2007,6 +2027,130 @@ const filters = /*#__PURE__*/Object.freeze({
 });
 
 /**
+ *
+ * @param [options] - Options.
+ *
+ * @param [options.store] - An external store that serializes the tracked prop and sorting state.
+ *
+ * @returns Sort object by prop instance that fulfills {@link DynReducer.Data.Sort}.
+ */
+function objectByProp({ store = writable({ prop: void 0, state: void 0 }) } = {}) {
+    let prop = void 0;
+    let state = 'none';
+    if (!isMinimalWritableStore(store)) {
+        throw new TypeError(`'store' is not a MinimalWritable store.`);
+    }
+    const storeValue = get(store);
+    if (!isObject(storeValue)) {
+        store.set({ prop, state });
+    }
+    else {
+        const prevProp = storeValue.prop;
+        const prevState = storeValue.state;
+        // Accept previous prop value.
+        if (typeof prevProp === 'string') {
+            prop = prevProp;
+        }
+        if (typeof prevState === 'string') {
+            // Set previous state if valid or reset store value.
+            if (prevState === 'none' || prevState === 'asc' || prevState === 'desc') {
+                state = prevState;
+            }
+            else {
+                store.set({ prop, state });
+            }
+        }
+        // Potentially detect errant / extra keys and reset store value.
+        for (const key of Object.keys(storeValue)) {
+            if (key !== 'prop' && key !== 'state') {
+                store.set({ prop, state });
+                break;
+            }
+        }
+    }
+    let indexUpdateFn;
+    function sortByFn(a, b) {
+        if (prop === void 0 || state === 'none') {
+            return 0;
+        }
+        const aVal = a?.[prop];
+        const bVal = b?.[prop];
+        if (aVal === bVal) {
+            return 0;
+        }
+        const aType = typeof aVal;
+        const bType = typeof bVal;
+        switch (aType) {
+            case 'string':
+                if (bType === 'string') {
+                    return aVal.localeCompare(bVal);
+                }
+                break;
+            case 'number':
+                if (bType === 'number') {
+                    return aVal - bVal;
+                }
+                break;
+        }
+        return 0;
+    }
+    /**
+     * Custom dynamic reducer subscriber accepting the index update function.
+     *
+     * @param handler - Dynamic
+     */
+    sortByFn.subscribe = (handler) => {
+        indexUpdateFn = handler;
+        // Forces an index update / sorting is triggered.
+        indexUpdateFn?.({ reversed: state === 'desc' });
+        return () => indexUpdateFn = void 0;
+    };
+    const toggleProp = (newProp) => {
+        if (newProp !== void 0 && typeof newProp !== 'string') {
+            throw TypeError(`'newProp' is not a string or undefined.`);
+        }
+        /**
+         * Determine current state. If the `prop` being toggled is the current `sortBy` prop then use the stored state.
+         * Otherwise, this is a new property to toggle and start from `none`.
+         */
+        const currentState = prop === newProp ? state : 'none';
+        switch (currentState) {
+            case 'none':
+                state = 'asc';
+                break;
+            case 'asc':
+                state = 'desc';
+                break;
+            case 'desc':
+                state = 'none';
+                break;
+            default:
+                state = 'none';
+                break;
+        }
+        prop = newProp;
+        // Forces an index update / sorting is triggered.
+        indexUpdateFn?.({ reversed: state === 'desc' });
+        store.set({ prop, state });
+    };
+    const subscribe = (handler) => {
+        return store.subscribe(handler);
+    };
+    return Object.freeze({
+        compare: sortByFn,
+        get prop() { return prop; },
+        get state() { return state; },
+        subscribe,
+        toggleProp,
+    });
+}
+
+const sort = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    objectByProp: objectByProp
+});
+
+/**
  * Provides helper functions to create dynamic store driven filters and sort functions for dynamic reducers. The
  * returned functions are also Svelte stores and can be added to a reducer as well as used as a store.
  */
@@ -2022,6 +2166,13 @@ class DynReducerHelper {
      * @returns All available filters.
      */
     static get filters() { return filters; }
+    /**
+     * Returns the following sort functions:
+     * - objectByProp
+     *
+     * @returns All available sort functions.
+     */
+    static get sort() { return sort; }
 }
 
 export { DynArrayReducer, DynArrayReducerDerived, DynMapReducer, DynMapReducerDerived, DynReducerHelper };
