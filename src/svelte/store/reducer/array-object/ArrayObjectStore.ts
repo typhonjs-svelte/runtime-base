@@ -457,20 +457,25 @@ declare namespace ArrayObjectStore {
 
          /**
           * An integer between and including 0 - 1000; a debounce time in milliseconds for child store subscriptions to
-          * invoke {@link ArrayObjectStore.updateSubscribers} notifying subscribers to this array store. Default
-          * value: `250`.
+          * invoke {@link ArrayObjectStore.updateSubscribers} notifying subscribers to this array store.
+          *
+          * @defaultValue `250`
           */
          childDebounce?: number;
 
          /**
           * When true a {@link DynArrayReducer} will be instantiated wrapping store data and accessible from
-          * {@link ArrayObjectStore.dataReducer}; default value: `false`.
+          * {@link ArrayObjectStore.dataReducer}.
+          *
+          * @defaultValue `false`
           */
          dataReducer?: boolean;
 
          /**
           * When true {@link ArrayObjectStore.updateSubscribers} must be invoked with a single boolean parameter for
-          * subscribers to be updated; default value: `false`.
+          * subscribers to be updated.
+          *
+          * @defaultValue `false`
           */
          manualUpdate?: boolean;
       }

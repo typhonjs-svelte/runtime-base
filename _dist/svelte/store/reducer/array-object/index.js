@@ -449,7 +449,7 @@ class CrudArrayObjectStore extends ArrayObjectStore {
         return store;
     }
     /**
-     * Deletes a given entry store by ID from this world setting array store instance.
+     * Deletes a given entry store by ID from this array object store instance.
      *
      * @param id - ID of entry to delete.
      *
@@ -469,7 +469,7 @@ class CrudArrayObjectStore extends ArrayObjectStore {
      *
      * @param [update] - A boolean indicating that subscribers should be notified otherwise
      */
-    updateSubscribers(update = void 0) {
+    updateSubscribers(update) {
         if (this.#crudDispatch && isObject(update) && Hashing.isUuidv4(update.id)) {
             const result = this.#crudDispatch({
                 action: 'update',

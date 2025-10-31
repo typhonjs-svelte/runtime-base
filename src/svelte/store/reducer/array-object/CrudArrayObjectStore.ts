@@ -81,7 +81,7 @@ class CrudArrayObjectStore<S extends CrudArrayObjectStore.Data.BaseObjectEntrySt
    }
 
    /**
-    * Deletes a given entry store by ID from this world setting array store instance.
+    * Deletes a given entry store by ID from this array object store instance.
     *
     * @param id - ID of entry to delete.
     *
@@ -106,7 +106,7 @@ class CrudArrayObjectStore<S extends CrudArrayObjectStore.Data.BaseObjectEntrySt
     *
     * @param [update] - A boolean indicating that subscribers should be notified otherwise
     */
-   override updateSubscribers(update: boolean | CrudArrayObjectStore.Util.ExtractDataType<S> | undefined = void 0): void
+   override updateSubscribers(update: boolean | CrudArrayObjectStore.Util.ExtractDataType<S> | undefined): void
    {
       if (this.#crudDispatch && isObject(update) && Hashing.isUuidv4(update.id))
       {

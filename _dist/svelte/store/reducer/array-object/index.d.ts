@@ -192,18 +192,23 @@ declare namespace ArrayObjectStore {
       defaultData?: Util.ExtractDataType<S>[];
       /**
        * An integer between and including 0 - 1000; a debounce time in milliseconds for child store subscriptions to
-       * invoke {@link ArrayObjectStore.updateSubscribers} notifying subscribers to this array store. Default
-       * value: `250`.
+       * invoke {@link ArrayObjectStore.updateSubscribers} notifying subscribers to this array store.
+       *
+       * @defaultValue `250`
        */
       childDebounce?: number;
       /**
        * When true a {@link DynArrayReducer} will be instantiated wrapping store data and accessible from
-       * {@link ArrayObjectStore.dataReducer}; default value: `false`.
+       * {@link ArrayObjectStore.dataReducer}.
+       *
+       * @defaultValue `false`
        */
       dataReducer?: boolean;
       /**
        * When true {@link ArrayObjectStore.updateSubscribers} must be invoked with a single boolean parameter for
-       * subscribers to be updated; default value: `false`.
+       * subscribers to be updated.
+       *
+       * @defaultValue `false`
        */
       manualUpdate?: boolean;
     }
@@ -242,7 +247,7 @@ declare class CrudArrayObjectStore<
    */
   createEntry(entryData: CrudArrayObjectStore.Util.ExtractDataType<S>): S;
   /**
-   * Deletes a given entry store by ID from this world setting array store instance.
+   * Deletes a given entry store by ID from this array object store instance.
    *
    * @param id - ID of entry to delete.
    *
@@ -256,7 +261,7 @@ declare class CrudArrayObjectStore<
    *
    * @param [update] - A boolean indicating that subscribers should be notified otherwise
    */
-  updateSubscribers(update?: boolean | CrudArrayObjectStore.Util.ExtractDataType<S> | undefined): void;
+  updateSubscribers(update: boolean | CrudArrayObjectStore.Util.ExtractDataType<S> | undefined): void;
 }
 declare namespace CrudArrayObjectStore {
   export import Data = ArrayObjectStore.Data;
