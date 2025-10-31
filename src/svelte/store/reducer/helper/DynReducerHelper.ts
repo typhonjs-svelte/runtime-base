@@ -1,9 +1,13 @@
-import * as filters     from './filter';
-import * as sort        from './sort';
+import * as filters        from './filter';
+import * as sort           from './sort';
+
+import type { Readable }   from 'svelte/store';
+
+import type { DynReducer } from '#runtime/svelte/store/reducer';
 
 import type {
    MinimalWritable,
-   MinimalWritableFn }  from '#runtime/svelte/store/util';
+   MinimalWritableFn }     from '#runtime/svelte/store/util';
 
 /**
  * Provides helper functions to create dynamic store driven filters and sort functions for dynamic reducers. The
@@ -22,7 +26,7 @@ class DynReducerHelper
     *
     * @returns All available filters.
     */
-   static get filters(): DynReducerHelper.Filters { return filters; }
+   static get filters(): DynReducerHelper.FilterAPI { return filters; }
 
    /**
     * Returns the following sort functions:
@@ -30,14 +34,13 @@ class DynReducerHelper
     *
     * @returns All available sort functions.
     */
-   static get sort(): DynReducerHelper.Sort { return sort; }
+   static get sort(): DynReducerHelper.SortAPI { return sort; }
 }
 
 /**
  * Defines the available resources of {@link DynReducerHelper}.
  */
 declare namespace DynReducerHelper {
-   import objectByProp = DynReducerHelper.SortFn.objectByProp;
    /**
     * All available returned filter functions.
     */
@@ -51,7 +54,7 @@ declare namespace DynReducerHelper {
    /**
     * All available filters.
     */
-   export interface Filters {
+   export interface FilterAPI {
       /**
        * Creates a filter function to compare objects by a given accessor key against a regex test. The returned
        * function is also a minimal writable Svelte store that builds a regex from the stores value.
@@ -87,23 +90,78 @@ declare namespace DynReducerHelper {
    }
 
    /**
-    * All available returned sort functions.
+    * All available returned sort function / data.
     */
-   export namespace SortFn {
-      export import ObjectByProp = sort.ObjectByProp;
+   export namespace Sort {
+      /**
+       * Defines the data object and filter function returned by {@link DynReducerHelper.sort.objectByProp}.
+       */
+      export interface ObjectByProp<T> extends Omit<DynReducer.Data.Sort<T>, 'subscribe'>, Readable<ObjectByPropData>
+      {
+         /**
+          * Get the current object property being sorted.
+          */
+         get prop(): string | undefined;
+
+         /**
+          * Get the current sort state:
+          * ```
+          * - `none` no sorting.
+          * - `asc` ascending sort.
+          * - `desc` descending sort.
+          * ```
+          */
+         get state(): string | undefined;
+
+         /**
+          * Resets `prop` and `state`.
+          */
+         reset(): void;
+
+         /**
+          * Sets the current sorted object property and sort state. You may provide partial data, but state must be
+          * one of: `none`, `asc`, or `desc`.
+          *
+          * @param data
+          */
+         set(data: ObjectByPropData): void;
+
+         /**
+          * Toggles current prop state and or initializes a new prop sort state. A property that is selected multiple
+          * times will cycle through ascending -> descending -> no sorting.
+          *
+          * @param prop - Object property to activate.
+          */
+         toggleProp(prop: string): void;
+      }
 
       /**
-       * The returned filter function from `sortByProp` helper.
+       * Defines the data serialized for current property and sort state.
        */
-      export type objectByProp<T extends { [key: string]: any }> = ObjectByProp<T>;
+      export type ObjectByPropData = {
+         /**
+          * Current sorted object property if any.
+          */
+         prop?: string,
+
+         /**
+          * Current sort state:
+          * ```
+          * - `none` no sorting.
+          * - `asc` ascending sort.
+          * - `desc` descending sort.
+          * ```
+          */
+         state?: string
+      }
    }
 
    /**
     * All available sort functions.
     */
-   export interface Sort {
+   export interface SortAPI {
       objectByProp: <T extends { [key: string]: any }>(options: { store?: MinimalWritable<any> }) =>
-       SortFn.ObjectByProp<T>
+       Sort.ObjectByProp<T>
    }
 }
 

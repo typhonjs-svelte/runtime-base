@@ -2105,6 +2105,33 @@ function objectByProp({ store = writable({ prop: void 0, state: void 0 }) } = {}
         indexUpdateFn?.({ reversed: state === 'desc' });
         return () => indexUpdateFn = void 0;
     };
+    // ----------------------------------------------------------------------------------------------------------------
+    const reset = () => {
+        prop = void 0;
+        state = 'none';
+        store.set({ prop, state });
+        // Forces an index update / sorting is triggered.
+        indexUpdateFn?.({ reversed: state === 'desc' });
+    };
+    const set = ({ prop: newProp, state: newState } = {}) => {
+        let update = false;
+        if (typeof newProp === 'string') {
+            prop = newProp;
+            update = true;
+        }
+        if (newState === 'none' || newState === 'asc' || newState === 'desc') {
+            state = newState;
+            update = true;
+        }
+        if (update) {
+            store.set({ prop, state });
+            // Forces an index update / sorting is triggered.
+            indexUpdateFn?.({ reversed: state === 'desc' });
+        }
+    };
+    const subscribe = (handler) => {
+        return store.subscribe(handler);
+    };
     const toggleProp = (newProp) => {
         if (newProp !== void 0 && typeof newProp !== 'string') {
             throw TypeError(`'newProp' is not a string or undefined.`);
@@ -2133,15 +2160,14 @@ function objectByProp({ store = writable({ prop: void 0, state: void 0 }) } = {}
         indexUpdateFn?.({ reversed: state === 'desc' });
         store.set({ prop, state });
     };
-    const subscribe = (handler) => {
-        return store.subscribe(handler);
-    };
     return Object.freeze({
         compare: sortByFn,
         get prop() { return prop; },
         get state() { return state; },
+        reset,
+        set,
         subscribe,
-        toggleProp,
+        toggleProp
     });
 }
 

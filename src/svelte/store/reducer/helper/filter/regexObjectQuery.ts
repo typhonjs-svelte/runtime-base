@@ -36,7 +36,7 @@ import type { DynReducerHelper }    from '../DynReducerHelper';
  */
 export function regexObjectQuery(accessors: string | Iterable<string>, { accessWarn = false, caseSensitive = false,
  store }: { accessWarn?: boolean, caseSensitive?: boolean, store?: MinimalWritable<string> } = {}):
-  ReturnType<DynReducerHelper.Filters['regexObjectQuery']>
+  ReturnType<DynReducerHelper.FilterAPI['regexObjectQuery']>
 {
    let keyword: string = '';
    let regex: RegExp;
@@ -64,8 +64,7 @@ export function regexObjectQuery(accessors: string | Iterable<string>, { accessW
       }
    }
 
-
-   const filterQuery: ReturnType<DynReducerHelper.Filters['regexObjectQuery']> = Object.assign(
+   const filterQuery: ReturnType<DynReducerHelper.FilterAPI['regexObjectQuery']> = Object.assign(
       /**
        * If there is no filter keyword / regex then do not filter otherwise filter based on the regex
        * created from the search input element.

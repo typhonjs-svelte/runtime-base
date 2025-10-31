@@ -1,7 +1,8 @@
 import { get, writable }            from 'svelte/store';
 
+import type { DynReducerHelper }    from '../DynReducerHelper';
+
 import type {
-   Readable,
    Subscriber,
    Unsubscriber }                   from 'svelte/store';
 
@@ -20,7 +21,7 @@ import type { MinimalWritable }     from '#runtime/svelte/store/util';
  * @returns Sort object by prop instance that fulfills {@link DynReducer.Data.Sort}.
  */
 function objectByProp<T extends { [key: string]: any }>({ store = writable({ prop: void 0, state: void 0 }) }:
- { store?: MinimalWritable<any> } = {}): ObjectByProp<T>
+ { store?: MinimalWritable<any> } = {}): DynReducerHelper.Sort.ObjectByProp<T>
 {
    let prop: string | undefined = void 0;
    let state: string | undefined = 'none';
@@ -67,6 +68,8 @@ function objectByProp<T extends { [key: string]: any }>({ store = writable({ pro
          }
       }
    }
+
+   // DynReducer.Data.CompareFn Implementation -----------------------------------------------------------------------
 
    let customCompareFn: DynReducer.Data.CompareFn<T> | undefined;
 
@@ -115,6 +118,40 @@ function objectByProp<T extends { [key: string]: any }>({ store = writable({ pro
       return () => indexUpdateFn = void 0;
    };
 
+   // ----------------------------------------------------------------------------------------------------------------
+
+   const reset = () =>
+   {
+      prop = void 0;
+      state = 'none';
+
+      store.set({ prop, state });
+
+      // Forces an index update / sorting is triggered.
+      indexUpdateFn?.({ reversed: state === 'desc' });
+   };
+
+   const set = ({ prop: newProp, state: newState }: DynReducerHelper.Sort.ObjectByPropData = {}) =>
+   {
+      let update = false;
+
+      if (typeof newProp === 'string') { prop = newProp; update = true; }
+      if (newState === 'none' || newState === 'asc' || newState === 'desc' ) { state = newState; update = true; }
+
+      if (update)
+      {
+         store.set({ prop, state });
+
+         // Forces an index update / sorting is triggered.
+         indexUpdateFn?.({ reversed: state === 'desc' });
+      }
+   }
+
+   const subscribe = (handler: Subscriber<{ prop?: string, state?: string }>): Unsubscriber =>
+   {
+      return (store as MinimalWritable<{ prop?: string, state?: string }>).subscribe(handler);
+   };
+
    const toggleProp = (newProp: string | undefined) =>
    {
       if (newProp !== void 0 && typeof newProp !== 'string')
@@ -156,29 +193,17 @@ function objectByProp<T extends { [key: string]: any }>({ store = writable({ pro
       store.set({ prop, state });
    }
 
-   const subscribe = (handler: Subscriber<{ prop?: string, state?: string }>): Unsubscriber =>
-   {
-      return (store as MinimalWritable<{ prop?: string, state?: string }>).subscribe(handler);
-   };
-
    return Object.freeze({
       compare: sortByFn,
       get prop() { return prop },
       get state() { return state },
+      reset,
+      set,
       subscribe,
-      toggleProp,
+      toggleProp
    });
 }
 
-interface ObjectByProp<T> extends Omit<DynReducer.Data.Sort<T>, 'subscribe'>,
- Readable<{ prop?: string, state?: string }>
-{
-   get prop(): string | undefined;
-   get state(): string | undefined;
-   toggleProp: (prop: string) => void;
-}
-
 export {
-   objectByProp,
-   ObjectByProp,
+   objectByProp
 }

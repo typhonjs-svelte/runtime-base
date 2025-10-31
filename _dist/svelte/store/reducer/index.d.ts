@@ -1,3 +1,5 @@
+import { Readable } from 'svelte/store';
+import { DynReducer as DynReducer$1 } from '@typhonjs-svelte/runtime-base/svelte/store/reducer';
 import { MinimalWritableFn, MinimalWritable } from '@typhonjs-svelte/runtime-base/svelte/store/util';
 
 /**
@@ -1228,14 +1230,14 @@ declare class DynReducerHelper {
    *
    * @returns All available filters.
    */
-  static get filters(): DynReducerHelper.Filters;
+  static get filters(): DynReducerHelper.FilterAPI;
   /**
    * Returns the following sort functions:
    * - objectByProp
    *
    * @returns All available sort functions.
    */
-  static get sort(): DynReducerHelper.Sort;
+  static get sort(): DynReducerHelper.SortAPI;
 }
 /**
  * Defines the available resources of {@link DynReducerHelper}.
@@ -1261,7 +1263,7 @@ declare namespace DynReducerHelper {
   /**
    * All available filters.
    */
-  interface Filters {
+  interface FilterAPI {
     /**
      * Creates a filter function to compare objects by a given accessor key against a regex test. The returned
      * function is also a minimal writable Svelte store that builds a regex from the stores value.
@@ -1296,30 +1298,75 @@ declare namespace DynReducerHelper {
     ) => FilterFn.regexObjectQuery;
   }
   /**
-   * All available returned sort functions.
+   * All available returned sort function / data.
    */
-  namespace SortFn {
-    export import ObjectByProp = sort.ObjectByProp;
+  namespace Sort {
     /**
-     * The returned filter function from `sortByProp` helper.
+     * Defines the data object and filter function returned by {@link DynReducerHelper.sort.objectByProp}.
      */
-    type objectByProp<
-      T extends {
-        [key: string]: any;
-      },
-    > = ObjectByProp<T>;
+    interface ObjectByProp<T> extends Omit<DynReducer$1.Data.Sort<T>, 'subscribe'>, Readable<ObjectByPropData> {
+      /**
+       * Get the current object property being sorted.
+       */
+      get prop(): string | undefined;
+      /**
+       * Get the current sort state:
+       * ```
+       * - `none` no sorting.
+       * - `asc` ascending sort.
+       * - `desc` descending sort.
+       * ```
+       */
+      get state(): string | undefined;
+      /**
+       * Resets `prop` and `state`.
+       */
+      reset(): void;
+      /**
+       * Sets the current sorted object property and sort state. You may provide partial data, but state must be
+       * one of: `none`, `asc`, or `desc`.
+       *
+       * @param data
+       */
+      set(data: ObjectByPropData): void;
+      /**
+       * Toggles current prop state and or initializes a new prop sort state. A property that is selected multiple
+       * times will cycle through ascending -> descending -> no sorting.
+       *
+       * @param prop - Object property to activate.
+       */
+      toggleProp(prop: string): void;
+    }
+    /**
+     * Defines the data serialized for current property and sort state.
+     */
+    type ObjectByPropData = {
+      /**
+       * Current sorted object property if any.
+       */
+      prop?: string;
+      /**
+       * Current sort state:
+       * ```
+       * - `none` no sorting.
+       * - `asc` ascending sort.
+       * - `desc` descending sort.
+       * ```
+       */
+      state?: string;
+    };
   }
   /**
    * All available sort functions.
    */
-  interface Sort {
+  interface SortAPI {
     objectByProp: <
       T extends {
         [key: string]: any;
       },
     >(options: {
       store?: MinimalWritable<any>;
-    }) => SortFn.ObjectByProp<T>;
+    }) => Sort.ObjectByProp<T>;
   }
 }
 
