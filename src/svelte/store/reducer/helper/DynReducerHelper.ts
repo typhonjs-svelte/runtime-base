@@ -114,6 +114,11 @@ declare namespace DynReducerHelper {
          get state(): string | undefined;
 
          /**
+          * Returns any current custom compare function lookup map.
+          */
+         getCustomCompareFnMap(): { [key: string]: DynReducer.Data.CompareFn<T> | DynReducer.Data.Sort<T> } | undefined;
+
+         /**
           * Resets `prop` and `state`.
           */
          reset(): void;
@@ -125,6 +130,14 @@ declare namespace DynReducerHelper {
           * @param data
           */
          set(data: ObjectByPropData): void;
+
+         /**
+          * Sets the current custom compare function lookup map for object properties that require unique sorting.
+          *
+          * @param customCompareFn
+          */
+         setCustomCompareFnMap(customCompareFn:
+          { [key: string]: DynReducer.Data.CompareFn<T> | DynReducer.Data.Sort<T> } | undefined): void;
 
          /**
           * Toggles current prop state and or initializes a new prop sort state. A property that is selected multiple
@@ -160,8 +173,9 @@ declare namespace DynReducerHelper {
     * All available sort functions.
     */
    export interface SortAPI {
-      objectByProp: <T extends { [key: string]: any }>(options: { store?: MinimalWritable<any> }) =>
-       Sort.ObjectByProp<T>
+      objectByProp: <T extends { [key: string]: any }>(options: { store?: MinimalWritable<unknown>,
+       customCompareFnMap?: { [key: string]: DynReducer.Data.CompareFn<T> | DynReducer.Data.Sort<T> }}) =>
+        Sort.ObjectByProp<T>
    }
 }
 

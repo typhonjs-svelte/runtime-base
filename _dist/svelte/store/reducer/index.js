@@ -2026,149 +2026,211 @@ const filters = /*#__PURE__*/Object.freeze({
     regexObjectQuery: regexObjectQuery
 });
 
-/**
- *
- * @param [options] - Options.
- *
- * @param [options.store] - An external store that serializes the tracked prop and sorting state.
- *
- * @returns Sort object by prop instance that fulfills {@link DynReducer.Data.Sort}.
- */
-function objectByProp({ store = writable({ prop: void 0, state: void 0 }) } = {}) {
-    let prop = void 0;
-    let state = 'none';
-    if (!isMinimalWritableStore(store)) {
-        throw new TypeError(`'store' is not a MinimalWritable store.`);
-    }
-    const storeValue = get(store);
-    if (!isObject(storeValue)) {
-        store.set({ prop, state });
-    }
-    else {
-        const prevProp = storeValue.prop;
-        const prevState = storeValue.state;
-        // Accept previous prop value.
-        if (typeof prevProp === 'string') {
-            prop = prevProp;
-        }
-        if (typeof prevState === 'string') {
-            // Set previous state if valid or reset store value.
-            if (prevState === 'none' || prevState === 'asc' || prevState === 'desc') {
-                state = prevState;
-            }
-            else {
-                store.set({ prop, state });
-            }
-        }
-        // Potentially detect errant / extra keys and reset store value.
-        for (const key of Object.keys(storeValue)) {
-            if (key !== 'prop' && key !== 'state') {
-                store.set({ prop, state });
-                break;
-            }
-        }
-    }
-    let indexUpdateFn;
-    function sortByFn(a, b) {
-        if (prop === void 0 || state === 'none') {
-            return 0;
-        }
-        const aVal = a?.[prop];
-        const bVal = b?.[prop];
-        if (aVal === bVal) {
-            return 0;
-        }
-        const aType = typeof aVal;
-        const bType = typeof bVal;
-        switch (aType) {
-            case 'string':
-                if (bType === 'string') {
-                    return aVal.localeCompare(bVal);
-                }
-                break;
-            case 'number':
-                if (bType === 'number') {
-                    return aVal - bVal;
-                }
-                break;
-        }
-        return 0;
-    }
+class ObjectByProp {
+    #customCompareFnMap;
+    #customCompareFn;
+    #indexUpdateFn;
+    #prop;
+    #sortByFn;
+    #state = 'none';
+    #store;
     /**
-     * Custom dynamic reducer subscriber accepting the index update function.
+     * @param [options] - Options.
      *
-     * @param handler - Dynamic
+     * @param [options.store] - An external store that serializes the tracked prop and sorting state.
+     *
+     * @param [options.customCompareFnMap] - An object with property keys associated with custom compare functions for
+     *        those keys.
      */
-    sortByFn.subscribe = (handler) => {
-        indexUpdateFn = handler;
+    constructor({ store = writable({ prop: void 0, state: void 0 }), customCompareFnMap } = {}) {
+        if (!isMinimalWritableStore(store)) {
+            throw new TypeError(`'store' is not a MinimalWritable store.`);
+        }
+        if (customCompareFnMap !== void 0 && !isObject(customCompareFnMap)) {
+            throw new TypeError(`'customCompareFnMap' is not an object or undefined.`);
+        }
+        this.#customCompareFnMap = customCompareFnMap;
+        this.#store = store;
+        this.#initializeStore();
+        this.#sortByFn = this.#initializeSortByFn();
+    }
+    get compare() {
+        return this.#sortByFn;
+    }
+    get prop() {
+        return this.#prop;
+    }
+    get state() {
+        return this.#state;
+    }
+    getCustomCompareFnMap() {
+        return this.#customCompareFnMap;
+    }
+    reset() {
+        this.#prop = void 0;
+        this.#state = 'none';
+        this.#store.set({ prop: this.#prop, state: this.#state });
         // Forces an index update / sorting is triggered.
-        indexUpdateFn?.({ reversed: state === 'desc' });
-        return () => indexUpdateFn = void 0;
-    };
-    // ----------------------------------------------------------------------------------------------------------------
-    const reset = () => {
-        prop = void 0;
-        state = 'none';
-        store.set({ prop, state });
-        // Forces an index update / sorting is triggered.
-        indexUpdateFn?.({ reversed: state === 'desc' });
-    };
-    const set = ({ prop: newProp, state: newState } = {}) => {
+        this.#indexUpdateFn?.({ reversed: this.#state === 'desc' });
+    }
+    set({ prop, state } = {}) {
         let update = false;
-        if (typeof newProp === 'string') {
-            prop = newProp;
+        if (typeof prop === 'string') {
+            this.#prop = prop;
             update = true;
         }
-        if (newState === 'none' || newState === 'asc' || newState === 'desc') {
-            state = newState;
+        if (state === 'none' || state === 'asc' || state === 'desc') {
+            this.#state = state;
             update = true;
         }
         if (update) {
-            store.set({ prop, state });
+            this.#store.set({ prop: this.#prop, state: this.#state });
             // Forces an index update / sorting is triggered.
-            indexUpdateFn?.({ reversed: state === 'desc' });
+            this.#indexUpdateFn?.({ reversed: this.#state === 'desc' });
         }
-    };
-    const subscribe = (handler) => {
-        return store.subscribe(handler);
-    };
-    const toggleProp = (newProp) => {
-        if (newProp !== void 0 && typeof newProp !== 'string') {
-            throw TypeError(`'newProp' is not a string or undefined.`);
+    }
+    ;
+    setCustomCompareFnMap(customCompareFnMap) {
+        if (customCompareFnMap !== void 0 && !isObject(customCompareFnMap)) {
+            throw new TypeError(`'customCompareFnMap' is not an object or undefined.`);
+        }
+        // TODO: Update custom compare Fn.
+        this.#customCompareFnMap = customCompareFnMap;
+    }
+    subscribe(handler) {
+        return this.#store.subscribe(handler);
+    }
+    toggleProp(prop) {
+        if (prop !== void 0 && typeof prop !== 'string') {
+            throw TypeError(`'prop' is not a string or undefined.`);
         }
         /**
          * Determine current state. If the `prop` being toggled is the current `sortBy` prop then use the stored state.
          * Otherwise, this is a new property to toggle and start from `none`.
          */
-        const currentState = prop === newProp ? state : 'none';
+        const currentState = this.#prop === prop ? this.#state : 'none';
         switch (currentState) {
             case 'none':
-                state = 'asc';
+                this.#state = 'asc';
                 break;
             case 'asc':
-                state = 'desc';
+                this.#state = 'desc';
                 break;
             case 'desc':
-                state = 'none';
+                this.#state = 'none';
                 break;
             default:
-                state = 'none';
+                this.#state = 'none';
                 break;
         }
-        prop = newProp;
+        this.#prop = prop;
+        this.#store.set({ prop: this.#prop, state: this.#state });
         // Forces an index update / sorting is triggered.
-        indexUpdateFn?.({ reversed: state === 'desc' });
-        store.set({ prop, state });
-    };
-    return Object.freeze({
-        compare: sortByFn,
-        get prop() { return prop; },
-        get state() { return state; },
-        reset,
-        set,
-        subscribe,
-        toggleProp
-    });
+        this.#indexUpdateFn?.({ reversed: this.#state === 'desc' });
+    }
+    // Internal Implementation ----------------------------------------------------------------------------------------
+    /**
+     * Validate / configure initial external store data
+     */
+    #initializeStore() {
+        const storeValue = get(this.#store);
+        if (!isObject(storeValue)) {
+            this.#store.set({ prop: this.#prop, state: this.#state });
+        }
+        else {
+            const prevProp = storeValue.prop;
+            const prevState = storeValue.state;
+            // Accept previous prop value.
+            if (typeof prevProp === 'string') {
+                this.#prop = prevProp;
+            }
+            if (typeof prevState === 'string') {
+                // Set previous state if valid or reset store value.
+                if (prevState === 'none' || prevState === 'asc' || prevState === 'desc') {
+                    this.#state = prevState;
+                }
+                else {
+                    this.#store.set({ prop: this.#prop, state: this.#state });
+                }
+            }
+            // Potentially detect errant / extra keys and reset store value.
+            for (const key of Object.keys(storeValue)) {
+                if (key !== 'prop' && key !== 'state') {
+                    this.#store.set({ prop: this.#prop, state: this.#state });
+                    break;
+                }
+            }
+        }
+    }
+    #initializeSortByFn() {
+        const sortByFn = (a, b) => {
+            if (this.#prop === void 0 || this.#state === 'none') {
+                return 0;
+            }
+            const aVal = a?.[this.#prop];
+            const bVal = b?.[this.#prop];
+            // TODO: implement caching of custom compare function.
+            // ----------------------------------------------------------------------------------------------------------
+            const customCompare = this.#customCompareFnMap?.[this.#prop];
+            if (typeof customCompare === 'function') {
+                // Case 1: It's a class with a static .compare().
+                if ('compare' in customCompare && typeof customCompare.compare === 'function') {
+                    return customCompare.compare(aVal, bVal);
+                }
+                // Case 2: It's a plain function comparator.
+                return customCompare(aVal, bVal);
+            }
+            else if (typeof customCompare?.compare === 'function') {
+                // Case 3: It's an object instance with a .compare() method.
+                return customCompare.compare(aVal, bVal);
+            }
+            // ----------------------------------------------------------------------------------------------------------
+            if (aVal === bVal) {
+                return 0;
+            }
+            const aType = typeof aVal;
+            const bType = typeof bVal;
+            switch (aType) {
+                case 'string':
+                    if (bType === 'string') {
+                        return aVal.localeCompare(bVal);
+                    }
+                    break;
+                case 'number':
+                    if (bType === 'number') {
+                        return aVal - bVal;
+                    }
+                    break;
+            }
+            return 0;
+        };
+        /**
+         * Custom dynamic reducer subscriber accepting the index update function.
+         *
+         * @param handler - Dynamic
+         */
+        sortByFn.subscribe = (handler) => {
+            this.#indexUpdateFn = handler;
+            // Forces an index update / sorting is triggered.
+            this.#indexUpdateFn?.({ reversed: this.#state === 'desc' });
+            return () => this.#indexUpdateFn = void 0;
+        };
+        return sortByFn;
+    }
+}
+
+/**
+ * @param [options] - Options.
+ *
+ * @param [options.store] - An external store that serializes the tracked prop and sorting state.
+ *
+ * @param [options.customCompareFnMap] - An object with property keys associated with custom compare functions for those
+ *        keys.
+ *
+ * @returns Sort object by prop instance that fulfills {@link DynReducer.Data.Sort}.
+ */
+function objectByProp({ store, customCompareFnMap } = {}) {
+    return new ObjectByProp({ store, customCompareFnMap });
 }
 
 const sort = /*#__PURE__*/Object.freeze({
