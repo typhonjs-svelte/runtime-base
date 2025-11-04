@@ -321,6 +321,14 @@ declare class CrossWindow {
    */
   static isCSSStyleSheet(target: unknown): target is CSSStyleSheet;
   /**
+   * Provides basic prototype string type checking if `target` is a Date.
+   *
+   * @param target - A potential Date to test.
+   *
+   * @returns Is `target` a Date.
+   */
+  static isDate(target: unknown): target is Date;
+  /**
    * Provides basic prototype string type checking if `target` is a Document.
    *
    * @param target - A potential Document to test.
