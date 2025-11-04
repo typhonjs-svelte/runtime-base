@@ -1,4 +1,4 @@
-import { CrossRealm } from '#runtime/util/browser';
+import { CrossRealm } from '#runtime/util';
 
 /**
  * Provides management of a single Promise that can be shared and accessed across JS & Svelte components. This allows a

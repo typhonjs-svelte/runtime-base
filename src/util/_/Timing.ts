@@ -1,14 +1,9 @@
 /**
  * Provides timing related higher-order functions.
- *
- * This class should not be constructed as it only contains static methods.
  */
-export class Timing
+export abstract class Timing
 {
-   /**
-    * @hideconstructor
-    */
-   constructor()
+   private constructor()
    {
       throw new Error('Timing constructor: This is a static class and should not be constructed.');
    }
@@ -17,13 +12,11 @@ export class Timing
     * Wraps a callback in a debounced timeout. Delay execution of the callback function until the function has not been
     * called for the given delay in milliseconds.
     *
-    * @template Args
+    * @param callback - A function to execute once the debounced threshold has been passed.
     *
-    * @param {(...args: Args[]) => void} callback - A function to execute once the debounced threshold has been passed.
+    * @param delay - An amount of time in milliseconds to delay.
     *
-    * @param {number}   delay - An amount of time in milliseconds to delay.
-    *
-    * @returns {(...args: Args[]) => void} A wrapped function that can be called to debounce execution.
+    * @returns A wrapped function that can be called to debounce execution.
     *
     * @example
     * /**
@@ -45,7 +38,8 @@ export class Timing
     * // Use the function like:
     * updateDebounced('new value');
     */
-   static debounce(callback, delay)
+   static debounce<Args extends unknown[] = unknown[]>(callback: (...args: Args) => void, delay: number):
+    (...args: Args) => void
    {
       if (typeof callback !== 'function')
       {
@@ -57,9 +51,9 @@ export class Timing
          throw new TypeError(`'delay' must be a positive integer representing milliseconds.`);
       }
 
-      let timeoutId;
+      let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
-      return function(...args)
+      return function(this: unknown, ...args)
       {
          globalThis.clearTimeout(timeoutId);
          timeoutId = globalThis.setTimeout(() => { callback.apply(this, args); }, delay);
@@ -71,15 +65,15 @@ export class Timing
     * callback on a single click and the `double` callback on a double click. The default double click delay to invoke
     * the `double` callback is 400 milliseconds.
     *
-    * @param {object}   opts - Optional parameters.
+    * @param opts - Optional parameters.
     *
-    * @param {(event: Event) => void} [opts.single] - Single click callback.
+    * @param [opts.single] - Single click callback.
     *
-    * @param {(event: Event) => void} [opts.double] - Double click callback.
+    * @param [opts.double] - Double click callback.
     *
-    * @param {number}   [opts.delay=400] - Double click delay.
+    * @param [opts.delay=400] - Double click delay.
     *
-    * @returns {(event: Event) => void} The gated double-click handler.
+    * @returns The gated double-click handler.
     *
     * @example
     * // Given a button element.
@@ -88,7 +82,8 @@ export class Timing
     *    double: (event) => console.log('Double click: ', event)
     * });
     */
-   static doubleClick({ single, double, delay = 400 })
+   static doubleClick<E extends Event = Event>({ single, double, delay = 400 }:
+    { single: (event: E) => void, double: (event: E) => void, delay: number }): (event: E) => void
    {
       if (single !== void 0 && typeof single !== 'function') { throw new TypeError(`'single' must be a function.`); }
       if (double !== void 0 && typeof double !== 'function') { throw new TypeError(`'double' must be a function.`); }
@@ -98,8 +93,8 @@ export class Timing
          throw new TypeError(`'delay' must be a positive integer representing milliseconds.`);
       }
 
-      let clicks = 0;
-      let timeoutId;
+      let clicks: number = 0;
+      let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
       return (event) =>
       {

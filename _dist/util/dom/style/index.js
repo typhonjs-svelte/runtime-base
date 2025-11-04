@@ -1,4 +1,4 @@
-import { CrossRealm } from '@typhonjs-svelte/runtime-base/util/browser';
+import { CrossRealm } from '@typhonjs-svelte/runtime-base/util';
 import { isObject, isIterable } from '@typhonjs-svelte/runtime-base/util/object';
 import { validateStrict, compare, satisfies } from '@typhonjs-svelte/runtime-base/util/semver';
 

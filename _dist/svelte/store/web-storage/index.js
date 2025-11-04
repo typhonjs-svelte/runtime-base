@@ -1,5 +1,5 @@
 import { writable, get } from 'svelte/store';
-import { CrossRealm } from '@typhonjs-svelte/runtime-base/util/browser';
+import { CrossRealm } from '@typhonjs-svelte/runtime-base/util';
 
 /**
  * Generates derived, readable, writable helper functions wrapping the given Storage API provided with any additional

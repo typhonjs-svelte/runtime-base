@@ -1,4 +1,4 @@
-import { CrossRealm }   from '#runtime/util/browser';
+import { CrossRealm }   from '#runtime/util';
 import { isObject }     from '#runtime/util/object';
 
 import { TJSSvelte }    from './TJSSvelte';

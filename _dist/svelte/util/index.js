@@ -1,4 +1,4 @@
-import { CrossRealm } from '@typhonjs-svelte/runtime-base/util/browser';
+import { CrossRealm } from '@typhonjs-svelte/runtime-base/util';
 import { isObject } from '@typhonjs-svelte/runtime-base/util/object';
 import { group_outros, transition_out, check_outros } from 'svelte/internal';
 

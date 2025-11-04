@@ -1,4 +1,4 @@
-import { CrossRealm } from './CrossRealm';
+import { CrossRealm } from '#runtime/util';
 
 /**
  * Provides access to the Clipboard API for reading / writing text strings. This requires a secure context.

@@ -4,50 +4,49 @@
  * The protection level provided is for accidental modification. A determined caller could still mutate via
  * `Map.prototype.set.call(frozenMap, ...)` or `Set.prototype.add.call(frozenSet, ...)`.
  */
-class Frozen
+abstract class Frozen
 {
-   /**
-    * @hideconstructor
-    */
-   constructor()
+   private constructor()
    {
       throw new Error('Frozen constructor: This is a static class and should not be constructed.');
    }
 
    /**
-    * @param {Iterable<[K, V]>} [entries] - Target Map or iterable of [key, value] pairs.
+    * @param [entries] - Target Map or iterable of [key, value] pairs.
     *
-    * @returns {ReadonlyMap<K, V>} A strictly ReadonlyMap.
-    *
-    * @template K, V
+    * @returns A strictly ReadonlyMap.
     */
-   static Map(entries)
+   static Map<K, V>(entries?: Iterable<[K, V]>): ReadonlyMap<K, V>
    {
-      const result = new Map(entries);
+      const result = new Map(entries) as ReadonlyMap<K, V>;
 
+      // @ts-expect-error
       result.set = void 0;
+      // @ts-expect-error
       result.delete = void 0;
+      // @ts-expect-error
       result.clear = void 0;
 
-      return /** @type {ReadonlyMap<K, V>} */ result;
+      return result;
    }
 
    /**
-    * @param {Iterable<T>} [data] - Target Set or iterable list.
+    * @param [data] - Target Set or iterable list.
     *
-    * @returns {ReadonlySet<T>} A strictly ReadonlySet.
-    *
-    * @template T
+    * @returns A strictly ReadonlySet.
     */
-   static Set(data)
+   static Set<T>(data?: Iterable<T>): ReadonlySet<T>
    {
-      const result = new Set(data);
+      const result = new Set(data) as ReadonlySet<T>;
 
+      // @ts-expect-error
       result.add = void 0;
+      // @ts-expect-error
       result.delete = void 0;
+      // @ts-expect-error
       result.clear = void 0;
 
-      return /** @type {ReadonlySet<T>} */ result;
+      return result;
    }
 }
 

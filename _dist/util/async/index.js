@@ -1,5 +1,5 @@
 import { isIterable, isObject, safeAccess } from '@typhonjs-svelte/runtime-base/util/object';
-import { CrossRealm } from '@typhonjs-svelte/runtime-base/util/browser';
+import { CrossRealm } from '@typhonjs-svelte/runtime-base/util';
 
 /**
  * Provides utility functions for retrieving data about images.

@@ -18,12 +18,9 @@ import { isObject } from '#runtime/util/object';
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/instanceof#instanceof_and_multiple_realms
  * @see https://262.ecma-international.org/#sec-code-realms
  */
-class CrossRealm
+abstract class CrossRealm
 {
-   /**
-    * @private
-    */
-   constructor()
+   private constructor()
    {
       throw new Error('CrossRealm constructor: This is a static class and should not be constructed.');
    }

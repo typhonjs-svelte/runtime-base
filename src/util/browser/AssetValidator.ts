@@ -1,6 +1,6 @@
-import { Frozen }       from '#runtime/util';
-
-import { CrossRealm }   from './CrossRealm';
+import {
+   CrossRealm,
+   Frozen }             from '#runtime/util';
 
 import { URLParser }    from './URLParser';
 

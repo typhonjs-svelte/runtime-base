@@ -1,4 +1,4 @@
-import { CrossRealm } from './CrossRealm';
+import { CrossRealm } from '#runtime/util';
 
 /**
  * Provides a utility function to parse / construct fully qualified URL instances from a URL string.

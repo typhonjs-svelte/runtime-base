@@ -1,16 +1,17 @@
 /**
  * Provides various utilities for generating hash codes for strings and UUIDs.
- *
- * This class should not be constructed as it only contains static methods.
  */
-export class Hashing
+export abstract class Hashing
 {
-   static #regexUuidv = /^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
+   static #cryptoBuffer = new Uint8Array(1);
 
-   /**
-    * @hideconstructor
-    */
-   constructor()
+   static #regexUuidv4 = /^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
+
+   static #regexUuidReplace = /[018]/g;
+
+   static #uuidTemplate = '10000000-1000-4000-8000-100000000000';
+
+   private constructor()
    {
       throw new Error('Hashing constructor: This is a static class and should not be constructed.');
    }
@@ -20,13 +21,13 @@ export class Hashing
     *
     * Sourced from: https://stackoverflow.com/a/52171480
     *
-    * @param {string}   str - String to hash.
+    * @param str - String to hash.
     *
-    * @param {number}   [seed=0] - A seed value altering the hash.
+    * @param [seed=0] - A seed value altering the hash; default value: `0`.
     *
-    * @returns {number} Hash code.
+    * @returns Hash code.
     */
-   static hashCode(str, seed = 0)
+   static hashCode(str: string, seed: number = 0): number
    {
       if (typeof str !== 'string') { return 0; }
 
@@ -48,30 +49,33 @@ export class Hashing
    /**
     * Validates that the given string is formatted as a UUIDv4 string.
     *
-    * @param {unknown}   uuid - UUID string to test.
+    * @param uuid - UUID string to test.
     *
-    * @returns {uuid is string} Is UUIDv4 string.
+    * @returns Is UUIDv4 string.
     */
-   static isUuidv4(uuid)
+   static isUuidv4(uuid: unknown): uuid is string
    {
-      return typeof uuid === 'string' && this.#regexUuidv.test(uuid);
+      return typeof uuid === 'string' && this.#regexUuidv4.test(uuid);
    }
 
    /**
     * Generates a UUID v4 compliant ID. Please use a complete UUID generation package for guaranteed compliance.
     *
-    * This code is an evolution of the following Gist.
+    * This code is an evolution of the `Jed UUID` from the following Gist.
     * https://gist.github.com/jed/982883
     *
     * There is a public domain / free copy license attached to it that is not a standard OSS license...
     * https://gist.github.com/jed/982883#file-license-txt
     *
-    * @returns {string} UUIDv4
+    * @privateRemarks
+    * The code golfing was removed in the implementation below.
+    *
+    * @returns UUIDv4
     */
-   static uuidv4()
+   static uuidv4(): string
    {
-      return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
-       (c ^ (globalThis.crypto ?? globalThis.msCrypto).getRandomValues(
-        new Uint8Array(1))[0] & 15 >> c / 4).toString(16));
+      return this.#uuidTemplate.replace(this.#regexUuidReplace, (c: string) =>
+       (Number(c) ^ (globalThis.crypto ?? (globalThis as any).msCrypto).getRandomValues(
+        this.#cryptoBuffer)[0] & 15 >> Number(c) / 4).toString(16));
    }
 }

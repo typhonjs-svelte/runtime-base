@@ -1,5 +1,5 @@
 import { isWritableStore } from '@typhonjs-svelte/runtime-base/svelte/store/util';
-import { CrossRealm } from '@typhonjs-svelte/runtime-base/util/browser';
+import { CrossRealm } from '@typhonjs-svelte/runtime-base/util';
 import { StyleParse } from '@typhonjs-svelte/runtime-base/util/dom/style';
 import { isObject } from '@typhonjs-svelte/runtime-base/util/object';
 

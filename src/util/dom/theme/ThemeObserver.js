@@ -1,4 +1,4 @@
-import { CrossRealm }   from '#runtime/util/browser';
+import { CrossRealm }   from '#runtime/util';
 
 import { writable }     from '#svelte/store';
 
