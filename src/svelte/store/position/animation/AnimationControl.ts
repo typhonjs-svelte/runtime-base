@@ -1,4 +1,4 @@
-import { CrossWindow }           from '#runtime/util/browser';
+import { CrossRealm }            from '#runtime/util/browser';
 import { isObject }              from '#runtime/util/object';
 
 import type {
@@ -55,7 +55,7 @@ export class AnimationControl implements BasicAnimation
     */
    get finished(): Promise<BasicAnimationState>
    {
-      if (!CrossWindow.isPromise(this.#finishedPromise))
+      if (!CrossRealm.isPromise(this.#finishedPromise))
       {
          this.#finishedPromise = this.#willFinish ? new Promise<BasicAnimationState>((resolve) => this.#animationData!.resolve = resolve) :
           Promise.resolve({ cancelled: false });

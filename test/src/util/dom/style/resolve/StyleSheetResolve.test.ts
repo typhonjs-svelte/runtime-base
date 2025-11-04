@@ -9,7 +9,7 @@ import { StyleSheetResolve }  from '#runtime-test/util/dom/style';
 
 const stringify = (value: [] | {} | undefined) => value ? JSON.stringify(value, null, 2) : '';
 
-// `happy-dom` doesn't assign toStringTag for the mocked DOM API, but `CrossWindow` requires it for duck types.
+// `happy-dom` doesn't assign toStringTag for the mocked DOM API, but `CrossRealm` requires it for duck types.
 Object.defineProperty(CSSStyleSheet.prototype, Symbol.toStringTag, { value: 'CSSStyleSheet' });
 
 // `happy-dom` doesn't implement `CSSLayerBlockRule`, but we can reuse `CSSStyleSheet`.

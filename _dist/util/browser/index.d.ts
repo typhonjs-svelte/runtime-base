@@ -211,16 +211,23 @@ declare class ClipboardAccess {
 
 /**
  * Provides cross-realm checks for DOM nodes / elements, events, and essential duck typing for any class-based object
- * with a constructor name. The impetus is that certain browsers such as Chrome and Firefox behave differently when
- * performing `instanceof` checks when elements are moved between browser windows. With Firefox in particular, the
- * entire JS runtime cannot use `instanceof` checks as the instances of fundamental DOM elements differ between
- * windows.
+ * with a constructor name. A realm is an execution environment with its own global object and intrinsics; values
+ * created in different realms do not share prototypes, so checks like `instanceof` can fail across realms. This
+ * includes sharing JS code across browser windows.
+ *
+ * The impetus is that certain browsers such as Chrome and Firefox behave differently when performing `instanceof`
+ * checks when elements are moved between browser windows. With Firefox in particular, the entire JS runtime cannot use
+ * `instanceof` checks as the instances of fundamental DOM elements differ between windows.
  *
  * TRL supports moving applications from a main central browser window and popping them out into separate standalone
  * app instances in a separate browser window. In this case, for essential DOM element and event checks, it is necessary
- * to employ the workarounds found in `CrossWindow`.
+ * to employ the workarounds found in `CrossRealm`.
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Execution_model#realms
+ * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/instanceof#instanceof_and_multiple_realms
+ * @see https://262.ecma-international.org/#sec-code-realms
  */
-declare class CrossWindow {
+declare class CrossRealm {
   #private;
   /**
    * @private
@@ -244,10 +251,7 @@ declare class CrossWindow {
    *
    * @throws {@link TypeError} Target must be a DOM Node / Element, Document, UIEvent, or Window.
    */
-  static getActiveElement(
-    target: CrossWindow.GetTarget,
-    { throws }?: CrossWindow.GetOptions,
-  ): Element | null | undefined;
+  static getActiveElement(target: CrossRealm.GetTarget, { throws }?: CrossRealm.GetOptions): Element | null | undefined;
   /**
    * Convenience method to retrieve the `Document` value in the current context of a DOM Node / Element, EventTarget,
    * Document, UIEvent, or Window.
@@ -261,7 +265,7 @@ declare class CrossWindow {
    * @throws {@link TypeError} Target must be a DOM Node / Element, Document, UIEvent, or Window.
    */
   static getDocument(
-    target: CrossWindow.GetTarget,
+    target: CrossRealm.GetTarget,
     {
       throws,
     }?: {
@@ -281,7 +285,7 @@ declare class CrossWindow {
    * @throws {@link TypeError} Target must be a DOM Node / Element, Document, UIEvent, or Window.
    */
   static getWindow(
-    target: CrossWindow.GetTarget,
+    target: CrossRealm.GetTarget,
     {
       throws,
     }?: {
@@ -510,7 +514,7 @@ declare class CrossWindow {
    */
   static isDOMException(target: unknown, name: string): boolean;
 }
-declare namespace CrossWindow {
+declare namespace CrossRealm {
   /**
    * Defines the DOM API targets usable for all `get` methods.
    */
@@ -557,4 +561,4 @@ declare class URLParser {
   static parse({ url, base, routePrefix }: { url: string | URL; base?: string; routePrefix?: string }): URL | null;
 }
 
-export { AssetValidator, BrowserSupports, ClipboardAccess, CrossWindow, URLParser };
+export { AssetValidator, BrowserSupports, ClipboardAccess, CrossRealm, URLParser };

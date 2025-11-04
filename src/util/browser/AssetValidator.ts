@@ -1,6 +1,6 @@
 import { Frozen }       from '#runtime/util';
 
-import { CrossWindow }  from './CrossWindow';
+import { CrossRealm }   from './CrossRealm';
 
 import { URLParser }    from './URLParser';
 
@@ -64,7 +64,7 @@ class AssetValidator
    {
       const throws = typeof raiseException === 'boolean' ? raiseException : true;
 
-      if (typeof url !== 'string' && !CrossWindow.isURL(url))
+      if (typeof url !== 'string' && !CrossRealm.isURL(url))
       {
          if (throws) { throw new TypeError(`'url' is not a string or URL instance.`); }
          else { return { url, valid: false }; }
@@ -76,13 +76,13 @@ class AssetValidator
          else { return { url, valid: false }; }
       }
 
-      if (exclude !== void 0 && !CrossWindow.isSet(exclude))
+      if (exclude !== void 0 && !CrossRealm.isSet(exclude))
       {
          if (throws) { throw new TypeError(`'exclude' is not a Set.`); }
          else { return { url, valid: false }; }
       }
 
-      if (!CrossWindow.isSet(mediaTypes))
+      if (!CrossRealm.isSet(mediaTypes))
       {
          if (throws) { throw new TypeError(`'mediaTypes' is not a Set.`); }
          else { return { url, valid: false }; }
@@ -99,7 +99,7 @@ class AssetValidator
       const extensionMatch = targetURL.pathname.match(/\.([a-zA-Z0-9]+)$/);
       const extension = extensionMatch ? extensionMatch[1].toLowerCase() : void 0;
 
-      const isExcluded = extension && CrossWindow.isSet(exclude) ? exclude.has(extension) : false;
+      const isExcluded = extension && CrossRealm.isSet(exclude) ? exclude.has(extension) : false;
 
       let elementType: 'img' | 'video' | 'svg' | 'audio' | undefined = void 0;
       let valid = false;

@@ -1,4 +1,4 @@
-import { CrossWindow } from '@typhonjs-svelte/runtime-base/util/browser';
+import { CrossRealm } from '@typhonjs-svelte/runtime-base/util/browser';
 import { writable } from 'svelte/store';
 
 /**
@@ -140,9 +140,9 @@ class ThemeObserver
     */
    static nearestThemedTokens({ element, output = new Set(), override = true, strict = false })
    {
-      if (!CrossWindow.isSet(output)) { throw new TypeError(`'output' is not a Set.`); }
+      if (!CrossRealm.isSet(output)) { throw new TypeError(`'output' is not a Set.`); }
 
-      if (!CrossWindow.isElement(element)) { return output; }
+      if (!CrossRealm.isElement(element)) { return output; }
 
       return output;
    }

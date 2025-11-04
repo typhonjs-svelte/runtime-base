@@ -1,4 +1,4 @@
-import { CrossWindow } from './CrossWindow';
+import { CrossRealm } from './CrossRealm';
 
 /**
  * Provides access to the Clipboard API for reading / writing text strings. This requires a secure context.
@@ -30,7 +30,7 @@ export class ClipboardAccess
    {
       let result: string = '';
 
-      if (!CrossWindow.isWindow(activeWindow))
+      if (!CrossRealm.isWindow(activeWindow))
       {
          throw new TypeError(`ClipboardAccess.readText error: 'activeWindow' is not a Window.`);
       }
@@ -64,7 +64,7 @@ export class ClipboardAccess
          throw new TypeError(`ClipboardAccess.writeText error: 'text' is not a string.`);
       }
 
-      if (!CrossWindow.isWindow(activeWindow))
+      if (!CrossRealm.isWindow(activeWindow))
       {
          throw new TypeError(`ClipboardAccess.writeText error: 'activeWindow' is not a Window.`);
       }

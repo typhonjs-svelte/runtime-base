@@ -1,4 +1,4 @@
-import { CrossWindow } from '#runtime/util/browser';
+import { CrossRealm } from '#runtime/util/browser';
 
 /**
  * Provides resources for parsing style strings.
@@ -168,7 +168,7 @@ export class StyleParse
       if (typeof selectorText !== 'string' || selectorText.length === 0) { return parts; }
 
       const hasExclude = Array.isArray(excludeSelectorParts) && excludeSelectorParts.length > 0;
-      const hasInclude = CrossWindow.isSet(includeSelectorPartSet) && includeSelectorPartSet.size > 0;
+      const hasInclude = CrossRealm.isSet(includeSelectorPartSet) && includeSelectorPartSet.size > 0;
 
       let start = 0;
       let inSQ = false; // '

@@ -1,5 +1,5 @@
 import { isIterable, isObject, safeAccess } from '@typhonjs-svelte/runtime-base/util/object';
-import { CrossWindow } from '@typhonjs-svelte/runtime-base/util/browser';
+import { CrossRealm } from '@typhonjs-svelte/runtime-base/util/browser';
 
 /**
  * Provides utility functions for retrieving data about images.
@@ -161,7 +161,7 @@ class ManagedPromise
          throw new TypeError(`[TRL] ManagedPromise.create error: 'reuse' is not a boolean.`);
       }
 
-      if (reuse && this.#current !== void 0 && CrossWindow.isPromise(this.#current.promise))
+      if (reuse && this.#current !== void 0 && CrossRealm.isPromise(this.#current.promise))
       {
          if (ManagedPromise.#logging)
          {
@@ -231,7 +231,7 @@ class ManagedPromise
       {
          this.#current.isProcessing = true;
 
-         if (CrossWindow.isPromise(result))
+         if (CrossRealm.isPromise(result))
          {
             result.then((value) =>
             {
@@ -284,7 +284,7 @@ class ManagedPromise
 
       if (this.#current !== void 0)
       {
-         if (CrossWindow.isPromise(result))
+         if (CrossRealm.isPromise(result))
          {
             this.#current.isProcessing = true;
 

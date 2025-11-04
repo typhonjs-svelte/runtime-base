@@ -3,21 +3,28 @@ import { isObject } from '@typhonjs-svelte/runtime-base/util/object';
 
 /**
  * Provides cross-realm checks for DOM nodes / elements, events, and essential duck typing for any class-based object
- * with a constructor name. The impetus is that certain browsers such as Chrome and Firefox behave differently when
- * performing `instanceof` checks when elements are moved between browser windows. With Firefox in particular, the
- * entire JS runtime cannot use `instanceof` checks as the instances of fundamental DOM elements differ between
- * windows.
+ * with a constructor name. A realm is an execution environment with its own global object and intrinsics; values
+ * created in different realms do not share prototypes, so checks like `instanceof` can fail across realms. This
+ * includes sharing JS code across browser windows.
+ *
+ * The impetus is that certain browsers such as Chrome and Firefox behave differently when performing `instanceof`
+ * checks when elements are moved between browser windows. With Firefox in particular, the entire JS runtime cannot use
+ * `instanceof` checks as the instances of fundamental DOM elements differ between windows.
  *
  * TRL supports moving applications from a main central browser window and popping them out into separate standalone
  * app instances in a separate browser window. In this case, for essential DOM element and event checks, it is necessary
- * to employ the workarounds found in `CrossWindow`.
+ * to employ the workarounds found in `CrossRealm`.
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Execution_model#realms
+ * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/instanceof#instanceof_and_multiple_realms
+ * @see https://262.ecma-international.org/#sec-code-realms
  */
-class CrossWindow {
+class CrossRealm {
     /**
      * @private
      */
     constructor() {
-        throw new Error('CrossWindow constructor: This is a static class and should not be constructed.');
+        throw new Error('CrossRealm constructor: This is a static class and should not be constructed.');
     }
     /**
      * Class names for all focusable element types.
@@ -536,7 +543,7 @@ class URLParser {
      * @returns Parsed URL or null if `url` is not parsed.
      */
     static parse({ url, base, routePrefix }) {
-        if (CrossWindow.isURL(url)) {
+        if (CrossRealm.isURL(url)) {
             return url;
         }
         if (typeof url !== 'string') {
@@ -638,7 +645,7 @@ class AssetValidator {
      */
     static parseMedia({ url, routePrefix, exclude, mediaTypes = this.#mediaTypes.all, raiseException = false }) {
         const throws = typeof raiseException === 'boolean' ? raiseException : true;
-        if (typeof url !== 'string' && !CrossWindow.isURL(url)) {
+        if (typeof url !== 'string' && !CrossRealm.isURL(url)) {
             if (throws) {
                 throw new TypeError(`'url' is not a string or URL instance.`);
             }
@@ -654,7 +661,7 @@ class AssetValidator {
                 return { url, valid: false };
             }
         }
-        if (exclude !== void 0 && !CrossWindow.isSet(exclude)) {
+        if (exclude !== void 0 && !CrossRealm.isSet(exclude)) {
             if (throws) {
                 throw new TypeError(`'exclude' is not a Set.`);
             }
@@ -662,7 +669,7 @@ class AssetValidator {
                 return { url, valid: false };
             }
         }
-        if (!CrossWindow.isSet(mediaTypes)) {
+        if (!CrossRealm.isSet(mediaTypes)) {
             if (throws) {
                 throw new TypeError(`'mediaTypes' is not a Set.`);
             }
@@ -681,7 +688,7 @@ class AssetValidator {
         }
         const extensionMatch = targetURL.pathname.match(/\.([a-zA-Z0-9]+)$/);
         const extension = extensionMatch ? extensionMatch[1].toLowerCase() : void 0;
-        const isExcluded = extension && CrossWindow.isSet(exclude) ? exclude.has(extension) : false;
+        const isExcluded = extension && CrossRealm.isSet(exclude) ? exclude.has(extension) : false;
         let elementType = void 0;
         let valid = false;
         if (extension && !isExcluded) {
@@ -763,7 +770,7 @@ class ClipboardAccess {
      */
     static async readText(activeWindow = window) {
         let result = '';
-        if (!CrossWindow.isWindow(activeWindow)) {
+        if (!CrossRealm.isWindow(activeWindow)) {
             throw new TypeError(`ClipboardAccess.readText error: 'activeWindow' is not a Window.`);
         }
         if (activeWindow?.navigator?.clipboard) {
@@ -788,7 +795,7 @@ class ClipboardAccess {
         if (typeof text !== 'string') {
             throw new TypeError(`ClipboardAccess.writeText error: 'text' is not a string.`);
         }
-        if (!CrossWindow.isWindow(activeWindow)) {
+        if (!CrossRealm.isWindow(activeWindow)) {
             throw new TypeError(`ClipboardAccess.writeText error: 'activeWindow' is not a Window.`);
         }
         let success = false;
@@ -831,5 +838,5 @@ class ClipboardAccess {
     }
 }
 
-export { AssetValidator, BrowserSupports, ClipboardAccess, CrossWindow, URLParser };
+export { AssetValidator, BrowserSupports, ClipboardAccess, CrossRealm, URLParser };
 //# sourceMappingURL=index.js.map

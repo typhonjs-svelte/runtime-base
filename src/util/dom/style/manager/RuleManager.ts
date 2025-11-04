@@ -1,4 +1,4 @@
-import { CrossWindow }        from '#runtime/util/browser';
+import { CrossRealm }         from '#runtime/util/browser';
 
 import {
    isIterable,
@@ -37,7 +37,7 @@ export class RuleManager implements StyleManager.RuleManager
     */
    constructor(cssRule: CSSStyleRule, name: string, selector: string)
    {
-      if (!CrossWindow.isCSSStyleRule(cssRule))
+      if (!CrossRealm.isCSSStyleRule(cssRule))
       {
          throw new TypeError(`RuleManager error: 'cssRule' is not a CSSStyleRule instance..`);
       }

@@ -1,7 +1,7 @@
 import { hasSetter, isIterable, isObject, isPlainObject } from '@typhonjs-svelte/runtime-base/util/object';
 import { getEasingFunc } from '@typhonjs-svelte/runtime-base/svelte/easing';
 import { A11yHelper } from '@typhonjs-svelte/runtime-base/util/a11y';
-import { CrossWindow, BrowserSupports } from '@typhonjs-svelte/runtime-base/util/browser';
+import { CrossRealm, BrowserSupports } from '@typhonjs-svelte/runtime-base/util/browser';
 import { radToDeg, degToRad, clamp } from '@typhonjs-svelte/runtime-base/math/util';
 import { subscribeIgnoreFirst } from '@typhonjs-svelte/runtime-base/svelte/store/util';
 import { propertyStore } from '@typhonjs-svelte/runtime-base/svelte/store/writable-derived';
@@ -481,7 +481,7 @@ class AnimationControl {
      * @returns Animation finished Promise.
      */
     get finished() {
-        if (!CrossWindow.isPromise(this.#finishedPromise)) {
+        if (!CrossRealm.isPromise(this.#finishedPromise)) {
             this.#finishedPromise = this.#willFinish ? new Promise((resolve) => this.#animationData.resolve = resolve) :
                 Promise.resolve({ cancelled: false });
         }
@@ -2760,7 +2760,7 @@ class AnimationGroupControl {
      */
     get finished() {
         const animationControls = this.#animationControls;
-        if (!CrossWindow.isPromise(this.#finishedPromise)) {
+        if (!CrossRealm.isPromise(this.#finishedPromise)) {
             if (animationControls === null || animationControls === void 0 || animationControls.size === 0) {
                 this.#finishedPromise = Promise.resolve({ cancelled: false });
             }

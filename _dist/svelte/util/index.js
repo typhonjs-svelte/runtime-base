@@ -1,4 +1,4 @@
-import { CrossWindow } from '@typhonjs-svelte/runtime-base/util/browser';
+import { CrossRealm } from '@typhonjs-svelte/runtime-base/util/browser';
 import { isObject } from '@typhonjs-svelte/runtime-base/util/object';
 import { group_outros, transition_out, check_outros } from 'svelte/internal';
 
@@ -103,12 +103,12 @@ class APIConfig {
         if (config.intro !== void 0 && typeof config.intro !== 'boolean') {
             throw new TypeError(`TJSSvelte.config.parseConfig - 'intro' is not a boolean for config:\n${JSON.stringify(config)}.`);
         }
-        if (config.target !== void 0 && !CrossWindow.isElement(config.target) &&
-            !CrossWindow.isShadowRoot(config.target) && !CrossWindow.isDocumentFragment(config.target)) {
+        if (config.target !== void 0 && !CrossRealm.isElement(config.target) &&
+            !CrossRealm.isShadowRoot(config.target) && !CrossRealm.isDocumentFragment(config.target)) {
             throw new TypeError(`TJSSvelte.config.parseConfig - 'target' is not a Element, ShadowRoot, or DocumentFragment for config:\n${JSON.stringify(config)}.`);
         }
-        if (config.anchor !== void 0 && !CrossWindow.isElement(config.anchor) &&
-            !CrossWindow.isShadowRoot(config.anchor) && !CrossWindow.isDocumentFragment(config.anchor)) {
+        if (config.anchor !== void 0 && !CrossRealm.isElement(config.anchor) &&
+            !CrossRealm.isShadowRoot(config.anchor) && !CrossRealm.isDocumentFragment(config.anchor)) {
             throw new TypeError(`TJSSvelte.config.parseConfig - 'anchor' is not a string, Element for config:\n${JSON.stringify(config)}.`);
         }
         if (config.context !== void 0 && typeof config.context !== 'function' && !isObject(config.context)) {

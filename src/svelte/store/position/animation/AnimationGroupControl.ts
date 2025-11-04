@@ -1,4 +1,4 @@
-import { CrossWindow }           from '#runtime/util/browser';
+import { CrossRealm }            from '#runtime/util/browser';
 
 import type {
    BasicAnimation,
@@ -46,7 +46,7 @@ export class AnimationGroupControl implements BasicAnimation
    {
       const animationControls: Set<AnimationControl> | null = this.#animationControls;
 
-      if (!CrossWindow.isPromise(this.#finishedPromise))
+      if (!CrossRealm.isPromise(this.#finishedPromise))
       {
          if (animationControls === null || animationControls === void 0 || animationControls.size === 0)
          {

@@ -2,23 +2,30 @@ import { isObject } from '#runtime/util/object';
 
 /**
  * Provides cross-realm checks for DOM nodes / elements, events, and essential duck typing for any class-based object
- * with a constructor name. The impetus is that certain browsers such as Chrome and Firefox behave differently when
- * performing `instanceof` checks when elements are moved between browser windows. With Firefox in particular, the
- * entire JS runtime cannot use `instanceof` checks as the instances of fundamental DOM elements differ between
- * windows.
+ * with a constructor name. A realm is an execution environment with its own global object and intrinsics; values
+ * created in different realms do not share prototypes, so checks like `instanceof` can fail across realms. This
+ * includes sharing JS code across browser windows.
+ *
+ * The impetus is that certain browsers such as Chrome and Firefox behave differently when performing `instanceof`
+ * checks when elements are moved between browser windows. With Firefox in particular, the entire JS runtime cannot use
+ * `instanceof` checks as the instances of fundamental DOM elements differ between windows.
  *
  * TRL supports moving applications from a main central browser window and popping them out into separate standalone
  * app instances in a separate browser window. In this case, for essential DOM element and event checks, it is necessary
- * to employ the workarounds found in `CrossWindow`.
+ * to employ the workarounds found in `CrossRealm`.
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Execution_model#realms
+ * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/instanceof#instanceof_and_multiple_realms
+ * @see https://262.ecma-international.org/#sec-code-realms
  */
-class CrossWindow
+class CrossRealm
 {
    /**
     * @private
     */
    constructor()
    {
-      throw new Error('CrossWindow constructor: This is a static class and should not be constructed.');
+      throw new Error('CrossRealm constructor: This is a static class and should not be constructed.');
    }
 
    /**
@@ -88,7 +95,7 @@ class CrossWindow
     *
     * @throws {@link TypeError} Target must be a DOM Node / Element, Document, UIEvent, or Window.
     */
-   static getActiveElement(target: CrossWindow.GetTarget, { throws = true }: CrossWindow.GetOptions = {}): Element |
+   static getActiveElement(target: CrossRealm.GetTarget, { throws = true }: CrossRealm.GetOptions = {}): Element |
     null | undefined
    {
       // Duck type if target has known defined `ownerDocument` property.
@@ -120,7 +127,7 @@ class CrossWindow
     *
     * @throws {@link TypeError} Target must be a DOM Node / Element, Document, UIEvent, or Window.
     */
-   static getDocument(target: CrossWindow.GetTarget, { throws = true } = {}): Document | undefined
+   static getDocument(target: CrossRealm.GetTarget, { throws = true } = {}): Document | undefined
    {
       // Duck type if target has known defined `ownerDocument` property.
       if (this.#hasOwnerDocument(target)) { return target?.ownerDocument; }
@@ -151,7 +158,7 @@ class CrossWindow
     *
     * @throws {@link TypeError} Target must be a DOM Node / Element, Document, UIEvent, or Window.
     */
-   static getWindow(target: CrossWindow.GetTarget, { throws = true } = {}): Window | undefined
+   static getWindow(target: CrossRealm.GetTarget, { throws = true } = {}): Window | undefined
    {
       // Duck type if target has known defined `ownerDocument` property.
       if (this.#hasOwnerDocument(target)) { return target.ownerDocument?.defaultView ?? globalThis as typeof window; }
@@ -578,7 +585,7 @@ class CrossWindow
    }
 }
 
-declare namespace CrossWindow {
+declare namespace CrossRealm {
 
    /**
     * Defines the DOM API targets usable for all `get` methods.
@@ -599,4 +606,4 @@ declare namespace CrossWindow {
    }
 }
 
-export { CrossWindow }
+export { CrossRealm }
