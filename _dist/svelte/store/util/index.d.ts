@@ -66,7 +66,9 @@ interface MinimalWritable<T> extends Readable<T> {
  *
  * @typeParam R - The return type of the function.
  */
-type MinimalWritableFn<T, Args extends unknown[], R = void> = MinimalWritable<T> & ((...args: Args) => R);
+interface MinimalWritableFn<T, Args extends unknown[], R = void> extends MinimalWritable<T> {
+  (...args: Args): R;
+}
 /**
  * Combines a writable Svelte store with a callable function. This type allows a writable store to also act as a
  * function enabling flexible reactive behavior.
@@ -77,7 +79,9 @@ type MinimalWritableFn<T, Args extends unknown[], R = void> = MinimalWritable<T>
  *
  * @typeParam R - The return type of the function.
  */
-type WritableFn<T, Args extends unknown[], R> = Writable<T> & ((...args: Args) => R);
+interface WritableFn<T, Args extends unknown[], R = void> extends Writable<T> {
+  (...args: Args): R;
+}
 
 /**
  * Provides a basic test for a given variable to test if it has the shape of a readable store by having a `subscribe`
