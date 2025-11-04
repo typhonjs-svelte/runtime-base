@@ -50,9 +50,6 @@ class StyleManager implements Iterable<[string, StyleManager.RuleManager]>
     */
    readonly #version: string;
 
-   /**
-    * @private
-    */
    private constructor({ cssRuleMap, id, styleElement, version, layerName, token }:
     { cssRuleMap: Map<string, StyleManager.RuleManager>; id: string; styleElement: HTMLStyleElement;
      version: string; layerName?: string; token: symbol })

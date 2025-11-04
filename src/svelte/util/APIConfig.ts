@@ -6,9 +6,12 @@ import { TJSSvelte }    from './TJSSvelte';
 /**
  * Provides utilities to verify and parse {@link TJSSvelte.Config} configuration objects.
  */
-class APIConfig
+abstract class APIConfig
 {
-   private constructor() {}
+   private constructor()
+   {
+      throw new Error('APIConfig constructor: This is a static class and should not be constructed.');
+   }
 
    /**
     * Validates `config` argument whether it is a valid {@link TJSSvelte.Config.Dynamic} or

@@ -1311,7 +1311,9 @@ class TJSTransformData {
  * Provides type guards for `Number`.
  */
 class NumberGuard {
-    constructor() { }
+    constructor() {
+        throw new Error('NumberGuard constructor: This is a static class and should not be constructed.');
+    }
     static isFinite(value) {
         return typeof value === 'number' && Number.isFinite(value);
     }
@@ -2845,7 +2847,9 @@ class AnimationGroupControl {
  * @see AnimationAPI
  */
 class AnimationGroupAPIImpl {
-    constructor() { }
+    constructor() {
+        throw new Error('AnimationGroupAPIImpl constructor: This is a static class and should not be constructed.');
+    }
     /**
      * Returns the TJSPosition instance for the possible given positionable by checking the instance by checking for
      * AnimationAPI.

@@ -3,13 +3,10 @@ import { CrossRealm } from '#runtime/util';
 /**
  * Provides resources for parsing style strings.
  */
-export class StyleParse
+export abstract class StyleParse
 {
    static #regexPixels = /(\d+)\s*px/;
 
-   /**
-    * @private
-    */
    private constructor()
    {
       throw new Error('StyleParse constructor: This is a static class and should not be constructed.');

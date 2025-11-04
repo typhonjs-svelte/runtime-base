@@ -10,9 +10,12 @@ import type {
  * Provides utilities to verify and parse {@link TJSSvelte.Config} configuration objects and general verification of
  * Svelte components.
  */
-class TJSSvelte
+abstract class TJSSvelte
 {
-   private constructor() {}
+   private constructor()
+   {
+      throw new Error('TJSSvelte constructor: This is a static class and should not be constructed.');
+   }
 
    static get config(): TJSSvelte.API.Config { return APIConfig; }
 

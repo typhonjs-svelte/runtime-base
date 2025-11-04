@@ -6,7 +6,9 @@ import { group_outros, transition_out, check_outros } from 'svelte/internal';
  * Provides utilities to verify and parse {@link TJSSvelte.Config} configuration objects.
  */
 class APIConfig {
-    constructor() { }
+    constructor() {
+        throw new Error('APIConfig constructor: This is a static class and should not be constructed.');
+    }
     /**
      * Validates `config` argument whether it is a valid {@link TJSSvelte.Config.Dynamic} or
      * {@link TJSSvelte.Config.Standard} configuration object suitable for parsing by
@@ -186,7 +188,9 @@ Object.seal(APIConfig);
  * externally.
  */
 class APIUtil {
-    constructor() { }
+    constructor() {
+        throw new Error('APIUtil constructor: This is a static class and should not be constructed.');
+    }
     /**
      * Provides basic duck typing to determine if the provided function is a constructor function for a Svelte
      * component.
@@ -264,7 +268,9 @@ Object.seal(APIUtil);
  * Svelte components.
  */
 class TJSSvelte {
-    constructor() { }
+    constructor() {
+        throw new Error('TJSSvelte constructor: This is a static class and should not be constructed.');
+    }
     static get config() { return APIConfig; }
     /**
      * @returns The utility API.

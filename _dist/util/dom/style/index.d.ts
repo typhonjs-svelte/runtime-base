@@ -10,9 +10,6 @@
  */
 declare class StyleManager implements Iterable<[string, StyleManager.RuleManager]> {
   #private;
-  /**
-   * @private
-   */
   private constructor();
   /**
    * Connect to an existing dynamic styles managed element by CSS ID with semver check on version range compatibility.
@@ -375,11 +372,8 @@ declare namespace StyleManager {
 /**
  * Provides resources for parsing style strings.
  */
-declare class StyleParse {
+declare abstract class StyleParse {
   #private;
-  /**
-   * @private
-   */
   private constructor();
   /**
    * Parse a CSS declaration block / {@link CSSDeclarationBlock} (IE `color: red; font-size: 14px;`) into an object of

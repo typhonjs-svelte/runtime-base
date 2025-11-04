@@ -34,9 +34,12 @@ import type { Data }             from '../data/types';
  *
  * @see AnimationAPI
  */
-class AnimationGroupAPIImpl
+abstract class AnimationGroupAPIImpl
 {
-   private constructor() {}
+   private constructor()
+   {
+      throw new Error('AnimationGroupAPIImpl constructor: This is a static class and should not be constructed.');
+   }
 
    /**
     * Returns the TJSPosition instance for the possible given positionable by checking the instance by checking for

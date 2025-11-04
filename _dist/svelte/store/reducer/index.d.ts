@@ -1219,7 +1219,7 @@ declare class DynArrayReducerDerived<T = unknown> implements DynReducer.DerivedL
  * Provides helper functions to create dynamic store driven filters and sort functions for dynamic reducers. The
  * returned functions are also Svelte stores and can be added to a reducer as well as used as a store.
  */
-declare class DynReducerHelper {
+declare abstract class DynReducerHelper {
   private constructor();
   /**
    * Returns the following filter functions:

@@ -4,7 +4,7 @@ import { SvelteComponent, ComponentProps, ComponentConstructorOptions } from 'sv
  * Provides utilities to verify and parse {@link TJSSvelte.Config} configuration objects and general verification of
  * Svelte components.
  */
-declare class TJSSvelte {
+declare abstract class TJSSvelte {
   private constructor();
   static get config(): TJSSvelte.API.Config;
   /**

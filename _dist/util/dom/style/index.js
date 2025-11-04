@@ -7,9 +7,6 @@ import { validateStrict, compare, satisfies } from '@typhonjs-svelte/runtime-bas
  */
 class StyleParse {
     static #regexPixels = /(\d+)\s*px/;
-    /**
-     * @private
-     */
     constructor() {
         throw new Error('StyleParse constructor: This is a static class and should not be constructed.');
     }
@@ -543,9 +540,6 @@ class StyleManager {
      * The version of this style manager.
      */
     #version;
-    /**
-     * @private
-     */
     constructor({ cssRuleMap, id, styleElement, version, layerName, token }) {
         if (token !== StyleManager.#CTOR_TOKEN) {
             throw new Error('StyleManager constructor: Please use the static `create` or `connect` methods.');

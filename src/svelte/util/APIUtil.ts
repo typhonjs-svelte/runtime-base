@@ -7,9 +7,12 @@ import type { SvelteComponent }  from 'svelte';
  * Various utilities to duck type / detect Svelte components and run outro transition while destroying a component
  * externally.
  */
-class APIUtil
+abstract class APIUtil
 {
-   private constructor() {}
+   private constructor()
+   {
+      throw new Error('APIUtil constructor: This is a static class and should not be constructed.');
+   }
 
    /**
     * Provides basic duck typing to determine if the provided function is a constructor function for a Svelte
