@@ -1250,15 +1250,16 @@ declare namespace DynReducerHelper {
     /**
      * The returned filter function from `regexObjectQuery` helper.
      */
-    type regexObjectQuery = MinimalWritableFn<
-      string,
-      [
-        data: {
-          [key: string]: any;
-        },
-      ],
-      boolean
-    >;
+    interface regexObjectQuery
+      extends MinimalWritableFn<
+        string,
+        [
+          data: {
+            [key: string]: any;
+          },
+        ],
+        boolean
+      > {}
   }
   /**
    * All available filters.
@@ -1302,7 +1303,33 @@ declare namespace DynReducerHelper {
    */
   namespace Sort {
     /**
-     * Defines the data object and filter function returned by {@link DynReducerHelper.sort.objectByProp}.
+     * Defines the data object and sort / comparison function returned by {@link DynReducerHelper.sort.objectByProp}
+     * providing managed sorting and comparison utility for dynamic reducers.
+     *
+     * Several built-in sorting strategies are applied automatically based on the `typeof` the values being compared. This
+     * allows flexible, type-aware sorting without requiring a custom compare function for common data types.
+     *
+     * ### Built-in `typeof` handling
+     *
+     * | Type (`typeof` value) | Behavior |
+     * |-----------------------|-----------|
+     * | `string`  | Lexicographic order using `String.prototype.localeCompare()`. |
+     * | `number`  | Numeric ascending order using subtraction (`a - b`). |
+     * | `boolean` | `false` sorts before `true` via numeric coercion (`Number(a) - Number(b)`). |
+     * | `bigint`  | Numeric ascending order using relational comparison (`a < b ? -1 : a > b ? 1 : 0`). |
+     * | `object`  | Special handling for `Date` objects sorted by `getTime()`; other objects compare as equal. |
+     * | `undefined` | Treated as the lowest possible value (always sorts first). |
+     * | Other types (`symbol`, `function`) | Not ordered — treated as equal and left in original sequence. |
+     *
+     * ### Custom comparison
+     *
+     * Users may provide their own comparator configuration via the `customCompareFnMap` option, which can be:
+     * - A plain function `(a, b) => number`.
+     * - An object with a `.compare(a, b)` method.
+     * - A static class exposing a `.compare(a, b)` method.
+     *
+     * These custom comparators override the default `typeof` handling for the property keys specified in the
+     * `customCompareFnMap`.
      */
     interface ObjectByProp<T> extends Omit<DynReducer$1.Data.Sort<T>, 'subscribe'>, Readable<ObjectByPropData> {
       /**
@@ -1334,16 +1361,16 @@ declare namespace DynReducerHelper {
        * Sets the current sorted object property and sort state. You may provide partial data, but state must be
        * one of: `none`, `asc`, or `desc`.
        *
-       * @param data
+       * @param data - New prop / state data to set.
        */
       set(data: ObjectByPropData): void;
       /**
        * Sets the current custom compare function lookup map for object properties that require unique sorting.
        *
-       * @param customCompareFn
+       * @param customCompareFnMap - New custom compare function map to set.
        */
       setCustomCompareFnMap(
-        customCompareFn:
+        customCompareFnMap:
           | {
               [key: string]: DynReducer$1.Data.CompareFn<T> | DynReducer$1.Data.Sort<T>;
             }
@@ -1380,6 +1407,18 @@ declare namespace DynReducerHelper {
    * All available sort functions.
    */
   interface SortAPI {
+    /**
+     * Creates an instance of {@link Sort.ObjectByProp} which is a managed sorting mechanism for dynamic reducers
+     * providing several default sort comparisons for object properties with additional customization for complex data
+     * types.
+     *
+     * @param [options] - ObjectByProp options.
+     *
+     * @param [options.store] - An external store that serializes the tracked prop and sorting state.
+     *
+     * @param [options.customCompareFnMap] - An object with property keys associated with custom compare functions for
+     *        those keys.
+     */
     objectByProp: <
       T extends {
         [key: string]: any;
