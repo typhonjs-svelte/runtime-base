@@ -21,6 +21,12 @@
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Execution_model#realms
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/instanceof#instanceof_and_multiple_realms
  * @see https://262.ecma-international.org/#sec-code-realms
+ *
+ * @groupDescription Browser
+ * These methods relate to various checks for the DOM API and other browser language features.
+ *
+ * @groupDescription Core
+ * These methods are for core language checks.
  */
 declare abstract class CrossRealm {
   #private;
@@ -29,6 +35,8 @@ declare abstract class CrossRealm {
    * Convenience method to test if the given target element is the current active element.
    *
    * @param target - Element to test as current active element.
+   *
+   * @group Browser
    */
   static isActiveElement(target: Element): boolean;
   /**
@@ -42,6 +50,8 @@ declare abstract class CrossRealm {
    * @returns Active element or `undefined` when `throws` option is `false` and the target is invalid.
    *
    * @throws {@link TypeError} Target must be a DOM Node / Element, Document, UIEvent, or Window.
+   *
+   * @group Browser
    */
   static getActiveElement(target: CrossRealm.GetTarget, { throws }?: CrossRealm.GetOptions): Element | null | undefined;
   /**
@@ -55,6 +65,8 @@ declare abstract class CrossRealm {
    * @returns {Document} Active document or `undefined` when `throws` option is `false` and the target is invalid.
    *
    * @throws {@link TypeError} Target must be a DOM Node / Element, Document, UIEvent, or Window.
+   *
+   * @group Browser
    */
   static getDocument(
     target: CrossRealm.GetTarget,
@@ -75,6 +87,8 @@ declare abstract class CrossRealm {
    * @returns Active window or `undefined` when `throws` option is `false` and the target is invalid.
    *
    * @throws {@link TypeError} Target must be a DOM Node / Element, Document, UIEvent, or Window.
+   *
+   * @group Browser
    */
   static getWindow(
     target: CrossRealm.GetTarget,
@@ -90,6 +104,8 @@ declare abstract class CrossRealm {
    * @param target - A potential CSSImportRule to test.
    *
    * @returns Is `target` a CSSImportRule.
+   *
+   * @group Browser
    */
   static isCSSImportRule(target: unknown): target is CSSImportRule;
   /**
@@ -98,6 +114,8 @@ declare abstract class CrossRealm {
    * @param target - A potential CSSLayerBlockRule to test.
    *
    * @returns Is `target` a CSSLayerBlockRule.
+   *
+   * @group Browser
    */
   static isCSSLayerBlockRule(target: unknown): target is CSSLayerBlockRule;
   /**
@@ -106,6 +124,8 @@ declare abstract class CrossRealm {
    * @param target - A potential CSSStyleRule to test.
    *
    * @returns Is `target` a CSSStyleRule.
+   *
+   * @group Browser
    */
   static isCSSStyleRule(target: unknown): target is CSSStyleRule;
   /**
@@ -114,62 +134,28 @@ declare abstract class CrossRealm {
    * @param target - A potential CSSStyleSheet to test.
    *
    * @returns Is `target` a CSSStyleSheet.
+   *
+   * @group Browser
    */
   static isCSSStyleSheet(target: unknown): target is CSSStyleSheet;
-  /**
-   * Provides basic prototype string type checking if `target` is a Date.
-   *
-   * @param target - A potential Date to test.
-   *
-   * @returns Is `target` a Date.
-   */
-  static isDate(target: unknown): target is Date;
   /**
    * Provides basic prototype string type checking if `target` is a Document.
    *
    * @param target - A potential Document to test.
    *
    * @returns Is `target` a Document.
+   *
+   * @group Browser
    */
   static isDocument(target: unknown): target is Document;
-  /**
-   * Provides basic prototype string type checking if `target` is a Map.
-   *
-   * @param target - A potential Map to test.
-   *
-   * @returns Is `target` a Map.
-   */
-  static isMap(target: unknown): target is Map<unknown, unknown>;
-  /**
-   * Provides basic prototype string type checking if `target` is a Promise.
-   *
-   * @param target - A potential Promise to test.
-   *
-   * @returns Is `target` a Promise.
-   */
-  static isPromise(target: unknown): target is Promise<unknown>;
-  /**
-   * Provides basic prototype string type checking if `target` is a RegExp.
-   *
-   * @param target - A potential RegExp to test.
-   *
-   * @returns Is `target` a RegExp.
-   */
-  static isRegExp(target: unknown): target is RegExp;
-  /**
-   * Provides basic prototype string type checking if `target` is a Set.
-   *
-   * @param target - A potential Set to test.
-   *
-   * @returns Is `target` a Set.
-   */
-  static isSet(target: unknown): target is Set<unknown>;
   /**
    * Provides basic prototype string type checking if `target` is a URL.
    *
    * @param target - A potential URL to test.
    *
    * @returns Is `target` a URL.
+   *
+   * @group Browser
    */
   static isURL(target: unknown): target is URL;
   /**
@@ -178,6 +164,8 @@ declare abstract class CrossRealm {
    * @param target - A potential Window to test.
    *
    * @returns Is `target` a Window.
+   *
+   * @group Browser
    */
   static isWindow(target: unknown): target is Window;
   /**
@@ -187,6 +175,8 @@ declare abstract class CrossRealm {
    * @param target - Target to test for `instanceof` focusable HTML element.
    *
    * @returns Is target an `instanceof` a focusable DOM element.
+   *
+   * @group Browser
    */
   static isFocusableHTMLElement(target: unknown): boolean;
   /**
@@ -195,6 +185,8 @@ declare abstract class CrossRealm {
    * @param target - A potential DocumentFragment to test.
    *
    * @returns Is `target` a DocumentFragment.
+   *
+   * @group Browser
    */
   static isDocumentFragment(target: unknown): target is DocumentFragment;
   /**
@@ -203,6 +195,8 @@ declare abstract class CrossRealm {
    * @param target - A potential Element to test.
    *
    * @returns Is `target` an Element.
+   *
+   * @group Browser
    */
   static isElement(target: unknown): target is Element;
   /**
@@ -211,6 +205,8 @@ declare abstract class CrossRealm {
    * @param target - A potential HTMLAnchorElement to test.
    *
    * @returns Is `target` a HTMLAnchorElement.
+   *
+   * @group Browser
    */
   static isHTMLAnchorElement(target: unknown): target is HTMLAnchorElement;
   /**
@@ -219,6 +215,8 @@ declare abstract class CrossRealm {
    * @param target - A potential HTMLElement to test.
    *
    * @returns Is `target` a HTMLElement.
+   *
+   * @group Browser
    */
   static isHTMLElement(target: unknown): target is HTMLElement;
   /**
@@ -227,6 +225,8 @@ declare abstract class CrossRealm {
    * @param target - A potential Node to test.
    *
    * @returns Is `target` a DOM Node.
+   *
+   * @group Browser
    */
   static isNode(target: unknown): target is Node;
   /**
@@ -235,6 +235,8 @@ declare abstract class CrossRealm {
    * @param target - A potential ShadowRoot to test.
    *
    * @returns Is `target` a ShadowRoot.
+   *
+   * @group Browser
    */
   static isShadowRoot(target: unknown): target is ShadowRoot;
   /**
@@ -243,6 +245,8 @@ declare abstract class CrossRealm {
    * @param target - A potential SVGElement to test.
    *
    * @returns Is `target` a SVGElement.
+   *
+   * @group Browser
    */
   static isSVGElement(target: unknown): target is SVGElement;
   /**
@@ -253,6 +257,8 @@ declare abstract class CrossRealm {
    * @param [types] Specific constructor name or Set of constructor names to match.
    *
    * @returns Is `target` an Event with optional constructor name check.
+   *
+   * @group Browser
    */
   static isEvent(target: unknown, types: string | Set<string>): target is Event;
   /**
@@ -262,6 +268,8 @@ declare abstract class CrossRealm {
    * @param target - A potential DOM event to test.
    *
    * @returns Is `target` a MouseEvent or PointerEvent.
+   *
+   * @group Browser
    */
   static isPointerEvent(target: unknown): target is PointerEvent;
   /**
@@ -271,6 +279,8 @@ declare abstract class CrossRealm {
    *
    * @returns Is `target` a UIEvent.
    * @see https://developer.mozilla.org/en-US/docs/Web/API/UIEvent
+   *
+   * @group Browser
    */
   static isUIEvent(target: unknown): target is UIEvent;
   /**
@@ -280,19 +290,10 @@ declare abstract class CrossRealm {
    * @param target - A potential DOM event to test.
    *
    * @returns Is `target` a Keyboard, MouseEvent, or PointerEvent.
+   *
+   * @group Browser
    */
   static isUserInputEvent(target: unknown): target is KeyboardEvent | MouseEvent | PointerEvent;
-  /**
-   * Provides basic type checking by constructor name(s) for objects. This can be useful when checking multiple
-   * constructor names against a provided Set.
-   *
-   * @param target - Object to test for constructor name.
-   *
-   * @param types Specific constructor name or Set of constructor names to match.
-   *
-   * @returns Does the provided object constructor name match the types provided.
-   */
-  static isCtorName(target: unknown, types: string | Set<string>): boolean;
   /**
    * Provides basic duck type checking and error name for {@link DOMException}.
    *
@@ -303,8 +304,73 @@ declare abstract class CrossRealm {
    * @returns Is target a DOMException matching the error name.
    *
    * @see https://developer.mozilla.org/en-US/docs/Web/API/DOMException#error_names
+   *
+   * @group Browser
    */
   static isDOMException(target: unknown, name: string): boolean;
+  /**
+   * Provides basic type checking by constructor name(s) for objects. This can be useful when checking multiple
+   * constructor names against a provided Set.
+   *
+   * @param target - Object to test for constructor name.
+   *
+   * @param types Specific constructor name or Set of constructor names to match.
+   *
+   * @returns Does the provided object constructor name match the types provided.
+   *
+   * @group Core
+   */
+  static isCtorName(target: unknown, types: string | Set<string>): boolean;
+  /**
+   * Provides basic prototype string type checking if `target` is a Date.
+   *
+   * @param target - A potential Date to test.
+   *
+   * @returns Is `target` a Date.
+   *
+   * @group Core
+   */
+  static isDate(target: unknown): target is Date;
+  /**
+   * Provides basic prototype string type checking if `target` is a Map.
+   *
+   * @param target - A potential Map to test.
+   *
+   * @returns Is `target` a Map.
+   *
+   * @group Core
+   */
+  static isMap(target: unknown): target is Map<unknown, unknown>;
+  /**
+   * Provides basic prototype string type checking if `target` is a Promise.
+   *
+   * @param target - A potential Promise to test.
+   *
+   * @returns Is `target` a Promise.
+   *
+   * @group Core
+   */
+  static isPromise(target: unknown): target is Promise<unknown>;
+  /**
+   * Provides basic prototype string type checking if `target` is a RegExp.
+   *
+   * @param target - A potential RegExp to test.
+   *
+   * @returns Is `target` a RegExp.
+   *
+   * @group Core
+   */
+  static isRegExp(target: unknown): target is RegExp;
+  /**
+   * Provides basic prototype string type checking if `target` is a Set.
+   *
+   * @param target - A potential Set to test.
+   *
+   * @returns Is `target` a Set.
+   *
+   * @group Core
+   */
+  static isSet(target: unknown): target is Set<unknown>;
 }
 declare namespace CrossRealm {
   /**

@@ -17,6 +17,12 @@ import { isObject } from '#runtime/util/object';
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Execution_model#realms
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/instanceof#instanceof_and_multiple_realms
  * @see https://262.ecma-international.org/#sec-code-realms
+ *
+ * @groupDescription Browser
+ * Methods that perform realm-safe checks for DOM elements, browser globals, and Web Platform APIs.
+ *
+ * @groupDescription Core
+ * Methods that perform realm-safe checks for built-in JavaScript types and core ECMAScript language objects.
  */
 abstract class CrossRealm
 {
@@ -62,12 +68,14 @@ abstract class CrossRealm
     */
    static #optionsInternalCheckDOM: { throws: boolean } = { throws: false };
 
-   // DOM Querying ---------------------------------------------------------------------------------------------------
+   // Browser DOM Querying -------------------------------------------------------------------------------------------
 
    /**
     * Convenience method to test if the given target element is the current active element.
     *
     * @param target - Element to test as current active element.
+    *
+    * @group Browser
     */
    static isActiveElement(target: Element): boolean
    {
@@ -91,6 +99,8 @@ abstract class CrossRealm
     * @returns Active element or `undefined` when `throws` option is `false` and the target is invalid.
     *
     * @throws {@link TypeError} Target must be a DOM Node / Element, Document, UIEvent, or Window.
+    *
+    * @group Browser
     */
    static getActiveElement(target: CrossRealm.GetTarget, { throws = true }: CrossRealm.GetOptions = {}): Element |
     null | undefined
@@ -123,6 +133,8 @@ abstract class CrossRealm
     * @returns {Document} Active document or `undefined` when `throws` option is `false` and the target is invalid.
     *
     * @throws {@link TypeError} Target must be a DOM Node / Element, Document, UIEvent, or Window.
+    *
+    * @group Browser
     */
    static getDocument(target: CrossRealm.GetTarget, { throws = true } = {}): Document | undefined
    {
@@ -154,6 +166,8 @@ abstract class CrossRealm
     * @returns Active window or `undefined` when `throws` option is `false` and the target is invalid.
     *
     * @throws {@link TypeError} Target must be a DOM Node / Element, Document, UIEvent, or Window.
+    *
+    * @group Browser
     */
    static getWindow(target: CrossRealm.GetTarget, { throws = true } = {}): Window | undefined
    {
@@ -174,7 +188,7 @@ abstract class CrossRealm
       return void 0;
    }
 
-   // ES / Browser API basic prototype tests -------------------------------------------------------------------------
+   // Browser API basic prototype tests ------------------------------------------------------------------------------
 
    /**
     * Provides basic prototype string type checking if `target` is a CSSImportRule.
@@ -182,6 +196,8 @@ abstract class CrossRealm
     * @param target - A potential CSSImportRule to test.
     *
     * @returns Is `target` a CSSImportRule.
+    *
+    * @group Browser
     */
    static isCSSImportRule(target: unknown): target is CSSImportRule
    {
@@ -194,6 +210,8 @@ abstract class CrossRealm
     * @param target - A potential CSSLayerBlockRule to test.
     *
     * @returns Is `target` a CSSLayerBlockRule.
+    *
+    * @group Browser
     */
    static isCSSLayerBlockRule(target: unknown): target is CSSLayerBlockRule
    {
@@ -206,6 +224,8 @@ abstract class CrossRealm
     * @param target - A potential CSSStyleRule to test.
     *
     * @returns Is `target` a CSSStyleRule.
+    *
+    * @group Browser
     */
    static isCSSStyleRule(target: unknown): target is CSSStyleRule
    {
@@ -218,22 +238,12 @@ abstract class CrossRealm
     * @param target - A potential CSSStyleSheet to test.
     *
     * @returns Is `target` a CSSStyleSheet.
+    *
+    * @group Browser
     */
    static isCSSStyleSheet(target: unknown): target is CSSStyleSheet
    {
       return isObject(target) && Object.prototype.toString.call(target) === '[object CSSStyleSheet]';
-   }
-
-   /**
-    * Provides basic prototype string type checking if `target` is a Date.
-    *
-    * @param target - A potential Date to test.
-    *
-    * @returns Is `target` a Date.
-    */
-   static isDate(target: unknown): target is Date
-   {
-      return isObject(target) && Object.prototype.toString.call(target) === '[object Date]';
    }
 
    /**
@@ -242,6 +252,8 @@ abstract class CrossRealm
     * @param target - A potential Document to test.
     *
     * @returns Is `target` a Document.
+    *
+    * @group Browser
     */
    static isDocument(target: unknown): target is Document
    {
@@ -252,59 +264,13 @@ abstract class CrossRealm
    }
 
    /**
-    * Provides basic prototype string type checking if `target` is a Map.
-    *
-    * @param target - A potential Map to test.
-    *
-    * @returns Is `target` a Map.
-    */
-   static isMap(target: unknown): target is Map<unknown, unknown>
-   {
-      return isObject(target) && Object.prototype.toString.call(target) === '[object Map]';
-   }
-
-   /**
-    * Provides basic prototype string type checking if `target` is a Promise.
-    *
-    * @param target - A potential Promise to test.
-    *
-    * @returns Is `target` a Promise.
-    */
-   static isPromise(target: unknown): target is Promise<unknown>
-   {
-      return isObject(target) && Object.prototype.toString.call(target) === '[object Promise]';
-   }
-
-   /**
-    * Provides basic prototype string type checking if `target` is a RegExp.
-    *
-    * @param target - A potential RegExp to test.
-    *
-    * @returns Is `target` a RegExp.
-    */
-   static isRegExp(target: unknown): target is RegExp
-   {
-      return isObject(target) && Object.prototype.toString.call(target) === '[object RegExp]';
-   }
-
-   /**
-    * Provides basic prototype string type checking if `target` is a Set.
-    *
-    * @param target - A potential Set to test.
-    *
-    * @returns Is `target` a Set.
-    */
-   static isSet(target: unknown): target is Set<unknown>
-   {
-      return isObject(target) && Object.prototype.toString.call(target) === '[object Set]';
-   }
-
-   /**
     * Provides basic prototype string type checking if `target` is a URL.
     *
     * @param target - A potential URL to test.
     *
     * @returns Is `target` a URL.
+    *
+    * @group Browser
     */
    static isURL(target: unknown): target is URL
    {
@@ -317,13 +283,15 @@ abstract class CrossRealm
     * @param target - A potential Window to test.
     *
     * @returns Is `target` a Window.
+    *
+    * @group Browser
     */
    static isWindow(target: unknown): target is Window
    {
       return isObject(target) && Object.prototype.toString.call(target) === '[object Window]';
    }
 
-   // DOM Element typing ---------------------------------------------------------------------------------------------
+   // Browser DOM Element typing -------------------------------------------------------------------------------------
 
    /**
     * Ensures that the given target is an `instanceof` all known DOM elements that are focusable. Please note that
@@ -332,6 +300,8 @@ abstract class CrossRealm
     * @param target - Target to test for `instanceof` focusable HTML element.
     *
     * @returns Is target an `instanceof` a focusable DOM element.
+    *
+    * @group Browser
     */
    static isFocusableHTMLElement(target: unknown): boolean
    {
@@ -352,6 +322,8 @@ abstract class CrossRealm
     * @param target - A potential DocumentFragment to test.
     *
     * @returns Is `target` a DocumentFragment.
+    *
+    * @group Browser
     */
    static isDocumentFragment(target: unknown): target is DocumentFragment
    {
@@ -364,6 +336,8 @@ abstract class CrossRealm
     * @param target - A potential Element to test.
     *
     * @returns Is `target` an Element.
+    *
+    * @group Browser
     */
    static isElement(target: unknown): target is Element
    {
@@ -376,6 +350,8 @@ abstract class CrossRealm
     * @param target - A potential HTMLAnchorElement to test.
     *
     * @returns Is `target` a HTMLAnchorElement.
+    *
+    * @group Browser
     */
    static isHTMLAnchorElement(target: unknown): target is HTMLAnchorElement
    {
@@ -388,6 +364,8 @@ abstract class CrossRealm
     * @param target - A potential HTMLElement to test.
     *
     * @returns Is `target` a HTMLElement.
+    *
+    * @group Browser
     */
    static isHTMLElement(target: unknown): target is HTMLElement
    {
@@ -400,6 +378,8 @@ abstract class CrossRealm
     * @param target - A potential Node to test.
     *
     * @returns Is `target` a DOM Node.
+    *
+    * @group Browser
     */
    static isNode(target: unknown): target is Node
    {
@@ -421,6 +401,8 @@ abstract class CrossRealm
     * @param target - A potential ShadowRoot to test.
     *
     * @returns Is `target` a ShadowRoot.
+    *
+    * @group Browser
     */
    static isShadowRoot(target: unknown): target is ShadowRoot
    {
@@ -434,13 +416,15 @@ abstract class CrossRealm
     * @param target - A potential SVGElement to test.
     *
     * @returns Is `target` a SVGElement.
+    *
+    * @group Browser
     */
    static isSVGElement(target: unknown): target is SVGElement
    {
       return this.#checkDOMInstanceType(target, Node.ELEMENT_NODE, 'SVGElement');
    }
 
-   // Event typing ---------------------------------------------------------------------------------------------------
+   // Browser Event typing -------------------------------------------------------------------------------------------
 
    /**
     * Provides basic duck type checking for `Event` signature and optional constructor name(s).
@@ -450,6 +434,8 @@ abstract class CrossRealm
     * @param [types] Specific constructor name or Set of constructor names to match.
     *
     * @returns Is `target` an Event with optional constructor name check.
+    *
+    * @group Browser
     */
    static isEvent(target: unknown, types: string | Set<string>): target is Event
    {
@@ -469,6 +455,8 @@ abstract class CrossRealm
     * @param target - A potential DOM event to test.
     *
     * @returns Is `target` a MouseEvent or PointerEvent.
+    *
+    * @group Browser
     */
    static isPointerEvent(target: unknown): target is PointerEvent
    {
@@ -482,6 +470,8 @@ abstract class CrossRealm
     *
     * @returns Is `target` a UIEvent.
     * @see https://developer.mozilla.org/en-US/docs/Web/API/UIEvent
+    *
+    * @group Browser
     */
    static isUIEvent(target: unknown): target is UIEvent
    {
@@ -495,34 +485,15 @@ abstract class CrossRealm
     * @param target - A potential DOM event to test.
     *
     * @returns Is `target` a Keyboard, MouseEvent, or PointerEvent.
+    *
+    * @group Browser
     */
    static isUserInputEvent(target: unknown): target is KeyboardEvent | MouseEvent | PointerEvent
    {
       return this.isEvent(target, this.#UserInputEventSet);
    }
 
-   // Generic typing -------------------------------------------------------------------------------------------------
-
-   /**
-    * Provides basic type checking by constructor name(s) for objects. This can be useful when checking multiple
-    * constructor names against a provided Set.
-    *
-    * @param target - Object to test for constructor name.
-    *
-    * @param types Specific constructor name or Set of constructor names to match.
-    *
-    * @returns Does the provided object constructor name match the types provided.
-    */
-   static isCtorName(target: unknown, types: string | Set<string>): boolean
-   {
-      if (!isObject(target)) { return false; }
-
-      if (typeof types === 'string' && target?.constructor?.name === types) { return true; }
-
-      return !!(types as Set<string>)?.has(target?.constructor?.name);
-   }
-
-   // Errors ---------------------------------------------------------------------------------------------------------
+   // Browser Errors -------------------------------------------------------------------------------------------------
 
    /**
     * Provides basic duck type checking and error name for {@link DOMException}.
@@ -534,11 +505,106 @@ abstract class CrossRealm
     * @returns Is target a DOMException matching the error name.
     *
     * @see https://developer.mozilla.org/en-US/docs/Web/API/DOMException#error_names
+    *
+    * @group Browser
     */
    static isDOMException(target: unknown, name: string): boolean
    {
       return isObject(target) && Object.prototype.toString.call(target) === '[object DOMException]' &&
        target.name === name;
+   }
+
+   // Core language typing -------------------------------------------------------------------------------------------
+
+   /**
+    * Provides basic type checking by constructor name(s) for objects. This can be useful when checking multiple
+    * constructor names against a provided Set.
+    *
+    * @param target - Object to test for constructor name.
+    *
+    * @param types Specific constructor name or Set of constructor names to match.
+    *
+    * @returns Does the provided object constructor name match the types provided.
+    *
+    * @group Core
+    */
+   static isCtorName(target: unknown, types: string | Set<string>): boolean
+   {
+      if (!isObject(target)) { return false; }
+
+      if (typeof types === 'string' && target?.constructor?.name === types) { return true; }
+
+      return !!(types as Set<string>)?.has(target?.constructor?.name);
+   }
+
+   /**
+    * Provides basic prototype string type checking if `target` is a Date.
+    *
+    * @param target - A potential Date to test.
+    *
+    * @returns Is `target` a Date.
+    *
+    * @group Core
+    */
+   static isDate(target: unknown): target is Date
+   {
+      return isObject(target) && Object.prototype.toString.call(target) === '[object Date]';
+   }
+
+   /**
+    * Provides basic prototype string type checking if `target` is a Map.
+    *
+    * @param target - A potential Map to test.
+    *
+    * @returns Is `target` a Map.
+    *
+    * @group Core
+    */
+   static isMap(target: unknown): target is Map<unknown, unknown>
+   {
+      return isObject(target) && Object.prototype.toString.call(target) === '[object Map]';
+   }
+
+   /**
+    * Provides basic prototype string type checking if `target` is a Promise.
+    *
+    * @param target - A potential Promise to test.
+    *
+    * @returns Is `target` a Promise.
+    *
+    * @group Core
+    */
+   static isPromise(target: unknown): target is Promise<unknown>
+   {
+      return isObject(target) && Object.prototype.toString.call(target) === '[object Promise]';
+   }
+
+   /**
+    * Provides basic prototype string type checking if `target` is a RegExp.
+    *
+    * @param target - A potential RegExp to test.
+    *
+    * @returns Is `target` a RegExp.
+    *
+    * @group Core
+    */
+   static isRegExp(target: unknown): target is RegExp
+   {
+      return isObject(target) && Object.prototype.toString.call(target) === '[object RegExp]';
+   }
+
+   /**
+    * Provides basic prototype string type checking if `target` is a Set.
+    *
+    * @param target - A potential Set to test.
+    *
+    * @returns Is `target` a Set.
+    *
+    * @group Core
+    */
+   static isSet(target: unknown): target is Set<unknown>
+   {
+      return isObject(target) && Object.prototype.toString.call(target) === '[object Set]';
    }
 
    // Internal implementation ----------------------------------------------------------------------------------------
