@@ -19,10 +19,10 @@ import { isObject } from '@typhonjs-svelte/runtime-base/util/object';
  * @see https://262.ecma-international.org/#sec-code-realms
  *
  * @groupDescription Browser
- * These methods relate to various checks for the DOM API and other browser language features.
+ * Methods that perform realm-safe checks for DOM elements, browser globals, and Web Platform APIs.
  *
  * @groupDescription Core
- * These methods are for core language checks.
+ * Methods that perform realm-safe checks for built-in JavaScript types and core ECMAScript language objects.
  */
 class CrossRealm {
     constructor() {
