@@ -1,6 +1,7 @@
 import { get, writable }            from 'svelte/store';
 
 import { isMinimalWritableStore }   from '#runtime/svelte/store/util';
+import { CrossRealm }               from '#runtime/util';
 import { isObject }                 from '#runtime/util/object';
 
 import type {
@@ -106,6 +107,7 @@ export class ObjectByProp<T extends { [key: string]: any }> implements DynReduce
 
       this.#initializeStore();
       this.#sortByFn = this.#initializeSortByFn();
+      this.#updateCustomCompareFn();
    }
 
    /**
@@ -153,6 +155,8 @@ export class ObjectByProp<T extends { [key: string]: any }> implements DynReduce
       this.#prop = void 0;
       this.#state = 'none';
 
+      this.#updateCustomCompareFn();
+
       this.#store.set({ prop: this.#prop, state: this.#state });
 
       // Forces an index update / sorting is triggered.
@@ -169,15 +173,16 @@ export class ObjectByProp<T extends { [key: string]: any }> implements DynReduce
    {
       let update = false;
 
-      if (typeof prop === 'string')
+      if ((prop === void 0 || typeof prop === 'string') && this.#prop !== prop)
       {
          this.#prop = prop;
+         this.#updateCustomCompareFn();
          update = true;
       }
 
-      if (state === 'none' || state === 'asc' || state === 'desc' )
+      if ((state === void 0 || state === 'none' || state === 'asc' || state === 'desc') && this.#state !== state)
       {
-         this.#state = state;
+         this.#state = state === void 0 ? 'none' : state;
          update = true;
       }
 
@@ -203,8 +208,11 @@ export class ObjectByProp<T extends { [key: string]: any }> implements DynReduce
          throw new TypeError(`'customCompareFnMap' is not an object or undefined.`)
       }
 
-      // TODO: Update custom compare Fn.
       this.#customCompareFnMap = customCompareFnMap;
+
+      this.#updateCustomCompareFn();
+
+      this.#indexUpdateFn?.({ force: true });
    }
 
    /**
@@ -258,7 +266,11 @@ export class ObjectByProp<T extends { [key: string]: any }> implements DynReduce
             break;
       }
 
+      const updateCompareFn = this.#prop !== prop;
+
       this.#prop = prop;
+
+      if (updateCompareFn) { this.#updateCustomCompareFn(); }
 
       this.#store.set({ prop: this.#prop, state: this.#state });
 
@@ -312,6 +324,9 @@ export class ObjectByProp<T extends { [key: string]: any }> implements DynReduce
       }
    }
 
+   /**
+    * Create sort function that is returned by {@link ObjectByProp.compare}.
+    */
    #initializeSortByFn(): DynReducer.Data.CompareFn<T>
    {
       const sortByFn = (a: T, b: T): number =>
@@ -321,27 +336,15 @@ export class ObjectByProp<T extends { [key: string]: any }> implements DynReduce
          const aVal = a?.[this.#prop];
          const bVal = b?.[this.#prop];
 
-         // TODO: implement caching of custom compare function.
-         // ----------------------------------------------------------------------------------------------------------
-         const customCompare = this.#customCompareFnMap?.[this.#prop];
-         if (typeof customCompare === 'function')
-         {
-            // Case 1: It's a class with a static .compare().
-            if ('compare' in customCompare && typeof (customCompare as any).compare === 'function')
-            {
-               return (customCompare as any).compare(aVal, bVal);
-            }
+         // Custom compare -------------------------------------------------------------------------------------------
 
-            // Case 2: It's a plain function comparator.
-            return customCompare(aVal, bVal);
-         }
-         else if (typeof customCompare?.compare === 'function')
+         if (this.#customCompareFn)
          {
-            // Case 3: It's an object instance with a .compare() method.
-            return customCompare.compare(aVal, bVal);
+            return 'compare' in this.#customCompareFn ? this.#customCompareFn.compare?.(aVal, bVal) :
+             this.#customCompareFn(aVal, bVal);
          }
 
-         // ----------------------------------------------------------------------------------------------------------
+         // Default compare ------------------------------------------------------------------------------------------
 
          if (aVal === bVal) { return 0; }
 
@@ -350,12 +353,25 @@ export class ObjectByProp<T extends { [key: string]: any }> implements DynReduce
 
          switch (aType)
          {
-            case 'string':
-               if (bType === 'string') { return (aVal as string).localeCompare((bVal as string)); }
+            case 'bigint':
+               if (bType === 'bigint') { return aVal === bVal ? 0 : (aVal as bigint) < (bVal as bigint) ? -1 : 1; }
+               break;
+
+            case 'boolean':
+               if (bType === 'boolean') { return Number(aVal as boolean) - Number(bVal as boolean); }
                break;
 
             case 'number':
                if (bType === 'number') { return (aVal as number) - (bVal as number); }
+               break;
+
+            case 'object':
+               // Do comparison if both values are Date instances.
+               if (CrossRealm.isDate(aVal) && CrossRealm.isDate(bVal)) { return aVal.getTime() - bVal.getTime(); }
+               break;
+
+            case 'string':
+               if (bType === 'string') { return (aVal as string).localeCompare((bVal as string)); }
                break;
          }
 
@@ -378,5 +394,33 @@ export class ObjectByProp<T extends { [key: string]: any }> implements DynReduce
       }
 
       return sortByFn;
+   }
+
+   /**
+    * Updates the cached custom compare function based on current prop value and any custom compare function map.
+    */
+   #updateCustomCompareFn()
+   {
+      const customCompare = this.#prop ? this.#customCompareFnMap?.[this.#prop] : void 0;
+      if (customCompare === void 0)
+      {
+         this.#customCompareFn = void 0;
+      }
+      else if (typeof customCompare === 'function')
+      {
+         // Case 1: It's a class with a static compare method.
+         if ('compare' in customCompare && typeof (customCompare as any).compare === 'function')
+         {
+            this.#customCompareFn = customCompare;
+         }
+
+         // Case 2: It's a plain function comparator.
+         this.#customCompareFn = customCompare;
+      }
+      else if (typeof customCompare?.compare === 'function')
+      {
+         // Case 3: It's an object instance with a compare method.
+         this.#customCompareFn = customCompare;
+      }
    }
 }

@@ -1,6 +1,6 @@
 import { writable, get } from 'svelte/store';
 import { isMinimalWritableStore } from '@typhonjs-svelte/runtime-base/svelte/store/util';
-import { Strings } from '@typhonjs-svelte/runtime-base/util';
+import { Strings, CrossRealm } from '@typhonjs-svelte/runtime-base/util';
 import { isIterable, safeAccess, isObject } from '@typhonjs-svelte/runtime-base/util/object';
 
 class DynReducerUtils {
@@ -2104,6 +2104,7 @@ class ObjectByProp {
         this.#store = store;
         this.#initializeStore();
         this.#sortByFn = this.#initializeSortByFn();
+        this.#updateCustomCompareFn();
     }
     /**
      * Returns the comparison function for associated dynamic reducer.
@@ -2140,6 +2141,7 @@ class ObjectByProp {
     reset() {
         this.#prop = void 0;
         this.#state = 'none';
+        this.#updateCustomCompareFn();
         this.#store.set({ prop: this.#prop, state: this.#state });
         // Forces an index update / sorting is triggered.
         this.#indexUpdateFn?.({ reversed: this.#state === 'desc' });
@@ -2152,12 +2154,13 @@ class ObjectByProp {
      */
     set({ prop, state } = {}) {
         let update = false;
-        if (typeof prop === 'string') {
+        if ((prop === void 0 || typeof prop === 'string') && this.#prop !== prop) {
             this.#prop = prop;
+            this.#updateCustomCompareFn();
             update = true;
         }
-        if (state === 'none' || state === 'asc' || state === 'desc') {
-            this.#state = state;
+        if ((state === void 0 || state === 'none' || state === 'asc' || state === 'desc') && this.#state !== state) {
+            this.#state = state === void 0 ? 'none' : state;
             update = true;
         }
         if (update) {
@@ -2176,8 +2179,9 @@ class ObjectByProp {
         if (customCompareFnMap !== void 0 && !isObject(customCompareFnMap)) {
             throw new TypeError(`'customCompareFnMap' is not an object or undefined.`);
         }
-        // TODO: Update custom compare Fn.
         this.#customCompareFnMap = customCompareFnMap;
+        this.#updateCustomCompareFn();
+        this.#indexUpdateFn?.({ force: true });
     }
     /**
      * Implements the Readable store interface forwarding a subscription to the external serializing store.
@@ -2218,7 +2222,11 @@ class ObjectByProp {
                 this.#state = 'none';
                 break;
         }
+        const updateCompareFn = this.#prop !== prop;
         this.#prop = prop;
+        if (updateCompareFn) {
+            this.#updateCustomCompareFn();
+        }
         this.#store.set({ prop: this.#prop, state: this.#state });
         // Forces an index update / sorting is triggered.
         this.#indexUpdateFn?.({ reversed: this.#state === 'desc' });
@@ -2257,6 +2265,9 @@ class ObjectByProp {
             }
         }
     }
+    /**
+     * Create sort function that is returned by {@link ObjectByProp.compare}.
+     */
     #initializeSortByFn() {
         const sortByFn = (a, b) => {
             if (this.#prop === void 0 || this.#state === 'none') {
@@ -2264,36 +2275,42 @@ class ObjectByProp {
             }
             const aVal = a?.[this.#prop];
             const bVal = b?.[this.#prop];
-            // TODO: implement caching of custom compare function.
-            // ----------------------------------------------------------------------------------------------------------
-            const customCompare = this.#customCompareFnMap?.[this.#prop];
-            if (typeof customCompare === 'function') {
-                // Case 1: It's a class with a static .compare().
-                if ('compare' in customCompare && typeof customCompare.compare === 'function') {
-                    return customCompare.compare(aVal, bVal);
-                }
-                // Case 2: It's a plain function comparator.
-                return customCompare(aVal, bVal);
+            // Custom compare -------------------------------------------------------------------------------------------
+            if (this.#customCompareFn) {
+                return 'compare' in this.#customCompareFn ? this.#customCompareFn.compare?.(aVal, bVal) :
+                    this.#customCompareFn(aVal, bVal);
             }
-            else if (typeof customCompare?.compare === 'function') {
-                // Case 3: It's an object instance with a .compare() method.
-                return customCompare.compare(aVal, bVal);
-            }
-            // ----------------------------------------------------------------------------------------------------------
+            // Default compare ------------------------------------------------------------------------------------------
             if (aVal === bVal) {
                 return 0;
             }
             const aType = typeof aVal;
             const bType = typeof bVal;
             switch (aType) {
-                case 'string':
-                    if (bType === 'string') {
-                        return aVal.localeCompare(bVal);
+                case 'bigint':
+                    if (bType === 'bigint') {
+                        return aVal === bVal ? 0 : aVal < bVal ? -1 : 1;
+                    }
+                    break;
+                case 'boolean':
+                    if (bType === 'boolean') {
+                        return Number(aVal) - Number(bVal);
                     }
                     break;
                 case 'number':
                     if (bType === 'number') {
                         return aVal - bVal;
+                    }
+                    break;
+                case 'object':
+                    // Do comparison if both values are Date instances.
+                    if (CrossRealm.isDate(aVal) && CrossRealm.isDate(bVal)) {
+                        return aVal.getTime() - bVal.getTime();
+                    }
+                    break;
+                case 'string':
+                    if (bType === 'string') {
+                        return aVal.localeCompare(bVal);
                     }
                     break;
             }
@@ -2311,6 +2328,27 @@ class ObjectByProp {
             return () => this.#indexUpdateFn = void 0;
         };
         return sortByFn;
+    }
+    /**
+     * Updates the cached custom compare function based on current prop value and any custom compare function map.
+     */
+    #updateCustomCompareFn() {
+        const customCompare = this.#prop ? this.#customCompareFnMap?.[this.#prop] : void 0;
+        if (customCompare === void 0) {
+            this.#customCompareFn = void 0;
+        }
+        else if (typeof customCompare === 'function') {
+            // Case 1: It's a class with a static compare method.
+            if ('compare' in customCompare && typeof customCompare.compare === 'function') {
+                this.#customCompareFn = customCompare;
+            }
+            // Case 2: It's a plain function comparator.
+            this.#customCompareFn = customCompare;
+        }
+        else if (typeof customCompare?.compare === 'function') {
+            // Case 3: It's an object instance with a compare method.
+            this.#customCompareFn = customCompare;
+        }
     }
 }
 
