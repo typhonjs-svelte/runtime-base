@@ -1,5 +1,5 @@
-import { CrossRealm } from '@typhonjs-svelte/runtime-base/util';
 import { isObject, isIterable } from '@typhonjs-svelte/runtime-base/util/object';
+import { CrossRealm } from '@typhonjs-svelte/runtime-base/util/realm';
 
 /**
  * Provides several helpful utility methods for accessibility and keyboard navigation.
@@ -164,7 +164,7 @@ class A11yHelper
          throw new TypeError(`'ignoreClasses' is not an iterable list.`);
       }
 
-      if (ignoreElements !== void 0 && !CrossRealm.isSet(ignoreElements))
+      if (ignoreElements !== void 0 && !CrossRealm.lang.isSet(ignoreElements))
       {
          throw new TypeError(`'ignoreElements' is not a Set.`);
       }
@@ -334,7 +334,7 @@ class A11yHelper
       }
 
       // Perform duck typing on event constructor name.
-      if (event !== void 0 && !CrossRealm.isUserInputEvent(event))
+      if (event !== void 0 && !CrossRealm.browser.isUserInputEvent(event))
       {
          throw new TypeError(
           `A11yHelper.getFocusSource error: 'event' is not a KeyboardEvent, MouseEvent, or PointerEvent.`);
@@ -394,7 +394,7 @@ class A11yHelper
       const result = { debug };
 
       // Perform duck typing on event constructor name.
-      if (CrossRealm.isPointerEvent(event))
+      if (CrossRealm.browser.isPointerEvent(event))
       {
          // Firefox currently (11/24) does not correctly determine the location of a keyboard originated
          // context menu location, so calculate position from middle of the event target.
@@ -507,10 +507,10 @@ class A11yHelper
       const tabindexFocusable = Number.isInteger(tabindexAttr) && (tabindexAttr >= 0 ||
        (tabindexAttr === -1 && el.classList.contains('tjs-a11y-focusable')));
 
-      if (contenteditableFocusable || tabindexFocusable || CrossRealm.isFocusableHTMLElement(el))
+      if (contenteditableFocusable || tabindexFocusable || CrossRealm.browser.isFocusableHTMLElement(el))
       {
          // Ensure that an anchor element has an `href` attribute.
-         if (anchorHref && !tabindexFocusable && CrossRealm.isHTMLAnchorElement(el) &&
+         if (anchorHref && !tabindexFocusable && CrossRealm.browser.isHTMLAnchorElement(el) &&
           typeof el.getAttribute('href') !== 'string')
          {
             return false;
@@ -560,7 +560,7 @@ class A11yHelper
    {
       if (!isObject(element) || element?.hidden || !element?.isConnected) { return false; }
 
-      let active = CrossRealm.getActiveElement(element);
+      let active = CrossRealm.browser.getActiveElement(element);
 
       if (!active) { return false; }
 
@@ -589,12 +589,12 @@ class A11yHelper
     */
    static isParentHidden(element, stopElement)
    {
-      if (!CrossRealm.isElement(element)) { throw new TypeError(`'element' is not an Element.`); }
+      if (!CrossRealm.browser.isElement(element)) { throw new TypeError(`'element' is not an Element.`); }
 
       // Set `stopElement` to `document.body` if undefined.
-      stopElement = stopElement ?? CrossRealm.getDocument(element)?.body;
+      stopElement = stopElement ?? CrossRealm.browser.getDocument(element)?.body;
 
-      if (!CrossRealm.isElement(stopElement)) { throw new TypeError(`'stopElement' must be an Element.`); }
+      if (!CrossRealm.browser.isElement(stopElement)) { throw new TypeError(`'stopElement' must be an Element.`); }
 
       let current = element.parentElement;
 

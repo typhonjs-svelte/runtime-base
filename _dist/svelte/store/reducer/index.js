@@ -1,7 +1,8 @@
 import { writable, get } from 'svelte/store';
 import { isMinimalWritableStore } from '@typhonjs-svelte/runtime-base/svelte/store/util';
-import { Strings, CrossRealm } from '@typhonjs-svelte/runtime-base/util';
+import { Strings } from '@typhonjs-svelte/runtime-base/util';
 import { isIterable, safeAccess, isObject } from '@typhonjs-svelte/runtime-base/util/object';
+import { CrossRealm } from '@typhonjs-svelte/runtime-base/util/realm';
 
 class DynReducerUtils {
     /**
@@ -2304,7 +2305,7 @@ class ObjectByProp {
                     break;
                 case 'object':
                     // Do comparison if both values are Date instances.
-                    if (CrossRealm.isDate(aVal) && CrossRealm.isDate(bVal)) {
+                    if (CrossRealm.lang.isDate(aVal) && CrossRealm.lang.isDate(bVal)) {
                         return aVal.getTime() - bVal.getTime();
                     }
                     break;

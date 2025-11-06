@@ -1,5 +1,5 @@
-import { CrossRealm } from '@typhonjs-svelte/runtime-base/util';
 import { isObject, isIterable } from '@typhonjs-svelte/runtime-base/util/object';
+import { CrossRealm } from '@typhonjs-svelte/runtime-base/util/realm';
 import { validateStrict, compare, satisfies } from '@typhonjs-svelte/runtime-base/util/semver';
 
 /**
@@ -147,7 +147,7 @@ class StyleParse {
             return parts;
         }
         const hasExclude = Array.isArray(excludeSelectorParts) && excludeSelectorParts.length > 0;
-        const hasInclude = CrossRealm.isSet(includeSelectorPartSet) && includeSelectorPartSet.size > 0;
+        const hasInclude = CrossRealm.lang.isSet(includeSelectorPartSet) && includeSelectorPartSet.size > 0;
         let start = 0;
         let inSQ = false; // '
         let inDQ = false; // "
@@ -283,7 +283,7 @@ class RuleManager {
      * @param   selector -
      */
     constructor(cssRule, name, selector) {
-        if (!CrossRealm.isCSSStyleRule(cssRule)) {
+        if (!CrossRealm.browser.isCSSStyleRule(cssRule)) {
             throw new TypeError(`RuleManager error: 'cssRule' is not a CSSStyleRule instance..`);
         }
         if (typeof name !== 'string') {
@@ -563,7 +563,7 @@ class StyleManager {
         if (typeof range !== 'string') {
             throw new TypeError(`'range' is not a string.`);
         }
-        if (!CrossRealm.isDocument(document)) {
+        if (!CrossRealm.browser.isDocument(document)) {
             throw new TypeError(`'document' is not an instance of HTMLDocument.`);
         }
         return this.#initializeConnect(document, id, range, warn);
@@ -588,7 +588,7 @@ class StyleManager {
         if (typeof id !== 'string') {
             throw new TypeError(`'id' is not a string.`);
         }
-        if (!CrossRealm.isDocument(document)) {
+        if (!CrossRealm.browser.isDocument(document)) {
             throw new TypeError(`'document' is not an instance of HTMLDocument.`);
         }
         const existingStyleEl = document.querySelector(`head style#${id}`);
@@ -647,7 +647,7 @@ class StyleManager {
             StyleManager.#log(warn, 'clone', `This style manager instance is not connected for id: ${this.#id}`);
             return void 0;
         }
-        if (!CrossRealm.isDocument(document)) {
+        if (!CrossRealm.browser.isDocument(document)) {
             throw new TypeError(`'document' is not an instance of HTMLDocument.`);
         }
         const rules = {};
@@ -737,7 +737,7 @@ class StyleManager {
         if (!isObject(rules)) {
             throw new TypeError(`'rules' is not an object.`);
         }
-        if (!CrossRealm.isDocument(document)) {
+        if (!CrossRealm.browser.isDocument(document)) {
             throw new TypeError(`'document' is not an instance of HTMLDocument.`);
         }
         if (!validateStrict(version)) {
@@ -807,7 +807,7 @@ class StyleManager {
             return void 0;
         }
         // TS type guard.
-        if (!CrossRealm.isCSSStyleSheet(targetSheet)) {
+        if (!CrossRealm.browser.isCSSStyleSheet(targetSheet)) {
             return void 0;
         }
         const cssRuleMap = new Map();
@@ -817,7 +817,7 @@ class StyleManager {
             if (typeof existingLayerName) {
                 let foundLayer = false;
                 for (const rule of Array.from(targetSheet.cssRules)) {
-                    if (CrossRealm.isCSSLayerBlockRule(rule) && rule.name === existingLayerName) {
+                    if (CrossRealm.browser.isCSSLayerBlockRule(rule) && rule.name === existingLayerName) {
                         targetSheet = rule;
                         foundLayer = true;
                     }
@@ -828,7 +828,7 @@ class StyleManager {
                 }
             }
             for (const cssRule of Array.from(targetSheet.cssRules)) {
-                if (!CrossRealm.isCSSStyleRule(cssRule)) {
+                if (!CrossRealm.browser.isCSSStyleRule(cssRule)) {
                     continue;
                 }
                 const selector = cssRule?.selectorText;
@@ -1277,7 +1277,7 @@ class StyleSheetResolve {
             throw new Error('Cannot modify a frozen StyleSheetResolve instance.');
         }
         this.#sheetMap.clear();
-        if (!CrossRealm.isCSSStyleSheet(styleSheetOrMap) && !CrossRealm.isMap(styleSheetOrMap)) {
+        if (!CrossRealm.browser.isCSSStyleSheet(styleSheetOrMap) && !CrossRealm.lang.isMap(styleSheetOrMap)) {
             throw new TypeError(`'styleSheetOrMap' must be a 'CSSStyleSheet' instance or a parsed Map of stylesheet entries.`);
         }
         if (!isObject(options)) {
@@ -1292,7 +1292,7 @@ class StyleSheetResolve {
         if (options.includeCSSLayers !== void 0 && !isIterable(options.includeCSSLayers)) {
             throw new TypeError(`'includeCSSLayers' must be a list of RegExp instances.`);
         }
-        if (options.includeSelectorPartSet !== void 0 && !CrossRealm.isSet(options.includeSelectorPartSet)) {
+        if (options.includeSelectorPartSet !== void 0 && !CrossRealm.lang.isSet(options.includeSelectorPartSet)) {
             throw new TypeError(`'includeSelectorPartSet' must be a Set of strings.`);
         }
         if (options.mediaQuery !== void 0 && typeof options.mediaQuery !== 'boolean') {
@@ -1301,10 +1301,10 @@ class StyleSheetResolve {
         if (options.urlRewrite !== void 0 && typeof options.urlRewrite !== 'boolean') {
             throw new TypeError(`'urlRewrite' must be a boolean.`);
         }
-        if (CrossRealm.isCSSStyleSheet(styleSheetOrMap)) {
+        if (CrossRealm.browser.isCSSStyleSheet(styleSheetOrMap)) {
             this.#parse(styleSheetOrMap, options);
         }
-        else if (CrossRealm.isMap(styleSheetOrMap)) {
+        else if (CrossRealm.lang.isMap(styleSheetOrMap)) {
             this.#sheetMap = this.#clone(styleSheetOrMap);
         }
         return this;
@@ -1358,7 +1358,7 @@ class StyleSheetResolve {
             baseHref: styleSheet.href ?? opts.baseHref,
             excludeSelectorParts: isIterable(opts.excludeSelectorParts) ? Array.from(opts.excludeSelectorParts) : [],
             includeCSSLayers: isIterable(opts.includeCSSLayers) ? Array.from(opts.includeCSSLayers) : [],
-            includeSelectorPartSet: CrossRealm.isSet(opts.includeSelectorPartSet) ? opts.includeSelectorPartSet :
+            includeSelectorPartSet: CrossRealm.lang.isSet(opts.includeSelectorPartSet) ? opts.includeSelectorPartSet :
                 new Set(),
             mediaQuery: opts.mediaQuery ?? true,
             urlRewrite: opts.urlRewrite ?? true

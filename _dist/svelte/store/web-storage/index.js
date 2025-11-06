@@ -1,5 +1,5 @@
 import { writable, get } from 'svelte/store';
-import { CrossRealm } from '@typhonjs-svelte/runtime-base/util';
+import { CrossRealm } from '@typhonjs-svelte/runtime-base/util/realm';
 
 /**
  * Generates derived, readable, writable helper functions wrapping the given Storage API provided with any additional
@@ -389,7 +389,7 @@ class TJSWebStorage
     */
    *entries(regex = void 0)
    {
-      if (regex !== void 0 && !CrossRealm.isRegExp(regex)) { throw new TypeError(`'regex' is not a RegExp`); }
+      if (regex !== void 0 && !CrossRealm.lang.isRegExp(regex)) { throw new TypeError(`'regex' is not a RegExp`); }
 
       if (!this.#stores.size) { return void 0; }
 
@@ -416,7 +416,7 @@ class TJSWebStorage
     */
    *keys(regex = void 0)
    {
-      if (regex !== void 0 && !CrossRealm.isRegExp(regex)) { throw new TypeError(`'regex' is not a RegExp`); }
+      if (regex !== void 0 && !CrossRealm.lang.isRegExp(regex)) { throw new TypeError(`'regex' is not a RegExp`); }
 
       if (!this.#stores.size) { return void 0; }
 
@@ -445,7 +445,7 @@ class TJSWebStorage
     */
    *stores(regex = void 0)
    {
-      if (regex !== void 0 && !CrossRealm.isRegExp(regex)) { throw new TypeError(`'regex' is not a RegExp`); }
+      if (regex !== void 0 && !CrossRealm.lang.isRegExp(regex)) { throw new TypeError(`'regex' is not a RegExp`); }
 
       if (!this.#stores.size) { return void 0; }
 

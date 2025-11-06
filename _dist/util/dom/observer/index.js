@@ -1,7 +1,7 @@
 import { isWritableStore } from '@typhonjs-svelte/runtime-base/svelte/store/util';
-import { CrossRealm } from '@typhonjs-svelte/runtime-base/util';
 import { StyleParse } from '@typhonjs-svelte/runtime-base/util/dom/style';
 import { isObject } from '@typhonjs-svelte/runtime-base/util/object';
+import { CrossRealm } from '@typhonjs-svelte/runtime-base/util/realm';
 
 /**
  * Provides an instance of {@link ResizeObserver} that can manage multiple elements and notify a wide range of
@@ -68,7 +68,7 @@ class ResizeObserverManager
     */
    add(el, target)
    {
-      if (!CrossRealm.isHTMLElement(el))
+      if (!CrossRealm.browser.isHTMLElement(el))
       {
          throw new TypeError(`ResizeObserverManager.add error: 'el' is not a HTMLElement.`);
       }

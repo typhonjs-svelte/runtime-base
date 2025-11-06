@@ -1,4 +1,5 @@
-import { CrossRealm, Frozen } from '@typhonjs-svelte/runtime-base/util';
+import { Frozen } from '@typhonjs-svelte/runtime-base/util';
+import { CrossRealm } from '@typhonjs-svelte/runtime-base/util/realm';
 
 /**
  * Provides a utility function to parse / construct fully qualified URL instances from a URL string.
@@ -27,7 +28,7 @@ class URLParser {
      * @returns Parsed URL or null if `url` is not parsed.
      */
     static parse({ url, base, routePrefix }) {
-        if (CrossRealm.isURL(url)) {
+        if (CrossRealm.browser.isURL(url)) {
             return url;
         }
         if (typeof url !== 'string') {
@@ -129,7 +130,7 @@ class AssetValidator {
      */
     static parseMedia({ url, routePrefix, exclude, mediaTypes = this.#mediaTypes.all, raiseException = false }) {
         const throws = typeof raiseException === 'boolean' ? raiseException : true;
-        if (typeof url !== 'string' && !CrossRealm.isURL(url)) {
+        if (typeof url !== 'string' && !CrossRealm.browser.isURL(url)) {
             if (throws) {
                 throw new TypeError(`'url' is not a string or URL instance.`);
             }
@@ -145,7 +146,7 @@ class AssetValidator {
                 return { url, valid: false };
             }
         }
-        if (exclude !== void 0 && !CrossRealm.isSet(exclude)) {
+        if (exclude !== void 0 && !CrossRealm.lang.isSet(exclude)) {
             if (throws) {
                 throw new TypeError(`'exclude' is not a Set.`);
             }
@@ -153,7 +154,7 @@ class AssetValidator {
                 return { url, valid: false };
             }
         }
-        if (!CrossRealm.isSet(mediaTypes)) {
+        if (!CrossRealm.lang.isSet(mediaTypes)) {
             if (throws) {
                 throw new TypeError(`'mediaTypes' is not a Set.`);
             }
@@ -172,7 +173,7 @@ class AssetValidator {
         }
         const extensionMatch = targetURL.pathname.match(/\.([a-zA-Z0-9]+)$/);
         const extension = extensionMatch ? extensionMatch[1].toLowerCase() : void 0;
-        const isExcluded = extension && CrossRealm.isSet(exclude) ? exclude.has(extension) : false;
+        const isExcluded = extension && CrossRealm.lang.isSet(exclude) ? exclude.has(extension) : false;
         let elementType = void 0;
         let valid = false;
         if (extension && !isExcluded) {
@@ -254,7 +255,7 @@ class ClipboardAccess {
      */
     static async readText(activeWindow = window) {
         let result = '';
-        if (!CrossRealm.isWindow(activeWindow)) {
+        if (!CrossRealm.browser.isWindow(activeWindow)) {
             throw new TypeError(`ClipboardAccess.readText error: 'activeWindow' is not a Window.`);
         }
         if (activeWindow?.navigator?.clipboard) {
@@ -279,7 +280,7 @@ class ClipboardAccess {
         if (typeof text !== 'string') {
             throw new TypeError(`ClipboardAccess.writeText error: 'text' is not a string.`);
         }
-        if (!CrossRealm.isWindow(activeWindow)) {
+        if (!CrossRealm.browser.isWindow(activeWindow)) {
             throw new TypeError(`ClipboardAccess.writeText error: 'activeWindow' is not a Window.`);
         }
         let success = false;

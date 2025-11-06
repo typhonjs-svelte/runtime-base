@@ -6,7 +6,7 @@ import { radToDeg, degToRad, clamp } from '@typhonjs-svelte/runtime-base/math/ut
 import { subscribeIgnoreFirst } from '@typhonjs-svelte/runtime-base/svelte/store/util';
 import { propertyStore } from '@typhonjs-svelte/runtime-base/svelte/store/writable-derived';
 import { lerp } from '@typhonjs-svelte/runtime-base/math/interpolate';
-import { CrossRealm } from '@typhonjs-svelte/runtime-base/util';
+import { CrossRealm } from '@typhonjs-svelte/runtime-base/util/realm';
 import { Vec3, Mat4 } from '@typhonjs-svelte/runtime-base/math/gl-matrix';
 import { writable } from 'svelte/store';
 import { StyleParse } from '@typhonjs-svelte/runtime-base/util/dom/style';
@@ -482,9 +482,8 @@ class AnimationControl {
      * @returns Animation finished Promise.
      */
     get finished() {
-        if (!CrossRealm.isPromise(this.#finishedPromise)) {
-            this.#finishedPromise = this.#willFinish ? new Promise((resolve) => this.#animationData.resolve = resolve) :
-                Promise.resolve({ cancelled: false });
+        if (!CrossRealm.lang.isPromise(this.#finishedPromise)) {
+            this.#finishedPromise = this.#willFinish ? new Promise((resolve) => this.#animationData.resolve = resolve) : Promise.resolve({ cancelled: false });
         }
         return this.#finishedPromise;
     }
@@ -2763,7 +2762,7 @@ class AnimationGroupControl {
      */
     get finished() {
         const animationControls = this.#animationControls;
-        if (!CrossRealm.isPromise(this.#finishedPromise)) {
+        if (!CrossRealm.lang.isPromise(this.#finishedPromise)) {
             if (animationControls === null || animationControls === void 0 || animationControls.size === 0) {
                 this.#finishedPromise = Promise.resolve({ cancelled: false });
             }
