@@ -1,4 +1,4 @@
-import { CrossRealm }   from '#runtime/util';
+import { CrossRealm }   from '#runtime/util/realm';
 
 import { writable }     from '#svelte/store';
 
@@ -141,9 +141,9 @@ class ThemeObserver
     */
    static nearestThemedTokens({ element, output = new Set(), override = true, strict = false })
    {
-      if (!CrossRealm.isSet(output)) { throw new TypeError(`'output' is not a Set.`); }
+      if (!CrossRealm.lang.isSet(output)) { throw new TypeError(`'output' is not a Set.`); }
 
-      if (!CrossRealm.isElement(element)) { return output; }
+      if (!CrossRealm.browser.isElement(element)) { return output; }
 
       return output;
    }

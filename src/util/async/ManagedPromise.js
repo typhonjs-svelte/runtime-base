@@ -1,4 +1,4 @@
-import { CrossRealm } from '#runtime/util';
+import { CrossRealm } from '#runtime/util/realm';
 
 /**
  * Provides management of a single Promise that can be shared and accessed across JS & Svelte components. This allows a
@@ -74,7 +74,7 @@ export class ManagedPromise
          throw new TypeError(`[TRL] ManagedPromise.create error: 'reuse' is not a boolean.`);
       }
 
-      if (reuse && this.#current !== void 0 && CrossRealm.isPromise(this.#current.promise))
+      if (reuse && this.#current !== void 0 && CrossRealm.lang.isPromise(this.#current.promise))
       {
          if (ManagedPromise.#logging)
          {
@@ -144,7 +144,7 @@ export class ManagedPromise
       {
          this.#current.isProcessing = true;
 
-         if (CrossRealm.isPromise(result))
+         if (CrossRealm.lang.isPromise(result))
          {
             result.then((value) =>
             {
@@ -197,7 +197,7 @@ export class ManagedPromise
 
       if (this.#current !== void 0)
       {
-         if (CrossRealm.isPromise(result))
+         if (CrossRealm.lang.isPromise(result))
          {
             this.#current.isProcessing = true;
 

@@ -1,4 +1,4 @@
-import { CrossRealm } from '#runtime/util';
+import { CrossRealm } from '#runtime/util/realm';
 
 /**
  * Provides a utility function to parse / construct fully qualified URL instances from a URL string.
@@ -31,7 +31,7 @@ export class URLParser
     */
    static parse({ url, base, routePrefix }: { url: string | URL, base?: string, routePrefix?: string }): URL | null
    {
-      if (CrossRealm.isURL(url)) { return url; }
+      if (CrossRealm.browser.isURL(url)) { return url; }
 
       if (typeof url !== 'string') { return null; }
 

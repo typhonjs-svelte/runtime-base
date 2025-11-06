@@ -1,7 +1,7 @@
 import { isWritableStore } from '#runtime/svelte/store/util';
-import { CrossRealm }      from '#runtime/util';
 import { StyleParse }      from '#runtime/util/dom/style';
 import { isObject }        from '#runtime/util/object';
+import { CrossRealm }      from '#runtime/util/realm';
 
 /**
  * Provides an instance of {@link ResizeObserver} that can manage multiple elements and notify a wide range of
@@ -68,7 +68,7 @@ export class ResizeObserverManager
     */
    add(el, target)
    {
-      if (!CrossRealm.isHTMLElement(el))
+      if (!CrossRealm.browser.isHTMLElement(el))
       {
          throw new TypeError(`ResizeObserverManager.add error: 'el' is not a HTMLElement.`);
       }

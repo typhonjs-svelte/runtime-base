@@ -1,8 +1,8 @@
-import { CrossRealm }            from '#runtime/util';
-
 import type {
    BasicAnimation,
    BasicAnimationState }         from '#runtime/util/animate';
+
+import { CrossRealm }            from '#runtime/util/realm';
 
 import type { AnimationControl } from './AnimationControl';
 
@@ -46,7 +46,7 @@ export class AnimationGroupControl implements BasicAnimation
    {
       const animationControls: Set<AnimationControl> | null = this.#animationControls;
 
-      if (!CrossRealm.isPromise(this.#finishedPromise))
+      if (!CrossRealm.lang.isPromise(this.#finishedPromise))
       {
          if (animationControls === null || animationControls === void 0 || animationControls.size === 0)
          {

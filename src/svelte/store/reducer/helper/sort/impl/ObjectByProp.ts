@@ -1,8 +1,8 @@
 import { get, writable }            from 'svelte/store';
 
 import { isMinimalWritableStore }   from '#runtime/svelte/store/util';
-import { CrossRealm }               from '#runtime/util';
 import { isObject }                 from '#runtime/util/object';
+import { CrossRealm }               from '#runtime/util/realm';
 
 import type {
    Subscriber,
@@ -367,7 +367,10 @@ export class ObjectByProp<T extends { [key: string]: any }> implements DynReduce
 
             case 'object':
                // Do comparison if both values are Date instances.
-               if (CrossRealm.isDate(aVal) && CrossRealm.isDate(bVal)) { return aVal.getTime() - bVal.getTime(); }
+               if (CrossRealm.lang.isDate(aVal) && CrossRealm.lang.isDate(bVal))
+               {
+                  return aVal.getTime() - bVal.getTime();
+               }
                break;
 
             case 'string':

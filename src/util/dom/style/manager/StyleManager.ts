@@ -1,5 +1,5 @@
-import { CrossRealm }      from '#runtime/util';
 import { isObject }        from '#runtime/util/object';
+import { CrossRealm }      from '#runtime/util/realm';
 
 import {
    compare,
@@ -77,7 +77,10 @@ class StyleManager implements Iterable<[string, StyleManager.RuleManager]>
    {
       if (typeof id !== 'string') { throw new TypeError(`'id' is not a string.`); }
       if (typeof range !== 'string') { throw new TypeError(`'range' is not a string.`); }
-      if (!CrossRealm.isDocument(document)) { throw new TypeError(`'document' is not an instance of HTMLDocument.`); }
+      if (!CrossRealm.browser.isDocument(document))
+      {
+         throw new TypeError(`'document' is not an instance of HTMLDocument.`);
+      }
 
       return this.#initializeConnect(document, id, range, warn);
    }
@@ -104,7 +107,10 @@ class StyleManager implements Iterable<[string, StyleManager.RuleManager]>
     undefined
    {
       if (typeof id !== 'string') { throw new TypeError(`'id' is not a string.`); }
-      if (!CrossRealm.isDocument(document)) { throw new TypeError(`'document' is not an instance of HTMLDocument.`); }
+      if (!CrossRealm.browser.isDocument(document))
+      {
+         throw new TypeError(`'document' is not an instance of HTMLDocument.`);
+      }
 
       const existingStyleEl = document.querySelector<HTMLStyleElement>(`head style#${id}`);
 
@@ -182,7 +188,10 @@ class StyleManager implements Iterable<[string, StyleManager.RuleManager]>
          return void 0;
       }
 
-      if (!CrossRealm.isDocument(document)) { throw new TypeError(`'document' is not an instance of HTMLDocument.`); }
+      if (!CrossRealm.browser.isDocument(document))
+      {
+         throw new TypeError(`'document' is not an instance of HTMLDocument.`);
+      }
 
       const rules: StyleManager.Data.RulesConfig = {};
 
@@ -286,7 +295,10 @@ class StyleManager implements Iterable<[string, StyleManager.RuleManager]>
    {
       if (typeof id !== 'string') { throw new TypeError(`'id' is not a string.`); }
       if (!isObject(rules)) { throw new TypeError(`'rules' is not an object.`); }
-      if (!CrossRealm.isDocument(document)) { throw new TypeError(`'document' is not an instance of HTMLDocument.`); }
+      if (!CrossRealm.browser.isDocument(document))
+      {
+         throw new TypeError(`'document' is not an instance of HTMLDocument.`);
+      }
       if (!validateStrict(version)) { throw new TypeError(`'version' is not a valid semver string.`); }
       if (typeof force !== 'boolean') { throw new TypeError(`'force' is not a boolean.`); }
       if (typeof warn !== 'boolean') { throw new TypeError(`'warn' is not a boolean.`); }
@@ -374,7 +386,7 @@ class StyleManager implements Iterable<[string, StyleManager.RuleManager]>
       }
 
       // TS type guard.
-      if (!CrossRealm.isCSSStyleSheet(targetSheet)) { return void 0; }
+      if (!CrossRealm.browser.isCSSStyleSheet(targetSheet)) { return void 0; }
 
       const cssRuleMap = new Map();
 
@@ -389,7 +401,7 @@ class StyleManager implements Iterable<[string, StyleManager.RuleManager]>
 
             for (const rule of Array.from(targetSheet.cssRules))
             {
-               if (CrossRealm.isCSSLayerBlockRule(rule) && rule.name === existingLayerName)
+               if (CrossRealm.browser.isCSSLayerBlockRule(rule) && rule.name === existingLayerName)
                {
                   targetSheet = rule;
                   foundLayer = true;
@@ -407,7 +419,7 @@ class StyleManager implements Iterable<[string, StyleManager.RuleManager]>
 
          for (const cssRule of Array.from(targetSheet.cssRules))
          {
-            if (!CrossRealm.isCSSStyleRule(cssRule)) { continue; }
+            if (!CrossRealm.browser.isCSSStyleRule(cssRule)) { continue; }
 
             const selector = cssRule?.selectorText;
 

@@ -1,8 +1,8 @@
-import { CrossRealm }   from '#runtime/util';
-
 import {
    isIterable,
    isObject }           from '#runtime/util/object';
+
+import { CrossRealm }   from '#runtime/util/realm';
 
 import { StyleParse }   from '../parse';
 
@@ -415,7 +415,7 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
 
       this.#sheetMap.clear();
 
-      if (!CrossRealm.isCSSStyleSheet(styleSheetOrMap) && !CrossRealm.isMap(styleSheetOrMap))
+      if (!CrossRealm.browser.isCSSStyleSheet(styleSheetOrMap) && !CrossRealm.lang.isMap(styleSheetOrMap))
       {
          throw new TypeError(
           `'styleSheetOrMap' must be a 'CSSStyleSheet' instance or a parsed Map of stylesheet entries.`);
@@ -438,7 +438,7 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
          throw new TypeError(`'includeCSSLayers' must be a list of RegExp instances.`);
       }
 
-      if (options.includeSelectorPartSet !== void 0 && !CrossRealm.isSet(options.includeSelectorPartSet))
+      if (options.includeSelectorPartSet !== void 0 && !CrossRealm.lang.isSet(options.includeSelectorPartSet))
       {
          throw new TypeError(`'includeSelectorPartSet' must be a Set of strings.`);
       }
@@ -453,11 +453,11 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
          throw new TypeError(`'urlRewrite' must be a boolean.`);
       }
 
-      if (CrossRealm.isCSSStyleSheet(styleSheetOrMap))
+      if (CrossRealm.browser.isCSSStyleSheet(styleSheetOrMap))
       {
          this.#parse(styleSheetOrMap, options);
       }
-      else if (CrossRealm.isMap(styleSheetOrMap))
+      else if (CrossRealm.lang.isMap(styleSheetOrMap))
       {
          this.#sheetMap = this.#clone(styleSheetOrMap as Map<string, { [key: string]: string }>);
       }
@@ -516,7 +516,7 @@ class StyleSheetResolve implements Iterable<[string, { [key: string]: string }]>
          baseHref: styleSheet.href ?? opts.baseHref,
          excludeSelectorParts: isIterable(opts.excludeSelectorParts) ? Array.from(opts.excludeSelectorParts) : [],
          includeCSSLayers: isIterable(opts.includeCSSLayers) ? Array.from(opts.includeCSSLayers) : [],
-         includeSelectorPartSet: CrossRealm.isSet(opts.includeSelectorPartSet) ? opts.includeSelectorPartSet :
+         includeSelectorPartSet: CrossRealm.lang.isSet(opts.includeSelectorPartSet) ? opts.includeSelectorPartSet :
           new Set(),
          mediaQuery: opts.mediaQuery ?? true,
          urlRewrite: opts.urlRewrite ?? true

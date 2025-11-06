@@ -1,5 +1,5 @@
-import { CrossRealm }            from '#runtime/util';
 import { isObject }              from '#runtime/util/object';
+import { CrossRealm }            from '#runtime/util/realm';
 
 import type {
    BasicAnimation,
@@ -55,10 +55,10 @@ export class AnimationControl implements BasicAnimation
     */
    get finished(): Promise<BasicAnimationState>
    {
-      if (!CrossRealm.isPromise(this.#finishedPromise))
+      if (!CrossRealm.lang.isPromise(this.#finishedPromise))
       {
-         this.#finishedPromise = this.#willFinish ? new Promise<BasicAnimationState>((resolve) => this.#animationData!.resolve = resolve) :
-          Promise.resolve({ cancelled: false });
+         this.#finishedPromise = this.#willFinish ? new Promise<BasicAnimationState>(
+          (resolve) => this.#animationData!.resolve = resolve) : Promise.resolve({ cancelled: false });
       }
 
       return this.#finishedPromise;

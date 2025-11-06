@@ -1,4 +1,4 @@
-import { CrossRealm } from '#runtime/util';
+import { CrossRealm } from '#runtime/util/realm';
 
 /**
  * Provides resources for parsing style strings.
@@ -165,7 +165,7 @@ export abstract class StyleParse
       if (typeof selectorText !== 'string' || selectorText.length === 0) { return parts; }
 
       const hasExclude = Array.isArray(excludeSelectorParts) && excludeSelectorParts.length > 0;
-      const hasInclude = CrossRealm.isSet(includeSelectorPartSet) && includeSelectorPartSet.size > 0;
+      const hasInclude = CrossRealm.lang.isSet(includeSelectorPartSet) && includeSelectorPartSet.size > 0;
 
       let start = 0;
       let inSQ = false; // '
