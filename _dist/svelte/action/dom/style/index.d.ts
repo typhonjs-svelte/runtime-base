@@ -1,6 +1,37 @@
 import * as svelte_action from 'svelte/action';
 
 /**
+ * Provides a Svelte action that applies absolute positioning to an element adjusting for any painted borders defined
+ * by CSS `border-image` properties.
+ *
+ * When enabled, this action computes the effective painted border using
+ * {@link #runtime/util/dom/style!StyleMetric.getPaintedBorderWidth} and applies inline `position: absolute` styles so
+ * the element aligns correctly within the visible (non-border) content area of its container.
+ *
+ * Additionally, this action subscribes to {@link #runtime/util/dom/theme!ThemeObserver} and updates constraint
+ * calculations when any global theme is changed.
+ *
+ * @param {HTMLElement} node - Target element.
+ *
+ * @param {object}  [options] - Action Options.
+ *
+ * @param {boolean} [options.enabled] - When enabled set inline styles for absolute positioning taking into account
+ *        any border image constraints.
+ *
+ * @returns {import('svelte/action').ActionReturn<{ enabled?: boolean }>} Lifecycle functions.
+ */
+declare function absoluteWithinBorder(
+  node: HTMLElement,
+  {
+    enabled,
+  }?: {
+    enabled?: boolean;
+  },
+): svelte_action.ActionReturn<{
+  enabled?: boolean;
+}>;
+
+/**
  * Provides an action to apply CSS style properties provided as an object.
  *
  * @param {HTMLElement} node - Target element
@@ -19,4 +50,4 @@ declare function applyStyles(
   [key: string]: string | null;
 }>;
 
-export { applyStyles };
+export { absoluteWithinBorder, applyStyles };

@@ -1,7 +1,6 @@
-import { StyleMetric } from '@typhonjs-svelte/runtime-base/util/dom/style';
-import { ThemeObserver } from '@typhonjs-svelte/runtime-base/util/dom/theme';
-import { CrossRealm } from '@typhonjs-svelte/runtime-base/util/realm';
-import { isObject } from '@typhonjs-svelte/runtime-base/util/object';
+import { StyleMetric }     from '#runtime/util/dom/style';
+import { ThemeObserver }   from '#runtime/util/dom/theme';
+import { CrossRealm }      from '#runtime/util/realm';
 
 /**
  * Provides a Svelte action that applies absolute positioning to an element adjusting for any painted borders defined
@@ -23,7 +22,7 @@ import { isObject } from '@typhonjs-svelte/runtime-base/util/object';
  *
  * @returns {import('svelte/action').ActionReturn<{ enabled?: boolean }>} Lifecycle functions.
  */
-function absoluteWithinBorder(node, { enabled = true } = {})
+export function absoluteWithinBorder(node, { enabled = true } = {})
 {
    let top = 0;
    let right = 0;
@@ -82,43 +81,3 @@ function absoluteWithinBorder(node, { enabled = true } = {})
       }
    };
 }
-
-/**
- * Provides an action to apply CSS style properties provided as an object.
- *
- * @param {HTMLElement} node - Target element
- *
- * @param {{ [key: string]: string | null }}  properties - Hyphen case CSS property key / value object of properties
- *        to set.
- *
- * @returns {import('svelte/action').ActionReturn<{ [key: string]: string | null }>} Lifecycle functions.
- */
-function applyStyles(node, properties)
-{
-   /** Sets properties on node. */
-   function setProperties()
-   {
-      if (!isObject(properties)) { return; }
-
-      for (const prop of Object.keys(properties))
-      {
-         node.style.setProperty(`${prop}`, properties[prop]);
-      }
-   }
-
-   setProperties();
-
-   return {
-      /**
-       * @param {{ [key: string]: string | null }}  newProperties - Key / value object of properties to set.
-       */
-      update: (newProperties) =>
-      {
-         properties = newProperties;
-         setProperties();
-      }
-   };
-}
-
-export { absoluteWithinBorder, applyStyles };
-//# sourceMappingURL=index.js.map
