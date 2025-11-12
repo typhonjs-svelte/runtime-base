@@ -370,6 +370,97 @@ declare namespace StyleManager {
 }
 
 /**
+ * Provides computed style–based metric utilities for DOM elements.
+ *
+ * The `StyleMetric` static class offers precise runtime calculations for visual and painted metrics
+ * (IE border-image thicknesses, resolved pixel sizes). All methods operate on live DOM elements using computed style
+ * data.
+ */
+declare abstract class StyleMetric {
+  #private;
+  private constructor();
+  /**
+   * Computes the effective *painted border widths* for an element when `border-image` is in use.
+   *
+   * This resolves all four sides (top, right, bottom, left) into pixel values accounting for:
+   * ```
+   * - `border-image-width` values (absolute, percentage, or unitless),
+   * - `auto` fallbacks to `border-image-slice`,
+   * - and `border-image-source: none` (returns all zeros).
+   * ```
+   *
+   * @param el - HTMLElement to compute painted border widths for.
+   *
+   * @param [output] - Existing `BoxSides` output data object.
+   *
+   * @param [options] Optional pre-fetched element data for performance reuse.
+   *
+   * @param [options.computedStyle] Pre-fetched computed style of element.
+   *
+   * @param [options.offsetHeight] Pre-fetched `offsetHeight` of element.
+   *
+   * @param [options.offsetWidth] Pre-fetched `offsetWidth` of element.
+   *
+   * @returns Painted border width constraints in pixel units.
+   */
+  static getPaintedBorderWidth<Output extends StyleMetric.Data.BoxSides = StyleMetric.Data.BoxSides>(
+    el: HTMLElement,
+    output?: Output,
+    { computedStyle, offsetHeight, offsetWidth }?: StyleMetric.Options.PrefetchMetrics,
+  ): Output;
+}
+declare namespace StyleMetric {
+  /**
+   * Namespace grouping data shape definitions for StyleMetric utilities.
+   */
+  namespace Data {
+    /**
+     * Defines output data shape.
+     */
+    interface BoxSides {
+      /**
+       * Element `top` constraint.
+       */
+      top: number;
+      /**
+       * Element `right` constraint.
+       */
+      right: number;
+      /**
+       * Element `bottom` constraint.
+       */
+      bottom: number;
+      /**
+       * Element `left` constraint.
+       */
+      left: number;
+    }
+  }
+  /**
+   * Namespace grouping method options for StyleMetric calculations.
+   */
+  namespace Options {
+    /**
+     * Defines optional pre-fetched HTMLElement metric data used in calculations.
+     */
+    interface PrefetchMetrics {
+      /**
+       * Computed styles for target element.
+       */
+      computedStyle?: CSSStyleDeclaration;
+      /**
+       * Offset height of target element.
+       */
+      offsetHeight?: number;
+      /**
+       * Offset width of target element.
+       */
+      offsetWidth?: number;
+    }
+  }
+}
+
+/**
  * Provides resources for parsing style strings.
  */
 declare abstract class StyleParse {
@@ -815,4 +906,4 @@ declare namespace StyleSheetResolve {
   }
 }
 
-export { StyleManager, StyleParse, StyleSheetResolve };
+export { StyleManager, StyleMetric, StyleParse, StyleSheetResolve };
