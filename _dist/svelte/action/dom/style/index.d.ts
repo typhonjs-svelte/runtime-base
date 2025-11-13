@@ -2,7 +2,7 @@ import * as svelte_action from 'svelte/action';
 
 /**
  * Provides a Svelte action that applies absolute positioning to an element adjusting for any painted borders defined
- * by CSS `border-image` properties.
+ * by CSS `border-image` properties of the parent element of the target node / element of this action.
  *
  * When enabled, this action computes the effective painted border using
  * {@link #runtime/util/dom/style!StyleMetric.getPaintedBorderWidth} and applies inline `position: absolute` styles so
@@ -20,7 +20,7 @@ import * as svelte_action from 'svelte/action';
  *
  * @returns {import('svelte/action').ActionReturn<{ enabled?: boolean }>} Lifecycle functions.
  */
-declare function absoluteWithinBorder(
+declare function absWithinBorder(
   node: HTMLElement,
   {
     enabled,
@@ -50,4 +50,4 @@ declare function applyStyles(
   [key: string]: string | null;
 }>;
 
-export { absoluteWithinBorder, applyStyles };
+export { absWithinBorder, applyStyles };

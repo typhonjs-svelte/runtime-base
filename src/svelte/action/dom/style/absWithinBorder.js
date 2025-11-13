@@ -4,7 +4,7 @@ import { CrossRealm }      from '#runtime/util/realm';
 
 /**
  * Provides a Svelte action that applies absolute positioning to an element adjusting for any painted borders defined
- * by CSS `border-image` properties.
+ * by CSS `border-image` properties of the parent element of the target node / element of this action.
  *
  * When enabled, this action computes the effective painted border using
  * {@link #runtime/util/dom/style!StyleMetric.getPaintedBorderWidth} and applies inline `position: absolute` styles so
@@ -22,7 +22,7 @@ import { CrossRealm }      from '#runtime/util/realm';
  *
  * @returns {import('svelte/action').ActionReturn<{ enabled?: boolean }>} Lifecycle functions.
  */
-export function absoluteWithinBorder(node, { enabled = true } = {})
+export function absWithinBorder(node, { enabled = true } = {})
 {
    let top = 0;
    let right = 0;

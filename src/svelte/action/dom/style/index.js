@@ -1,2 +1,2 @@
-export * from './absoluteWithinBorder.js';
+export * from './absWithinBorder.js';
 export * from './applyStyles.js';
