@@ -85,26 +85,50 @@ abstract class StyleMetric
 
       if (isObject(output))
       {
-         output.top = this.#resolveBorderWidth(tokensWidth[0], parseFloat(computedStyle.borderTopWidth), refH);
-         output.right = this.#resolveBorderWidth(tokensWidth[1], parseFloat(computedStyle.borderRightWidth), refW);
-         output.bottom = this.#resolveBorderWidth(tokensWidth[2], parseFloat(computedStyle.borderBottomWidth), refH);
-         output.left = this.#resolveBorderWidth(tokensWidth[3], parseFloat(computedStyle.borderLeftWidth), refW);
+         try
+         {
+            output.top = this.#resolveBorderWidth(tokensWidth[0], parseFloat(computedStyle.borderTopWidth), refH);
+            output.right = this.#resolveBorderWidth(tokensWidth[1], parseFloat(computedStyle.borderRightWidth), refW);
+            output.bottom = this.#resolveBorderWidth(tokensWidth[2], parseFloat(computedStyle.borderBottomWidth), refH);
+            output.left = this.#resolveBorderWidth(tokensWidth[3], parseFloat(computedStyle.borderLeftWidth), refW);
+         }
+         catch (err)
+         {
+            console.error(`[TRL] StyleMetric.getPaintedBorderWidth error: \n`, err);
+            output.top = 0;
+            output.right = 0;
+            output.bottom = 0;
+            output.left = 0;
+         }
       }
       else
       {
-         output = {
-            top: this.#resolveBorderWidth(tokensWidth[0], parseFloat(computedStyle.borderTopWidth), refH),
-            right: this.#resolveBorderWidth(tokensWidth[1], parseFloat(computedStyle.borderRightWidth), refW),
-            bottom: this.#resolveBorderWidth(tokensWidth[2], parseFloat(computedStyle.borderBottomWidth), refH),
-            left: this.#resolveBorderWidth(tokensWidth[3], parseFloat(computedStyle.borderLeftWidth), refW)
-         } as Output;
+         try
+         {
+            output = {
+               top: this.#resolveBorderWidth(tokensWidth[0], parseFloat(computedStyle.borderTopWidth), refH),
+               right: this.#resolveBorderWidth(tokensWidth[1], parseFloat(computedStyle.borderRightWidth), refW),
+               bottom: this.#resolveBorderWidth(tokensWidth[2], parseFloat(computedStyle.borderBottomWidth), refH),
+               left: this.#resolveBorderWidth(tokensWidth[3], parseFloat(computedStyle.borderLeftWidth), refW)
+            } as Output;
+         }
+         catch (err)
+         {
+            console.error(`[TRL] StyleMetric.getPaintedBorderWidth error: \n`, err);
+
+            output = {
+               top: 0,
+               right: 0,
+               bottom: 0,
+               left: 0
+            } as Output;
+         }
       }
 
       return output;
    }
 
    // Internal Implementation ----------------------------------------------------------------------------------------
-
 
    /**
     * Expands a CSS 1–4 token list into four sides following the standard CSS shorthand expansion rules.
@@ -117,34 +141,37 @@ abstract class StyleMetric
     */
    static #expand4(tokens: string[], output: string[] = new Array(4)): string[]
    {
+      const defaultValue = '0';
+
       switch (tokens.length)
       {
          case 1:
-            output[0] = tokens[0];
-            output[1] = tokens[0];
-            output[2] = tokens[0];
-            output[3] = tokens[0];
+            output[0] = tokens[0] ?? defaultValue;
+            output[1] = tokens[0] ?? defaultValue;
+            output[2] = tokens[0] ?? defaultValue;
+            output[3] = tokens[0] ?? defaultValue;
             break;
 
          case 2:
-            output[0] = tokens[0];
-            output[1] = tokens[1];
-            output[2] = tokens[0];
-            output[3] = tokens[1];
+            output[0] = tokens[0] ?? defaultValue;
+            output[1] = tokens[1] ?? defaultValue;
+            output[2] = tokens[0] ?? defaultValue;
+            output[3] = tokens[1] ?? defaultValue;
             break;
 
          case 3:
-            output[0] = tokens[0];
-            output[1] = tokens[1];
-            output[2] = tokens[2];
-            output[3] = tokens[1];
+            output[0] = tokens[0] ?? defaultValue;
+            output[1] = tokens[1] ?? defaultValue;
+            output[2] = tokens[2] ?? defaultValue;
+            output[3] = tokens[1] ?? defaultValue;
             break;
 
+         default:
          case 4:
-            output[0] = tokens[0];
-            output[1] = tokens[1];
-            output[2] = tokens[2];
-            output[3] = tokens[4];
+            output[0] = tokens[0] ?? defaultValue;
+            output[1] = tokens[1] ?? defaultValue;
+            output[2] = tokens[2] ?? defaultValue;
+            output[3] = tokens[3] ?? defaultValue;
             break;
       }
 
