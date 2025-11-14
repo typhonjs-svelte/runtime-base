@@ -11,7 +11,8 @@ import { CrossRealm }      from '#runtime/util/realm';
  * the element aligns correctly within the visible (non-border) content area of its container.
  *
  * Additionally, this action subscribes to {@link #runtime/util/dom/theme!ThemeObserver} and updates constraint
- * calculations when any global theme is changed.
+ * calculations when any global theme is changed. To force an update of constraint calculations provide and change
+ * a superfluous / dummy property in the action options.
  *
  * @param {HTMLElement} node - Target element.
  *
