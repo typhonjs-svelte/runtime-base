@@ -1,3 +1,3 @@
-export * from './absWithinBorder.js';
+export * from './absToVisualEdgeInsets.js';
 export * from './applyStyles.js';
-export * from './padToBorder.js';
+export * from './padToVisualEdgeInsets.js';

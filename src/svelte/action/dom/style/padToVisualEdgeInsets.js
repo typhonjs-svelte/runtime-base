@@ -6,8 +6,8 @@ import { CrossRealm }      from '#runtime/util/realm';
  * Provides a Svelte action that applies inline styles for `padding` to an element adjusting for any painted borders
  * defined by CSS `border-image` properties of the target node / element of this action.
  *
- * When enabled, this action computes the effective painted border using
- * {@link #runtime/util/dom/style!StyleMetric.getPaintedBorderWidth} and applies inline `position: absolute` styles so
+ * When enabled, this action computes the effective visual edge insets / painted border using
+ * {@link #runtime/util/dom/style!StyleMetric.getVisualEdgeInsets} and applies inline `position: absolute` styles so
  * the element aligns correctly within the visible (non-border) content area of its container.
  *
  * Additionally, this action subscribes to {@link #runtime/util/dom/theme!ThemeObserver} and updates constraint
@@ -19,13 +19,13 @@ import { CrossRealm }      from '#runtime/util/realm';
  * @param {object}  [options] - Action Options.
  *
  * @param {boolean} [options.enabled] - When enabled set inline styles for padding taking into account any visual
- *        border image constraints.
+ *        edge insets / border image constraints.
  *
  * @param {boolean} [options.parent] - When true, the parent element to the action element is adjusted.
  *
  * @returns {import('svelte/action').ActionReturn<{ enabled?: boolean, parent?: boolean }>} Lifecycle functions.
  */
-export function padToBorder(node, { enabled = true, parent = false } = {})
+export function padToVisualEdgeInsets(node, { enabled = true, parent = false } = {})
 {
    let top = 0;
    let right = 0;
@@ -67,7 +67,7 @@ export function padToBorder(node, { enabled = true, parent = false } = {})
       }
       else
       {
-         ({ top, right, bottom, left } = StyleMetric.getPaintedBorderWidth(targetNode));
+         ({ top, right, bottom, left } = StyleMetric.getVisualEdgeInsets(targetNode));
       }
 
       if (enabled)

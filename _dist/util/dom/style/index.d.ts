@@ -380,13 +380,64 @@ declare abstract class StyleMetric {
   #private;
   private constructor();
   /**
-   * Computes the effective *painted border widths* for an element when `border-image` is in use.
+   * Expands a CSS 1–4 value shorthand sequence into its four physical sides (`top`, `right`, `bottom`, `left`)
+   * following standard CSS expansion rules.
    *
-   * This resolves all four sides (top, right, bottom, left) into pixel values accounting for:
+   * This applies to properties whose value syntax follows the box-side shorthand model used by `margin`, `padding`,
+   * `border-width`, `border-image-width`, and `border-image-slice`, where the tokens map as:
+   * ```
+   * 1. value: [v, v, v, v]
+   * 2. values: [vTopBottom, vRightLeft]
+   * 3. values: [vTop, vRightLeft, vBottom]
+   * 4. values: [vTop, vRight, vBottom, vLeft]
+   * ```
+   *
+   * @param tokens - The raw token array (1–4 items) extracted from a CSS property.
+   *
+   * @param [output] - Optional preallocated 4-element array to write into.
+   *
+   * @param [options] - Optional options.
+   *
+   * @param [options.defaultValue] Specify the default expansion value; default: `'0'`.
+   *
+   * @param [options.output] A specific output array for reuse otherwise a new array is created by default.
+   *
+   * @returns A 4-element array representing [top, right, bottom, left].
+   *
+   * @example
+   *   StyleMetric.expand4Length(['10px']);
+   *   // → ['10px','10px','10px','10px']
+   *
+   *   StyleMetric.expand4Length(['10px','20px']);
+   *   // → ['10px','20px','10px','20px']
+   *
+   *   StyleMetric.expand4Length(['10px','20px','30px']);
+   *   // → ['10px','20px','30px','20px']
+   */
+  static expand4Length(
+    tokens: string[],
+    {
+      defaultValue,
+      output,
+    }?: {
+      defaultValue?: string;
+      output?: string[];
+    },
+  ): string[];
+  /**
+   * Computes the effective *visual edge insets* for an element — the per-side * pixel offsets where the element’s
+   * visual border intrudes inward into the content area.
+   *
+   * These insets represent the internal constraints imposed by visually rendered border effects. They are intended
+   * for layout adjustments such as applying padding, positioning slotted elements, or aligning content to remain
+   * fully inside the element’s painted border region.
+   *
+   * The current implementation evaluates intrusions resulting from `border-image`, including:
    * ```
    * - `border-image-width` values (absolute, percentage, or unitless),
-   * - `auto` fallbacks to `border-image-slice`,
-   * - and `border-image-source: none` (returns all zeros).
+   * - `auto` fallback resolution using `border-image-slice`,
+   * - the absence of a border image (`border-image-source: none` → zero insets),
+   * - optional pre-fetched metrics to avoid repeated DOM/style reads.
    * ```
    *
    * @param el - HTMLElement to compute painted border widths for.
@@ -395,19 +446,24 @@ declare abstract class StyleMetric {
    *
    * @param [options] Optional pre-fetched element data for performance reuse.
    *
-   * @param [options.computedStyle] Pre-fetched computed style of element.
-   *
-   * @param [options.offsetHeight] Pre-fetched `offsetHeight` of element.
-   *
-   * @param [options.offsetWidth] Pre-fetched `offsetWidth` of element.
-   *
    * @returns Painted border width constraints in pixel units.
    */
-  static getPaintedBorderWidth<Output extends StyleMetric.Data.BoxSides = StyleMetric.Data.BoxSides>(
+  static getVisualEdgeInsets<Output extends StyleMetric.Data.BoxSides = StyleMetric.Data.BoxSides>(
     el: HTMLElement,
     output?: Output,
     { computedStyle, offsetHeight, offsetWidth }?: StyleMetric.Options.PrefetchMetrics,
   ): Output;
+  /**
+   * Gets the global scrollbar width. The value is cached on subsequent invocations unless `cached` is set to `false`
+   * in options.
+   *
+   * @param [options] - Options.
+   *
+   * @param [options.cached] - When false, the calculation is run again.
+   *
+   * @returns Default element scrollbar width.
+   */
+  static getScrollbarWidth({ cached }?: { cached?: boolean }): number;
 }
 declare namespace StyleMetric {
   /**

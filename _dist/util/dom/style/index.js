@@ -940,8 +940,12 @@ class StyleManager {
  * data.
  */
 class StyleMetric {
-    static #arrayExpand4_1 = new Array(4);
-    static #arrayExpand4_2 = new Array(4);
+    /** Used in {@link StyleMetric.getVisualEdgeInsets} */
+    static #arrayExpand4_1 = Object.seal(['0', '0', '0', '0']);
+    /** Used in {@link StyleMetric.getVisualEdgeInsets} */
+    static #arrayExpand4_2 = Object.seal(['0', '0', '0', '0']);
+    /** The cached scrollbar width calculation from {@link StyleMetric.getScrollbarWidth}. */
+    static #cachedScrollbarWidth = void 0;
     static #regexNumber = /^[\d.]+$/;
     static #regexWhiteSpace = /\s+/;
     static #regexValidLength = /^[\d.]+(px|%)?$/;
@@ -949,13 +953,93 @@ class StyleMetric {
         throw new Error('StyleMetric constructor: This is a static class and should not be constructed.');
     }
     /**
-     * Computes the effective *painted border widths* for an element when `border-image` is in use.
+     * Expands a CSS 1–4 value shorthand sequence into its four physical sides (`top`, `right`, `bottom`, `left`)
+     * following standard CSS expansion rules.
      *
-     * This resolves all four sides (top, right, bottom, left) into pixel values accounting for:
+     * This applies to properties whose value syntax follows the box-side shorthand model used by `margin`, `padding`,
+     * `border-width`, `border-image-width`, and `border-image-slice`, where the tokens map as:
+     * ```
+     * 1. value: [v, v, v, v]
+     * 2. values: [vTopBottom, vRightLeft]
+     * 3. values: [vTop, vRightLeft, vBottom]
+     * 4. values: [vTop, vRight, vBottom, vLeft]
+     * ```
+     *
+     * @param tokens - The raw token array (1–4 items) extracted from a CSS property.
+     *
+     * @param [output] - Optional preallocated 4-element array to write into.
+     *
+     * @param [options] - Optional options.
+     *
+     * @param [options.defaultValue] Specify the default expansion value; default: `'0'`.
+     *
+     * @param [options.output] A specific output array for reuse otherwise a new array is created by default.
+     *
+     * @returns A 4-element array representing [top, right, bottom, left].
+     *
+     * @example
+     *   StyleMetric.expand4Length(['10px']);
+     *   // → ['10px','10px','10px','10px']
+     *
+     *   StyleMetric.expand4Length(['10px','20px']);
+     *   // → ['10px','20px','10px','20px']
+     *
+     *   StyleMetric.expand4Length(['10px','20px','30px']);
+     *   // → ['10px','20px','30px','20px']
+     */
+    static expand4Length(tokens, { defaultValue = '0', output = new Array(4) } = {}) {
+        if (!Array.isArray(tokens)) {
+            throw new TypeError(`'tokens' is not an array.`);
+        }
+        if (!Array.isArray(output)) {
+            throw new TypeError(`'output' is not an array.`);
+        }
+        if (typeof defaultValue !== 'string') {
+            throw new TypeError(`'defaultValue' is not a string.`);
+        }
+        switch (tokens.length) {
+            case 1:
+                output[0] = tokens[0] ?? defaultValue;
+                output[1] = tokens[0] ?? defaultValue;
+                output[2] = tokens[0] ?? defaultValue;
+                output[3] = tokens[0] ?? defaultValue;
+                break;
+            case 2:
+                output[0] = tokens[0] ?? defaultValue;
+                output[1] = tokens[1] ?? defaultValue;
+                output[2] = tokens[0] ?? defaultValue;
+                output[3] = tokens[1] ?? defaultValue;
+                break;
+            case 3:
+                output[0] = tokens[0] ?? defaultValue;
+                output[1] = tokens[1] ?? defaultValue;
+                output[2] = tokens[2] ?? defaultValue;
+                output[3] = tokens[1] ?? defaultValue;
+                break;
+            default:
+            case 4:
+                output[0] = tokens[0] ?? defaultValue;
+                output[1] = tokens[1] ?? defaultValue;
+                output[2] = tokens[2] ?? defaultValue;
+                output[3] = tokens[3] ?? defaultValue;
+                break;
+        }
+        return output;
+    }
+    /**
+     * Computes the effective *visual edge insets* for an element — the per-side * pixel offsets where the element’s
+     * visual border intrudes inward into the content area.
+     *
+     * These insets represent the internal constraints imposed by visually rendered border effects. They are intended
+     * for layout adjustments such as applying padding, positioning slotted elements, or aligning content to remain
+     * fully inside the element’s painted border region.
+     *
+     * The current implementation evaluates intrusions resulting from `border-image`, including:
      * ```
      * - `border-image-width` values (absolute, percentage, or unitless),
-     * - `auto` fallbacks to `border-image-slice`,
-     * - and `border-image-source: none` (returns all zeros).
+     * - `auto` fallback resolution using `border-image-slice`,
+     * - the absence of a border image (`border-image-source: none` → zero insets),
+     * - optional pre-fetched metrics to avoid repeated DOM/style reads.
      * ```
      *
      * @param el - HTMLElement to compute painted border widths for.
@@ -964,18 +1048,10 @@ class StyleMetric {
      *
      * @param [options] Optional pre-fetched element data for performance reuse.
      *
-     * @param [options.computedStyle] Pre-fetched computed style of element.
-     *
-     * @param [options.offsetHeight] Pre-fetched `offsetHeight` of element.
-     *
-     * @param [options.offsetWidth] Pre-fetched `offsetWidth` of element.
-     *
      * @returns Painted border width constraints in pixel units.
      */
-    static getPaintedBorderWidth(el, output, { computedStyle, offsetHeight, offsetWidth } = {}) {
-        if (!computedStyle) {
-            computedStyle = getComputedStyle(el);
-        }
+    static getVisualEdgeInsets(el, output, { computedStyle, offsetHeight, offsetWidth } = {}) {
+        computedStyle ??= getComputedStyle(el);
         // Early out if no border image source set.
         const src = computedStyle.borderImageSource;
         if (!src || src === 'none') {
@@ -987,8 +1063,8 @@ class StyleMetric {
                 return { top: 0, right: 0, bottom: 0, left: 0 };
             }
         }
-        const tokensWidth = this.#expand4(computedStyle.borderImageWidth.trim().split(this.#regexWhiteSpace), this.#arrayExpand4_1);
-        const tokensSlice = this.#expand4(computedStyle.borderImageSlice.trim().split(this.#regexWhiteSpace), this.#arrayExpand4_2);
+        const tokensWidth = this.expand4Length(computedStyle.borderImageWidth.trim().split(this.#regexWhiteSpace), { output: this.#arrayExpand4_1 });
+        const tokensSlice = this.expand4Length(computedStyle.borderImageSlice.trim().split(this.#regexWhiteSpace), { output: this.#arrayExpand4_2 });
         // Merge image slice into width tokens if any width side is 'auto' or not a valid length.
         for (let i = 0; i < 4; i++) {
             if (tokensWidth[i] === 'auto' || !this.#regexValidLength.test(tokensWidth[i])) {
@@ -1033,47 +1109,50 @@ class StyleMetric {
         }
         return output;
     }
-    // Internal Implementation ----------------------------------------------------------------------------------------
     /**
-     * Expands a CSS 1–4 token list into four sides following the standard CSS shorthand expansion rules.
+     * Gets the global scrollbar width. The value is cached on subsequent invocations unless `cached` is set to `false`
+     * in options.
      *
-     * @param tokens - Array of raw token strings from a CSS property.
+     * @param [options] - Options.
      *
-     * @param [output] - Optional preallocated 4-element output array.
+     * @param [options.cached] - When false, the calculation is run again.
      *
-     * @returns Expanded array of 4 strings: [top, right, bottom, left].
+     * @returns Default element scrollbar width.
      */
-    static #expand4(tokens, output = new Array(4)) {
-        const defaultValue = '0';
-        switch (tokens.length) {
-            case 1:
-                output[0] = tokens[0] ?? defaultValue;
-                output[1] = tokens[0] ?? defaultValue;
-                output[2] = tokens[0] ?? defaultValue;
-                output[3] = tokens[0] ?? defaultValue;
-                break;
-            case 2:
-                output[0] = tokens[0] ?? defaultValue;
-                output[1] = tokens[1] ?? defaultValue;
-                output[2] = tokens[0] ?? defaultValue;
-                output[3] = tokens[1] ?? defaultValue;
-                break;
-            case 3:
-                output[0] = tokens[0] ?? defaultValue;
-                output[1] = tokens[1] ?? defaultValue;
-                output[2] = tokens[2] ?? defaultValue;
-                output[3] = tokens[1] ?? defaultValue;
-                break;
-            default:
-            case 4:
-                output[0] = tokens[0] ?? defaultValue;
-                output[1] = tokens[1] ?? defaultValue;
-                output[2] = tokens[2] ?? defaultValue;
-                output[3] = tokens[3] ?? defaultValue;
-                break;
+    static getScrollbarWidth({ cached = true } = {}) {
+        if (typeof cached !== 'boolean') {
+            throw new TypeError(`'cached' is not a boolean.`);
         }
-        return output;
+        // Return any cached value.
+        if (cached && typeof this.#cachedScrollbarWidth === 'number') {
+            return this.#cachedScrollbarWidth;
+        }
+        let scrollbarWidth;
+        try {
+            scrollbarWidth = window.innerWidth - document.documentElement.clientWidth || (() => {
+                const el = document.createElement('div');
+                el.style.visibility = 'hidden'; // ensure no paint
+                el.style.overflow = 'scroll'; // force scrollbars
+                el.style.position = 'absolute'; // remove from flow
+                el.style.top = '-9999px'; // off-screen
+                el.style.width = '100px';
+                el.style.height = '100px';
+                document.body.appendChild(el);
+                const width = el.offsetWidth - el.clientWidth;
+                el.remove();
+                return width;
+            })();
+        }
+        catch {
+            // A general default for thin scrollbar widths.
+            scrollbarWidth = 10;
+        }
+        if (typeof this.#cachedScrollbarWidth !== 'number') {
+            this.#cachedScrollbarWidth = scrollbarWidth;
+        }
+        return scrollbarWidth;
     }
+    // Internal Implementation ----------------------------------------------------------------------------------------
     /**
      * Resolves a single border image width or slice token into pixel units.
      *

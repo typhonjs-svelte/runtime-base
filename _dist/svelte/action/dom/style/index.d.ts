@@ -4,8 +4,8 @@ import * as svelte_action from 'svelte/action';
  * Provides a Svelte action that applies absolute positioning to an element adjusting for any painted borders defined
  * by CSS `border-image` properties of the parent element of the target node / element of this action.
  *
- * When enabled, this action computes the effective painted border using
- * {@link #runtime/util/dom/style!StyleMetric.getPaintedBorderWidth} and applies inline `position: absolute` styles so
+ * When enabled, this action computes the effective visual edge insets / painted border using
+ * {@link #runtime/util/dom/style!StyleMetric.getVisualEdgeInsets} and applies inline `position: absolute` styles so
  * the element aligns correctly within the visible (non-border) content area of its container.
  *
  * Additionally, this action subscribes to {@link #runtime/util/dom/theme!ThemeObserver} and updates constraint
@@ -17,11 +17,11 @@ import * as svelte_action from 'svelte/action';
  * @param {object}  [options] - Action Options.
  *
  * @param {boolean} [options.enabled] - When enabled set inline styles for absolute positioning taking into account
- *        any border image constraints.
+ *        visual edge insets / any border image constraints.
  *
  * @returns {import('svelte/action').ActionReturn<{ enabled?: boolean }>} Lifecycle functions.
  */
-declare function absWithinBorder(
+declare function absToVisualEdgeInsets(
   node: HTMLElement,
   {
     enabled,
@@ -55,8 +55,8 @@ declare function applyStyles(
  * Provides a Svelte action that applies inline styles for `padding` to an element adjusting for any painted borders
  * defined by CSS `border-image` properties of the target node / element of this action.
  *
- * When enabled, this action computes the effective painted border using
- * {@link #runtime/util/dom/style!StyleMetric.getPaintedBorderWidth} and applies inline `position: absolute` styles so
+ * When enabled, this action computes the effective visual edge insets / painted border using
+ * {@link #runtime/util/dom/style!StyleMetric.getVisualEdgeInsets} and applies inline `position: absolute` styles so
  * the element aligns correctly within the visible (non-border) content area of its container.
  *
  * Additionally, this action subscribes to {@link #runtime/util/dom/theme!ThemeObserver} and updates constraint
@@ -68,13 +68,13 @@ declare function applyStyles(
  * @param {object}  [options] - Action Options.
  *
  * @param {boolean} [options.enabled] - When enabled set inline styles for padding taking into account any visual
- *        border image constraints.
+ *        edge insets / border image constraints.
  *
  * @param {boolean} [options.parent] - When true, the parent element to the action element is adjusted.
  *
  * @returns {import('svelte/action').ActionReturn<{ enabled?: boolean, parent?: boolean }>} Lifecycle functions.
  */
-declare function padToBorder(
+declare function padToVisualEdgeInsets(
   node: HTMLElement,
   {
     enabled,
@@ -88,4 +88,4 @@ declare function padToBorder(
   parent?: boolean;
 }>;
 
-export { absWithinBorder, applyStyles, padToBorder };
+export { absToVisualEdgeInsets, applyStyles, padToVisualEdgeInsets };

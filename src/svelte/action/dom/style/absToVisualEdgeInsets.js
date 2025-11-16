@@ -6,8 +6,8 @@ import { CrossRealm }      from '#runtime/util/realm';
  * Provides a Svelte action that applies absolute positioning to an element adjusting for any painted borders defined
  * by CSS `border-image` properties of the parent element of the target node / element of this action.
  *
- * When enabled, this action computes the effective painted border using
- * {@link #runtime/util/dom/style!StyleMetric.getPaintedBorderWidth} and applies inline `position: absolute` styles so
+ * When enabled, this action computes the effective visual edge insets / painted border using
+ * {@link #runtime/util/dom/style!StyleMetric.getVisualEdgeInsets} and applies inline `position: absolute` styles so
  * the element aligns correctly within the visible (non-border) content area of its container.
  *
  * Additionally, this action subscribes to {@link #runtime/util/dom/theme!ThemeObserver} and updates constraint
@@ -19,11 +19,11 @@ import { CrossRealm }      from '#runtime/util/realm';
  * @param {object}  [options] - Action Options.
  *
  * @param {boolean} [options.enabled] - When enabled set inline styles for absolute positioning taking into account
- *        any border image constraints.
+ *        visual edge insets / any border image constraints.
  *
  * @returns {import('svelte/action').ActionReturn<{ enabled?: boolean }>} Lifecycle functions.
  */
-export function absWithinBorder(node, { enabled = true } = {})
+export function absToVisualEdgeInsets(node, { enabled = true } = {})
 {
    let top = 0;
    let right = 0;
@@ -39,7 +39,7 @@ export function absWithinBorder(node, { enabled = true } = {})
       }
       else
       {
-         ({ top, right, bottom, left } = StyleMetric.getPaintedBorderWidth(node.parentElement));
+         ({ top, right, bottom, left } = StyleMetric.getVisualEdgeInsets(node.parentElement));
       }
 
       if (enabled)

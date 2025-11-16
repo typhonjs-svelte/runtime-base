@@ -7,8 +7,8 @@ import { isObject } from '@typhonjs-svelte/runtime-base/util/object';
  * Provides a Svelte action that applies absolute positioning to an element adjusting for any painted borders defined
  * by CSS `border-image` properties of the parent element of the target node / element of this action.
  *
- * When enabled, this action computes the effective painted border using
- * {@link #runtime/util/dom/style!StyleMetric.getPaintedBorderWidth} and applies inline `position: absolute` styles so
+ * When enabled, this action computes the effective visual edge insets / painted border using
+ * {@link #runtime/util/dom/style!StyleMetric.getVisualEdgeInsets} and applies inline `position: absolute` styles so
  * the element aligns correctly within the visible (non-border) content area of its container.
  *
  * Additionally, this action subscribes to {@link #runtime/util/dom/theme!ThemeObserver} and updates constraint
@@ -20,11 +20,11 @@ import { isObject } from '@typhonjs-svelte/runtime-base/util/object';
  * @param {object}  [options] - Action Options.
  *
  * @param {boolean} [options.enabled] - When enabled set inline styles for absolute positioning taking into account
- *        any border image constraints.
+ *        visual edge insets / any border image constraints.
  *
  * @returns {import('svelte/action').ActionReturn<{ enabled?: boolean }>} Lifecycle functions.
  */
-function absWithinBorder(node, { enabled = true } = {})
+function absToVisualEdgeInsets(node, { enabled = true } = {})
 {
    let top = 0;
    let right = 0;
@@ -40,7 +40,7 @@ function absWithinBorder(node, { enabled = true } = {})
       }
       else
       {
-         ({ top, right, bottom, left } = StyleMetric.getPaintedBorderWidth(node.parentElement));
+         ({ top, right, bottom, left } = StyleMetric.getVisualEdgeInsets(node.parentElement));
       }
 
       if (enabled)
@@ -125,8 +125,8 @@ function applyStyles(node, properties)
  * Provides a Svelte action that applies inline styles for `padding` to an element adjusting for any painted borders
  * defined by CSS `border-image` properties of the target node / element of this action.
  *
- * When enabled, this action computes the effective painted border using
- * {@link #runtime/util/dom/style!StyleMetric.getPaintedBorderWidth} and applies inline `position: absolute` styles so
+ * When enabled, this action computes the effective visual edge insets / painted border using
+ * {@link #runtime/util/dom/style!StyleMetric.getVisualEdgeInsets} and applies inline `position: absolute` styles so
  * the element aligns correctly within the visible (non-border) content area of its container.
  *
  * Additionally, this action subscribes to {@link #runtime/util/dom/theme!ThemeObserver} and updates constraint
@@ -138,13 +138,13 @@ function applyStyles(node, properties)
  * @param {object}  [options] - Action Options.
  *
  * @param {boolean} [options.enabled] - When enabled set inline styles for padding taking into account any visual
- *        border image constraints.
+ *        edge insets / border image constraints.
  *
  * @param {boolean} [options.parent] - When true, the parent element to the action element is adjusted.
  *
  * @returns {import('svelte/action').ActionReturn<{ enabled?: boolean, parent?: boolean }>} Lifecycle functions.
  */
-function padToBorder(node, { enabled = true, parent = false } = {})
+function padToVisualEdgeInsets(node, { enabled = true, parent = false } = {})
 {
    let top = 0;
    let right = 0;
@@ -186,7 +186,7 @@ function padToBorder(node, { enabled = true, parent = false } = {})
       }
       else
       {
-         ({ top, right, bottom, left } = StyleMetric.getPaintedBorderWidth(targetNode));
+         ({ top, right, bottom, left } = StyleMetric.getVisualEdgeInsets(targetNode));
       }
 
       if (enabled)
@@ -228,5 +228,5 @@ function padToBorder(node, { enabled = true, parent = false } = {})
    };
 }
 
-export { absWithinBorder, applyStyles, padToBorder };
+export { absToVisualEdgeInsets, applyStyles, padToVisualEdgeInsets };
 //# sourceMappingURL=index.js.map
