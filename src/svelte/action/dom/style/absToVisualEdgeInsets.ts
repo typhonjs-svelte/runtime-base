@@ -1,6 +1,9 @@
-import { StyleMetric }     from '#runtime/util/dom/style';
-import { ThemeObserver }   from '#runtime/util/dom/theme';
-import { CrossRealm }      from '#runtime/util/realm';
+import { StyleMetric }        from '#runtime/util/dom/style';
+import { ThemeObserver }      from '#runtime/util/dom/theme';
+import { CrossRealm }         from '#runtime/util/realm';
+
+import type { ActionReturn }  from 'svelte/action';
+import type { Unsubscriber }  from 'svelte/store';
 
 /**
  * Provides a Svelte action that applies absolute positioning to an element adjusting for any painted borders defined
@@ -14,16 +17,17 @@ import { CrossRealm }      from '#runtime/util/realm';
  * calculations when any global theme is changed. To force an update of constraint calculations provide and change
  * a superfluous / dummy property in the action options.
  *
- * @param {HTMLElement} node - Target element.
+ * @param node - Target element.
  *
- * @param {object}  [options] - Action Options.
+ * @param [options] - Action Options.
  *
- * @param {boolean} [options.enabled] - When enabled set inline styles for absolute positioning taking into account
- *        visual edge insets / any border image constraints.
+ * @param [options.enabled] - When enabled set inline styles for absolute positioning taking into account visual edge
+ *        insets / any border image constraints.
  *
- * @returns {import('svelte/action').ActionReturn<{ enabled?: boolean }>} Lifecycle functions.
+ * @returns Action lifecycle functions.
  */
-export function absToVisualEdgeInsets(node, { enabled = true } = {})
+export function absToVisualEdgeInsets(node: HTMLElement, { enabled = true }: { enabled?: boolean } = {}):
+ ActionReturn<{ enabled?: boolean }>
 {
    let top = 0;
    let right = 0;
@@ -62,7 +66,7 @@ export function absToVisualEdgeInsets(node, { enabled = true } = {})
       }
    }
 
-   let unsubscribe = ThemeObserver.stores.themeName.subscribe(() => updateConstraints());
+   let unsubscribe: Unsubscriber | undefined = ThemeObserver.stores.themeName.subscribe(() => updateConstraints());
 
    return {
       destroy: () =>
@@ -72,9 +76,9 @@ export function absToVisualEdgeInsets(node, { enabled = true } = {})
       },
 
       /**
-       * @param {{ enabled?: boolean }}  newOptions - New options.
+       * @param newOptions - New options.
        */
-      update: (newOptions) =>
+      update: (newOptions: { enabled?: boolean }) =>
       {
          if (typeof newOptions?.enabled === 'boolean') { enabled = newOptions?.enabled; }
 
