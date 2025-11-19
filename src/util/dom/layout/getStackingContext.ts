@@ -1,3 +1,5 @@
+import { CrossRealm } from '#runtime/util/realm';
+
 /**
  * Recursive function that finds the closest parent stacking context.
  * See also https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Positioning/Understanding_z_index/The_stacking_context
@@ -9,25 +11,25 @@
  *
  * @param {Element} node -
  *
- * @param {Window} [activeWindow=globalThis] The target active window as applicable.
+ * @param [activeWindow] The target active window as applicable.
  *
- * @returns {StackingContext | undefined} The closest parent stacking context or undefined if none.
+ * @returns The closest parent stacking context or undefined if none.
  *
  */
-export function getStackingContext(node, activeWindow = globalThis)
+export function getStackingContext(node: Element, activeWindow: Window = window): StackingContext | undefined
 {
    const activeDocument = activeWindow.document;
 
-   // the root element (HTML).
+   // The root element (HTML).
    if (!node || node.nodeName === 'HTML')
    {
       return { node: activeDocument.documentElement, reason: 'root' };
    }
 
-   // handle shadow root elements.
-   if (node.nodeName === '#document-fragment')
+   // Handle shadow root elements.
+   if (CrossRealm.browser.isShadowRoot(node)) // node.nodeName === '#document-fragment')
    {
-      return getStackingContext(node.host);
+      return getStackingContext((node as ShadowRoot).host, activeWindow);
    }
 
    const computedStyle = activeWindow.getComputedStyle(node);
@@ -95,7 +97,7 @@ export function getStackingContext(node, activeWindow = globalThis)
    }
 
    // elements with a mask-border value other than "none".
-   const maskBorder = computedStyle.maskBorder || computedStyle.webkitMaskBorder;
+   const maskBorder = (computedStyle as any).maskBorder || (computedStyle as any).webkitMaskBorder;
    if (maskBorder !== 'none' && maskBorder !== undefined)
    {
       return { node, reason: `mask-border: ${maskBorder}` };
@@ -114,7 +116,7 @@ export function getStackingContext(node, activeWindow = globalThis)
    }
 
    // elements with -webkit-overflow-scrolling set to "touch".
-   if (computedStyle.webkitOverflowScrolling === 'touch')
+   if ((computedStyle as any).webkitOverflowScrolling === 'touch')
    {
       return { node, reason: '-webkit-overflow-scrolling: touch' };
    }
@@ -122,7 +124,7 @@ export function getStackingContext(node, activeWindow = globalThis)
    // an item with a z-index value other than "auto".
    if (computedStyle.zIndex !== 'auto')
    {
-      const parentStyle = activeWindow.getComputedStyle(node.parentNode);
+      const parentStyle = activeWindow.getComputedStyle(node.parentNode as Element);
       // with a flex|inline-flex parent.
       if (parentStyle.display === 'flex' || parentStyle.display === 'inline-flex')
       {
@@ -145,13 +147,20 @@ export function getStackingContext(node, activeWindow = globalThis)
       return { node, reason: `contain: ${contain}` };
    }
 
-   return getStackingContext(node.parentNode);
+   return getStackingContext(node.parentNode as Element, activeWindow);
 }
 
 /**
- * @typedef {object} StackingContext
- *
- * @property {Element} node - A DOM Element.
- *
- * @property {string}  reason - Reason for why a stacking context was created.
+ * Describes why a stacking context is created.
  */
+export type StackingContext = {
+   /**
+    * A DOM Element.
+    */
+   node: Element;
+
+   /**
+    * Reason for why a stacking context was created.
+    */
+   reason: string;
+}
