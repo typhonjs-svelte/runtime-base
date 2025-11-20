@@ -1040,3 +1040,4 @@ for (const compFile of compFiles)
 }
 
 await generateDTS({ input: './_dist/svelte/component/container/index.js', rollupExternal: external });
+await generateDTS({ input: './_dist/svelte/component/dom/focus/index.js', rollupExternal: external });

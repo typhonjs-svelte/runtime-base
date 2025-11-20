@@ -133,6 +133,10 @@
       "types": "./_dist/svelte/component/container/index.d.ts",
       "import": "./_dist/svelte/component/container/index.js"
     },
+    "./svelte/component/dom/focus": {
+      "types": "./_dist/svelte/component/dom/focus/index.d.ts",
+      "import": "./_dist/svelte/component/dom/focus/index.js"
+    },
     "./svelte/easing": {
       "types": "./_dist/svelte/easing/index.d.ts",
       "import": "./_dist/svelte/easing/index.js"
