@@ -1,4 +1,5 @@
-import * as svelte_action from 'svelte/action';
+import { ActionReturn } from 'svelte/action';
+import { FindParentOptions } from '@typhonjs-svelte/runtime-base/util/dom/layout';
 
 /**
  * Provides a Svelte action that applies absolute positioning to an element adjusting for any painted borders defined
@@ -12,14 +13,14 @@ import * as svelte_action from 'svelte/action';
  * calculations when any global theme is changed. To force an update of constraint calculations provide and change
  * a superfluous / dummy property in the action options.
  *
- * @param {HTMLElement} node - Target element.
+ * @param node - Target element.
  *
- * @param {object}  [options] - Action Options.
+ * @param [options] - Action Options.
  *
- * @param {boolean} [options.enabled] - When enabled set inline styles for absolute positioning taking into account
- *        visual edge insets / any border image constraints.
+ * @param [options.enabled] - When enabled set inline styles for absolute positioning taking into account visual edge
+ *        insets / any border image constraints.
  *
- * @returns {import('svelte/action').ActionReturn<{ enabled?: boolean }>} Lifecycle functions.
+ * @returns Action lifecycle functions.
  */
 declare function absToVisualEdgeInsets(
   node: HTMLElement,
@@ -28,26 +29,25 @@ declare function absToVisualEdgeInsets(
   }?: {
     enabled?: boolean;
   },
-): svelte_action.ActionReturn<{
+): ActionReturn<{
   enabled?: boolean;
 }>;
 
 /**
  * Provides an action to apply CSS style properties provided as an object.
  *
- * @param {HTMLElement} node - Target element
+ * @param node - Target element
  *
- * @param {{ [key: string]: string | null }}  properties - Hyphen case CSS property key / value object of properties
- *        to set.
+ * @param properties - Hyphen case CSS property key / value object of properties to set.
  *
- * @returns {import('svelte/action').ActionReturn<{ [key: string]: string | null }>} Lifecycle functions.
+ * @returns Action lifecycle functions.
  */
 declare function applyStyles(
   node: HTMLElement,
   properties: {
     [key: string]: string | null;
   },
-): svelte_action.ActionReturn<{
+): ActionReturn<{
   [key: string]: string | null;
 }>;
 
@@ -63,29 +63,39 @@ declare function applyStyles(
  * calculations when any global theme is changed. To force an update of constraint calculations provide and change
  * a superfluous / dummy property in the action options.
  *
- * @param {HTMLElement} node - Target element.
+ * @param node - Target element.
  *
- * @param {object}  [options] - Action Options.
+ * @param [options] - Action Options.
  *
- * @param {boolean} [options.enabled] - When enabled set inline styles for padding taking into account any visual
- *        edge insets / border image constraints.
+ * @param [options.sides] - Padding sides configuration. When undefined or true all sides receive padding.
  *
- * @param {boolean} [options.parent] - When true, the parent element to the action element is adjusted.
+ * @param [options.parent] - Parent targeting for visual edge computations. When false, the target is this actions
+ *        element.
  *
- * @returns {import('svelte/action').ActionReturn<{ enabled?: boolean, parent?: boolean }>} Lifecycle functions.
+ * @returns Action Lifecycle functions.
  */
 declare function padToVisualEdgeInsets(
   node: HTMLElement,
-  {
-    enabled,
-    parent,
-  }?: {
-    enabled?: boolean;
-    parent?: boolean;
+  options?: {
+    sides?: PadToVisualEdgeSides;
+    parent?: boolean | FindParentOptions;
   },
-): svelte_action.ActionReturn<{
-  enabled?: boolean;
-  parent?: boolean;
+): ActionReturn<{
+  sides?: PadToVisualEdgeSides;
+  parent?: boolean | FindParentOptions;
 }>;
+type PadToVisualEdgeSides =
+  | false
+  | true
+  | 'all'
+  | 'vertical'
+  | 'horizontal'
+  | {
+      top?: boolean;
+      right?: boolean;
+      bottom?: boolean;
+      left?: boolean;
+    };
 
 export { absToVisualEdgeInsets, applyStyles, padToVisualEdgeInsets };
+export type { PadToVisualEdgeSides };

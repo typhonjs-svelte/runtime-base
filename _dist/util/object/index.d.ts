@@ -74,6 +74,53 @@ declare function deepSeal<T extends object | []>(
   },
 ): T;
 /**
+ * Ensures that a value is a *non-empty async iterable*.
+ * ```
+ * - If the value is not async iterable, `undefined` is returned.
+ * - If the async iterable yields no items, `undefined` is returned.
+ * - If it yields at least one item, a fresh async iterable is returned which yields the first peeked item followed by
+ * the rest, preserving behavior for one-shot async generators.
+ * ```
+ *
+ * Supports both AsyncIterable<T> and (optionally) synchronous Iterable<T>.
+ *
+ * @param value - The value to test as an async iterable.
+ *
+ * @returns A non-empty async iterable, or `undefined`.
+ */
+declare function ensureNonEmptyAsyncIterable<T>(
+  value: AsyncIterable<T> | Iterable<T> | null | undefined,
+): Promise<AsyncIterable<T> | undefined>;
+/**
+ * Ensures that a given value is a *non-empty iterable*.
+ * ```
+ * - If the value is not iterable → returns `undefined`.
+ * - If the value is an iterable but contains no entries → returns `undefined`.
+ * - If the value is a non-empty iterable → returns a fresh iterable (generator) that yields the first peeked value
+ * followed by the remaining values. This guarantees restartable iteration even when the original iterable is a
+ * one-shot generator.
+ * ```
+ *
+ * This function is ideal when you need a safe, non-empty iterable for iteration but cannot consume or trust the
+ * original iterable’s internal iterator state.
+ *
+ * @param value - The value to inspect.
+ *
+ * @returns A restartable iterable containing all values, or `false` if the input was not iterable or contained no
+ *          items.
+ *
+ * @example
+ * const iter = ensureNonEmptyIterable(['a', 'b']);
+ * // `iter` is an iterable yielding 'a', 'b'.
+ *
+ * const empty = ensureNonEmptyIterable([]);
+ * // `undefined`
+ *
+ * const gen = ensureNonEmptyIterable((function*(){ yield 1; yield 2; })());
+ * // Safe: returns an iterable yielding 1, 2 without consuming the generator.
+ */
+declare function ensureNonEmptyIterable<T>(value: Iterable<T> | null | undefined): Iterable<T> | undefined;
+/**
  * Determine if the given object has a getter & setter accessor.
  *
  * @param object - An object.
@@ -85,10 +132,12 @@ declare function deepSeal<T extends object | []>(
  * @typeParam T - Type of data.
  * @typeParam K - Accessor key.
  */
-declare function hasAccessor<T extends object, K extends string>(
+declare function hasAccessor<T extends object, K extends keyof T>(
   object: T,
   accessor: K,
-): object is T & Record<K, unknown>;
+): object is T & {
+  [P in K]: T[P];
+};
 /**
  * Determine if the given object has a getter accessor.
  *
@@ -101,10 +150,12 @@ declare function hasAccessor<T extends object, K extends string>(
  * @typeParam T - Type of data.
  * @typeParam K - Accessor key.
  */
-declare function hasGetter<T extends object, K extends string>(
+declare function hasGetter<T extends object, K extends keyof T>(
   object: T,
   accessor: K,
-): object is T & Record<K, unknown>;
+): object is T & {
+  [P in K]: T[P];
+};
 /**
  * Returns whether the target is or has the given prototype walking up the prototype chain.
  *
@@ -132,10 +183,12 @@ declare function hasPrototype<T extends new (...args: any[]) => any>(
  * @typeParam T - Type of data.
  * @typeParam K - Accessor key.
  */
-declare function hasSetter<T extends object, K extends string>(
+declare function hasSetter<T extends object, K extends keyof T>(
   object: T,
   accessor: K,
-): object is T & Record<K, unknown>;
+): object is T & {
+  [P in K]: T[P];
+};
 /**
  * Tests for whether an object is async iterable.
  *
@@ -143,7 +196,7 @@ declare function hasSetter<T extends object, K extends string>(
  *
  * @returns Whether value is async iterable.
  */
-declare function isAsyncIterable(value: unknown): value is AsyncIterable<any>;
+declare function isAsyncIterable<T>(value: unknown): value is AsyncIterable<T>;
 /**
  * Tests for whether an object is iterable.
  *
@@ -151,7 +204,7 @@ declare function isAsyncIterable(value: unknown): value is AsyncIterable<any>;
  *
  * @returns Whether object is iterable.
  */
-declare function isIterable(value: unknown): value is Iterable<any>;
+declare function isIterable<T>(value: unknown): value is Iterable<T>;
 /**
  * Tests for whether object is not null, typeof object, and not an array.
  *
@@ -159,7 +212,7 @@ declare function isIterable(value: unknown): value is Iterable<any>;
  *
  * @returns Is it an object.
  */
-declare function isObject(value: unknown): value is Record<string, unknown>;
+declare function isObject<T extends object>(value: T | unknown): value is T;
 /**
  * Tests for whether the given value is a plain object.
  *
@@ -169,7 +222,7 @@ declare function isObject(value: unknown): value is Record<string, unknown>;
  *
  * @returns Is it a plain object.
  */
-declare function isPlainObject(value: unknown): value is Record<string, unknown>;
+declare function isPlainObject<T extends object>(value: unknown): value is T;
 /**
  * Safely returns keys on an object or an empty array if not an object.
  *
@@ -177,7 +230,7 @@ declare function isPlainObject(value: unknown): value is Record<string, unknown>
  *
  * @returns Object keys or empty array.
  */
-declare function objectKeys(object: object): string[];
+declare function objectKeys<T extends object>(object: T): (keyof T)[];
 /**
  * Safely returns an objects size. Note for String objects Unicode is not taken into consideration.
  *
@@ -227,14 +280,14 @@ declare function safeAccess<T extends object, P extends string, R = DeepAccess<T
  *
  * @returns True if equal.
  */
-declare function safeEqual(
-  source: object,
+declare function safeEqual<T extends object>(
+  source: T,
   target: object,
   options?: {
     arrayIndex?: boolean;
     hasOwnOnly?: boolean;
   },
-): boolean;
+): target is T;
 /**
  * Returns an iterator of safe keys useful with {@link safeAccess} and {@link safeSet} by traversing the given object.
  *
@@ -325,6 +378,8 @@ export {
   deepFreeze,
   deepMerge,
   deepSeal,
+  ensureNonEmptyAsyncIterable,
+  ensureNonEmptyIterable,
   hasAccessor,
   hasGetter,
   hasPrototype,

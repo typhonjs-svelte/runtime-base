@@ -214,6 +214,105 @@ function deepSeal(data, { skipKeys } = {}) {
     return data;
 }
 /**
+ * Ensures that a value is a *non-empty async iterable*.
+ * ```
+ * - If the value is not async iterable, `undefined` is returned.
+ * - If the async iterable yields no items, `undefined` is returned.
+ * - If it yields at least one item, a fresh async iterable is returned which yields the first peeked item followed by
+ * the rest, preserving behavior for one-shot async generators.
+ * ```
+ *
+ * Supports both AsyncIterable<T> and (optionally) synchronous Iterable<T>.
+ *
+ * @param value - The value to test as an async iterable.
+ *
+ * @returns A non-empty async iterable, or `undefined`.
+ */
+async function ensureNonEmptyAsyncIterable(value) {
+    // First detect async-iterable-like values.
+    const asyncIteratorFn = value?.[Symbol.asyncIterator];
+    const syncIteratorFn = value?.[Symbol.iterator];
+    if (asyncIteratorFn) {
+        const iter = asyncIteratorFn.call(value);
+        const first = await iter.next();
+        if (first.done) {
+            return void 0;
+        }
+        return (async function* () {
+            // Yield peeked first value.
+            yield first.value;
+            // Manually consume the underlying async iterator.
+            for (let r = await iter.next(); !r.done; r = await iter.next()) {
+                yield r.value;
+            }
+        })();
+    }
+    else if (syncIteratorFn) {
+        // Allow synchronous iterables to be lifted into async context.
+        const iter = syncIteratorFn.call(value);
+        const first = iter.next();
+        if (first.done) {
+            return void 0;
+        }
+        return (async function* () {
+            yield first.value;
+            for (let r = iter.next(); !r.done; r = iter.next()) {
+                yield r.value;
+            }
+        })();
+    }
+    return void 0;
+}
+/**
+ * Ensures that a given value is a *non-empty iterable*.
+ * ```
+ * - If the value is not iterable → returns `undefined`.
+ * - If the value is an iterable but contains no entries → returns `undefined`.
+ * - If the value is a non-empty iterable → returns a fresh iterable (generator) that yields the first peeked value
+ * followed by the remaining values. This guarantees restartable iteration even when the original iterable is a
+ * one-shot generator.
+ * ```
+ *
+ * This function is ideal when you need a safe, non-empty iterable for iteration but cannot consume or trust the
+ * original iterable’s internal iterator state.
+ *
+ * @param value - The value to inspect.
+ *
+ * @returns A restartable iterable containing all values, or `false` if the input was not iterable or contained no
+ *          items.
+ *
+ * @example
+ * const iter = ensureNonEmptyIterable(['a', 'b']);
+ * // `iter` is an iterable yielding 'a', 'b'.
+ *
+ * const empty = ensureNonEmptyIterable([]);
+ * // `undefined`
+ *
+ * const gen = ensureNonEmptyIterable((function*(){ yield 1; yield 2; })());
+ * // Safe: returns an iterable yielding 1, 2 without consuming the generator.
+ */
+function ensureNonEmptyIterable(value) {
+    if (!isIterable(value)) {
+        return void 0;
+    }
+    // Peek at the first value without committing to iteration on restartable iterables.
+    const iter = value[Symbol.iterator]();
+    const first = iter.next();
+    // Empty iterable.
+    if (first.done) {
+        return void 0;
+    }
+    // Non-empty: return a generator that includes the first peeked value.
+    return (function* () {
+        // Include first consumed value.
+        yield first.value;
+        // Yield remaining values from original iterator.
+        for (let r = iter.next(); !r.done; r = iter.next()) {
+            yield r.value;
+        }
+    })();
+}
+/**
  * Determine if the given object has a getter & setter accessor.
  *
  * @param object - An object.
@@ -337,10 +436,7 @@ function hasSetter(object, accessor) {
  * @returns Whether value is async iterable.
  */
 function isAsyncIterable(value) {
-    if (typeof value !== 'object' || value === null || value === void 0) {
-        return false;
-    }
-    return Symbol.asyncIterator in value;
+    return value !== void 0 && value !== null && typeof value[Symbol.asyncIterator] === 'function';
 }
 /**
  * Tests for whether an object is iterable.
@@ -350,10 +446,7 @@ function isAsyncIterable(value) {
  * @returns Whether object is iterable.
  */
 function isIterable(value) {
-    if (value === null || value === void 0 || typeof value !== 'object') {
-        return false;
-    }
-    return Symbol.iterator in value;
+    return value !== void 0 && value !== null && typeof value[Symbol.iterator] === 'function';
 }
 /**
  * Tests for whether object is not null, typeof object, and not an array.
@@ -628,5 +721,5 @@ function safeSet(data, accessor, value, { operation = 'set', createMissing = fal
     return result;
 }
 
-export { deepFreeze, deepMerge, deepSeal, hasAccessor, hasGetter, hasPrototype, hasSetter, isAsyncIterable, isIterable, isObject, isPlainObject, klona, objectKeys, objectSize, safeAccess, safeEqual, safeKeyIterator, safeSet };
+export { deepFreeze, deepMerge, deepSeal, ensureNonEmptyAsyncIterable, ensureNonEmptyIterable, hasAccessor, hasGetter, hasPrototype, hasSetter, isAsyncIterable, isIterable, isObject, isPlainObject, klona, objectKeys, objectSize, safeAccess, safeEqual, safeKeyIterator, safeSet };
 //# sourceMappingURL=index.js.map

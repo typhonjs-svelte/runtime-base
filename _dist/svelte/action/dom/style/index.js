@@ -2,6 +2,7 @@ import { StyleMetric } from '@typhonjs-svelte/runtime-base/util/dom/style';
 import { ThemeObserver } from '@typhonjs-svelte/runtime-base/util/dom/theme';
 import { CrossRealm } from '@typhonjs-svelte/runtime-base/util/realm';
 import { isObject } from '@typhonjs-svelte/runtime-base/util/object';
+import { findParentElement } from '@typhonjs-svelte/runtime-base/util/dom/layout';
 
 /**
  * Provides a Svelte action that applies absolute positioning to an element adjusting for any painted borders defined
@@ -15,110 +16,91 @@ import { isObject } from '@typhonjs-svelte/runtime-base/util/object';
  * calculations when any global theme is changed. To force an update of constraint calculations provide and change
  * a superfluous / dummy property in the action options.
  *
- * @param {HTMLElement} node - Target element.
+ * @param node - Target element.
  *
- * @param {object}  [options] - Action Options.
+ * @param [options] - Action Options.
  *
- * @param {boolean} [options.enabled] - When enabled set inline styles for absolute positioning taking into account
- *        visual edge insets / any border image constraints.
+ * @param [options.enabled] - When enabled set inline styles for absolute positioning taking into account visual edge
+ *        insets / any border image constraints.
  *
- * @returns {import('svelte/action').ActionReturn<{ enabled?: boolean }>} Lifecycle functions.
+ * @returns Action lifecycle functions.
  */
-function absToVisualEdgeInsets(node, { enabled = true } = {})
-{
-   let top = 0;
-   let right = 0;
-   let left = 0;
-   let bottom = 0;
-
-   /** Sets properties on node. */
-   function updateConstraints()
-   {
-      if (!CrossRealm.browser.isHTMLElement(node?.parentElement))
-      {
-         top = right = bottom = left = 0;
-      }
-      else
-      {
-         ({ top, right, bottom, left } = StyleMetric.getVisualEdgeInsets(node.parentElement));
-      }
-
-      if (enabled)
-      {
-         node.style.top = `${top}px`;
-         node.style.left = `${left}px`;
-         node.style.height = `calc(100% - ${top}px - ${bottom}px)`;
-         node.style.width = `calc(100% - ${left}px - ${right}px)`;
-         node.style.position = 'absolute';
-      }
-      else
-      {
-         top = right = bottom = left = 0;
-
-         node.style.top = '';
-         node.style.right = '';
-         node.style.bottom = '';
-         node.style.left = '';
-         node.style.position = '';
-      }
-   }
-
-   let unsubscribe = ThemeObserver.stores.themeName.subscribe(() => updateConstraints());
-
-   return {
-      destroy: () =>
-      {
-         unsubscribe?.();
-         unsubscribe = void 0;
-      },
-
-      /**
-       * @param {{ enabled?: boolean }}  newOptions - New options.
-       */
-      update: (newOptions) =>
-      {
-         if (typeof newOptions?.enabled === 'boolean') { enabled = newOptions?.enabled; }
-
-         updateConstraints();
-      }
-   };
+function absToVisualEdgeInsets(node, { enabled = true } = {}) {
+    let top = 0;
+    let right = 0;
+    let left = 0;
+    let bottom = 0;
+    /** Sets properties on node. */
+    function updateConstraints() {
+        if (!CrossRealm.browser.isHTMLElement(node?.parentElement)) {
+            top = right = bottom = left = 0;
+        }
+        else {
+            ({ top, right, bottom, left } = StyleMetric.getVisualEdgeInsets(node.parentElement));
+        }
+        if (enabled) {
+            node.style.top = `${top}px`;
+            node.style.left = `${left}px`;
+            node.style.height = `calc(100% - ${top}px - ${bottom}px)`;
+            node.style.width = `calc(100% - ${left}px - ${right}px)`;
+            node.style.position = 'absolute';
+        }
+        else {
+            top = right = bottom = left = 0;
+            node.style.top = '';
+            node.style.right = '';
+            node.style.bottom = '';
+            node.style.left = '';
+            node.style.position = '';
+        }
+    }
+    let unsubscribe = ThemeObserver.stores.themeName.subscribe(() => updateConstraints());
+    return {
+        destroy: () => {
+            unsubscribe?.();
+            unsubscribe = void 0;
+        },
+        /**
+         * @param newOptions - New options.
+         */
+        update: (newOptions) => {
+            if (typeof newOptions?.enabled === 'boolean') {
+                enabled = newOptions?.enabled;
+            }
+            updateConstraints();
+        }
+    };
 }
 
 /**
  * Provides an action to apply CSS style properties provided as an object.
  *
- * @param {HTMLElement} node - Target element
+ * @param node - Target element
  *
- * @param {{ [key: string]: string | null }}  properties - Hyphen case CSS property key / value object of properties
- *        to set.
+ * @param properties - Hyphen case CSS property key / value object of properties to set.
  *
- * @returns {import('svelte/action').ActionReturn<{ [key: string]: string | null }>} Lifecycle functions.
+ * @returns Action lifecycle functions.
  */
-function applyStyles(node, properties)
-{
-   /** Sets properties on node. */
-   function setProperties()
-   {
-      if (!isObject(properties)) { return; }
-
-      for (const prop of Object.keys(properties))
-      {
-         node.style.setProperty(`${prop}`, properties[prop]);
-      }
-   }
-
-   setProperties();
-
-   return {
-      /**
-       * @param {{ [key: string]: string | null }}  newProperties - Key / value object of properties to set.
-       */
-      update: (newProperties) =>
-      {
-         properties = newProperties;
-         setProperties();
-      }
-   };
+function applyStyles(node, properties) {
+    /** Sets properties on node. */
+    function setProperties() {
+        if (!isObject(properties)) {
+            return;
+        }
+        for (const prop of Object.keys(properties)) {
+            node.style.setProperty(`${prop}`, properties[prop]);
+        }
+    }
+    setProperties();
+    return {
+        /**
+         * @param newProperties - Key / value object of properties to set.
+         */
+        update: (newProperties) => {
+            properties = newProperties;
+            setProperties();
+        }
+    };
 }
 
 /**
@@ -133,99 +115,152 @@ function applyStyles(node, properties)
  * calculations when any global theme is changed. To force an update of constraint calculations provide and change
  * a superfluous / dummy property in the action options.
  *
- * @param {HTMLElement} node - Target element.
+ * @param node - Target element.
  *
- * @param {object}  [options] - Action Options.
+ * @param [options] - Action Options.
  *
- * @param {boolean} [options.enabled] - When enabled set inline styles for padding taking into account any visual
- *        edge insets / border image constraints.
+ * @param [options.sides] - Padding sides configuration. When undefined or true all sides receive padding.
  *
- * @param {boolean} [options.parent] - When true, the parent element to the action element is adjusted.
+ * @param [options.parent] - Parent targeting for visual edge computations. When false, the target is this actions
+ *        element.
  *
- * @returns {import('svelte/action').ActionReturn<{ enabled?: boolean, parent?: boolean }>} Lifecycle functions.
+ * @returns Action Lifecycle functions.
  */
-function padToVisualEdgeInsets(node, { enabled = true, parent = false } = {})
-{
-   let top = 0;
-   let right = 0;
-   let left = 0;
-   let bottom = 0;
-
-   /** @type {HTMLElement} */
-   let targetNode;
-
-   if (typeof enabled !== 'boolean') { enabled = false; }
-   if (typeof parent !== 'boolean') { parent = true; }
-
-   /** Sets properties on node. */
-   function updateConstraints()
-   {
-      if (!enabled)
-      {
-         // Clear any old inline styles on previous `targetNode`.
-         if (CrossRealm.browser.isHTMLElement(targetNode) && targetNode.style.padding !== '')
-         {
-            targetNode.style.padding = '';
-         }
-
-         targetNode = void 0;
-
-         return;
-      }
-
-      const newTarget = parent ? node.parentElement : node;
-
-      // Clear any old inline styles on previous `targetNode`.
-      if (newTarget !== targetNode && CrossRealm.browser.isHTMLElement(targetNode)) { targetNode.style.padding = ''; }
-
-      targetNode = newTarget;
-
-      if (!CrossRealm.browser.isHTMLElement(targetNode))
-      {
-         top = right = bottom = left = 0;
-      }
-      else
-      {
-         ({ top, right, bottom, left } = StyleMetric.getVisualEdgeInsets(targetNode));
-      }
-
-      if (enabled)
-      {
-         targetNode.style.padding = `${top}px ${right}px ${bottom}px ${left}px`;
-      }
-      else
-      {
-         top = right = bottom = left = 0;
-
-         targetNode.style.padding = '';
-      }
-   }
-
-   // This will invoke `updateConstraints` immediately.
-   let unsubscribe = ThemeObserver.stores.themeName.subscribe(() => updateConstraints());
-
-   return {
-      destroy: () =>
-      {
-         if (CrossRealm.browser.isHTMLElement(targetNode)) { targetNode.style.padding = ''; }
-
-         unsubscribe?.();
-         unsubscribe = void 0;
-
-         targetNode = void 0;
-      },
-
-      /**
-       * @param {{ enabled?: boolean, parent?: boolean }}  newOptions - New options.
-       */
-      update: (newOptions) =>
-      {
-         if (typeof newOptions?.enabled === 'boolean') { enabled = newOptions?.enabled; }
-         if (typeof newOptions?.parent === 'boolean') { parent = newOptions?.parent; }
-
-         updateConstraints();
-      }
-   };
+function padToVisualEdgeInsets(node, options = {}) {
+    let state = new InternalPadState(node, options);
+    // This will invoke `state.updateConstraints` immediately.
+    let unsubscribe = ThemeObserver.stores.themeName.subscribe(() => state?.updateConstraints());
+    return {
+        destroy: () => {
+            state?.destroy();
+            state = void 0;
+            unsubscribe?.();
+            unsubscribe = void 0;
+        },
+        /**
+         * @param newOptions - New options.
+         */
+        update: (newOptions) => {
+            state?.updateOptions(node, newOptions);
+            state?.updateConstraints();
+        }
+    };
+}
+/**
+ * Internal state object for the padToVisualEdgeInsets Svelte action.
+ * Normalizes all option values and computes the effective target node.
+ */
+class InternalPadState {
+    #options = { sides: true, parent: false };
+    // Normalized values.
+    targetNode;
+    sides;
+    parent;
+    constructor(node, opts) {
+        // Normalize initial options
+        this.parent = opts.parent ?? false;
+        this.sides = this.#normalizeSides(opts.sides ?? true);
+        this.targetNode = this.#resolveParentTarget(node, this.parent);
+    }
+    destroy() {
+        this.#removePadding(this.targetNode);
+        this.#options = void 0;
+        this.parent = void 0;
+        this.sides = void 0;
+        this.targetNode = null;
+    }
+    /**
+     * Update internal options and re-normalize.
+     */
+    updateOptions(node, options) {
+        if (options.parent !== void 0) {
+            this.parent = options.parent;
+        }
+        if (options.sides !== void 0) {
+            this.sides = this.#normalizeSides(options.sides);
+        }
+        if (CrossRealm.browser.isHTMLElement(this.targetNode))
+            // Apply updates to stored options object.
+            this.#options = { ...this.#options, ...options };
+        // Always recompute the effective target node.
+        const newTarget = this.#resolveParentTarget(node, this.parent);
+        if (newTarget !== this.targetNode) {
+            this.#removePadding(this.targetNode);
+        }
+        this.targetNode = newTarget;
+    }
+    updateConstraints() {
+        if (this.sides === void 0 || this.sides?.disabled || this.targetNode === null) {
+            return;
+        }
+        const { top, right, bottom, left } = StyleMetric.getVisualEdgeInsets(this.targetNode);
+        if (this.sides.all) {
+            this.targetNode.style.padding = `${top}px ${right}px ${bottom}px ${left}px`;
+        }
+        else {
+            if (this.sides.top) {
+                this.targetNode.style.paddingTop = `${top}px`;
+            }
+            if (this.sides.right) {
+                this.targetNode.style.paddingRight = `${right}px`;
+            }
+            if (this.sides.bottom) {
+                this.targetNode.style.paddingBottom = `${bottom}px`;
+            }
+            if (this.sides.left) {
+                this.targetNode.style.paddingLeft = `${left}px`;
+            }
+        }
+    }
+    // Internal implementation ----------------------------------------------------------------------------------------
+    /**
+     * Remove padding from target node.
+     */
+    #removePadding(targetNode) {
+        if (!CrossRealm.browser.isHTMLElement(targetNode)) {
+            return;
+        }
+        targetNode.style.padding = '';
+        targetNode.style.paddingTop = '';
+        targetNode.style.paddingRight = '';
+        targetNode.style.paddingBottom = '';
+        targetNode.style.paddingLeft = '';
+    }
+    /**
+     * Normalize the `parent` option into a meaningful HTMLElement.
+     */
+    #resolveParentTarget(node, parent) {
+        if (parent === void 0 || parent === false) {
+            return node;
+        }
+        if (parent === true) {
+            return node.parentElement ?? node;
+        }
+        // Parent is a `FindParentOptions` object.
+        return isObject(parent) ? findParentElement(node, parent) ?? node : node;
+    }
+    /**
+     * Normalize the `sides` option into a full boolean mask.
+     */
+    #normalizeSides(sides) {
+        // Disabled entirely.
+        if (sides === false) {
+            return { disabled: true, all: false, top: false, right: false, bottom: false, left: false };
+        }
+        // Default or 'all'.
+        if (sides === true || sides === void 0 || sides === 'all') {
+            return { disabled: false, all: true, top: true, right: true, bottom: true, left: true };
+        }
+        if (sides === 'horizontal') {
+            return { disabled: false, all: false, top: false, right: true, bottom: false, left: true };
+        }
+        if (sides === 'vertical') {
+            return { disabled: false, all: false, top: true, right: false, bottom: true, left: false };
+        }
+        // Custom object mask.
+        return { disabled: false, all: false, top: !!sides.top, right: !!sides.right, bottom: !!sides.bottom,
+            left: !!sides.left };
+    }
 }
 
 export { absToVisualEdgeInsets, applyStyles, padToVisualEdgeInsets };
