@@ -5,6 +5,7 @@ import resolve             from '@rollup/plugin-node-resolve';
 import typescript          from '@rollup/plugin-typescript';
 import { generateDTS }     from '@typhonjs-build-test/esm-d-ts';
 import { importsExternal } from '@typhonjs-build-test/rollup-plugin-pkg-imports';
+import { getFileList }     from '@typhonjs-utils/file-util';
 import { rollup }          from 'rollup';
 import upath               from 'upath';
 
@@ -15,6 +16,9 @@ const dtsPluginOptions = {
    bundlePackageExports: true,
    dtsReplace: { '/\\/\\/ <reference.*\\/>': '' } // Svelte v4 types currently add triple slash references.
 };
+
+// For Svelte component DTS generation.
+const external = [/^svelte/, /@typhonjs-svelte\/runtime-base\/*/];
 
 const resolveOptions = { browser: true };
 
@@ -402,10 +406,11 @@ const rollupConfigs = [
    },
    {
       input: {
-         input: 'src/svelte/action/dom/style/index.js',
+         input: 'src/svelte/action/dom/style/index.ts',
          plugins: [
             importsExternal(),
             resolve(resolveOptions),
+            typescript({ tsconfig: './src/svelte/action/dom/style/tsconfig.json' }),
             generateDTS.plugin(dtsPluginOptions)
          ]
       },
@@ -757,10 +762,11 @@ const rollupConfigs = [
    },
    {
       input: {
-         input: 'src/util/dom/layout/index.js',
+         input: 'src/util/dom/layout/index.ts',
          plugins: [
             importsExternal(),
             resolve(resolveOptions),
+            typescript({ tsconfig: './src/util/dom/layout/tsconfig.json' }),
             generateDTS.plugin(dtsPluginOptions)
          ]
       },
@@ -1009,3 +1015,28 @@ for (const config of rollupConfigs)
       fs.writeFileSync(outFileDTS, fileData, 'utf-8');
    }
 }
+
+// Copy components to dist -------------------------------------------------------------------------------------------
+
+const SVELTE_COMPONENT_DIST = './_dist/svelte/component';
+const SVELTE_COMPONENT_SRC = './src/svelte/component';
+
+fs.rmSync(SVELTE_COMPONENT_DIST, { recursive: true, force: true });
+fs.mkdirSync(SVELTE_COMPONENT_DIST, { recursive: true });
+
+fs.cpSync(SVELTE_COMPONENT_SRC, SVELTE_COMPONENT_DIST, { recursive: true });
+
+const compFiles = await getFileList({ dir: './_dist/svelte/component', resolve: true, walk: true });
+for (const compFile of compFiles)
+{
+   let fileData = fs.readFileSync(compFile, 'utf-8').toString();
+
+   // Ignore any `{@link #runtime...}` enclosed references.
+   fileData = fileData.replaceAll(/(?<!\{@link\s*)#runtime\//g, '@typhonjs-svelte/runtime-base/');
+
+   fileData = fileData.replaceAll('\'#svelte', '\'svelte');
+
+   fs.writeFileSync(compFile, fileData);
+}
+
+await generateDTS({ input: './_dist/svelte/component/container/index.js', rollupExternal: external });
