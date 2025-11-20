@@ -1,3 +1,4 @@
+export { default as TJSGlassPane }           from './TJSGlassPane.svelte';
 export { default as TJSScrollContainer }     from './TJSScrollContainer.svelte';
 
 /**
