@@ -352,7 +352,7 @@ abstract class CrossRealmBrowser
    {
       if (!isObject(target)) { return false; }
 
-      if (target.nodeType !== nodeType) { return false; }
+      if ((target as Node).nodeType !== nodeType) { return false; }
 
       const GlobalClass: any = (window as unknown as Record<string, unknown>)[className];
 
