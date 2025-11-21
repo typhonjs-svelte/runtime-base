@@ -34,8 +34,8 @@ import type { FindParentOptions }   from '#runtime/util/dom/layout';
  *
  * @returns Action Lifecycle functions.
  */
-export function applyVisualEdgeInsets(node: HTMLElement, options: VisualEdgeInsetsOptions = {}):
-  ActionReturn<VisualEdgeInsetsOptions>
+function applyVisualEdgeInsets(node: HTMLElement, options: VisualEdgeInsetsOptions = {}):
+ ActionReturn<VisualEdgeInsetsOptions>
 {
    let state: InternalVisualEdgeState | undefined = new InternalVisualEdgeState(node, options);
 
@@ -61,9 +61,37 @@ export function applyVisualEdgeInsets(node: HTMLElement, options: VisualEdgeInse
 }
 
 /**
+ * Extension utility functions for {@link applyVisualEdgeInsets}.
+ */
+namespace applyVisualEdgeInsets
+{
+   /**
+    * Validates a {@link VisualEdgeSides} value.
+    *
+    * This utility is attached to {@link applyVisualEdgeInsets} and can be used to perform lightweight runtime checks
+    * before passing values to the action. It performs the same structural checks that the action's internal
+    * normalization logic uses.
+    *
+    * @param sides - The value to validate.
+    *
+    * @returns `true` if the value is a valid `VisualEdgeSides` type otherwise `false`.
+    */
+   export function validateSides(sides: VisualEdgeSides): sides is VisualEdgeSides
+   {
+      return typeof sides === 'boolean' || typeof sides === 'string' || isObject(sides);
+   }
+}
+
+export {
+   applyVisualEdgeInsets,
+   type VisualEdgeInsetsOptions,
+   type VisualEdgeSides
+};
+
+/**
  * Options for {@link applyVisualEdgeInsets}.
  */
-export interface VisualEdgeInsetsOptions
+interface VisualEdgeInsetsOptions
 {
    /**
     * Specifies which element applies the visual edge constraints inline styles and the type of styles to apply.
@@ -143,7 +171,7 @@ export interface VisualEdgeInsetsOptions
  * - `object` - Customizable sides with boolean properties for: `top`, `right`, `bottom`, `left`.
  * ```
  */
-export type VisualEdgeSides =
+type VisualEdgeSides =
    | false
    | true
    | 'all'
