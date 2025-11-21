@@ -41,7 +41,7 @@ export function findParentElement(el: Element, options: FindParentOptions = {}):
    {
       const activeWindow: Window | undefined = CrossRealm.browser.getWindow(el);
 
-      let current: Element | null = el;
+      let current: Element | null = el.parentElement;
 
       while (current)
       {
