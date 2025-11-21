@@ -23,13 +23,25 @@
    /** @type {import('.').TJSScrollContainerData} */
    export let container = void 0;
 
-   /** @type {boolean} */
+   /**
+    * @type {boolean}
+    *
+    * @defaultValue `false`
+    */
    export let allowTabFocus = void 0;
 
-   /** @type {boolean} */
+   /**
+    * @type {boolean}
+    *
+    * @defaultValue `false`
+    */
    export let keyPropagate = void 0;
 
-   /** @type {boolean} */
+   /**
+    * @type {boolean}
+    *
+    * @defaultValue `false`
+    */
    export let gutterStable = void 0;
 
    /** @type {(data: { event: KeyboardEvent | PointerEvent }) => void} */
@@ -68,8 +80,8 @@
     typeof onContextMenu === 'function' ? onContextMenu : void 0;
 
    $: padToVisualEdge = isObject(container) &&
-    typeof container.padToVisualEdge === 'boolean' || isObject(container.padToVisualEdge) ? container.padToVisualEdge :
-     typeof padToVisualEdge === 'boolean' || isObject(padToVisualEdge) ? padToVisualEdge : false;
+    applyVisualEdgeInsets.validateSides(container.padToVisualEdge) ? container.padToVisualEdge :
+     applyVisualEdgeInsets.validateSides(padToVisualEdge) ? padToVisualEdge : false;
 
    $: scrollLeft = isObject(container) && isMinimalWritableStore(container.scrollLeft) ? container.scrollLeft :
     isMinimalWritableStore(scrollLeft) ? scrollLeft : void 0;

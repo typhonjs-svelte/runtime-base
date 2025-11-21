@@ -14,7 +14,7 @@
    import { applyScroll }              from '@typhonjs-svelte/runtime-base/svelte/action/dom/properties';
    import {
       applyStyles,
-      padToVisualEdgeInsets }          from '@typhonjs-svelte/runtime-base/svelte/action/dom/style';
+      applyVisualEdgeInsets }          from '@typhonjs-svelte/runtime-base/svelte/action/dom/style';
    import { isMinimalWritableStore }   from '@typhonjs-svelte/runtime-base/svelte/store/util';
    import { TJSSvelte }                from '@typhonjs-svelte/runtime-base/svelte/util';
    import { isObject }                 from '@typhonjs-svelte/runtime-base/util/object';
@@ -23,13 +23,25 @@
    /** @type {import('.').TJSScrollContainerData} */
    export let container = void 0;
 
-   /** @type {boolean} */
+   /**
+    * @type {boolean}
+    *
+    * @defaultValue `false`
+    */
    export let allowTabFocus = void 0;
 
-   /** @type {boolean} */
+   /**
+    * @type {boolean}
+    *
+    * @defaultValue `false`
+    */
    export let keyPropagate = void 0;
 
-   /** @type {boolean} */
+   /**
+    * @type {boolean}
+    *
+    * @defaultValue `false`
+    */
    export let gutterStable = void 0;
 
    /** @type {(data: { event: KeyboardEvent | PointerEvent }) => void} */
@@ -40,9 +52,11 @@
     * is adjusted for any visual edge insets / border image applied to the parent element allowing the scroll
     * container to take up the entire visual content space.
     *
-    * @type {import('@typhonjs-svelte/runtime-base/svelte/action/dom/style').PadToVisualEdgeSides}
+    * @type {import('@typhonjs-svelte/runtime-base/svelte/action/dom/style').VisualEdgeSides}
+    *
+    * @defaultValue `false`
     */
-   export let padToVisualEdge = void 0;
+   export let padToVisualEdge = false;
 
    /** @type {import('@typhonjs-svelte/runtime-base/svelte/store/util').MinimalWritable<number>} */
    export let scrollLeft = void 0;
@@ -65,8 +79,9 @@
    $: onContextMenu = isObject(container) && typeof container.onContextMenu === 'function' ? container.onContextMenu :
     typeof onContextMenu === 'function' ? onContextMenu : void 0;
 
-   $: padToVisualEdge = isObject(container) && typeof container.padToVisualEdge === 'boolean' ?
-    container.padToVisualEdge : typeof padToVisualEdge === 'boolean' ? padToVisualEdge : false;
+   $: padToVisualEdge = isObject(container) &&
+    applyVisualEdgeInsets.validateSides(container.padToVisualEdge) ? container.padToVisualEdge :
+     applyVisualEdgeInsets.validateSides(padToVisualEdge) ? padToVisualEdge : false;
 
    $: scrollLeft = isObject(container) && isMinimalWritableStore(container.scrollLeft) ? container.scrollLeft :
     isMinimalWritableStore(scrollLeft) ? scrollLeft : void 0;
@@ -186,7 +201,7 @@
      on:wheel={onWheel}
      use:applyScroll={{ scrollLeft, scrollTop }}
      use:applyStyles={styles}
-     use:padToVisualEdgeInsets={{ sides: padToVisualEdge, parent: true }}
+     use:applyVisualEdgeInsets={{ sides: padToVisualEdge, action: 'padTarget', parent: true }}
      role=region
      tabindex={allowTabFocus ? 0 : -1}>
    <slot>
