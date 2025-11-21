@@ -112,6 +112,13 @@ export interface VisualEdgeInsetsOptions
     * @defaultValue `false`
     */
    debug?: boolean;
+
+   /**
+    * Allows unknown keys. When an unknown key changes it is ignored, but an update to visual edge constraint
+    * calculation occurs. This is useful in the context of local theme changes that may not be picked up by the global
+    * {@link ThemeObserver} subscription.
+    */
+   [key: string]: unknown;
 }
 
 /**
@@ -152,13 +159,39 @@ interface NormalizedSides
  */
 class InternalVisualEdgeState
 {
+   /**
+    * The element associated with the action.
+    */
    #actionNode: HTMLElement;
 
-   // Normalized values.
-   #action?: string;
+   /**
+    * Current target node that is used for visual edge inset calculations.
+    */
    #targetNode: Element | null;
-   #sides: NormalizedSides;
+
+   /**
+    * The action to take if applying visual edge constraints.
+    */
+   #action?: string;
+
+   /**
+    * When true, debug logging is enabled.
+    */
+   #debug?: boolean;
+
+   /**
+    * Parent element search configuration.
+    */
    #parent?: boolean | FindParentOptions;
+
+   /**
+    * Which sides to apply inline styles to for padding.
+    */
+   #sides: NormalizedSides;
+
+   /**
+    * External store to update with visual edge constraints.
+    */
    #store?: MinimalWritable<StyleMetric.Data.BoxSides>;
 
    constructor(node: HTMLElement, opts: VisualEdgeInsetsOptions)
@@ -167,10 +200,12 @@ class InternalVisualEdgeState
 
       // Normalize initial options.
       this.#action = typeof opts.action === 'string' ? opts.action : void 0;
-      this.#parent = opts.parent ?? false;
+      this.#debug = typeof opts.debug === 'boolean' ? opts.debug : false;
+      this.#parent = typeof opts.parent === 'boolean' || isObject(opts.parent) ? opts.parent : false;
       this.#sides  = this.#normalizeSides(opts.sides ?? true);
-      this.#targetNode = this.#resolveParentTarget(this.#parent);
       this.#store = isMinimalWritableStore(opts.store) ? opts.store : void 0;
+
+      this.#targetNode = this.#resolveParentTarget(this.#parent);
    }
 
    destroy()
@@ -195,25 +230,18 @@ class InternalVisualEdgeState
    {
       if (options.action === void 0 || typeof options.action === 'string')
       {
+         // TODO: VERIFY THAT THE ACTION IS SUPPORTED
+
          if (options.action !== this.#action) { this.#removeStyles(); }
 
          this.#action = options.action;
       }
 
-      if (options.parent !== void 0)
-      {
-         this.#parent = options.parent;
-      }
+      if (typeof options.parent === 'boolean' || isObject(options.parent)) { this.#parent = options.parent; }
 
-      if (options.sides !== void 0)
-      {
-         this.#sides = this.#normalizeSides(options.sides);
-      }
+      if (options.sides !== void 0) { this.#sides = this.#normalizeSides(options.sides); }
 
-      if (isMinimalWritableStore(options.store))
-      {
-         this.#store = options.store;
-      }
+      if (isMinimalWritableStore(options.store)) { this.#store = options.store; }
 
       // Always recompute the effective target node.
       const newTarget = this.#resolveParentTarget(this.#parent);
@@ -225,11 +253,18 @@ class InternalVisualEdgeState
       this.updateConstraints();
    }
 
+   /**
+    * Updates visual edge constraint calculation.
+    */
    updateConstraints()
    {
       if (this.#targetNode === null) { return; }
 
+      if (this.#debug) { this.#log(`updateConstraints - target node: `, this.#targetNode); }
+
       const constraints: StyleMetric.Data.BoxSides = StyleMetric.getVisualEdgeInsets(this.#targetNode);
+
+      if (this.#debug) { this.#log(`updateConstraints - new visual edge insets: `, constraints); }
 
       if (isMinimalWritableStore(this.#store)) { this.#store.set(constraints); }
 
@@ -238,6 +273,11 @@ class InternalVisualEdgeState
 
    // Internal implementation ----------------------------------------------------------------------------------------
 
+   /**
+    * Applies styles to target node.
+    *
+    * @param constraints - Constraints to apply.
+    */
    #applyStyles(constraints: StyleMetric.Data.BoxSides)
    {
       if (this.#action === 'padTo')
@@ -245,6 +285,8 @@ class InternalVisualEdgeState
          const el = this.#targetNode;
 
          if (!CrossRealm.browser.isHTMLElement(el)) { return; }
+
+         if (this.#debug) { this.#log(`#applyStyles (padTo) - target node: `, el); }
 
          if (this.#sides.all)
          {
@@ -265,6 +307,8 @@ class InternalVisualEdgeState
 
          if (!this.#sides.disabled)
          {
+            if (this.#debug) { this.#log(`#applyStyles (absTo) - target node: `, el); }
+
             el.style.top = `${constraints.top}px`;
             el.style.left = `${constraints.left}px`;
             el.style.height = `calc(100% - ${constraints.top}px - ${constraints.bottom}px)`;
@@ -275,7 +319,17 @@ class InternalVisualEdgeState
    }
 
    /**
-    * Remove padding from target node.
+    * @param message - Log message to post.
+    *
+    * @param [obj] - Object to log.
+    */
+   #log(message: string, obj: unknown = void 0)
+   {
+      console.log(`[TRL] applyVisualEdgeInsets - ${message}`, obj);
+   }
+
+   /**
+    * Remove styles from target node.
     */
    #removeStyles()
    {
@@ -284,6 +338,8 @@ class InternalVisualEdgeState
          const el = this.#targetNode;
 
          if (!CrossRealm.browser.isHTMLElement(el)) { return; }
+
+         if (this.#debug) { this.#log(`#removeStyles (padTo) - target node: `, el); }
 
          if (this.#sides.all)
          {
@@ -299,6 +355,8 @@ class InternalVisualEdgeState
       else if (this.#action === 'absTo')
       {
          const el = this.#actionNode;
+
+         if (this.#debug) { this.#log(`#removeStyles (absTo) - target node: `, el); }
 
          el.style.top = '';
          el.style.left = '';
