@@ -63,34 +63,60 @@ export function applyVisualEdgeInsets(node: HTMLElement, options: VisualEdgeInse
 export interface VisualEdgeInsetsOptions
 {
    /**
-    * Action to apply visual edge constraints to.
+    * Specifies which element applies the visual edge constraints inline styles and the type of styles to apply.
     * ```
     * - `absTo`: Applies inline styles to the direct action element for absolute positioning within visual edge
-    * constraints of any parent element.
+    * constraints of target / parent element.
     *
-    * - `padTo`: Applies inline styles padding any parent target to that elements visual edge constraints.
+    * - `padTo`: Applies inline styles padding the target / parent element to that elements visual edge constraints.
     */
    action?: 'absTo' | 'padTo';
 
    /**
-    * Which constraint / box sides to target.
+    * Which constraint / box sides to apply.
+    *
+    * Note: The extended `sides` options only apply with `action: 'padTo'`. For absolute positioning `action: 'absTo'`
+    * all four edge constraints are always applied.
+    *
+    * @defaultValue `true`
     */
    sides?: VisualEdgeSides;
 
    /**
-    * Enables parent targeting for visual edge constraint detection.
+    * Enables parent element targeting for visual edge constraint detection.
+    *
+    * ```
+    * - `true`: Direct parent element is the target.
+    *
+    * - `false`: The action element is the target.
+    *
+    * - `FindParentOptions` object: This configuration object is passed to `findParentElement`.
+    * ```
+    *
+    * @defaultValue `false`
+    *
+    * @see {@link #runtime/util/dom/layout!findParentElement}
     */
    parent?: boolean | FindParentOptions;
 
    /**
-    * A store that is updated with visual edge constraints.
+    * A store that is updated with visual edge constraints. Updates to the calculated constraints occur even if `sides`
+    * is `false`.
     */
    store?: MinimalWritable<StyleMetric.Data.BoxSides>
+
+   /**
+    * When true, enables console logging of which element is being targeted for visual edge detection, the constraints
+    * calculated, along with any element that is has inline styles applied.
+    *
+    * @defaultValue `false`
+    */
+   debug?: boolean;
 }
 
 /**
- * Defines the application of padding computation for visual edge insets for {@link padToVisualEdgeInsets} Svelte
- * action.
+ * Defines the application of padding computation for visual edge insets for the {@link applyVisualEdgeInsets} Svelte
+ * action. For absolute positioning any truthy value enables application of visual edge insets.
  *
  * ```
  * - `false` - Disabled
@@ -126,18 +152,18 @@ interface NormalizedSides
  */
 class InternalVisualEdgeState
 {
-   #applyNode: HTMLElement;
+   #actionNode: HTMLElement;
 
    // Normalized values.
    #action?: string;
    #targetNode: Element | null;
-   #sides?: NormalizedSides;
+   #sides: NormalizedSides;
    #parent?: boolean | FindParentOptions;
    #store?: MinimalWritable<StyleMetric.Data.BoxSides>;
 
    constructor(node: HTMLElement, opts: VisualEdgeInsetsOptions)
    {
-      this.#applyNode = node;
+      this.#actionNode = node;
 
       // Normalize initial options.
       this.#action = typeof opts.action === 'string' ? opts.action : void 0;
@@ -152,11 +178,13 @@ class InternalVisualEdgeState
       this.#removeStyles();
 
       // @ts-ignore
-      this.#applyNode = null;
-      this.#targetNode = null;
+      this.#actionNode = null;
 
-      this.#parent = void 0;
+      // @ts-ignore
       this.#sides = void 0;
+
+      this.#targetNode = null;
+      this.#parent = void 0;
       this.#store = void 0;
    }
 
@@ -212,8 +240,6 @@ class InternalVisualEdgeState
 
    #applyStyles(constraints: StyleMetric.Data.BoxSides)
    {
-      if (this.#sides === void 0) { return; }
-
       if (this.#action === 'padTo')
       {
          const el = this.#targetNode;
@@ -235,7 +261,7 @@ class InternalVisualEdgeState
       }
       else if (this.#action === 'absTo')
       {
-         const el = this.#applyNode;
+         const el = this.#actionNode;
 
          if (!this.#sides.disabled)
          {
@@ -259,15 +285,20 @@ class InternalVisualEdgeState
 
          if (!CrossRealm.browser.isHTMLElement(el)) { return; }
 
-         el.style.padding = '';
-         el.style.paddingTop = '';
-         el.style.paddingRight = '';
-         el.style.paddingBottom = '';
-         el.style.paddingLeft = '';
+         if (this.#sides.all)
+         {
+            el.style.padding = '';
+         }
+         else {
+            if (this.#sides.top) el.style.paddingTop = '';
+            if (this.#sides.right) el.style.paddingRight = '';
+            if (this.#sides.bottom) el.style.paddingBottom = '';
+            if (this.#sides.left) el.style.paddingLeft = '';
+         }
       }
       else if (this.#action === 'absTo')
       {
-         const el = this.#applyNode;
+         const el = this.#actionNode;
 
          el.style.top = '';
          el.style.left = '';
@@ -282,12 +313,12 @@ class InternalVisualEdgeState
     */
    #resolveParentTarget(parent?: boolean | FindParentOptions): Element
    {
-      if (parent === void 0 || parent === false) { return this.#applyNode; }
+      if (parent === void 0 || parent === false) { return this.#actionNode; }
 
-      if (parent === true) { return this.#applyNode.parentElement ?? this.#applyNode; }
+      if (parent === true) { return this.#actionNode.parentElement ?? this.#actionNode; }
 
       // Parent is a `FindParentOptions` object.
-      return isObject(parent) ? findParentElement(this.#applyNode, parent) ?? this.#applyNode : this.#applyNode;
+      return isObject(parent) ? findParentElement(this.#actionNode, parent) ?? this.#actionNode : this.#actionNode;
    }
 
    /**
