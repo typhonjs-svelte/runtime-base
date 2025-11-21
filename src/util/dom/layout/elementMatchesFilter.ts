@@ -12,7 +12,7 @@ import { CrossRealm }         from '#runtime/util/realm';
  *
  * @param options - Filter options.
  */
-export function elementMatchesFilter(el: Element, options: ElementMatchesFilterOptions = {}): boolean
+export function elementMatchesFilter(el: Element, options: ElementMatchesOptions = {}): boolean
 {
    if (!CrossRealm.browser.isElement(el)) { return false; }
 
@@ -98,7 +98,7 @@ export function elementMatchesFilter(el: Element, options: ElementMatchesFilterO
 /**
  * Options for {@link elementMatchesFilter}.
  */
-export interface ElementMatchesFilterOptions
+export interface ElementMatchesOptions
 {
    /** Iterable list of CSS classes which disqualify an element. */
    excludeClasses?: Iterable<string>;

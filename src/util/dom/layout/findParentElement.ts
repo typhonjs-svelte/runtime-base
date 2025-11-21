@@ -4,7 +4,7 @@ import { CrossRealm }                  from '#runtime/util/realm';
 import { getStackingContext }          from './getStackingContext';
 
 import {
-   type ElementMatchesFilterOptions,
+   type ElementMatchesOptions,
    elementMatchesFilter }              from './elementMatchesFilter';
 
 /**
@@ -93,9 +93,9 @@ export function findParentElement(el: Element, options: FindParentOptions = {}):
 
 /**
  * Options for {@link findParentElement}. The most common options are use of {@link FindParentOptions.stackingContext}
- * and / or the exclusion CSS class / ID properties such as {@link ElementMatchesFilterOptions.excludeClasses}.
+ * and / or the exclusion CSS class / ID properties such as {@link ElementMatchesOptions.excludeClasses}.
  */
-export interface FindParentOptions extends ElementMatchesFilterOptions
+export interface FindParentOptions extends ElementMatchesOptions
 {
    /**
     * When true, traverse parent elements until the stacking context element is found. The stacking context element
