@@ -128,7 +128,7 @@ abstract class StyleMetric
     *
     * @returns Painted border width constraints in pixel units.
     */
-   static getVisualEdgeInsets<Output extends StyleMetric.Data.BoxSides = StyleMetric.Data.BoxSides>(el: HTMLElement,
+   static getVisualEdgeInsets<Output extends StyleMetric.Data.BoxSides = StyleMetric.Data.BoxSides>(el: Element,
     output?: Output, { computedStyle, offsetHeight, offsetWidth }: StyleMetric.Options.PrefetchMetrics = {}): Output
    {
       computedStyle ??= getComputedStyle(el);
@@ -163,8 +163,11 @@ abstract class StyleMetric
          }
       }
 
-      const refW: number = (Number.isFinite(offsetWidth) ? offsetWidth : el.offsetWidth) as number;
-      const refH: number = (Number.isFinite(offsetHeight) ? offsetHeight : el.offsetHeight) as number;
+      const refW: number = (Number.isFinite(offsetWidth) ? offsetWidth :
+       (el as HTMLElement).offsetWidth ?? 0) as number;
+
+      const refH: number = (Number.isFinite(offsetHeight) ? offsetHeight :
+       (el as HTMLElement).offsetHeight ?? 0) as number;
 
       if (isObject(output))
       {
@@ -177,7 +180,7 @@ abstract class StyleMetric
          }
          catch (err)
          {
-            console.error(`[TRL] StyleMetric.getPaintedBorderWidth error: \n`, err);
+            console.error(`[TRL] StyleMetric.getVisualEdgeInsets error: \n`, err);
             output.top = 0;
             output.right = 0;
             output.bottom = 0;
@@ -197,7 +200,7 @@ abstract class StyleMetric
          }
          catch (err)
          {
-            console.error(`[TRL] StyleMetric.getPaintedBorderWidth error: \n`, err);
+            console.error(`[TRL] StyleMetric.getVisualEdgeInsets error: \n`, err);
 
             output = {
                top: 0,
