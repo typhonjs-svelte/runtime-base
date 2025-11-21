@@ -96,21 +96,21 @@ interface NormalizedSides
 }
 
 /**
- * Internal state object for the padToVisualEdgeInsets Svelte action.
- * Normalizes all option values and computes the effective target node.
+ * Internal state object for the padToVisualEdgeInsets Svelte action. Normalizes all option values and computes the
+ * effective target node.
  */
 class InternalPadState
 {
    #options?: { sides?: PadToVisualEdgeSides, parent?: boolean | FindParentOptions } = { sides: true, parent: false };
 
    // Normalized values.
-   public targetNode: HTMLElement | null;
+   public targetNode: Element | null;
    public sides?: NormalizedSides;
    public parent?: boolean | FindParentOptions;
 
    constructor(node: HTMLElement, opts: { sides?: PadToVisualEdgeSides, parent?: boolean | FindParentOptions })
    {
-      // Normalize initial options
+      // Normalize initial options.
       this.parent = opts.parent ?? false;
       this.sides  = this.#normalizeSides(opts.sides ?? true);
       this.targetNode = this.#resolveParentTarget(node, this.parent);
@@ -160,6 +160,8 @@ class InternalPadState
 
       const { top, right, bottom, left } = StyleMetric.getVisualEdgeInsets(this.targetNode);
 
+      if (!CrossRealm.browser.isHTMLElement(this.targetNode)) { return; }
+
       if (this.sides.all)
       {
           this.targetNode.style.padding = `${top}px ${right}px ${bottom}px ${left}px`;
@@ -178,7 +180,7 @@ class InternalPadState
    /**
     * Remove padding from target node.
     */
-   #removePadding(targetNode: HTMLElement | null)
+   #removePadding(targetNode: Element | null)
    {
       if (!CrossRealm.browser.isHTMLElement(targetNode)) { return; }
 
@@ -192,7 +194,7 @@ class InternalPadState
    /**
     * Normalize the `parent` option into a meaningful HTMLElement.
     */
-   #resolveParentTarget(node: HTMLElement, parent?: boolean | FindParentOptions): HTMLElement
+   #resolveParentTarget(node: Element, parent?: boolean | FindParentOptions): Element
    {
       if (parent === void 0 || parent === false) { return node; }
 

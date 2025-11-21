@@ -1,9 +1,12 @@
-import { StyleMetric }        from '#runtime/util/dom/style';
-import { ThemeObserver }      from '#runtime/util/dom/theme';
-import { CrossRealm }         from '#runtime/util/realm';
+import { StyleMetric }              from '#runtime/util/dom/style';
+import { ThemeObserver }            from '#runtime/util/dom/theme';
+import { findParentElement }        from '#runtime/util/dom/layout';
+import { isObject }                 from '#runtime/util/object';
 
-import type { ActionReturn }  from 'svelte/action';
-import type { Unsubscriber }  from 'svelte/store';
+import type { ActionReturn }        from 'svelte/action';
+import type { Unsubscriber }        from 'svelte/store';
+
+import type { FindParentOptions }   from '#runtime/util/dom/layout';
 
 /**
  * Provides a Svelte action that applies absolute positioning to an element adjusting for any painted borders defined
@@ -26,25 +29,31 @@ import type { Unsubscriber }  from 'svelte/store';
  *
  * @returns Action lifecycle functions.
  */
-export function absToVisualEdgeInsets(node: HTMLElement, { enabled = true }: { enabled?: boolean } = {}):
- ActionReturn<{ enabled?: boolean }>
+export function absToVisualEdgeInsets(node: HTMLElement, { enabled = true, parent = true }:
+ { enabled?: boolean, parent?: boolean | FindParentOptions } = {}):
+  ActionReturn<{ enabled?: boolean, parent?: boolean | FindParentOptions }>
 {
    let top = 0;
    let right = 0;
    let left = 0;
    let bottom = 0;
 
+   function resolveParentTarget(node: Element, parent?: boolean | FindParentOptions): Element
+   {
+      if (parent === void 0 || parent === false) { return node; }
+
+      if (parent === true) { return node.parentElement ?? node; }
+
+      // Parent is a `FindParentOptions` object.
+      return isObject(parent) ? findParentElement(node, parent) ?? node : node;
+   }
+
    /** Sets properties on node. */
    function updateConstraints()
    {
-      if (!CrossRealm.browser.isHTMLElement(node?.parentElement))
-      {
-         top = right = bottom = left = 0;
-      }
-      else
-      {
-         ({ top, right, bottom, left } = StyleMetric.getVisualEdgeInsets(node.parentElement));
-      }
+      const targetNode = resolveParentTarget(node, parent);
+
+      ({ top, right, bottom, left } = StyleMetric.getVisualEdgeInsets(targetNode));
 
       if (enabled)
       {
@@ -78,9 +87,10 @@ export function absToVisualEdgeInsets(node: HTMLElement, { enabled = true }: { e
       /**
        * @param newOptions - New options.
        */
-      update: (newOptions: { enabled?: boolean }) =>
+      update: (newOptions: { enabled?: boolean, parent?: boolean | FindParentOptions }) =>
       {
-         if (typeof newOptions?.enabled === 'boolean') { enabled = newOptions?.enabled; }
+         if (typeof newOptions?.enabled === 'boolean') { enabled = newOptions.enabled; }
+         if (typeof newOptions?.parent === 'boolean' || isObject(newOptions?.parent)) { parent = newOptions.parent; }
 
          updateConstraints();
       }
