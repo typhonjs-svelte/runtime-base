@@ -8,7 +8,7 @@ import {
    elementMatchesFilter }              from './elementMatchesFilter';
 
 /**
- * Provides a data defined mechanism to walk up the DOM parentElement chain and return the first ancestor that
+ * Provides a data defined mechanism to walk up the DOM parent element chain and return the first ancestor that
  * satisfies multiple filtering rules (stacking context, class, ID, selector, predicate) while optionally limiting
  * traversal depth.
  *
