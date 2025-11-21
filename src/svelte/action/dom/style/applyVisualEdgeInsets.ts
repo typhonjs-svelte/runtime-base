@@ -25,6 +25,9 @@ import type { FindParentOptions }   from '#runtime/util/dom/layout';
  * calculations when any global theme is changed. To force an update of constraint calculations provide and change
  * a superfluous / dummy property in the action options.
  *
+ * You may also provide no `action` option, but provide a `store` and the visual edge constraint calculations will
+ * be updated in the store with no inline styles applied to an element.
+ *
  * @param node - Target element.
  *
  * @param [options] - Action Options.
@@ -65,17 +68,24 @@ export interface VisualEdgeInsetsOptions
    /**
     * Specifies which element applies the visual edge constraints inline styles and the type of styles to apply.
     * ```
-    * - `absTo`: Applies inline styles to the direct action element for absolute positioning within visual edge
+    * - `absThis`: Applies inline styles to the direct action element for absolute positioning within visual edge
     * constraints of target / parent element.
     *
-    * - `padTo`: Applies inline styles padding the target / parent element to that elements visual edge constraints.
+    * - `padTarget`: Applies inline styles padding the target / parent element with that elements visual edge
+    * constraints.
+    *
+    * - `padThis`: Applies inline styles padding the direct action element with the visual edge constraints of the
+    * target / parent element.
+    * ```
+    *
+    * The most common action to use is `padTarget`, but for absolutely positioned overlays use `absThis`.
     */
-   action?: 'absTo' | 'padTo';
+   action?: 'absThis' | 'padTarget' | 'padThis';
 
    /**
     * Which constraint / box sides to apply.
     *
-    * Note: The extended `sides` options only apply with `action: 'padTo'`. For absolute positioning `action: 'absTo'`
+    * Note: The extended `sides` options only apply with `action: 'padTarget'`. For absolute positioning `action: 'absThis'`
     * all four edge constraints are always applied.
     *
     * @defaultValue `true`
@@ -154,7 +164,7 @@ interface NormalizedSides
 }
 
 /**
- * Internal state object for the padToVisualEdgeInsets Svelte action. Normalizes all option values and computes the
+ * Internal state object for the applyVisualEdgeInsets Svelte action. Normalizes all option values and computes the
  * effective target node.
  */
 class InternalVisualEdgeState
@@ -208,6 +218,9 @@ class InternalVisualEdgeState
       this.#targetNode = this.#resolveParentTarget(this.#parent);
    }
 
+   /**
+    * Destroy all retained references.
+    */
    destroy()
    {
       this.#removeStyles();
@@ -226,22 +239,38 @@ class InternalVisualEdgeState
    /**
     * Update internal options and re-normalize.
     */
-   updateOptions(options: VisualEdgeInsetsOptions)
+   updateOptions(opts: VisualEdgeInsetsOptions)
    {
-      if (options.action === void 0 || typeof options.action === 'string')
+      if (typeof opts.debug === 'boolean') { this.#debug = opts.debug; }
+
+      if (opts.action === void 0 || typeof opts.action === 'string')
       {
-         // TODO: VERIFY THAT THE ACTION IS SUPPORTED
+         let applyAction = true;
 
-         if (options.action !== this.#action) { this.#removeStyles(); }
+         if (typeof opts.action === 'string' && opts.action !== 'absThis' && opts.action !== 'padTarget' &&
+          opts.action !== 'padThis')
+         {
+            if (this.#debug) { this.#log(`updateOptions - unknown action: ${opts.action}`); }
 
-         this.#action = options.action;
+            applyAction = false;
+         }
+
+         if (applyAction)
+         {
+            if (opts.action !== this.#action) { this.#removeStyles(); }
+            this.#action = opts.action;
+         }
       }
 
-      if (typeof options.parent === 'boolean' || isObject(options.parent)) { this.#parent = options.parent; }
+      if (typeof opts.parent === 'boolean' || isObject(opts.parent)) { this.#parent = opts.parent; }
 
-      if (options.sides !== void 0) { this.#sides = this.#normalizeSides(options.sides); }
+      if (opts.sides !== void 0)
+      {
+         this.#removeStyles();
+         this.#sides = this.#normalizeSides(opts.sides);
+      }
 
-      if (isMinimalWritableStore(options.store)) { this.#store = options.store; }
+      if (opts.store === void 0 || isMinimalWritableStore(opts.store)) { this.#store = opts.store; }
 
       // Always recompute the effective target node.
       const newTarget = this.#resolveParentTarget(this.#parent);
@@ -280,13 +309,13 @@ class InternalVisualEdgeState
     */
    #applyStyles(constraints: StyleMetric.Data.BoxSides)
    {
-      if (this.#action === 'padTo')
+      if (this.#action === 'padTarget' || this.#action === 'padThis')
       {
-         const el = this.#targetNode;
+         const el = this.#action === 'padTarget' ? this.#targetNode : this.#actionNode;
 
-         if (!CrossRealm.browser.isHTMLElement(el)) { return; }
+         if (!CrossRealm.browser.isHTMLElement(el) || this.#sides.disabled) { return; }
 
-         if (this.#debug) { this.#log(`#applyStyles (padTo) - target node: `, el); }
+         if (this.#debug) { this.#log(`#applyStyles (${this.#action}) - element: `, el); }
 
          if (this.#sides.all)
          {
@@ -301,13 +330,13 @@ class InternalVisualEdgeState
             if (this.#sides.left) { el.style.paddingLeft = `${constraints.left}px`; }
          }
       }
-      else if (this.#action === 'absTo')
+      else if (this.#action === 'absThis')
       {
          const el = this.#actionNode;
 
          if (!this.#sides.disabled)
          {
-            if (this.#debug) { this.#log(`#applyStyles (absTo) - target node: `, el); }
+            if (this.#debug) { this.#log(`#applyStyles (absThis) - element: `, el); }
 
             el.style.top = `${constraints.top}px`;
             el.style.left = `${constraints.left}px`;
@@ -333,13 +362,13 @@ class InternalVisualEdgeState
     */
    #removeStyles()
    {
-      if (this.#action === 'padTo')
+      if (this.#action === 'padTarget' || this.#action === 'padThis')
       {
-         const el = this.#targetNode;
+         const el = this.#action === 'padTarget' ? this.#targetNode : this.#actionNode;
 
          if (!CrossRealm.browser.isHTMLElement(el)) { return; }
 
-         if (this.#debug) { this.#log(`#removeStyles (padTo) - target node: `, el); }
+         if (this.#debug) { this.#log(`#removeStyles (${this.#action}) - element: `, el); }
 
          if (this.#sides.all)
          {
@@ -352,11 +381,11 @@ class InternalVisualEdgeState
             if (this.#sides.left) el.style.paddingLeft = '';
          }
       }
-      else if (this.#action === 'absTo')
+      else if (this.#action === 'absThis')
       {
          const el = this.#actionNode;
 
-         if (this.#debug) { this.#log(`#removeStyles (absTo) - target node: `, el); }
+         if (this.#debug) { this.#log(`#removeStyles (absThis) - element: `, el); }
 
          el.style.top = '';
          el.style.left = '';
