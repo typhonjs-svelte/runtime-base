@@ -92,7 +92,8 @@ export function findParentElement(el: Element, options: FindParentOptions = {}):
 }
 
 /**
- * Options for {@link findParentElement}.
+ * Options for {@link findParentElement}. The most common options are use of {@link FindParentOptions.stackingContext}
+ * and / or the exclusion CSS class / ID properties such as {@link ElementMatchesFilterOptions.excludeClasses}.
  */
 export interface FindParentOptions extends ElementMatchesFilterOptions
 {
