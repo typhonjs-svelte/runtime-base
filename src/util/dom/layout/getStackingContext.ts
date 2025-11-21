@@ -16,7 +16,7 @@ import { CrossRealm } from '#runtime/util/realm';
  * @returns The closest parent stacking context or undefined if none.
  *
  */
-export function getStackingContext(node: Element, activeWindow: Window = window): StackingContext | undefined
+export function getStackingContext(node: Element, activeWindow: Window = window): StackingContext
 {
    const activeDocument = activeWindow.document;
 
