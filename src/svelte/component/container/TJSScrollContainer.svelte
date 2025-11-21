@@ -14,7 +14,7 @@
    import { applyScroll }              from '#runtime/svelte/action/dom/properties';
    import {
       applyStyles,
-      padToVisualEdgeInsets }          from '#runtime/svelte/action/dom/style';
+      applyVisualEdgeInsets }          from '#runtime/svelte/action/dom/style';
    import { isMinimalWritableStore }   from '#runtime/svelte/store/util';
    import { TJSSvelte }                from '#runtime/svelte/util';
    import { isObject }                 from '#runtime/util/object';
@@ -40,9 +40,11 @@
     * is adjusted for any visual edge insets / border image applied to the parent element allowing the scroll
     * container to take up the entire visual content space.
     *
-    * @type {import('#runtime/svelte/action/dom/style').PadToVisualEdgeSides}
+    * @type {import('#runtime/svelte/action/dom/style').VisualEdgeSides}
+    *
+    * @defaultValue `false`
     */
-   export let padToVisualEdge = void 0;
+   export let padToVisualEdge = false;
 
    /** @type {import('#runtime/svelte/store/util').MinimalWritable<number>} */
    export let scrollLeft = void 0;
@@ -65,8 +67,9 @@
    $: onContextMenu = isObject(container) && typeof container.onContextMenu === 'function' ? container.onContextMenu :
     typeof onContextMenu === 'function' ? onContextMenu : void 0;
 
-   $: padToVisualEdge = isObject(container) && typeof container.padToVisualEdge === 'boolean' ?
-    container.padToVisualEdge : typeof padToVisualEdge === 'boolean' ? padToVisualEdge : false;
+   $: padToVisualEdge = isObject(container) &&
+    typeof container.padToVisualEdge === 'boolean' || isObject(container.padToVisualEdge) ? container.padToVisualEdge :
+     typeof padToVisualEdge === 'boolean' || isObject(padToVisualEdge) ? padToVisualEdge : false;
 
    $: scrollLeft = isObject(container) && isMinimalWritableStore(container.scrollLeft) ? container.scrollLeft :
     isMinimalWritableStore(scrollLeft) ? scrollLeft : void 0;
@@ -186,7 +189,7 @@
      on:wheel={onWheel}
      use:applyScroll={{ scrollLeft, scrollTop }}
      use:applyStyles={styles}
-     use:padToVisualEdgeInsets={{ sides: padToVisualEdge, parent: true }}
+     use:applyVisualEdgeInsets={{ sides: padToVisualEdge, action: 'padTarget', parent: true }}
      role=region
      tabindex={allowTabFocus ? 0 : -1}>
    <slot>
