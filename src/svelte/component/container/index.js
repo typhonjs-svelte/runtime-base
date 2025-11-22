@@ -15,10 +15,10 @@ export { default as TJSScrollContainer }     from './TJSScrollContainer.svelte';
  * @property {(data: { event: KeyboardEvent | PointerEvent }) => void} [onContextMenu] Callback to handle context menu
  * presses.
  *
- * @property {import('#runtime/svelte/action/dom/style').PadToVisualEdgeSides} [padToVisualEdge=false] When true, the
+ * @property {import('#runtime/svelte/action/dom/style').VisualEdgeSides} [padToVisualEdge=false] When true, the
  * inline styles for padding of the parent element to the scroll container element is adjusted for any visual edge
  * insets / border image applied to the parent element allowing the scroll container to take up the entire visual
- * content space.
+ * content space. You may also specify specific sides for application of visual edge padding inset constraints.
  *
  * @property {import('#runtime/svelte/store/util').MinimalWritable<number>} [scrollLeft] A Svelte store that serializes
  * the scroll left position of the scrollable container.
