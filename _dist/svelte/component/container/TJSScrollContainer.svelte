@@ -92,16 +92,7 @@
    $: styles = isObject(container) && isObject(container.styles) ? container.styles :
     isObject(styles) ? styles : void 0;
 
-   // $: svelte = isObject(container) && TJSSvelte.config.isConfigEmbed(container.svelte) ? container.svelte : void 0;
-
-   let svelte;
-
-   $: {
-      svelte = isObject(container) && TJSSvelte.config.isConfigEmbed(container.svelte) ? container.svelte : void 0;
-
-      console.log(`!!! TJSScrollContainer - $svelte: `, svelte)
-      console.log(`!!! TJSScrollContainer - $$slots: `, $$slots)
-   }
+   $: svelte = isObject(container) && TJSSvelte.config.isConfigEmbed(container.svelte) ? container.svelte : void 0;
 
    /** @type {HTMLElement} */
    let containerEl;
@@ -218,9 +209,6 @@
    {:else}
       <slot />
    {/if}
-
-<!--   <slot>-->
-<!--   </slot>-->
 </div>
 
 <style>
