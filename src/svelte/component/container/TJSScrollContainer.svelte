@@ -204,11 +204,11 @@
      use:applyVisualEdgeInsets={{ sides: padToVisualEdge, action: 'padTarget', parent: true }}
      role=region
      tabindex={allowTabFocus ? 0 : -1}>
-   <slot>
-      {#if svelte}
-         <svelte:component this={svelte.class} {...(isObject(svelte.props) ? svelte.props : {})} />
-      {/if}
-   </slot>
+   {#if svelte}
+      <svelte:component this={svelte.class} {...(isObject(svelte.props) ? svelte.props : {})} />
+   {:else}
+      <slot />
+   {/if}
 </div>
 
 <style>
