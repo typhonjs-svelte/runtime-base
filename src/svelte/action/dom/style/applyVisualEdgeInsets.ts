@@ -40,12 +40,27 @@ function applyVisualEdgeInsets(node: HTMLElement, options: VisualEdgeInsetsOptio
    let state: InternalVisualEdgeState | undefined = new InternalVisualEdgeState(node, options);
 
    // This will invoke `state.updateConstraints` immediately.
-   let unsubscribe: Unsubscriber | undefined = ThemeObserver.stores.themeName.subscribe(
-    () => state?.updateConstraints());
+   let unsubscribe: Unsubscriber | undefined = ThemeObserver.stores.themeName.subscribe(recalculateTrigger);
+
+   /**
+    * Event handler + ThemeObserver subscriber - update constraints.
+    *
+    * Other instances of `applyVisualEdgeInsets` will trigger an event ('tjs-visual-edge-recalculate') to any action
+    * and target node when they are destroyed. This allows recalculation of constraints when other action events
+    * targeting the same node occurs.
+    */
+   function recalculateTrigger()
+   {
+      state?.updateConstraints();
+   }
+
+   node.addEventListener('tjs-visual-edge-recalculate', recalculateTrigger);
 
    return {
       destroy: () =>
       {
+         node.removeEventListener('tjs-visual-edge-recalculate', recalculateTrigger);
+
          state?.destroy();
          state = void 0;
 
@@ -252,6 +267,9 @@ class InternalVisualEdgeState
    destroy()
    {
       this.#removeStyles();
+
+      this.#actionNode?.dispatchEvent?.(new CustomEvent('tjs-visual-edge-recalculate'));
+      this.#targetNode?.dispatchEvent?.(new CustomEvent('tjs-visual-edge-recalculate'));
 
       // @ts-ignore
       this.#actionNode = null;
