@@ -1,3 +1,5 @@
+import { get }                      from 'svelte/store';
+
 import { StyleMetric }              from '#runtime/util/dom/style';
 import { ThemeObserver }            from '#runtime/util/dom/theme';
 import { CrossRealm }               from '#runtime/util/realm';
@@ -341,7 +343,19 @@ class InternalVisualEdgeState
 
       if (this.#debug) { this.#log(`updateConstraints - new visual edge insets: `, constraints); }
 
-      if (isMinimalWritableStore(this.#store)) { this.#store.set(constraints); }
+      if (isMinimalWritableStore(this.#store))
+      {
+         // Usually avoiding `get` is best practice, but in this case this isn't triggered often, so evaluate existing
+         // store value before triggering an update.
+
+         const current = get(this.#store);
+
+         if (current?.top !== constraints.top || current?.right !== constraints.right ||
+          current?.bottom !== constraints.bottom || current?.left !== constraints.left)
+         {
+            this.#store.set(constraints);
+         }
+      }
 
       this.#applyStyles(constraints);
    }
