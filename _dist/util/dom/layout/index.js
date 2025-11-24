@@ -2,148 +2,6 @@ import { isObject, ensureNonEmptyIterable } from '@typhonjs-svelte/runtime-base/
 import { CrossRealm } from '@typhonjs-svelte/runtime-base/util/realm';
 
 /**
- * Walks up the DOM parentElement chain and returns the first ancestor that
- * satisfies multiple filtering rules (class, ID, selector, predicate), while
- * optionally limiting traversal depth.
- *
- * @param el       Starting element.
- * @param options  Filtering and traversal options.
- * @returns        The first acceptable parent element, or null.
- */
-function findParentElement(el, options = {}) {
-    if (!CrossRealm.browser.isElement(el)) {
-        throw new TypeError(`'el' is not a valid Element.`);
-    }
-    if (options === void 0) {
-        return el.parentElement;
-    }
-    else if (!isObject(options)) {
-        throw new TypeError(`'options' is not an object.`);
-    }
-    const { excludeClasses, includeClasses, excludeIds, includeIds, selector, excludeSelector, predicate, stopAt, maxDepth } = options;
-    if (maxDepth !== void 0 && !Number.isInteger(maxDepth) && maxDepth <= 0) {
-        throw new TypeError(`'maxDepth' is not a positive integer.`);
-    }
-    // Normalize iterables via ensureNonEmptyIterable
-    const exClasses = ensureNonEmptyIterable(excludeClasses);
-    const inClasses = ensureNonEmptyIterable(includeClasses);
-    const exIds = ensureNonEmptyIterable(excludeIds);
-    const inIds = ensureNonEmptyIterable(includeIds);
-    let current = el.parentElement;
-    // Depth limit (Infinity if not provided)
-    let depth = 0;
-    const limit = maxDepth ?? Infinity;
-    while (current && depth <= limit) {
-        // Stop traversal at boundary element
-        if (stopAt && current === stopAt) {
-            return null;
-        }
-        // Exclusion checks --------------------------------------------------------------------------------------------
-        let reject = false;
-        // Excluded classes
-        if (exClasses) {
-            for (const cls of exClasses) {
-                if (current.classList.contains(cls)) {
-                    reject = true;
-                    break;
-                }
-            }
-        }
-        // Excluded IDs
-        if (!reject && exIds) {
-            for (const id of exIds) {
-                if (current.id === id) {
-                    reject = true;
-                    break;
-                }
-            }
-        }
-        // Excluded selector
-        if (!reject && excludeSelector && current.matches(excludeSelector)) {
-            reject = true;
-        }
-        if (reject) {
-            current = current.parentElement;
-            depth++;
-            continue;
-        }
-        // Inclusion checks --------------------------------------------------------------------------------------------
-        let accept = true;
-        // Must contain all included classes
-        if (inClasses) {
-            for (const cls of inClasses) {
-                if (!current.classList.contains(cls)) {
-                    accept = false;
-                    break;
-                }
-            }
-        }
-        // Must match all included IDs
-        if (accept && inIds) {
-            for (const id of inIds) {
-                if (current.id !== id) {
-                    accept = false;
-                    break;
-                }
-            }
-        }
-        // Must match inclusion selector
-        if (accept && selector && !current.matches(selector)) {
-            accept = false;
-        }
-        // Custom predicate must return true
-        if (accept && predicate && predicate(current) !== true) {
-            accept = false;
-        }
-        if (accept) {
-            return current;
-        }
-        current = current.parentElement;
-        depth++;
-    }
-    return null;
-}
-// /**
-//  * @param el - Starting element.
-//  *
-//  * @param [excludeClasses] - Optional iterable list of CSS class names to skip parent element
-//  * traversal.
-//  *
-//  * @returns First parent element not potentially excluded.
-//  */
-// export function findParentElement(el: Element, excludeClasses?: Iterable<string>): HTMLElement | null
-// {
-//    if (!CrossRealm.browser.isElement(el)) { throw new TypeError(`'el' is not a valid Element`); }
-//
-//    const exclusions = ensureNonEmptyIterable(excludeClasses);
-//
-//    // No exclusions → return the immediate parent.
-//    if (!exclusions) { return el.parentElement; }
-//
-//    let current = el.parentElement;
-//
-//    while (current)
-//    {
-//       let hasExcluded = false;
-//
-//       for (const cls of exclusions)
-//       {
-//          if (current.classList.contains(cls))
-//          {
-//             hasExcluded = true;
-//             break;
-//          }
-//       }
-//
-//       if (!hasExcluded) { return current; }
-//
-//       current = current.parentElement;
-//    }
-//
-//    return null;
-// }
-
-/**
  * Recursive function that finds the closest parent stacking context.
  * See also https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Positioning/Understanding_z_index/The_stacking_context
  *
@@ -252,5 +110,142 @@ function getStackingContext(node, activeWindow = window) {
     return getStackingContext(node.parentNode, activeWindow);
 }
 
-export { findParentElement, getStackingContext };
+/**
+ * Tests the given element against several optional exclusion / inclusion criteria such as CSS classes / IDs, selector
+ * matches or a general purpose provided predicate function.
+ *
+ * @param el - Element to test.
+ *
+ * @param options - Filter options.
+ */
+function elementMatchesFilter(el, options = {}) {
+    if (!CrossRealm.browser.isElement(el)) {
+        return false;
+    }
+    if (!isObject(options)) {
+        throw new TypeError(`'options' is not an object.`);
+    }
+    // Unpack options.
+    const { excludeClasses, includeClasses, excludeIds, includeIds, selector, excludeSelector, predicate } = options;
+    const classList = el.classList;
+    const id = el.id;
+    // Exclusions -----------------------------------------------------------------------------------------------------
+    if (excludeClasses) {
+        const iter = ensureNonEmptyIterable(excludeClasses);
+        if (iter) {
+            for (const cls of iter) {
+                if (classList.contains(cls)) {
+                    return false;
+                }
+            }
+        }
+    }
+    if (excludeIds) {
+        const iter = ensureNonEmptyIterable(excludeIds);
+        if (iter) {
+            for (const exId of iter) {
+                if (id === exId) {
+                    return false;
+                }
+            }
+        }
+    }
+    if (typeof excludeSelector === 'string' && el.matches(excludeSelector)) {
+        return false;
+    }
+    // Inclusions -----------------------------------------------------------------------------------------------------
+    if (includeClasses) {
+        const iter = ensureNonEmptyIterable(includeClasses);
+        if (iter) {
+            for (const cls of iter) {
+                if (!classList.contains(cls)) {
+                    return false;
+                }
+            }
+        }
+    }
+    if (includeIds) {
+        const iter = ensureNonEmptyIterable(includeIds);
+        if (iter) {
+            for (const incId of iter) {
+                if (id !== incId) {
+                    return false;
+                }
+            }
+        }
+    }
+    // Explicit selector check.
+    if (typeof selector === 'string' && !el.matches(selector)) {
+        return false;
+    }
+    // Predicate must explicitly return `true` to accept.
+    if (typeof predicate === 'function' && !predicate(el)) {
+        return false;
+    }
+    return true;
+}
+
+/**
+ * Provides a data defined mechanism to walk up the DOM parent element chain and return the first ancestor that
+ * satisfies multiple filtering rules (stacking context, class, ID, selector, predicate) while optionally limiting
+ * traversal depth.
+ *
+ * @param el - Starting element.
+ *
+ * @param [options] - Filtering and traversal options.
+ *
+ * @returns The first acceptable parent element or null.
+ */
+function findParentElement(el, options = {}) {
+    if (!CrossRealm.browser.isElement(el)) {
+        throw new TypeError(`'el' is not a valid Element.`);
+    }
+    if (options === void 0) {
+        return el.parentElement;
+    }
+    else if (!isObject(options)) {
+        throw new TypeError(`'options' is not an object.`);
+    }
+    const { stackingContext, stopAt, maxDepth } = options;
+    if (typeof stackingContext === 'boolean' && stackingContext) {
+        const activeWindow = CrossRealm.browser.getWindow(el);
+        let current = el.parentElement;
+        while (current) {
+            const ctx = getStackingContext(current, activeWindow);
+            const next = ctx?.node ?? null;
+            if (!next) {
+                return null;
+            }
+            // Apply filtering rules.
+            if (elementMatchesFilter(next, options)) {
+                return next;
+            }
+            // Continue walking upward through stacking contexts.
+            current = next.parentElement;
+        }
+        return null;
+    }
+    // Handle direct / normal traversal -------------------------------------------------------------------------------
+    if (maxDepth !== void 0 && !Number.isInteger(maxDepth) && maxDepth <= 0) {
+        throw new TypeError(`'maxDepth' is not a positive integer.`);
+    }
+    let current = el.parentElement;
+    // Depth limit; `Infinity` if not provided.
+    let depth = 0;
+    const limit = maxDepth ?? Infinity;
+    while (current && depth <= limit) {
+        // Stop traversal at boundary element.
+        if (stopAt && current === stopAt) {
+            return elementMatchesFilter(current, options) ? current : null;
+        }
+        if (elementMatchesFilter(current, options)) {
+            return current;
+        }
+        current = current.parentElement;
+        depth++;
+    }
+    return null;
+}
+
+export { elementMatchesFilter, findParentElement, getStackingContext };
 //# sourceMappingURL=index.js.map

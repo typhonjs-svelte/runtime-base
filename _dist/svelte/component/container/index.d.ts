@@ -132,11 +132,23 @@ declare namespace TJSScrollContainer {
     scrollTop?: _typhonjs_svelte_runtime_base_svelte_store_util.MinimalWritable<number>;
     /** @type {{ [key: string]: string | null }} */
     styles?: { [key: string]: string | null };
-    /** @type {boolean} */
+    /**
+     * @type {boolean}
+     *
+     * @defaultValue `false`
+     */
     allowTabFocus?: boolean;
-    /** @type {boolean} */
+    /**
+     * @type {boolean}
+     *
+     * @defaultValue `false`
+     */
     keyPropagate?: boolean;
-    /** @type {boolean} */
+    /**
+     * @type {boolean}
+     *
+     * @defaultValue `false`
+     */
     gutterStable?: boolean;
     /** @type {(data: { event: KeyboardEvent | PointerEvent }) => void} */
     onContextMenu?: (data: { event: KeyboardEvent | PointerEvent }) => void;
@@ -145,9 +157,11 @@ declare namespace TJSScrollContainer {
      * is adjusted for any visual edge insets / border image applied to the parent element allowing the scroll
      * container to take up the entire visual content space.
      *
-     * @type {import('@typhonjs-svelte/runtime-base/svelte/action/dom/style').PadToVisualEdgeSides}
+     * @type {import('@typhonjs-svelte/runtime-base/svelte/action/dom/style').VisualEdgeSides}
+     *
+     * @defaultValue `false`
      */
-    padToVisualEdge?: _typhonjs_svelte_runtime_base_svelte_action_dom_style.PadToVisualEdgeSides;
+    padToVisualEdge?: _typhonjs_svelte_runtime_base_svelte_action_dom_style.VisualEdgeSides;
   };
   /** Events type alias for {@link TJSScrollContainer | associated component}. */
   export type Events = { [evt: string]: CustomEvent<any> };
@@ -179,9 +193,9 @@ type TJSScrollContainerData = {
    * When true, the
    * inline styles for padding of the parent element to the scroll container element is adjusted for any visual edge
    * insets / border image applied to the parent element allowing the scroll container to take up the entire visual
-   * content space.
+   * content space. You may also specify specific sides for application of visual edge padding inset constraints.
    */
-  padToVisualEdge?: _typhonjs_svelte_runtime_base_svelte_action_dom_style.PadToVisualEdgeSides;
+  padToVisualEdge?: _typhonjs_svelte_runtime_base_svelte_action_dom_style.VisualEdgeSides;
   /**
    * A Svelte store that serializes
    * the scroll left position of the scrollable container.

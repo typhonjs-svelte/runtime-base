@@ -278,7 +278,7 @@ async function ensureNonEmptyAsyncIterable(value) {
  *
  * @param value - The value to inspect.
  *
- * @returns A restartable iterable containing all values, or `false` if the input was not iterable or contained no
+ * @returns A restartable iterable containing all values, or `undefined` if the input was not iterable or contained no
  *          items.
  *
  * @example
@@ -436,17 +436,19 @@ function hasSetter(object, accessor) {
  * @returns Whether value is async iterable.
  */
 function isAsyncIterable(value) {
-    return value !== void 0 && value !== null && typeof value[Symbol.asyncIterator] === 'function';
+    return value !== null && typeof value === 'object' && typeof value[Symbol.asyncIterator] === 'function';
 }
 /**
- * Tests for whether an object is iterable.
+ * Tests for whether an _object_ is iterable.
+ *
+ * Note: Excludes `strings` in iterable test even though they are technically iterable.
  *
  * @param value - Any value.
  *
  * @returns Whether object is iterable.
  */
 function isIterable(value) {
-    return value !== void 0 && value !== null && typeof value[Symbol.iterator] === 'function';
+    return value !== null && typeof value === 'object' && typeof value[Symbol.iterator] === 'function';
 }
 /**
  * Tests for whether object is not null, typeof object, and not an array.

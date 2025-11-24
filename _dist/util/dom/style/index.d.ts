@@ -449,7 +449,7 @@ declare abstract class StyleMetric {
    * @returns Painted border width constraints in pixel units.
    */
   static getVisualEdgeInsets<Output extends StyleMetric.Data.BoxSides = StyleMetric.Data.BoxSides>(
-    el: HTMLElement,
+    el: Element,
     output?: Output,
     { computedStyle, offsetHeight, offsetWidth }?: StyleMetric.Options.PrefetchMetrics,
   ): Output;

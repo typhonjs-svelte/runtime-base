@@ -1,76 +1,10 @@
+import { isObject } from '@typhonjs-svelte/runtime-base/util/object';
+import { get } from 'svelte/store';
 import { StyleMetric } from '@typhonjs-svelte/runtime-base/util/dom/style';
 import { ThemeObserver } from '@typhonjs-svelte/runtime-base/util/dom/theme';
 import { CrossRealm } from '@typhonjs-svelte/runtime-base/util/realm';
-import { isObject } from '@typhonjs-svelte/runtime-base/util/object';
 import { findParentElement } from '@typhonjs-svelte/runtime-base/util/dom/layout';
-
-/**
- * Provides a Svelte action that applies absolute positioning to an element adjusting for any painted borders defined
- * by CSS `border-image` properties of the parent element of the target node / element of this action.
- *
- * When enabled, this action computes the effective visual edge insets / painted border using
- * {@link #runtime/util/dom/style!StyleMetric.getVisualEdgeInsets} and applies inline `position: absolute` styles so
- * the element aligns correctly within the visible (non-border) content area of its container.
- *
- * Additionally, this action subscribes to {@link #runtime/util/dom/theme!ThemeObserver} and updates constraint
- * calculations when any global theme is changed. To force an update of constraint calculations provide and change
- * a superfluous / dummy property in the action options.
- *
- * @param node - Target element.
- *
- * @param [options] - Action Options.
- *
- * @param [options.enabled] - When enabled set inline styles for absolute positioning taking into account visual edge
- *        insets / any border image constraints.
- *
- * @returns Action lifecycle functions.
- */
-function absToVisualEdgeInsets(node, { enabled = true } = {}) {
-    let top = 0;
-    let right = 0;
-    let left = 0;
-    let bottom = 0;
-    /** Sets properties on node. */
-    function updateConstraints() {
-        if (!CrossRealm.browser.isHTMLElement(node?.parentElement)) {
-            top = right = bottom = left = 0;
-        }
-        else {
-            ({ top, right, bottom, left } = StyleMetric.getVisualEdgeInsets(node.parentElement));
-        }
-        if (enabled) {
-            node.style.top = `${top}px`;
-            node.style.left = `${left}px`;
-            node.style.height = `calc(100% - ${top}px - ${bottom}px)`;
-            node.style.width = `calc(100% - ${left}px - ${right}px)`;
-            node.style.position = 'absolute';
-        }
-        else {
-            top = right = bottom = left = 0;
-            node.style.top = '';
-            node.style.right = '';
-            node.style.bottom = '';
-            node.style.left = '';
-            node.style.position = '';
-        }
-    }
-    let unsubscribe = ThemeObserver.stores.themeName.subscribe(() => updateConstraints());
-    return {
-        destroy: () => {
-            unsubscribe?.();
-            unsubscribe = void 0;
-        },
-        /**
-         * @param newOptions - New options.
-         */
-        update: (newOptions) => {
-            if (typeof newOptions?.enabled === 'boolean') {
-                enabled = newOptions?.enabled;
-            }
-            updateConstraints();
-        }
-    };
-}
+import { isMinimalWritableStore } from '@typhonjs-svelte/runtime-base/svelte/store/util';
 
 /**
  * Provides an action to apply CSS style properties provided as an object.
@@ -104,34 +38,46 @@ function applyStyles(node, properties) {
 }
 
 /**
- * Provides a Svelte action that applies inline styles for `padding` to an element adjusting for any painted borders
- * defined by CSS `border-image` properties of the target node / element of this action.
+ * Provides a Svelte action that applies inline styles for `padding` to a parent element or `absolute positioning` to
+ * the action element adjusting for any painted borders defined by CSS `border-image` properties of the target
+ * node / element of this action.
  *
  * When enabled, this action computes the effective visual edge insets / painted border using
- * {@link #runtime/util/dom/style!StyleMetric.getVisualEdgeInsets} and applies inline `position: absolute` styles so
- * the element aligns correctly within the visible (non-border) content area of its container.
+ * {@link #runtime/util/dom/style!StyleMetric.getVisualEdgeInsets} and applies these constraints to either `padding`
+ * or absolute inline styles so the element aligns correctly within the visible (non-border) content area of its
+ * container.
  *
  * Additionally, this action subscribes to {@link #runtime/util/dom/theme!ThemeObserver} and updates constraint
  * calculations when any global theme is changed. To force an update of constraint calculations provide and change
  * a superfluous / dummy property in the action options.
  *
+ * You may also provide no `action` option, but provide a `store` and the visual edge constraint calculations will
+ * be updated in the store with no inline styles applied to an element.
+ *
  * @param node - Target element.
  *
  * @param [options] - Action Options.
  *
- * @param [options.sides] - Padding sides configuration. When undefined or true all sides receive padding.
- *
- * @param [options.parent] - Parent targeting for visual edge computations. When false, the target is this actions
- *        element.
- *
  * @returns Action Lifecycle functions.
  */
-function padToVisualEdgeInsets(node, options = {}) {
-    let state = new InternalPadState(node, options);
+function applyVisualEdgeInsets(node, options = {}) {
+    let state = new InternalVisualEdgeState(node, options);
     // This will invoke `state.updateConstraints` immediately.
-    let unsubscribe = ThemeObserver.stores.themeName.subscribe(() => state?.updateConstraints());
+    let unsubscribe = ThemeObserver.stores.themeName.subscribe(recalculateTrigger);
+    /**
+     * Event handler + ThemeObserver subscriber - update constraints.
+     *
+     * Other instances of `applyVisualEdgeInsets` will trigger an event ('tjs-visual-edge-recalculate') to any action
+     * and target node when they are destroyed. This allows recalculation of constraints when other action events
+     * targeting the same node occurs.
+     */
+    function recalculateTrigger() {
+        state?.updateConstraints();
+    }
+    node.addEventListener('tjs-visual-edge-recalculate', recalculateTrigger);
     return {
         destroy: () => {
+            node.removeEventListener('tjs-visual-edge-recalculate', recalculateTrigger);
             state?.destroy();
             state = void 0;
             unsubscribe?.();
@@ -140,104 +86,259 @@ function padToVisualEdgeInsets(node, options = {}) {
         /**
          * @param newOptions - New options.
          */
-        update: (newOptions) => {
-            state?.updateOptions(node, newOptions);
-            state?.updateConstraints();
-        }
+        update: (newOptions) => state?.updateOptions(newOptions)
     };
 }
 /**
- * Internal state object for the padToVisualEdgeInsets Svelte action.
- * Normalizes all option values and computes the effective target node.
+ * Extension utility functions for {@link applyVisualEdgeInsets}.
  */
-class InternalPadState {
-    #options = { sides: true, parent: false };
-    // Normalized values.
-    targetNode;
-    sides;
-    parent;
-    constructor(node, opts) {
-        // Normalize initial options
-        this.parent = opts.parent ?? false;
-        this.sides = this.#normalizeSides(opts.sides ?? true);
-        this.targetNode = this.#resolveParentTarget(node, this.parent);
+(function (applyVisualEdgeInsets) {
+    /**
+     * Validates a {@link VisualEdgeSides} value.
+     *
+     * This utility is attached to {@link applyVisualEdgeInsets} and can be used to perform lightweight runtime checks
+     * before passing values to the action. It performs the same structural checks that the action's internal
+     * normalization logic uses.
+     *
+     * @param sides - The value to validate.
+     *
+     * @returns `true` if the value is a valid `VisualEdgeSides` type otherwise `false`.
+     */
+    function validateSides(sides) {
+        return typeof sides === 'boolean' || typeof sides === 'string' || isObject(sides);
     }
+    applyVisualEdgeInsets.validateSides = validateSides;
+})(applyVisualEdgeInsets || (applyVisualEdgeInsets = {}));
+/**
+ * Internal state object for the applyVisualEdgeInsets Svelte action. Normalizes all option values and computes the
+ * effective target node.
+ */
+class InternalVisualEdgeState {
+    /**
+     * The element associated with the action.
+     */
+    #actionNode;
+    /**
+     * Current target node that is used for visual edge inset calculations.
+     */
+    #targetNode;
+    /**
+     * The action to take if applying visual edge constraints.
+     */
+    #action;
+    /**
+     * When true, debug logging is enabled.
+     */
+    #debug;
+    /**
+     * Parent element search configuration.
+     */
+    #parent;
+    /**
+     * Which sides to apply inline styles to for padding.
+     */
+    #sides;
+    /**
+     * External store to update with visual edge constraints.
+     */
+    #store;
+    constructor(node, opts) {
+        this.#actionNode = node;
+        // Normalize initial options.
+        this.#action = typeof opts.action === 'string' ? opts.action : void 0;
+        this.#debug = typeof opts.debug === 'boolean' ? opts.debug : false;
+        this.#parent = typeof opts.parent === 'boolean' || isObject(opts.parent) ? opts.parent : false;
+        this.#sides = this.#normalizeSides(opts.sides ?? true);
+        this.#store = isMinimalWritableStore(opts.store) ? opts.store : void 0;
+        this.#targetNode = this.#resolveParentTarget(this.#parent);
+    }
+    /**
+     * Destroy all retained references.
+     */
     destroy() {
-        this.#removePadding(this.targetNode);
-        this.#options = void 0;
-        this.parent = void 0;
-        this.sides = void 0;
-        this.targetNode = null;
+        this.#removeStyles();
+        this.#actionNode?.dispatchEvent?.(new CustomEvent('tjs-visual-edge-recalculate'));
+        this.#targetNode?.dispatchEvent?.(new CustomEvent('tjs-visual-edge-recalculate'));
+        // @ts-ignore
+        this.#actionNode = null;
+        // @ts-ignore
+        this.#sides = void 0;
+        this.#targetNode = null;
+        this.#parent = void 0;
+        this.#store = void 0;
     }
     /**
      * Update internal options and re-normalize.
      */
-    updateOptions(node, options) {
-        if (options.parent !== void 0) {
-            this.parent = options.parent;
+    updateOptions(opts) {
+        if (typeof opts.debug === 'boolean') {
+            this.#debug = opts.debug;
         }
-        if (options.sides !== void 0) {
-            this.sides = this.#normalizeSides(options.sides);
+        if (opts.action === void 0 || typeof opts.action === 'string') {
+            let applyAction = true;
+            if (typeof opts.action === 'string' && opts.action !== 'absThis' && opts.action !== 'padTarget' &&
+                opts.action !== 'padThis') {
+                if (this.#debug) {
+                    this.#log(`updateOptions - unknown action: ${opts.action}`);
+                }
+                applyAction = false;
+            }
+            if (applyAction) {
+                if (opts.action !== this.#action) {
+                    this.#removeStyles();
+                }
+                this.#action = opts.action;
+            }
         }
-        if (CrossRealm.browser.isHTMLElement(this.targetNode))
-            // Apply updates to stored options object.
-            this.#options = { ...this.#options, ...options };
+        if (typeof opts.parent === 'boolean' || isObject(opts.parent)) {
+            this.#parent = opts.parent;
+        }
+        if (opts.sides !== void 0) {
+            this.#removeStyles();
+            this.#sides = this.#normalizeSides(opts.sides);
+        }
+        if (opts.store === void 0 || isMinimalWritableStore(opts.store)) {
+            this.#store = opts.store;
+        }
         // Always recompute the effective target node.
-        const newTarget = this.#resolveParentTarget(node, this.parent);
-        if (newTarget !== this.targetNode) {
-            this.#removePadding(this.targetNode);
+        const newTarget = this.#resolveParentTarget(this.#parent);
+        if (newTarget !== this.#targetNode) {
+            this.#removeStyles();
         }
-        this.targetNode = newTarget;
+        this.#targetNode = newTarget;
+        this.updateConstraints();
     }
+    /**
+     * Updates visual edge constraint calculation.
+     */
     updateConstraints() {
-        if (this.sides === void 0 || this.sides?.disabled || this.targetNode === null) {
+        if (this.#targetNode === null) {
             return;
         }
-        const { top, right, bottom, left } = StyleMetric.getVisualEdgeInsets(this.targetNode);
-        if (this.sides.all) {
-            this.targetNode.style.padding = `${top}px ${right}px ${bottom}px ${left}px`;
+        if (this.#debug) {
+            this.#log(`updateConstraints - target node: `, this.#targetNode);
         }
-        else {
-            if (this.sides.top) {
-                this.targetNode.style.paddingTop = `${top}px`;
-            }
-            if (this.sides.right) {
-                this.targetNode.style.paddingRight = `${right}px`;
-            }
-            if (this.sides.bottom) {
-                this.targetNode.style.paddingBottom = `${bottom}px`;
-            }
-            if (this.sides.left) {
-                this.targetNode.style.paddingLeft = `${left}px`;
+        const constraints = StyleMetric.getVisualEdgeInsets(this.#targetNode);
+        if (this.#debug) {
+            this.#log(`updateConstraints - new visual edge insets: `, constraints);
+        }
+        if (isMinimalWritableStore(this.#store)) {
+            // Usually avoiding `get` is best practice, but in this case this isn't triggered often, so evaluate existing
+            // store value before triggering an update.
+            const current = get(this.#store);
+            if (current?.top !== constraints.top || current?.right !== constraints.right ||
+                current?.bottom !== constraints.bottom || current?.left !== constraints.left) {
+                this.#store.set(constraints);
             }
         }
+        this.#applyStyles(constraints);
     }
     // Internal implementation ----------------------------------------------------------------------------------------
     /**
-     * Remove padding from target node.
+     * Applies styles to target node.
+     *
+     * @param constraints - Constraints to apply.
      */
-    #removePadding(targetNode) {
-        if (!CrossRealm.browser.isHTMLElement(targetNode)) {
-            return;
+    #applyStyles(constraints) {
+        if (this.#action === 'padTarget' || this.#action === 'padThis') {
+            const el = this.#action === 'padTarget' ? this.#targetNode : this.#actionNode;
+            if (!CrossRealm.browser.isHTMLElement(el) || this.#sides.disabled) {
+                return;
+            }
+            if (this.#debug) {
+                this.#log(`#applyStyles (${this.#action}) - element: `, el);
+            }
+            if (this.#sides.all) {
+                el.style.padding =
+                    `${constraints.top}px ${constraints.right}px ${constraints.bottom}px ${constraints.left}px`;
+            }
+            else {
+                if (this.#sides.top) {
+                    el.style.paddingTop = `${constraints.top}px`;
+                }
+                if (this.#sides.right) {
+                    el.style.paddingRight = `${constraints.right}px`;
+                }
+                if (this.#sides.bottom) {
+                    el.style.paddingBottom = `${constraints.bottom}px`;
+                }
+                if (this.#sides.left) {
+                    el.style.paddingLeft = `${constraints.left}px`;
+                }
+            }
         }
-        targetNode.style.padding = '';
-        targetNode.style.paddingTop = '';
-        targetNode.style.paddingRight = '';
-        targetNode.style.paddingBottom = '';
-        targetNode.style.paddingLeft = '';
+        else if (this.#action === 'absThis') {
+            const el = this.#actionNode;
+            if (!this.#sides.disabled) {
+                if (this.#debug) {
+                    this.#log(`#applyStyles (absThis) - element: `, el);
+                }
+                el.style.top = `${constraints.top}px`;
+                el.style.left = `${constraints.left}px`;
+                el.style.height = `calc(100% - ${constraints.top}px - ${constraints.bottom}px)`;
+                el.style.width = `calc(100% - ${constraints.left}px - ${constraints.right}px)`;
+                el.style.position = 'absolute';
+            }
+        }
+    }
+    /**
+     * @param message - Log message to post.
+     *
+     * @param [obj] - Object to log.
+     */
+    #log(message, obj = void 0) {
+        console.log(`[TRL] applyVisualEdgeInsets - ${message}`, obj);
+    }
+    /**
+     * Remove styles from target node.
+     */
+    #removeStyles() {
+        if (this.#action === 'padTarget' || this.#action === 'padThis') {
+            const el = this.#action === 'padTarget' ? this.#targetNode : this.#actionNode;
+            if (!CrossRealm.browser.isHTMLElement(el)) {
+                return;
+            }
+            if (this.#debug) {
+                this.#log(`#removeStyles (${this.#action}) - element: `, el);
+            }
+            if (this.#sides.all) {
+                el.style.padding = '';
+            }
+            else {
+                if (this.#sides.top)
+                    el.style.paddingTop = '';
+                if (this.#sides.right)
+                    el.style.paddingRight = '';
+                if (this.#sides.bottom)
+                    el.style.paddingBottom = '';
+                if (this.#sides.left)
+                    el.style.paddingLeft = '';
+            }
+        }
+        else if (this.#action === 'absThis') {
+            const el = this.#actionNode;
+            if (this.#debug) {
+                this.#log(`#removeStyles (absThis) - element: `, el);
+            }
+            el.style.top = '';
+            el.style.left = '';
+            el.style.height = '';
+            el.style.width = '';
+            el.style.position = '';
+        }
     }
     /**
      * Normalize the `parent` option into a meaningful HTMLElement.
      */
-    #resolveParentTarget(node, parent) {
+    #resolveParentTarget(parent) {
         if (parent === void 0 || parent === false) {
-            return node;
+            return this.#actionNode;
         }
         if (parent === true) {
-            return node.parentElement ?? node;
+            return this.#actionNode.parentElement ?? this.#actionNode;
         }
         // Parent is a `FindParentOptions` object.
-        return isObject(parent) ? findParentElement(node, parent) ?? node : node;
+        return isObject(parent) ? findParentElement(this.#actionNode, parent) ?? this.#actionNode : this.#actionNode;
     }
     /**
      * Normalize the `sides` option into a full boolean mask.
@@ -263,5 +364,5 @@ class InternalPadState {
     }
 }
 
-export { absToVisualEdgeInsets, applyStyles, padToVisualEdgeInsets };
+export { applyStyles, applyVisualEdgeInsets };
 //# sourceMappingURL=index.js.map

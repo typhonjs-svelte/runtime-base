@@ -1071,8 +1071,10 @@ class StyleMetric {
                 tokensWidth[i] = tokensSlice[i];
             }
         }
-        const refW = (Number.isFinite(offsetWidth) ? offsetWidth : el.offsetWidth);
-        const refH = (Number.isFinite(offsetHeight) ? offsetHeight : el.offsetHeight);
+        const refW = (Number.isFinite(offsetWidth) ? offsetWidth :
+            el.offsetWidth ?? 0);
+        const refH = (Number.isFinite(offsetHeight) ? offsetHeight :
+            el.offsetHeight ?? 0);
         if (isObject(output)) {
             try {
                 output.top = this.#resolveBorderWidth(tokensWidth[0], parseFloat(computedStyle.borderTopWidth), refH);
@@ -1081,7 +1083,7 @@ class StyleMetric {
                 output.left = this.#resolveBorderWidth(tokensWidth[3], parseFloat(computedStyle.borderLeftWidth), refW);
             }
             catch (err) {
-                console.error(`[TRL] StyleMetric.getPaintedBorderWidth error: \n`, err);
+                console.error(`[TRL] StyleMetric.getVisualEdgeInsets error: \n`, err);
                 output.top = 0;
                 output.right = 0;
                 output.bottom = 0;
@@ -1098,7 +1100,7 @@ class StyleMetric {
                 };
             }
             catch (err) {
-                console.error(`[TRL] StyleMetric.getPaintedBorderWidth error: \n`, err);
+                console.error(`[TRL] StyleMetric.getVisualEdgeInsets error: \n`, err);
                 output = {
                     top: 0,
                     right: 0,

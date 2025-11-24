@@ -106,7 +106,7 @@ declare function ensureNonEmptyAsyncIterable<T>(
  *
  * @param value - The value to inspect.
  *
- * @returns A restartable iterable containing all values, or `false` if the input was not iterable or contained no
+ * @returns A restartable iterable containing all values, or `undefined` if the input was not iterable or contained no
  *          items.
  *
  * @example
@@ -198,7 +198,9 @@ declare function hasSetter<T extends object, K extends keyof T>(
  */
 declare function isAsyncIterable<T>(value: unknown): value is AsyncIterable<T>;
 /**
- * Tests for whether an object is iterable.
+ * Tests for whether an _object_ is iterable.
+ *
+ * Note: Excludes `strings` in iterable test even though they are technically iterable.
  *
  * @param value - Any value.
  *
