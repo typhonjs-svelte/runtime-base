@@ -41,7 +41,7 @@
  *   import { inlineSvg } from '#runtime/svelte/action/inline-svg';
  * </script>
  *
- * <svg use:inlineSvg={"http://example.com/icon.svg"}></svg>
+ * <svg use:inlineSvg={'http://example.com/icon.svg'}></svg>
  * ```
  *
  * @example
