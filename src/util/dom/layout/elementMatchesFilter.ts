@@ -1,6 +1,6 @@
 import {
    ensureNonEmptyIterable,
-   isObject }                 from '#runtime/util/object';
+   assertObject }                 from '#runtime/util/object';
 
 import { CrossRealm }         from '#runtime/util/realm';
 
@@ -16,7 +16,7 @@ export function elementMatchesFilter(el: Element, options: ElementMatchesOptions
 {
    if (!CrossRealm.browser.isElement(el)) { return false; }
 
-   if (!isObject(options)) { throw new TypeError(`'options' is not an object.`); }
+   assertObject(options, `'options' is not an object.`);
 
    // Unpack options.
    const {

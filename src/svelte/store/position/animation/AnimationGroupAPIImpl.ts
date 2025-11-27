@@ -53,11 +53,11 @@ abstract class AnimationGroupAPIImpl
    {
       if (!isObject(positionable)) { return null; }
 
-      if (positionable.animate instanceof AnimationAPIImpl) { return positionable as TJSPosition; }
+      if ((positionable as TJSPosition).animate instanceof AnimationAPIImpl) { return positionable as TJSPosition; }
 
-      if ((positionable.position as any)?.animate instanceof AnimationAPIImpl)
+      if ((positionable as TJSPosition.Positionable).position?.animate instanceof AnimationAPIImpl)
       {
-         return positionable.position as TJSPosition;
+         return (positionable as TJSPosition.Positionable).position;
       }
 
       return null;
@@ -287,7 +287,8 @@ abstract class AnimationGroupAPIImpl
       let actualFromData: Data.TJSPositionDataRelative |
        AnimationAPI.GroupDataCallback = fromData;
 
-      let actualOptions: AnimationAPI.TweenOptions = isObject(options) ? options : void 0;
+      let actualOptions: AnimationAPI.TweenOptions = isObject(options) && typeof options !== 'function' ? options :
+       void 0;
 
       if (isIterable(positionGroup))
       {
@@ -456,7 +457,8 @@ abstract class AnimationGroupAPIImpl
       let actualFromData: Data.TJSPositionDataRelative = fromData;
       let actualToData: Data.TJSPositionDataRelative = toData;
 
-      let actualOptions: AnimationAPI.TweenOptions = isObject(options) ? options : void 0;
+      let actualOptions: AnimationAPI.TweenOptions = isObject(options) && typeof options !== 'function' ? options :
+       void 0;
 
       if (isIterable(positionGroup))
       {
@@ -646,7 +648,8 @@ abstract class AnimationGroupAPIImpl
 
       let actualToData: Data.TJSPositionDataRelative = toData;
 
-      let actualOptions: AnimationAPI.TweenOptions = isObject(options) ? options : void 0;
+      let actualOptions: AnimationAPI.TweenOptions = isObject(options) && typeof options !== 'function' ? options :
+       void 0;
 
       if (isIterable(positionGroup))
       {
@@ -794,7 +797,8 @@ abstract class AnimationGroupAPIImpl
 
       const callbackOptions = { index, position: void 0, entry: void 0 };
 
-      let actualOptions: AnimationAPI.QuickTweenOptions = isObject(options) ? options : void 0;
+      let actualOptions: AnimationAPI.QuickTweenOptions = isObject(options) && typeof options !== 'function' ? options :
+       void 0;
 
       if (isIterable(positionGroup))
       {

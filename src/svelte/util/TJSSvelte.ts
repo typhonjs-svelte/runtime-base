@@ -98,7 +98,7 @@ declare namespace TJSSvelte {
           *
           * @returns Whether basic duck typing succeeds.
           */
-         isComponent(comp: unknown): boolean;
+         isComponent(comp: unknown): comp is SvelteComponent;
 
          /**
           * Provides basic duck typing to determine if the provided object is a HMR ProxyComponent instance or class.

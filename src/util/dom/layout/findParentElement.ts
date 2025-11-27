@@ -1,11 +1,11 @@
-import { isObject }                    from '#runtime/util/object';
-import { CrossRealm }                  from '#runtime/util/realm';
+import { assertObject }          from '#runtime/util/object';
+import { CrossRealm }            from '#runtime/util/realm';
 
-import { getStackingContext }          from './getStackingContext';
+import { getStackingContext }    from './getStackingContext';
 
 import {
    type ElementMatchesOptions,
-   elementMatchesFilter }              from './elementMatchesFilter';
+   elementMatchesFilter }        from './elementMatchesFilter';
 
 /**
  * Provides a data defined mechanism to walk up the DOM parent element chain and return the first ancestor that
@@ -26,10 +26,8 @@ export function findParentElement(el: Element, options: FindParentOptions = {}):
    {
       return el.parentElement;
    }
-   else if (!isObject(options))
-   {
-      throw new TypeError(`'options' is not an object.`);
-   }
+
+   assertObject(options, `'options' is not an object.`);
 
    const {
       stackingContext,

@@ -22,7 +22,7 @@ abstract class APIUtil
     *
     * @returns Whether basic duck typing succeeds.
     */
-   static isComponent(comp: unknown): boolean
+   static isComponent(comp: unknown): comp is SvelteComponent
    {
       if (comp === null || comp === void 0 || typeof comp !== 'function') { return false; }
 
