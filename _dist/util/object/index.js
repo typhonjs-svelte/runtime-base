@@ -58,6 +58,38 @@ function klona(x) {
  * @packageDocumentation
  */
 /**
+ * Asserts that a value is an object, not null, and not an array.
+ *
+ * Unlike {@link isObject}, this function does **not** narrow the value to a generic indexable structure. Instead, it
+ * preserves the **existing** static type of the variable. This makes it ideal for validating option objects or
+ * interface-based inputs where all properties may be optional.
+ *
+ * Use this function when:
+ * ```
+ *   - You expect a value to be an object at runtime, **and**
+ *   - You want to keep its compile-time type intact after validation.
+ * ```
+ *
+ * @example
+ * interface Options { flag?: boolean; value?: number; }
+ *
+ * function run(opts: Options = {}) {
+ *   assertObject(opts, `'opts' is not an object.`);  // `opts` remains `Options`, not widened or reduced.
+ *   opts.value;                                      // Fully typed access remains available.
+ * }
+ *
+ * @throws {TypeError} if the value is null, non-object, or an array.
+ *
+ * @param value - The value to validate.
+ *
+ * @param errorMsg - Optional message used for the thrown TypeError.
+ */
+function assertObject(value, errorMsg = 'Expected an object.') {
+    if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+        throw new TypeError(errorMsg);
+    }
+}
+/**
  * Freezes all entries traversed that are objects including entries in arrays.
  *
  * @param data - An object or array.
@@ -429,7 +461,7 @@ function hasSetter(object, accessor) {
     return false;
 }
 /**
- * Tests for whether an object is async iterable.
+ * Tests for whether an _object_ is async iterable.
  *
  * @param value - Any value.
  *
@@ -450,31 +482,42 @@ function isAsyncIterable(value) {
 function isIterable(value) {
     return value !== null && typeof value === 'object' && typeof value[Symbol.iterator] === 'function';
 }
-/**
- * Tests for whether object is not null, typeof object, and not an array.
- *
- * @param value - Any value.
- *
- * @returns Is it an object.
- */
 function isObject(value) {
     return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
-/**
- * Tests for whether the given value is a plain object.
- *
- * An object is plain if it is created by either: `{}`, `new Object()` or `Object.create(null)`.
- *
- * @param value - Any value
- *
- * @returns Is it a plain object.
- */
 function isPlainObject(value) {
     if (Object.prototype.toString.call(value) !== '[object Object]') {
         return false;
     }
     const prototype = Object.getPrototypeOf(value);
     return prototype === null || prototype === Object.prototype;
+}
+/**
+ * Checks whether a value is a generic key / value object / `Record<string, unknown>`.
+ *
+ * A record in this context means:
+ *   - `typeof value === 'object'`
+ *   - value is not `null`
+ *   - value is not an array
+ *
+ * Unlike {@link isObject}, this function does **not** attempt to preserve the original object type. All successful
+ * results narrow to `Record<string, unknown>` making the returned value safe for key-indexed access but without any
+ * knowledge of property names or expected value types.
+ *
+ * This is useful when processing untyped JSON-like data structures, dynamic configuration blocks, response bodies,
+ * or any case where a dictionary-style object is expected rather than a typed interface value.
+ *
+ * Contrast With:
+ * - {@link isObject} → preserves known object types where possible; use when typing should remain intact.
+ * - {@link isPlainObject} → narrows to plain JSON objects only (no prototypes, no class instances).
+ * - `isRecord()` → always narrows to a dictionary-style record for keyed lookup.
+ *
+ * @param value - Any value to test.
+ *
+ * @returns True if the value is an object that is neither null nor an array.
+ */
+function isRecord(value) {
+    return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 /**
  * Safely returns keys on an object or an empty array if not an object.
@@ -723,5 +766,5 @@ function safeSet(data, accessor, value, { operation = 'set', createMissing = fal
     return result;
 }
 
-export { deepFreeze, deepMerge, deepSeal, ensureNonEmptyAsyncIterable, ensureNonEmptyIterable, hasAccessor, hasGetter, hasPrototype, hasSetter, isAsyncIterable, isIterable, isObject, isPlainObject, klona, objectKeys, objectSize, safeAccess, safeEqual, safeKeyIterator, safeSet };
+export { assertObject, deepFreeze, deepMerge, deepSeal, ensureNonEmptyAsyncIterable, ensureNonEmptyIterable, hasAccessor, hasGetter, hasPrototype, hasSetter, isAsyncIterable, isIterable, isObject, isPlainObject, isRecord, klona, objectKeys, objectSize, safeAccess, safeEqual, safeKeyIterator, safeSet };
 //# sourceMappingURL=index.js.map

@@ -1,4 +1,4 @@
-import { isObject, ensureNonEmptyIterable } from '@typhonjs-svelte/runtime-base/util/object';
+import { assertObject, ensureNonEmptyIterable } from '@typhonjs-svelte/runtime-base/util/object';
 import { CrossRealm } from '@typhonjs-svelte/runtime-base/util/realm';
 
 /**
@@ -122,9 +122,7 @@ function elementMatchesFilter(el, options = {}) {
     if (!CrossRealm.browser.isElement(el)) {
         return false;
     }
-    if (!isObject(options)) {
-        throw new TypeError(`'options' is not an object.`);
-    }
+    assertObject(options, `'options' is not an object.`);
     // Unpack options.
     const { excludeClasses, includeClasses, excludeIds, includeIds, selector, excludeSelector, predicate } = options;
     const classList = el.classList;
@@ -203,9 +201,7 @@ function findParentElement(el, options = {}) {
     if (options === void 0) {
         return el.parentElement;
     }
-    else if (!isObject(options)) {
-        throw new TypeError(`'options' is not an object.`);
-    }
+    assertObject(options, `'options' is not an object.`);
     const { stackingContext, stopAt, maxDepth } = options;
     if (typeof stackingContext === 'boolean' && stackingContext) {
         const activeWindow = CrossRealm.browser.getWindow(el);

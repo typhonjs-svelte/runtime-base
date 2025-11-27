@@ -122,11 +122,11 @@ class ArrayObjectStore {
         if (typeof manualUpdate !== 'boolean') {
             throw new TypeError(`'manualUpdate' is not a boolean.`);
         }
-        if (!isMinimalWritableStore(StoreClass.prototype)) {
-            throw new TypeError(`'StoreClass' is not a minimal writable store constructor.`);
-        }
         if (!hasGetter(StoreClass.prototype, 'id')) {
             throw new TypeError(`'StoreClass' does not have a getter accessor for 'id' property.`);
+        }
+        if (!isMinimalWritableStore(StoreClass.prototype)) {
+            throw new TypeError(`'StoreClass' is not a minimal writable store constructor.`);
         }
         this.#manualUpdate = manualUpdate;
         this.#StoreClass = StoreClass;

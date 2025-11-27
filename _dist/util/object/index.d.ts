@@ -13,6 +13,34 @@ declare function klona<T>(input: T): T;
  */
 
 /**
+ * Asserts that a value is an object, not null, and not an array.
+ *
+ * Unlike {@link isObject}, this function does **not** narrow the value to a generic indexable structure. Instead, it
+ * preserves the **existing** static type of the variable. This makes it ideal for validating option objects or
+ * interface-based inputs where all properties may be optional.
+ *
+ * Use this function when:
+ * ```
+ *   - You expect a value to be an object at runtime, **and**
+ *   - You want to keep its compile-time type intact after validation.
+ * ```
+ *
+ * @example
+ * interface Options { flag?: boolean; value?: number; }
+ *
+ * function run(opts: Options = {}) {
+ *   assertObject(opts, `'opts' is not an object.`);  // `opts` remains `Options`, not widened or reduced.
+ *   opts.value;                                      // Fully typed access remains available.
+ * }
+ *
+ * @throws {TypeError} if the value is null, non-object, or an array.
+ *
+ * @param value - The value to validate.
+ *
+ * @param errorMsg - Optional message used for the thrown TypeError.
+ */
+declare function assertObject(value: unknown, errorMsg?: string): asserts value is object;
+/**
  * Freezes all entries traversed that are objects including entries in arrays.
  *
  * @param data - An object or array.
@@ -190,7 +218,7 @@ declare function hasSetter<T extends object, K extends keyof T>(
   [P in K]: T[P];
 };
 /**
- * Tests for whether an object is async iterable.
+ * Tests for whether an _object_ is async iterable.
  *
  * @param value - Any value.
  *
@@ -207,24 +235,102 @@ declare function isAsyncIterable<T>(value: unknown): value is AsyncIterable<T>;
  * @returns Whether object is iterable.
  */
 declare function isIterable<T>(value: unknown): value is Iterable<T>;
+declare function isObject<T extends object>(value: T): value is T;
 /**
- * Tests for whether object is not null, typeof object, and not an array.
+ * Runtime check for whether a value is an object:
+ * ```
+ * - typeof === 'object'
+ * - not null
+ * - not an array
+ * ```
  *
- * @param value - Any value.
+ * This function performs **type narrowing**. If the check succeeds, TypeScript refines the type of `value` to `T`,
+ * allowing known object types (interfaces, classes, mapped structures) to retain their original shape.
  *
- * @returns Is it an object.
+ * Type Behavior:
+ * - When called with a value that already has a specific object type (interface or shaped object), that type is
+ *   preserved after narrowing. Property access remains fully typed.
+ *
+ * - When called with `unknown`, `any`, or an untyped object literal, `T` becomes `object`, ensuring only that a
+ *   non-null object exists. No indexing or deep property inference is provided in this case.
+ *
+ * In other words:
+ * ```
+ * - Known object type   → remains that type (preferred behavior)
+ * - Unknown / untyped   → narrows only to `object`
+ * ```
+ *
+ * Use this when you want runtime object validation **and** want to preserve typing when a value is already known to be
+ * a specific object type. If you instead need to **retain** the declared type regardless of narrowing, use
+ * {@link assertObject}. If you need indexable key / value access use a dedicated record check such as
+ * {@link isRecord} or {@link isPlainObject}.
+ *
+ * @param value - Any value to check.
+ *
+ * @returns True if the value is a non-null object and not an array.
  */
-declare function isObject<T extends object>(value: T | unknown): value is T;
+declare function isObject(value: unknown): value is object;
+declare function isPlainObject<T extends object>(value: T): value is T;
 /**
- * Tests for whether the given value is a plain object.
+ * Determines whether a value is a **plain** object.
  *
- * An object is plain if it is created by either: `{}`, `new Object()` or `Object.create(null)`.
+ * A plain object is one whose prototype is either:
+ *   - `Object.prototype` (created via `{}` or `new Object()`)
+ *   - `null` (created via `Object.create(null)`)
  *
- * @param value - Any value
+ * This excludes arrays, functions, class instances, DOM objects, and any object with a custom prototype. In other
+ * words, this function detects JSON-like dictionary objects rather than structural or callable object types.
  *
- * @returns Is it a plain object.
+ * Type Behavior:
+ * - If the input already has a known object type `T`, that type is preserved after narrowing.
+ * - If the input is `unknown` or untyped the result narrows to `Record<string, unknown>` allowing safe keyed access.
+ *
+ * Useful when validating configuration objects, cloning or merging data, performing deep equality, or working with
+ * structured JSON where non-plain / prototype values would be considered invalid.
+ *
+ * @example
+ * const a = { x: 1 };
+ * isPlainObject(a);   // true
+ *
+ * class Foo {}
+ * isPlainObject(new Foo()); // false
+ *
+ * @example
+ * let data: unknown = getValue();
+ * if (isPlainObject(data)) {
+ *   data.foo;         // ok — key is `unknown`, but structure is guaranteed.
+ * }
+ *
+ * @param value - Any value to evaluate.
+ *
+ * @returns True if the value is a plain object with no special prototype.
  */
-declare function isPlainObject<T extends object>(value: unknown): value is T;
+declare function isPlainObject(value: unknown): value is Record<string, unknown>;
+/**
+ * Checks whether a value is a generic key / value object / `Record<string, unknown>`.
+ *
+ * A record in this context means:
+ *   - `typeof value === 'object'`
+ *   - value is not `null`
+ *   - value is not an array
+ *
+ * Unlike {@link isObject}, this function does **not** attempt to preserve the original object type. All successful
+ * results narrow to `Record<string, unknown>` making the returned value safe for key-indexed access but without any
+ * knowledge of property names or expected value types.
+ *
+ * This is useful when processing untyped JSON-like data structures, dynamic configuration blocks, response bodies,
+ * or any case where a dictionary-style object is expected rather than a typed interface value.
+ *
+ * Contrast With:
+ * - {@link isObject} → preserves known object types where possible; use when typing should remain intact.
+ * - {@link isPlainObject} → narrows to plain JSON objects only (no prototypes, no class instances).
+ * - `isRecord()` → always narrows to a dictionary-style record for keyed lookup.
+ *
+ * @param value - Any value to test.
+ *
+ * @returns True if the value is an object that is neither null nor an array.
+ */
+declare function isRecord(value: unknown): value is Record<string, unknown>;
 /**
  * Safely returns keys on an object or an empty array if not an object.
  *
@@ -377,6 +483,7 @@ type DeepMerge<T extends object, U extends object[]> = U extends [infer First, .
   : T;
 
 export {
+  assertObject,
   deepFreeze,
   deepMerge,
   deepSeal,
@@ -390,6 +497,7 @@ export {
   isIterable,
   isObject,
   isPlainObject,
+  isRecord,
   klona,
   objectKeys,
   objectSize,

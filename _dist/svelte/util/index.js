@@ -1,4 +1,4 @@
-import { isObject } from '@typhonjs-svelte/runtime-base/util/object';
+import { isRecord, assertObject } from '@typhonjs-svelte/runtime-base/util/object';
 import { CrossRealm } from '@typhonjs-svelte/runtime-base/util/realm';
 import { group_outros, transition_out, check_outros } from 'svelte/internal';
 
@@ -25,7 +25,7 @@ class APIConfig {
      * @throws {TypeError}  Any validation error when `raiseException` is enabled.
      */
     static isConfig(config, { raiseException = false } = {}) {
-        if (!isObject(config)) {
+        if (!isRecord(config)) {
             if (raiseException) {
                 throw new TypeError(`TJSSvelte.config.isConfig error: 'config' is not an object.`);
             }
@@ -54,7 +54,7 @@ class APIConfig {
      * @throws {TypeError}  Any validation error when `raiseException` is enabled.
      */
     static isConfigEmbed(config, { raiseException = false } = {}) {
-        if (!isObject(config)) {
+        if (!isRecord(config)) {
             if (raiseException) {
                 throw new TypeError(`TJSSvelte.config.isConfigEmbed error: 'config' is not an object.`);
             }
@@ -66,7 +66,7 @@ class APIConfig {
             }
             return false;
         }
-        if (config.props !== void 0 && !isObject(config.props)) {
+        if (config.props !== void 0 && !isRecord(config.props)) {
             if (raiseException) {
                 throw new TypeError(`TJSSvelte.config.isConfigEmbed error: 'config.props' is not an object.`);
             }
@@ -93,14 +93,9 @@ class APIConfig {
      *          supported by Svelte.
      */
     static parseConfig(config, { contextExternal = false, thisArg = void 0 } = {}) {
-        if (!isObject(config)) {
-            throw new TypeError(`TJSSvelte.config.parseConfig - 'config' is not an object:\n${JSON.stringify(config)}.`);
-        }
+        assertObject(config, `TJSSvelte.config.parseConfig - 'config' is not an object:\n${JSON.stringify(config)}.`);
         if (!TJSSvelte.util.isComponent(config.class)) {
             throw new TypeError(`TJSSvelte.config.parseConfig - 'class' is not a Svelte component constructor for config:\n${JSON.stringify(config)}.`);
-        }
-        if (config.hydrate !== void 0 && typeof config.hydrate !== 'boolean') {
-            throw new TypeError(`TJSSvelte.config.parseConfig - 'hydrate' is not a boolean for config:\n${JSON.stringify(config)}.`);
         }
         if (config.intro !== void 0 && typeof config.intro !== 'boolean') {
             throw new TypeError(`TJSSvelte.config.parseConfig - 'intro' is not a boolean for config:\n${JSON.stringify(config)}.`);
@@ -113,7 +108,7 @@ class APIConfig {
             !CrossRealm.browser.isShadowRoot(config.anchor) && !CrossRealm.browser.isDocumentFragment(config.anchor)) {
             throw new TypeError(`TJSSvelte.config.parseConfig - 'anchor' is not a string, Element for config:\n${JSON.stringify(config)}.`);
         }
-        if (config.context !== void 0 && typeof config.context !== 'function' && !isObject(config.context)) {
+        if (config.context !== void 0 && typeof config.context !== 'function' && !isRecord(config.context)) {
             throw new TypeError(`TJSSvelte.config.parseConfig - 'context' is not a function or object for config:\n${JSON.stringify(config)}.`);
         }
         const svelteConfig = { ...config };
@@ -124,14 +119,14 @@ class APIConfig {
             const contextFunc = svelteConfig.context;
             delete svelteConfig.context;
             const result = contextFunc.call(thisArg);
-            if (isObject(result)) {
+            if (isRecord(result)) {
                 context = { ...result };
             }
             else {
                 throw new Error(`TJSSvelte.config.parseConfig - 'context' is a function that did not return an object for config:\n${JSON.stringify(config)}`);
             }
         }
-        else if (isObject(svelteConfig.context)) {
+        else if (isRecord(svelteConfig.context)) {
             context = svelteConfig.context;
             delete svelteConfig.context;
         }
@@ -164,14 +159,14 @@ class APIConfig {
         // If an object is returned set it as the props.
         if (typeof props === 'function') {
             const result = props.call(thisArg);
-            if (isObject(result)) {
+            if (isRecord(result)) {
                 return result;
             }
             else {
                 throw new Error(`TJSSvelte.config.parseConfig - 'props' is a function that did not return an object for config:\n${JSON.stringify(config)}`);
             }
         }
-        else if (isObject(props)) {
+        else if (isRecord(props)) {
             return props;
         }
         else if (props !== void 0) {

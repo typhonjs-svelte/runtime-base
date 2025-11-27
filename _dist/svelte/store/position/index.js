@@ -3024,7 +3024,8 @@ class AnimationGroupAPIImpl {
             callbackOptions = { index, position: void 0, entry: void 0 };
         }
         let actualFromData = fromData;
-        let actualOptions = isObject(options) ? options : void 0;
+        let actualOptions = isObject(options) && typeof options !== 'function' ? options :
+            void 0;
         if (isIterable(positionGroup)) {
             for (const entry of positionGroup) {
                 index++;
@@ -3146,7 +3147,8 @@ class AnimationGroupAPIImpl {
         }
         let actualFromData = fromData;
         let actualToData = toData;
-        let actualOptions = isObject(options) ? options : void 0;
+        let actualOptions = isObject(options) && typeof options !== 'function' ? options :
+            void 0;
         if (isIterable(positionGroup)) {
             for (const entry of positionGroup) {
                 index++;
@@ -3282,7 +3284,8 @@ class AnimationGroupAPIImpl {
             callbackOptions = { index, position: void 0, entry: void 0 };
         }
         let actualToData = toData;
-        let actualOptions = isObject(options) ? options : void 0;
+        let actualOptions = isObject(options) && typeof options !== 'function' ? options :
+            void 0;
         if (isIterable(positionGroup)) {
             for (const entry of positionGroup) {
                 index++;
@@ -3386,7 +3389,8 @@ class AnimationGroupAPIImpl {
         let index = -1;
         const hasOptionCallback = typeof options === 'function';
         const callbackOptions = { index, position: void 0, entry: void 0 };
-        let actualOptions = isObject(options) ? options : void 0;
+        let actualOptions = isObject(options) && typeof options !== 'function' ? options :
+            void 0;
         if (isIterable(positionGroup)) {
             for (const entry of positionGroup) {
                 index++;
