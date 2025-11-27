@@ -571,10 +571,11 @@ const rollupConfigs = [
    },
    {
       input: {
-         input: 'src/svelte/store/util/index.js',
+         input: 'src/svelte/store/util/index.ts',
          plugins: [
             importsExternal(),
             resolve(resolveOptions),
+            typescript({ tsconfig: './src/svelte/store/util/tsconfig.json' }),
             generateDTS.plugin(dtsPluginOptions)
          ]
       },
