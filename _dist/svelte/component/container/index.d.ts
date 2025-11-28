@@ -1,6 +1,7 @@
 import * as _typhonjs_svelte_runtime_base_svelte_util from '@typhonjs-svelte/runtime-base/svelte/util';
 import * as _typhonjs_svelte_runtime_base_svelte_store_util from '@typhonjs-svelte/runtime-base/svelte/store/util';
 import * as _typhonjs_svelte_runtime_base_svelte_action_dom_style from '@typhonjs-svelte/runtime-base/svelte/action/dom/style';
+import * as svelte_action from 'svelte/action';
 import { SvelteComponent } from 'svelte';
 
 /**
@@ -137,19 +138,25 @@ declare namespace TJSScrollContainer {
      *
      * @defaultValue `false`
      */
+    gutterStable?: boolean;
+    /**
+     * @type {boolean}
+     *
+     * @defaultValue `false`
+     */
     allowTabFocus?: boolean;
+    /**
+     * External dynamic action to attach to scroll container element.
+     *
+     * @type {import('svelte/action').Action}
+     */
+    attach?: svelte_action.Action;
     /**
      * @type {boolean}
      *
      * @defaultValue `false`
      */
     keyPropagate?: boolean;
-    /**
-     * @type {boolean}
-     *
-     * @defaultValue `false`
-     */
-    gutterStable?: boolean;
     /** @type {(data: { event: KeyboardEvent | PointerEvent }) => void} */
     onContextMenu?: (data: { event: KeyboardEvent | PointerEvent }) => void;
     /**
@@ -174,6 +181,10 @@ type TJSScrollContainerData = {
    * When true, the scroll container is keyboard navigation focusable.
    */
   allowTabFocus?: boolean;
+  /**
+   * Optional Svelte action to attach to scroll container element.
+   */
+  attach?: svelte_action.Action;
   /**
    * By default, the scroll container stops propagation of all keys that are
    * related to keyboard scrolling accessibility. When true, the scroll container will not capture scrolling key events.

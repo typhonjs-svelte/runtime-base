@@ -6,6 +6,8 @@ export { default as TJSScrollContainer }     from './TJSScrollContainer.svelte';
  *
  * @property {boolean} [allowTabFocus=false] When true, the scroll container is keyboard navigation focusable.
  *
+ * @property {import('svelte/action').Action} [attach] Optional Svelte action to attach to scroll container element.
+ *
  * @property {boolean} [keyPropagate=false] By default, the scroll container stops propagation of all keys that are
  * related to keyboard scrolling accessibility. When true, the scroll container will not capture scrolling key events.
  *

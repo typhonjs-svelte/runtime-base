@@ -15,6 +15,7 @@
    import {
       applyStyles,
       applyVisualEdgeInsets }          from '@typhonjs-svelte/runtime-base/svelte/action/dom/style';
+   import { dynamicAction }            from '@typhonjs-svelte/runtime-base/svelte/action/util';
    import { isMinimalWritableStore }   from '@typhonjs-svelte/runtime-base/svelte/store/util';
    import { TJSSvelte }                from '@typhonjs-svelte/runtime-base/svelte/util';
    import { isObject }                 from '@typhonjs-svelte/runtime-base/util/object';
@@ -29,6 +30,13 @@
     * @defaultValue `false`
     */
    export let allowTabFocus = void 0;
+
+   /**
+    * External dynamic action to attach to scroll container element.
+    *
+    * @type {import('svelte/action').Action}
+    */
+   export let attach = void 0;
 
    /**
     * @type {boolean}
@@ -70,6 +78,9 @@
    $: allowTabFocus = isObject(container) && typeof container.allowTabFocus === 'boolean' ? container.allowTabFocus :
     typeof allowTabFocus === 'boolean' ? allowTabFocus : false;
 
+   $: attach = isObject(container) && typeof container.attach === 'function' ? container.attach :
+    typeof attach === 'function' ? attach : void 0;
+
    $: keyPropagate = isObject(container) && typeof container.keyPropagate === 'boolean' ? container.keyPropagate :
     typeof keyPropagate === 'boolean' ? keyPropagate : false;
 
@@ -93,6 +104,11 @@
     isObject(styles) ? styles : void 0;
 
    $: svelte = isObject(container) && TJSSvelte.config.isConfigEmbed(container.svelte) ? container.svelte : void 0;
+
+   /**
+    * Pass on some internal state to any attached dynamic action.
+    */
+   $: attachData = { gutterStable };
 
    /** @type {HTMLElement} */
    let containerEl;
@@ -202,6 +218,7 @@
      use:applyScroll={{ scrollLeft, scrollTop }}
      use:applyStyles={styles}
      use:applyVisualEdgeInsets={{ sides: padToVisualEdge, action: 'padTarget', parent: true }}
+     use:dynamicAction={{ action: attach, data: attachData }}
      role=region
      tabindex={allowTabFocus ? 0 : -1}>
    {#if svelte}
