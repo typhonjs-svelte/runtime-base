@@ -1,9 +1,9 @@
 {
   "compilerOptions" : {
-    "lib": ["ES2022", "DOM"],
-    "module": "ES2022",
+    "lib": ["ES2024", "DOM"],
+    "module": "ESNext",
     "moduleResolution" : "Bundler",
-    "target": "ES2022",
+    "target": "ES2024",
     "strict": true
   },
   "exclude": ["node_modules"]
