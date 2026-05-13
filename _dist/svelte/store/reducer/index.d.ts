@@ -1250,16 +1250,15 @@ declare namespace DynReducerHelper {
     /**
      * The returned filter function from `regexObjectQuery` helper.
      */
-    interface regexObjectQuery
-      extends MinimalWritableFn<
-        string,
-        [
-          data: {
-            [key: string]: any;
-          },
-        ],
-        boolean
-      > {}
+    interface regexObjectQuery extends MinimalWritableFn<
+      string,
+      [
+        data: {
+          [key: string]: any;
+        },
+      ],
+      boolean
+    > {}
   }
   /**
    * All available filters.

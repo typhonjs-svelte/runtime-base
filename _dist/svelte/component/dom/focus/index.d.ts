@@ -35,22 +35,19 @@ import { SvelteComponent } from 'svelte';
  *
  */
 declare class TJSFocusIndicator extends SvelteComponent<
-  TJSFocusIndicator.Props,
-  TJSFocusIndicator.Events,
-  TJSFocusIndicator.Slots
+  {
+    absolute?: boolean;
+  },
+  {
+    [evt: string]: CustomEvent<any>;
+  },
+  {}
 > {}
 
 /** Event / Prop / Slot type aliases for {@link TJSFocusIndicator | associated component}. */
 declare namespace TJSFocusIndicator {
   /** Props type alias for {@link TJSFocusIndicator | associated component}. */
-  export type Props = {
-    /**
-     * When true, absolute positioning is enabled.
-     *
-     * @type {boolean}
-     */
-    absolute?: boolean;
-  };
+  export type Props = { absolute?: boolean };
   /** Events type alias for {@link TJSFocusIndicator | associated component}. */
   export type Events = { [evt: string]: CustomEvent<any> };
   /** Slots type alias for {@link TJSFocusIndicator | associated component}. */
@@ -62,17 +59,21 @@ declare namespace TJSFocusIndicator {
  * component as the last child in `elementRoot`.
  *
  */
-declare class TJSFocusWrap extends SvelteComponent<TJSFocusWrap.Props, TJSFocusWrap.Events, TJSFocusWrap.Slots> {}
+declare class TJSFocusWrap extends SvelteComponent<
+  {
+    elementRoot?: HTMLElement;
+    enabled?: boolean;
+  },
+  {
+    [evt: string]: CustomEvent<any>;
+  },
+  {}
+> {}
 
 /** Event / Prop / Slot type aliases for {@link TJSFocusWrap | associated component}. */
 declare namespace TJSFocusWrap {
   /** Props type alias for {@link TJSFocusWrap | associated component}. */
-  export type Props = {
-    /** @type {HTMLElement} */
-    elementRoot?: HTMLElement;
-    /** @type {boolean} */
-    enabled?: boolean;
-  };
+  export type Props = { elementRoot?: HTMLElement; enabled?: boolean };
   /** Events type alias for {@link TJSFocusWrap | associated component}. */
   export type Events = { [evt: string]: CustomEvent<any> };
   /** Slots type alias for {@link TJSFocusWrap | associated component}. */

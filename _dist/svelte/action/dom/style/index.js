@@ -159,6 +159,8 @@ class InternalVisualEdgeState {
         this.#removeStyles();
         this.#actionNode?.dispatchEvent?.(new CustomEvent('tjs-visual-edge-recalculate'));
         this.#targetNode?.dispatchEvent?.(new CustomEvent('tjs-visual-edge-recalculate'));
+        this.#actionNode?.dispatchEvent?.(new CustomEvent('tjs-visual-edge-recalculate-external'));
+        this.#targetNode?.dispatchEvent?.(new CustomEvent('tjs-visual-edge-recalculate-external'));
         // @ts-ignore
         this.#actionNode = null;
         // @ts-ignore
@@ -280,6 +282,8 @@ class InternalVisualEdgeState {
                 el.style.position = 'absolute';
             }
         }
+        this.#actionNode?.dispatchEvent?.(new CustomEvent('tjs-visual-edge-recalculate-external'));
+        this.#targetNode?.dispatchEvent?.(new CustomEvent('tjs-visual-edge-recalculate-external'));
     }
     /**
      * @param message - Log message to post.

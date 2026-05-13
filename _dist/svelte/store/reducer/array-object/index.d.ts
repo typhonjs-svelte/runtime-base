@@ -9,8 +9,7 @@ import { MinimalWritable } from '@typhonjs-svelte/runtime-base/svelte/store/util
  */
 declare abstract class ObjectEntryStore<
   T extends ArrayObjectStore.Data.BaseArrayObject = ArrayObjectStore.Data.BaseArrayObject,
-> implements ArrayObjectStore.Data.BaseObjectEntryStore<T>
-{
+> implements ArrayObjectStore.Data.BaseObjectEntryStore<T> {
   #private;
   /**
    * Invoked by ArrayObjectStore to provide custom duplication. Override this static method in your entry store.

@@ -169,6 +169,49 @@ class ReadonlySvelteSet {
     values() {
         return this.#svelteSet.values();
     }
+    // ES2024 Implementation ------------------------------------------------------------------------------------------
+    /**
+     * @returns a new Set containing all the elements in this Set and also all the elements in the argument.
+     */
+    union(other) {
+        return this.#svelteSet.union(other);
+    }
+    /**
+     * @returns a new Set containing all the elements which are both in this Set and in the argument.
+     */
+    intersection(other) {
+        return this.#svelteSet.intersection(other);
+    }
+    /**
+     * @returns a new Set containing all the elements in this Set which are not also in the argument.
+     */
+    difference(other) {
+        return this.#svelteSet.difference(other);
+    }
+    /**
+     * @returns a new Set containing all the elements which are in either this Set or in the argument, but not in both.
+     */
+    symmetricDifference(other) {
+        return this.#svelteSet.symmetricDifference(other);
+    }
+    /**
+     * @returns a boolean indicating whether all the elements in this Set are also in the argument.
+     */
+    isSubsetOf(other) {
+        return this.#svelteSet.isSubsetOf(other);
+    }
+    /**
+     * @returns a boolean indicating whether all the elements in the argument are also in this Set.
+     */
+    isSupersetOf(other) {
+        return this.#svelteSet.isSupersetOf(other);
+    }
+    /**
+     * @returns a boolean indicating whether this Set has no elements in common with the argument.
+     */
+    isDisjointFrom(other) {
+        return this.#svelteSet.isDisjointFrom(other);
+    }
     // Store subscriber implementation --------------------------------------------------------------------------------
     /**
      * @param handler - Callback function that is invoked on update / changes.

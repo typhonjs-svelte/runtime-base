@@ -39,7 +39,63 @@ declare function klona<T>(input: T): T;
  *
  * @param errorMsg - Optional message used for the thrown TypeError.
  */
-declare function assertObject(value: unknown, errorMsg?: string): asserts value is object;
+declare function assertObject<T>(value: T, errorMsg?: string): asserts value is T & object;
+/**
+ * Asserts that a value is a plain object, not null, and not an array.
+ *
+ * Unlike {@link isPlainObject}, this function does **not** narrow the value to a generic indexable structure. Instead,
+ * it preserves the **existing** static type of the variable. This makes it ideal for validating option objects or
+ * interface-based inputs where all properties may be optional.
+ *
+ * Use this function when:
+ * ```
+ *   - You expect a value to be a plain object at runtime, **and**
+ *   - You want to keep its compile-time type intact after validation.
+ * ```
+ *
+ * @example
+ * interface Options { flag?: boolean; value?: number; }
+ *
+ * function run(opts: Options = {}) {
+ *   assertPlainObject(opts, `'opts' is not a plain object.`); // `opts` remains `Options`, not widened or reduced.
+ *   opts.value;                                               // Fully typed access remains available.
+ * }
+ *
+ * @throws {TypeError} if the value is null, non-object, or an array.
+ *
+ * @param value - The value to validate.
+ *
+ * @param errorMsg - Optional message used for the thrown TypeError.
+ */
+declare function assertPlainObject<T>(value: T, errorMsg?: string): asserts value is T & object;
+/**
+ * Asserts that a value is a non-null, non-array object that can be treated as a string-keyed record.
+ *
+ * Unlike {@link isRecord}, this function does **not** narrow the value to a generic indexable structure. Instead,
+ * it preserves the **existing** static type of the variable. This makes it ideal for validating option objects or
+ * interface-based inputs where all properties may be optional.
+ *
+ * Use this function when:
+ * ```
+ *   - You need to reject `null`, primitives, or arrays at runtime.
+ *   - You want to safely treat the value as a record, **without losing its compile-time shape**.
+ * ```
+ *
+ * @example
+ * interface Options { flag?: boolean; value?: number; }
+ *
+ * function run(opts: Options = {}) {
+ *   assertPlainObject(opts, `'opts' is not a record object.`);   // `opts` remains `Options`, not widened or reduced.
+ *   opts.value;                                                  // Fully typed access remains available.
+ * }
+ *
+ * @throws {TypeError} if the value is null, non-object, or an array.
+ *
+ * @param value - The value to validate.
+ *
+ * @param errorMsg - Optional message used for the thrown TypeError.
+ */
+declare function assertRecord<T>(value: T, errorMsg?: string): asserts value is T & Record<string, unknown>;
 /**
  * Freezes all entries traversed that are objects including entries in arrays.
  *
@@ -484,6 +540,8 @@ type DeepMerge<T extends object, U extends object[]> = U extends [infer First, .
 
 export {
   assertObject,
+  assertPlainObject,
+  assertRecord,
   deepFreeze,
   deepMerge,
   deepSeal,

@@ -59,7 +59,7 @@ declare class ReadonlySvelteSet<T> implements ReadonlySet<T>, Readable<ReadonlyS
   /**
    * Iterates over values in the set.
    */
-  [Symbol.iterator](): IterableIterator<T>;
+  [Symbol.iterator](): SetIterator<T>;
   /**
    * Returns the number of unique elements in this set.
    */
@@ -67,7 +67,7 @@ declare class ReadonlySvelteSet<T> implements ReadonlySet<T>, Readable<ReadonlyS
   /**
    * Returns an iterable of [v,v] pairs for every value `v` in the set.
    */
-  entries(): IterableIterator<[T, T]>;
+  entries(): SetIterator<[T, T]>;
   /**
    * Executes a provided function once for each value in this set, in insertion order.
    *
@@ -75,7 +75,7 @@ declare class ReadonlySvelteSet<T> implements ReadonlySet<T>, Readable<ReadonlyS
    *
    * @param thisArg - Optional this reference for callback function.
    */
-  forEach(callbackfn: (value: T, value2: T, set: ReadonlySvelteSet<T>) => void, thisArg?: unknown): void;
+  forEach(callbackfn: (value: T, value2: T, set: ReadonlySet<T>) => void, thisArg?: any): void;
   /**
    * Returns a boolean indicating whether an element with the specified value exists in this set or not.
    *
@@ -85,11 +85,39 @@ declare class ReadonlySvelteSet<T> implements ReadonlySet<T>, Readable<ReadonlyS
   /**
    * Despite its name, returns an iterable of the values in the set.
    */
-  keys(): IterableIterator<T>;
+  keys(): SetIterator<T>;
   /**
    * Returns an iterable of values in the set.
    */
-  values(): IterableIterator<T>;
+  values(): SetIterator<T>;
+  /**
+   * @returns a new Set containing all the elements in this Set and also all the elements in the argument.
+   */
+  union<U>(other: ReadonlySetLike<U>): Set<T | U>;
+  /**
+   * @returns a new Set containing all the elements which are both in this Set and in the argument.
+   */
+  intersection<U>(other: ReadonlySetLike<U>): Set<T & U>;
+  /**
+   * @returns a new Set containing all the elements in this Set which are not also in the argument.
+   */
+  difference<U>(other: ReadonlySetLike<U>): Set<T>;
+  /**
+   * @returns a new Set containing all the elements which are in either this Set or in the argument, but not in both.
+   */
+  symmetricDifference<U>(other: ReadonlySetLike<U>): Set<T | U>;
+  /**
+   * @returns a boolean indicating whether all the elements in this Set are also in the argument.
+   */
+  isSubsetOf(other: ReadonlySetLike<unknown>): boolean;
+  /**
+   * @returns a boolean indicating whether all the elements in the argument are also in this Set.
+   */
+  isSupersetOf(other: ReadonlySetLike<unknown>): boolean;
+  /**
+   * @returns a boolean indicating whether this Set has no elements in common with the argument.
+   */
+  isDisjointFrom(other: ReadonlySetLike<unknown>): boolean;
   /**
    * @param handler - Callback function that is invoked on update / changes.
    *

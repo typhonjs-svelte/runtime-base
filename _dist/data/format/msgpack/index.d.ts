@@ -94,7 +94,9 @@ declare class PackrStream extends Transform {
 export {
   C1,
   Decoder,
+  UnpackrStream as DecoderStream,
   Encoder,
+  PackrStream as EncoderStream,
   FLOAT32_OPTIONS,
   Packr,
   PackrStream,
@@ -113,4 +115,4 @@ export {
   unpack,
   unpackMultiple,
 };
-export type { Extension, Options, UnpackOptions };
+export type { Options, UnpackOptions };

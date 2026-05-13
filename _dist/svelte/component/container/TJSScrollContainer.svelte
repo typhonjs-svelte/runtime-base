@@ -11,6 +11,8 @@
     * @componentDocumentation
     */
 
+   import { writable }                 from 'svelte/store';
+
    import { applyScroll }              from '@typhonjs-svelte/runtime-base/svelte/action/dom/properties';
    import {
       applyStyles,
@@ -105,10 +107,12 @@
 
    $: svelte = isObject(container) && TJSSvelte.config.isConfigEmbed(container.svelte) ? container.svelte : void 0;
 
+   const parentVisualEdgeInsets = writable({ top: 0, right: 0, bottom: 0, left: 0 });
+
    /**
     * Pass on some internal state to any attached dynamic action.
     */
-   $: attachData = { gutterStable };
+   $: attachData = { gutterStable, visualEdgeInsets: $parentVisualEdgeInsets };
 
    /** @type {HTMLElement} */
    let containerEl;
@@ -217,7 +221,7 @@
      on:wheel={onWheel}
      use:applyScroll={{ scrollLeft, scrollTop }}
      use:applyStyles={styles}
-     use:applyVisualEdgeInsets={{ sides: padToVisualEdge, action: 'padTarget', parent: true }}
+     use:applyVisualEdgeInsets={{ sides: padToVisualEdge, action: 'padTarget', parent: true, store: parentVisualEdgeInsets }}
      use:dynamicAction={{ action: attach, data: attachData }}
      role=region
      tabindex={allowTabFocus ? 0 : -1}>

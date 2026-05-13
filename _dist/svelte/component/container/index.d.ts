@@ -9,29 +9,106 @@ import { SvelteComponent } from 'svelte';
  * TODO: Add description
  *
  */
-declare class TJSGlassPane extends SvelteComponent<TJSGlassPane.Props, TJSGlassPane.Events, TJSGlassPane.Slots> {}
+declare class TJSGlassPane extends SvelteComponent<
+  {
+    id?: string;
+    background?: string;
+    transition?: any;
+    captureInput?: boolean;
+    closeOnInput?: boolean;
+    slotSeparate?: boolean;
+    styles?: {
+      [key: string]: string | null;
+    };
+    inTransition?: any;
+    outTransition?: any;
+    transitionOptions?: any;
+    inTransitionOptions?: {};
+    outTransitionOptions?: {};
+  },
+  {
+    'glasspane:close':
+      | PointerEvent
+      | MouseEvent
+      | UIEvent
+      | Event
+      | ErrorEvent
+      | AnimationEvent
+      | ClipboardEvent
+      | CompositionEvent
+      | DragEvent
+      | FocusEvent
+      | FormDataEvent
+      | InputEvent
+      | KeyboardEvent
+      | ProgressEvent<EventTarget>
+      | SecurityPolicyViolationEvent
+      | SubmitEvent
+      | ToggleEvent
+      | TouchEvent
+      | TransitionEvent
+      | WheelEvent;
+    'glasspane:keydown:escape':
+      | PointerEvent
+      | MouseEvent
+      | UIEvent
+      | Event
+      | ErrorEvent
+      | AnimationEvent
+      | ClipboardEvent
+      | CompositionEvent
+      | DragEvent
+      | FocusEvent
+      | FormDataEvent
+      | InputEvent
+      | KeyboardEvent
+      | ProgressEvent<EventTarget>
+      | SecurityPolicyViolationEvent
+      | SubmitEvent
+      | ToggleEvent
+      | TouchEvent
+      | TransitionEvent
+      | WheelEvent;
+    'glasspane:pointerdown':
+      | PointerEvent
+      | MouseEvent
+      | UIEvent
+      | Event
+      | ErrorEvent
+      | AnimationEvent
+      | ClipboardEvent
+      | CompositionEvent
+      | DragEvent
+      | FocusEvent
+      | FormDataEvent
+      | InputEvent
+      | KeyboardEvent
+      | ProgressEvent<EventTarget>
+      | SecurityPolicyViolationEvent
+      | SubmitEvent
+      | ToggleEvent
+      | TouchEvent
+      | TransitionEvent
+      | WheelEvent;
+  } & {
+    [evt: string]: CustomEvent<any>;
+  },
+  {
+    default: {};
+  }
+> {}
 
 /** Event / Prop / Slot type aliases for {@link TJSGlassPane | associated component}. */
 declare namespace TJSGlassPane {
   /** Props type alias for {@link TJSGlassPane | associated component}. */
   export type Props = {
-    /** @type {string} */
     id?: string;
-    /** @type {string} */
     background?: string;
     transition?: any;
-    /** @type {boolean} */
     captureInput?: boolean;
-    /**
-     * When true, any input fires an event `glasspane:close`.
-     *
-     * @type {boolean}
-     */
     closeOnInput?: boolean;
-    /** @type {boolean} */
     slotSeparate?: boolean;
-    /** @type {{ [key: string]: string | null }} */
-    styles?: { [key: string]: string | null };
+    styles?: { [key: string]: string };
     inTransition?: any;
     outTransition?: any;
     transitionOptions?: any;
@@ -57,6 +134,7 @@ declare namespace TJSGlassPane {
       | ProgressEvent<EventTarget>
       | SecurityPolicyViolationEvent
       | SubmitEvent
+      | ToggleEvent
       | TouchEvent
       | TransitionEvent
       | WheelEvent;
@@ -77,6 +155,7 @@ declare namespace TJSGlassPane {
       | ProgressEvent<EventTarget>
       | SecurityPolicyViolationEvent
       | SubmitEvent
+      | ToggleEvent
       | TouchEvent
       | TransitionEvent
       | WheelEvent;
@@ -97,6 +176,7 @@ declare namespace TJSGlassPane {
       | ProgressEvent<EventTarget>
       | SecurityPolicyViolationEvent
       | SubmitEvent
+      | ToggleEvent
       | TouchEvent
       | TransitionEvent
       | WheelEvent;
@@ -116,59 +196,42 @@ declare namespace TJSGlassPane {
  *
  */
 declare class TJSScrollContainer extends SvelteComponent<
-  TJSScrollContainer.Props,
-  TJSScrollContainer.Events,
-  TJSScrollContainer.Slots
+  {
+    container?: TJSScrollContainerData;
+    scrollLeft?: _typhonjs_svelte_runtime_base_svelte_store_util.MinimalWritable<number>;
+    scrollTop?: _typhonjs_svelte_runtime_base_svelte_store_util.MinimalWritable<number>;
+    styles?: {
+      [key: string]: string | null;
+    };
+    gutterStable?: boolean;
+    allowTabFocus?: boolean;
+    attach?: svelte_action.Action;
+    keyPropagate?: boolean;
+    onContextMenu?: (data: { event: KeyboardEvent | PointerEvent }) => void;
+    padToVisualEdge?: _typhonjs_svelte_runtime_base_svelte_action_dom_style.VisualEdgeSides;
+  },
+  {
+    [evt: string]: CustomEvent<any>;
+  },
+  {
+    default: {};
+  }
 > {}
 
 /** Event / Prop / Slot type aliases for {@link TJSScrollContainer | associated component}. */
 declare namespace TJSScrollContainer {
   /** Props type alias for {@link TJSScrollContainer | associated component}. */
   export type Props = {
-    /** @type {import('.').TJSScrollContainerData} */
-    container?: TJSScrollContainerData;
-    /** @type {import('@typhonjs-svelte/runtime-base/svelte/store/util').MinimalWritable<number>} */
-    scrollLeft?: _typhonjs_svelte_runtime_base_svelte_store_util.MinimalWritable<number>;
-    /** @type {import('@typhonjs-svelte/runtime-base/svelte/store/util').MinimalWritable<number>} */
-    scrollTop?: _typhonjs_svelte_runtime_base_svelte_store_util.MinimalWritable<number>;
-    /** @type {{ [key: string]: string | null }} */
-    styles?: { [key: string]: string | null };
-    /**
-     * @type {boolean}
-     *
-     * @defaultValue `false`
-     */
+    container?: any;
+    scrollLeft?: any;
+    scrollTop?: any;
+    styles?: { [key: string]: string };
     gutterStable?: boolean;
-    /**
-     * @type {boolean}
-     *
-     * @defaultValue `false`
-     */
     allowTabFocus?: boolean;
-    /**
-     * External dynamic action to attach to scroll container element.
-     *
-     * @type {import('svelte/action').Action}
-     */
-    attach?: svelte_action.Action;
-    /**
-     * @type {boolean}
-     *
-     * @defaultValue `false`
-     */
+    attach?: any;
     keyPropagate?: boolean;
-    /** @type {(data: { event: KeyboardEvent | PointerEvent }) => void} */
     onContextMenu?: (data: { event: KeyboardEvent | PointerEvent }) => void;
-    /**
-     * When true, the inline styles for padding of the parent element to the scroll container element
-     * is adjusted for any visual edge insets / border image applied to the parent element allowing the scroll
-     * container to take up the entire visual content space.
-     *
-     * @type {import('@typhonjs-svelte/runtime-base/svelte/action/dom/style').VisualEdgeSides}
-     *
-     * @defaultValue `false`
-     */
-    padToVisualEdge?: _typhonjs_svelte_runtime_base_svelte_action_dom_style.VisualEdgeSides;
+    padToVisualEdge?: any;
   };
   /** Events type alias for {@link TJSScrollContainer | associated component}. */
   export type Events = { [evt: string]: CustomEvent<any> };

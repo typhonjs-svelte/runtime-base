@@ -90,6 +90,74 @@ function assertObject(value, errorMsg = 'Expected an object.') {
     }
 }
 /**
+ * Asserts that a value is a plain object, not null, and not an array.
+ *
+ * Unlike {@link isPlainObject}, this function does **not** narrow the value to a generic indexable structure. Instead,
+ * it preserves the **existing** static type of the variable. This makes it ideal for validating option objects or
+ * interface-based inputs where all properties may be optional.
+ *
+ * Use this function when:
+ * ```
+ *   - You expect a value to be a plain object at runtime, **and**
+ *   - You want to keep its compile-time type intact after validation.
+ * ```
+ *
+ * @example
+ * interface Options { flag?: boolean; value?: number; }
+ *
+ * function run(opts: Options = {}) {
+ *   assertPlainObject(opts, `'opts' is not a plain object.`); // `opts` remains `Options`, not widened or reduced.
+ *   opts.value;                                               // Fully typed access remains available.
+ * }
+ *
+ * @throws {TypeError} if the value is null, non-object, or an array.
+ *
+ * @param value - The value to validate.
+ *
+ * @param errorMsg - Optional message used for the thrown TypeError.
+ */
+function assertPlainObject(value, errorMsg = 'Expected a plain object.') {
+    if (Object.prototype.toString.call(value) !== '[object Object]') {
+        throw new TypeError(errorMsg);
+    }
+    const prototype = Object.getPrototypeOf(value);
+    if (prototype !== null && prototype !== Object.prototype) {
+        throw new TypeError(errorMsg);
+    }
+}
+/**
+ * Asserts that a value is a non-null, non-array object that can be treated as a string-keyed record.
+ *
+ * Unlike {@link isRecord}, this function does **not** narrow the value to a generic indexable structure. Instead,
+ * it preserves the **existing** static type of the variable. This makes it ideal for validating option objects or
+ * interface-based inputs where all properties may be optional.
+ *
+ * Use this function when:
+ * ```
+ *   - You need to reject `null`, primitives, or arrays at runtime.
+ *   - You want to safely treat the value as a record, **without losing its compile-time shape**.
+ * ```
+ *
+ * @example
+ * interface Options { flag?: boolean; value?: number; }
+ *
+ * function run(opts: Options = {}) {
+ *   assertPlainObject(opts, `'opts' is not a record object.`);   // `opts` remains `Options`, not widened or reduced.
+ *   opts.value;                                                  // Fully typed access remains available.
+ * }
+ *
+ * @throws {TypeError} if the value is null, non-object, or an array.
+ *
+ * @param value - The value to validate.
+ *
+ * @param errorMsg - Optional message used for the thrown TypeError.
+ */
+function assertRecord(value, errorMsg = 'Expected a record object.') {
+    if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+        throw new TypeError(errorMsg);
+    }
+}
+/**
  * Freezes all entries traversed that are objects including entries in arrays.
  *
  * @param data - An object or array.
@@ -766,5 +834,5 @@ function safeSet(data, accessor, value, { operation = 'set', createMissing = fal
     return result;
 }
 
-export { assertObject, deepFreeze, deepMerge, deepSeal, ensureNonEmptyAsyncIterable, ensureNonEmptyIterable, hasAccessor, hasGetter, hasPrototype, hasSetter, isAsyncIterable, isIterable, isObject, isPlainObject, isRecord, klona, objectKeys, objectSize, safeAccess, safeEqual, safeKeyIterator, safeSet };
+export { assertObject, assertPlainObject, assertRecord, deepFreeze, deepMerge, deepSeal, ensureNonEmptyAsyncIterable, ensureNonEmptyIterable, hasAccessor, hasGetter, hasPrototype, hasSetter, isAsyncIterable, isIterable, isObject, isPlainObject, isRecord, klona, objectKeys, objectSize, safeAccess, safeEqual, safeKeyIterator, safeSet };
 //# sourceMappingURL=index.js.map

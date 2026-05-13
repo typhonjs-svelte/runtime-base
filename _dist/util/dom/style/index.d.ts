@@ -675,17 +675,14 @@ declare abstract class StyleParse {
  * consider replacing this logic with a dedicated AST parser and visitor pattern. An AST-based approach would offer more
  * flexibility and maintainability at the cost of slightly increased complexity and larger runtime memory footprint.
  */
-declare class StyleSheetResolve
-  implements
-    Iterable<
-      [
-        string,
-        {
-          [key: string]: string;
-        },
-      ]
-    >
-{
+declare class StyleSheetResolve implements Iterable<
+  [
+    string,
+    {
+      [key: string]: string;
+    },
+  ]
+> {
   #private;
   /**
    * Parse a CSSStyleSheet instance with the given options or accept a pre-filled Map generating a new
