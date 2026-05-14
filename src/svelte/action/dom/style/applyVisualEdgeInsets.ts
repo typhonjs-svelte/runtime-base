@@ -273,6 +273,9 @@ class InternalVisualEdgeState
       this.#actionNode?.dispatchEvent?.(new CustomEvent('tjs-visual-edge-recalculate'));
       this.#targetNode?.dispatchEvent?.(new CustomEvent('tjs-visual-edge-recalculate'));
 
+      this.#actionNode?.dispatchEvent?.(new CustomEvent('tjs-visual-edge-recalculate-external'));
+      this.#targetNode?.dispatchEvent?.(new CustomEvent('tjs-visual-edge-recalculate-external'));
+
       // @ts-ignore
       this.#actionNode = null;
 
@@ -405,6 +408,9 @@ class InternalVisualEdgeState
             el.style.position = 'absolute';
          }
       }
+
+      this.#actionNode?.dispatchEvent?.(new CustomEvent('tjs-visual-edge-recalculate-external'));
+      this.#targetNode?.dispatchEvent?.(new CustomEvent('tjs-visual-edge-recalculate-external'));
    }
 
    /**
