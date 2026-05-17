@@ -11,9 +11,16 @@ import { isObject } from '@typhonjs-svelte/runtime-base/util/object';
  * @returns {import('svelte/action').ActionReturn<import('./types').DynamicActionOptions>} The action lifecycle
  *          methods.
  */
-function dynamicAction(node, { action, data } = {})
+function dynamicAction(node, { action, data, warn } = {})
 {
    let actionResult;
+
+   if (typeof warn !== 'boolean') { warn = false; }
+
+   if (warn && typeof action !== 'function')
+   {
+      console.warn(`dynamicAction initialize warning: 'action' is not a function.`);
+   }
 
    if (typeof action === 'function') { actionResult = action(node, data); }
 
@@ -26,6 +33,11 @@ function dynamicAction(node, { action, data } = {})
          // If `newOptions` is not an object then destroy any old action.
          if (!isObject(newOptions))
          {
+            if (warn)
+            {
+               console.warn(`dynamicAction.update warning: Aborting update as new options is not an object.`);
+            }
+
             actionResult?.destroy?.();
             action = void 0;
             data = void 0;
@@ -33,12 +45,13 @@ function dynamicAction(node, { action, data } = {})
             return;
          }
 
-         const { action: newAction, data: newData } = newOptions;
+         const { action: newAction, data: newData, warn: newWarn } = newOptions;
 
-         if (typeof newAction !== 'function')
+         warn = typeof newWarn === 'boolean' ? newWarn : false;
+
+         if (warn && typeof newAction !== 'function')
          {
-            console.warn(`dynamicAction.update warning: Aborting as 'action' is not a function.`);
-            return;
+            console.warn(`dynamicAction.update warning: New action is not a function.`);
          }
 
          const hasNewData = newData !== data;
@@ -51,7 +64,8 @@ function dynamicAction(node, { action, data } = {})
             actionResult?.destroy?.();
 
             action = newAction;
-            actionResult = action(node, data);
+
+            actionResult = typeof action === 'function' ? action(node, data) : void 0;
          }
          else if (hasNewData)
          {
