@@ -136,9 +136,7 @@ export class PropBindingControl<T>
     */
    resolve(boundValue: unknown, ...candidates: readonly unknown[]): T
    {
-      /*
-       * A value different from the last published value represents an external assignment to the bindable property.
-       */
+      // A value different from the last published value represents an external assignment to the bindable property.
       if (this.#publishedValue === typeof PropBindingControl.unset || !Object.is(boundValue, this.#publishedValue))
       {
          this.#directValue = this.#predicate(boundValue) ? boundValue : PropBindingControl.unset;
