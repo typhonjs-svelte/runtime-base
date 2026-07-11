@@ -249,6 +249,10 @@
       "types": "./_dist/util/path/index.d.ts",
       "import": "./_dist/util/path/index.js"
     },
+    "./util/predicate": {
+      "types": "./_dist/util/predicate/index.d.ts",
+      "import": "./_dist/util/predicate/index.js"
+    },
     "./util/realm": {
       "types": "./_dist/util/realm/index.d.ts",
       "import": "./_dist/util/realm/index.js"

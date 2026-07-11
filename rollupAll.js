@@ -941,6 +941,23 @@ const rollupConfigs = [
    },
    {
       input: {
+         input: 'src/util/predicate/index.ts',
+         plugins: [
+            importsExternal(),
+            resolve(resolveOptions),
+            typescript({ tsconfig: './src/util/predicate/tsconfig.json' }),
+            generateDTS.plugin(dtsPluginOptions)
+         ]
+      },
+      output: {
+         file: '_dist/util/predicate/index.js',
+         format: 'es',
+         generatedCode: { constBindings: true },
+         sourcemap
+      }
+   },
+   {
+      input: {
          input: 'src/util/realm/index.ts',
          plugins: [
             importsExternal(),
