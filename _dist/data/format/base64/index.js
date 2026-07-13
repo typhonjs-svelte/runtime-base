@@ -9,13 +9,13 @@
  *
  * @author Dan Kogai (https://github.com/dankogai)
  */
-const version = '3.7.8';
+const version = '3.8.1';
 /**
  * @deprecated use lowercase `version`.
  */
 const VERSION = version;
 const _hasBuffer = typeof Buffer === 'function';
-const _TD = typeof TextDecoder === 'function' ? new TextDecoder() : undefined;
+const _TD = typeof TextDecoder === 'function' ? new TextDecoder('utf-8', { ignoreBOM: true }) : undefined;
 const _TE = typeof TextEncoder === 'function' ? new TextEncoder() : undefined;
 const b64ch = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
 const b64chs = Array.prototype.slice.call(b64ch);
@@ -58,7 +58,11 @@ const btoaPolyfill = (bin) => {
  * @returns {string} Base64-encoded string
  */
 const _btoa = typeof btoa === 'function' ? (bin) => btoa(bin)
-    : _hasBuffer ? (bin) => Buffer.from(bin, 'binary').toString('base64')
+    : _hasBuffer ? (bin) => {
+        if (/[^\x00-\xff]/.test(bin))
+            throw new TypeError('invalid character found');
+        return Buffer.from(bin, 'binary').toString('base64');
+    }
         : btoaPolyfill;
 const _fromUint8Array = _hasBuffer
     ? (u8a) => Buffer.from(u8a).toString('base64')

@@ -371,6 +371,10 @@ declare abstract class CrossRealmLanguage {
    */
   static isDate(target: unknown): target is Date;
   /**
+   * {@link CrossRealmLanguage.API.isError}
+   */
+  static isError(target: unknown): target is Error;
+  /**
    * {@link CrossRealmLanguage.API.isMap}
    */
   static isMap(target: unknown): target is Map<unknown, unknown>;
@@ -408,6 +412,15 @@ declare namespace CrossRealmLanguage {
      * @returns Is `target` a Date.
      */
     isDate(target: unknown): target is Date;
+    /**
+     * Provides detection via `Error.isError` where available or basic prototype string type checking if `target` is
+     * an Error.
+     *
+     * @param target - A potential Error to test.
+     *
+     * @returns Is `target` an Error.
+     */
+    isError(target: unknown): target is Error;
     /**
      * Provides basic prototype string type checking if `target` is a Map.
      *

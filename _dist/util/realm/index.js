@@ -39,6 +39,13 @@ class CrossRealmLanguage {
         return CrossRealmUtil.isTagged(target, 'Date');
     }
     /**
+     * {@link CrossRealmLanguage.API.isError}
+     */
+    static isError(target) {
+        // @ts-expect-error Error.isError is not baseline, but usually available.
+        return typeof Error.isError === 'function' ? Error.isError(target) : CrossRealmUtil.isTagged(target, 'Error');
+    }
+    /**
      * {@link CrossRealmLanguage.API.isMap}
      */
     static isMap(target) {

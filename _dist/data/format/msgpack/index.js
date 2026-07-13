@@ -23,14 +23,6 @@ const C1 = new C1Type();
 C1.name = 'MessagePack 0xC1';
 var sequentialMode = false;
 var inlineObjectReadThreshold = 2;
-var readStruct;
-// no-eval build
-try {
-	new Function('');
-} catch(error) {
-	// if eval variants are not supported, do not create inline object readers ever
-	inlineObjectReadThreshold = Infinity;
-}
 
 class Unpackr {
 	constructor(options) {
@@ -62,8 +54,8 @@ class Unpackr {
 			// re-entrant execution, save the state and restore it after we do this unpack
 			return saveState(() => {
 				clearSource();
-				return this ? this.unpack(source, options) : Unpackr.prototype.unpack.call(defaultOptions, source, options)
-			})
+				return this ? this.unpack(source, options) : Unpackr.prototype.unpack.call(defaultOptions, source, options);
+			});
 		}
 		if (!source.buffer && source.constructor === ArrayBuffer)
 			source = typeof Buffer !== 'undefined' ? Buffer.from(source) : new Uint8Array(source);
@@ -87,14 +79,14 @@ class Unpackr {
 			// if it doesn't have a buffer, maybe it is the wrong type of object
 			src = null;
 			if (source instanceof Uint8Array)
-				throw error
-			throw new Error('Source must be a Uint8Array or Buffer but was a ' + ((source && typeof source == 'object') ? source.constructor.name : typeof source))
+				throw error;
+			throw new Error('Source must be a Uint8Array or Buffer but was a ' + ((source && typeof source == 'object') ? source.constructor.name : typeof source));
 		}
 		if (this instanceof Unpackr) {
 			currentUnpackr = this;
 			if (this.structures) {
 				currentStructures = this.structures;
-				return checkedRead(options)
+				return checkedRead(options);
 			} else if (!currentStructures || currentStructures.length > 0) {
 				currentStructures = [];
 			}
@@ -103,7 +95,7 @@ class Unpackr {
 			if (!currentStructures || currentStructures.length > 0)
 				currentStructures = [];
 		}
-		return checkedRead(options)
+		return checkedRead(options);
 	}
 	unpackMultiple(source, forEach) {
 		let values, lastPosition = 0;
@@ -116,7 +108,7 @@ class Unpackr {
 				while(position$1 < size) {
 					lastPosition = position$1;
 					if (forEach(checkedRead(), lastPosition, position$1) === false) {
-						return
+						return;
 					}
 				}
 			}
@@ -126,18 +118,20 @@ class Unpackr {
 					lastPosition = position$1;
 					values.push(checkedRead());
 				}
-				return values
+				return values;
 			}
 		} catch(error) {
 			error.lastPosition = lastPosition;
 			error.values = values;
-			throw error
+			throw error;
 		} finally {
 			sequentialMode = false;
 			clearSource();
 		}
 	}
 	_mergeStructures(loadedStructures, existingStructures) {
+		if (this._onLoadedStructures)
+			loadedStructures = this._onLoadedStructures(loadedStructures);
 		loadedStructures = loadedStructures || [];
 		if (Object.isFrozen(loadedStructures))
 			loadedStructures = loadedStructures.map(structure => structure.slice(0));
@@ -161,10 +155,10 @@ class Unpackr {
 				}
 			}
 		}
-		return this.structures = loadedStructures
+		return this.structures = loadedStructures;
 	}
 	decode(source, options) {
-		return this.unpack(source, options)
+		return this.unpack(source, options);
 	}
 }
 function checkedRead(options) {
@@ -175,7 +169,13 @@ function checkedRead(options) {
 				currentStructures.length = sharedLength;
 		}
 		let result;
-		if (currentUnpackr.randomAccessStructure && src[position$1] < 0x40 && src[position$1] >= 0x20 && readStruct) ; else
+		if (currentUnpackr._readStruct && src[position$1] < 0x40 && src[position$1] >= 0x20) {
+			result = currentUnpackr._readStruct(src, position$1, srcEnd);
+			src = null; // dispose of this so that recursive unpack calls don't save state
+			if (!(options && options.lazy) && result)
+				result = result.toJSON();
+			position$1 = srcEnd;
+		} else
 			result = read();
 		if (bundledStrings$1) { // bundled strings to skip past
 			position$1 = bundledStrings$1.postBundlePosition;
@@ -196,7 +196,7 @@ function checkedRead(options) {
 				referenceMap = null;
 		} else if (position$1 > srcEnd) {
 			// over read
-			throw new Error('Unexpected end of MessagePack data')
+			throw new Error('Unexpected end of MessagePack data');
 		} else if (!sequentialMode) {
 			let jsonView;
 			try {
@@ -204,10 +204,10 @@ function checkedRead(options) {
 			} catch(error) {
 				jsonView = '(JSON view not available ' + error + ')';
 			}
-			throw new Error('Data read, but end of buffer not reached ' + jsonView)
+			throw new Error('Data read, but end of buffer not reached ' + jsonView);
 		}
 		// else more to read, but we are reading sequentially, so don't clear source yet
-		return result
+		return result;
 	} catch(error) {
 		if (currentStructures && currentStructures.restoreStructures)
 			restoreStructures();
@@ -215,7 +215,7 @@ function checkedRead(options) {
 		if (error instanceof RangeError || error.message.startsWith('Unexpected end of buffer') || position$1 > srcEnd) {
 			error.incomplete = true;
 		}
-		throw error
+		throw error;
 	}
 }
 
@@ -231,7 +231,7 @@ function read() {
 	if (token < 0xa0) {
 		if (token < 0x80) {
 			if (token < 0x40)
-				return token
+				return token;
 			else {
 				let structure = currentStructures[token & 0x3f] ||
 					currentUnpackr.getStructures && loadStructures()[token & 0x3f];
@@ -239,9 +239,9 @@ function read() {
 					if (!structure.read) {
 						structure.read = createStructureReader(structure, token & 0x3f);
 					}
-					return structure.read()
+					return structure.read();
 				} else
-					return token
+					return token;
 			}
 		} else if (token < 0x90) {
 			// map
@@ -254,13 +254,13 @@ function read() {
 						key = '__proto_';
 					object[key] = read();
 				}
-				return object
+				return object;
 			} else {
 				let map = new Map();
 				for (let i = 0; i < token; i++) {
 					map.set(read(), read());
 				}
-				return map
+				return map;
 			}
 		} else {
 			token -= 0x90;
@@ -269,91 +269,91 @@ function read() {
 				array[i] = read();
 			}
 			if (currentUnpackr.freezeData)
-				return Object.freeze(array)
-			return array
+				return Object.freeze(array);
+			return array;
 		}
 	} else if (token < 0xc0) {
 		// fixstr
 		let length = token - 0xa0;
 		if (srcStringEnd >= position$1) {
-			return srcString.slice(position$1 - srcStringStart, (position$1 += length) - srcStringStart)
+			return srcString.slice(position$1 - srcStringStart, (position$1 += length) - srcStringStart);
 		}
 		if (srcStringEnd == 0 && srcEnd < 140) {
 			// for small blocks, avoiding the overhead of the extract call is helpful
 			let string = length < 16 ? shortStringInJS(length) : longStringInJS(length);
 			if (string != null)
-				return string
+				return string;
 		}
-		return readFixedString(length)
+		return readFixedString(length);
 	} else {
 		let value;
 		switch (token) {
-			case 0xc0: return null
+			case 0xc0: return null;
 			case 0xc1:
 				if (bundledStrings$1) {
 					value = read(); // followed by the length of the string in characters (not bytes!)
 					if (value > 0)
-						return bundledStrings$1[1].slice(bundledStrings$1.position1, bundledStrings$1.position1 += value)
+						return bundledStrings$1[1].slice(bundledStrings$1.position1, bundledStrings$1.position1 += value);
 					else
-						return bundledStrings$1[0].slice(bundledStrings$1.position0, bundledStrings$1.position0 -= value)
+						return bundledStrings$1[0].slice(bundledStrings$1.position0, bundledStrings$1.position0 -= value);
 				}
 				return C1; // "never-used", return special object to denote that
-			case 0xc2: return false
-			case 0xc3: return true
+			case 0xc2: return false;
+			case 0xc3: return true;
 			case 0xc4:
 				// bin 8
 				value = src[position$1++];
 				if (value === undefined)
-					throw new Error('Unexpected end of buffer')
-				return readBin(value)
+					throw new Error('Unexpected end of buffer');
+				return readBin(value);
 			case 0xc5:
 				// bin 16
 				value = dataView.getUint16(position$1);
 				position$1 += 2;
-				return readBin(value)
+				return readBin(value);
 			case 0xc6:
 				// bin 32
 				value = dataView.getUint32(position$1);
 				position$1 += 4;
-				return readBin(value)
+				return readBin(value);
 			case 0xc7:
 				// ext 8
-				return readExt(src[position$1++])
+				return readExt(src[position$1++]);
 			case 0xc8:
 				// ext 16
 				value = dataView.getUint16(position$1);
 				position$1 += 2;
-				return readExt(value)
+				return readExt(value);
 			case 0xc9:
 				// ext 32
 				value = dataView.getUint32(position$1);
 				position$1 += 4;
-				return readExt(value)
+				return readExt(value);
 			case 0xca:
 				value = dataView.getFloat32(position$1);
 				if (currentUnpackr.useFloat32 > 2) {
 					// this does rounding of numbers that were encoded in 32-bit float to nearest significant decimal digit that could be preserved
 					let multiplier = mult10[((src[position$1] & 0x7f) << 1) | (src[position$1 + 1] >> 7)];
 					position$1 += 4;
-					return ((multiplier * value + (value > 0 ? 0.5 : -0.5)) >> 0) / multiplier
+					return ((multiplier * value + (value > 0 ? 0.5 : -0.5)) >> 0) / multiplier;
 				}
 				position$1 += 4;
-				return value
+				return value;
 			case 0xcb:
 				value = dataView.getFloat64(position$1);
 				position$1 += 8;
-				return value
+				return value;
 			// uint handlers
 			case 0xcc:
-				return src[position$1++]
+				return src[position$1++];
 			case 0xcd:
 				value = dataView.getUint16(position$1);
 				position$1 += 2;
-				return value
+				return value;
 			case 0xce:
 				value = dataView.getUint32(position$1);
 				position$1 += 4;
-				return value
+				return value;
 			case 0xcf:
 				if (currentUnpackr.int64AsType === 'number') {
 					value = dataView.getUint32(position$1) * 0x100000000;
@@ -366,19 +366,19 @@ function read() {
 				} else
 					value = dataView.getBigUint64(position$1);
 				position$1 += 8;
-				return value
+				return value;
 
 			// int handlers
 			case 0xd0:
-				return dataView.getInt8(position$1++)
+				return dataView.getInt8(position$1++);
 			case 0xd1:
 				value = dataView.getInt16(position$1);
 				position$1 += 2;
-				return value
+				return value;
 			case 0xd2:
 				value = dataView.getInt32(position$1);
 				position$1 += 4;
-				return value
+				return value;
 			case 0xd3:
 				if (currentUnpackr.int64AsType === 'number') {
 					value = dataView.getInt32(position$1) * 0x100000000;
@@ -391,96 +391,96 @@ function read() {
 				} else
 					value = dataView.getBigInt64(position$1);
 				position$1 += 8;
-				return value
+				return value;
 
 			case 0xd4:
 				// fixext 1
 				value = src[position$1++];
 				if (value == 0x72) {
-					return recordDefinition(src[position$1++] & 0x3f)
+					return recordDefinition(src[position$1++] & 0x3f);
 				} else {
 					let extension = currentExtensions[value];
 					if (extension) {
 						if (extension.read) {
 							position$1++; // skip filler byte
-							return extension.read(read())
+							return extension.read(read());
 						} else if (extension.noBuffer) {
 							position$1++; // skip filler byte
-							return extension()
+							return extension();
 						} else
-							return extension(src.subarray(position$1, ++position$1))
+							return extension(src.subarray(position$1, ++position$1));
 					} else
-						throw new Error('Unknown extension ' + value)
+						throw new Error('Unknown extension ' + value);
 				}
 			case 0xd5:
 				// fixext 2
 				value = src[position$1];
 				if (value == 0x72) {
 					position$1++;
-					return recordDefinition(src[position$1++] & 0x3f, src[position$1++])
+					return recordDefinition(src[position$1++] & 0x3f, src[position$1++]);
 				} else
-					return readExt(2)
+					return readExt(2);
 			case 0xd6:
 				// fixext 4
-				return readExt(4)
+				return readExt(4);
 			case 0xd7:
 				// fixext 8
-				return readExt(8)
+				return readExt(8);
 			case 0xd8:
 				// fixext 16
-				return readExt(16)
+				return readExt(16);
 			case 0xd9:
 			// str 8
 				value = src[position$1++];
 				if (srcStringEnd >= position$1) {
-					return srcString.slice(position$1 - srcStringStart, (position$1 += value) - srcStringStart)
+					return srcString.slice(position$1 - srcStringStart, (position$1 += value) - srcStringStart);
 				}
-				return readString8(value)
+				return readString8(value);
 			case 0xda:
 			// str 16
 				value = dataView.getUint16(position$1);
 				position$1 += 2;
 				if (srcStringEnd >= position$1) {
-					return srcString.slice(position$1 - srcStringStart, (position$1 += value) - srcStringStart)
+					return srcString.slice(position$1 - srcStringStart, (position$1 += value) - srcStringStart);
 				}
-				return readString16(value)
+				return readString16(value);
 			case 0xdb:
 			// str 32
 				value = dataView.getUint32(position$1);
 				position$1 += 4;
 				if (srcStringEnd >= position$1) {
-					return srcString.slice(position$1 - srcStringStart, (position$1 += value) - srcStringStart)
+					return srcString.slice(position$1 - srcStringStart, (position$1 += value) - srcStringStart);
 				}
-				return readString32(value)
+				return readString32(value);
 			case 0xdc:
 			// array 16
 				value = dataView.getUint16(position$1);
 				position$1 += 2;
-				return readArray(value)
+				return readArray(value);
 			case 0xdd:
 			// array 32
 				value = dataView.getUint32(position$1);
 				position$1 += 4;
-				return readArray(value)
+				return readArray(value);
 			case 0xde:
 			// map 16
 				value = dataView.getUint16(position$1);
 				position$1 += 2;
-				return readMap(value)
+				return readMap(value);
 			case 0xdf:
 			// map 32
 				value = dataView.getUint32(position$1);
 				position$1 += 4;
-				return readMap(value)
+				return readMap(value);
 			default: // negative int
 				if (token >= 0xe0)
-					return token - 0x100
+					return token - 0x100;
 				if (token === undefined) {
 					let error = new Error('Unexpected end of MessagePack data');
 					error.incomplete = true;
-					throw error
+					throw error;
 				}
-				throw new Error('Unknown MessagePack token ' + token)
+				throw new Error('Unknown MessagePack token ' + token);
 
 		}
 	}
@@ -490,11 +490,19 @@ function createStructureReader(structure, firstId) {
 	function readObject() {
 		// This initial function is quick to instantiate, but runs slower. After several iterations pay the cost to build the faster function
 		if (readObject.count++ > inlineObjectReadThreshold) {
-			let readObject = structure.read = (new Function('r', 'return function(){return ' + (currentUnpackr.freezeData ? 'Object.freeze' : '') +
-				'({' + structure.map(key => key === '__proto__' ? '__proto_:r()' : validName.test(key) ? key + ':r()' : ('[' + JSON.stringify(key) + ']:r()')).join(',') + '})}'))(read);
+			let optimizedReadObject;
+			try {
+				optimizedReadObject = structure.read = (new Function('r', 'return function(){return ' + (currentUnpackr.freezeData ? 'Object.freeze' : '') +
+					'({' + structure.map(key => key === '__proto__' ? '__proto_:r()' : validName.test(key) ? key + ':r()' : ('[' + JSON.stringify(key) + ']:r()')).join(',') + '})}'))(read);
+			} catch(error) {
+				// in CF workers, the new Function call could begin to fail at any point in time
+				inlineObjectReadThreshold = Infinity; // disable going forward
+				return readObject(); // recursively try again
+			}
+			structure.read0 = optimizedReadObject; // keep the un-wrapped body reader in sync
 			if (structure.highByte === 0)
 				structure.read = createSecondByteReader(firstId, structure.read);
-			return readObject() // second byte is already read, if there is one so immediately read object
+			return optimizedReadObject(); // second byte is already read, if there is one so immediately read object
 		}
 		let object = {};
 		for (let i = 0, l = structure.length; i < l; i++) {
@@ -505,38 +513,44 @@ function createStructureReader(structure, firstId) {
 		}
 		if (currentUnpackr.freezeData)
 			return Object.freeze(object);
-		return object
+		return object;
 	}
 	readObject.count = 0;
+	// read0 is the un-wrapped body reader: it reads the record's values directly without
+	// consuming a leading high byte. recordDefinition uses it for the immediate read that follows
+	// a record definition (the high byte, if present, was already consumed). For highByte === 0
+	// structures the public reader is a second-byte reader (used by later references), but the
+	// definition read itself must not consume that byte.
+	structure.read0 = readObject;
 	if (structure.highByte === 0) {
-		return createSecondByteReader(firstId, readObject)
+		return createSecondByteReader(firstId, readObject);
 	}
-	return readObject
+	return readObject;
 }
 
 const createSecondByteReader = (firstId, read0) => {
 	return function() {
 		let highByte = src[position$1++];
 		if (highByte === 0)
-			return read0()
+			return read0();
 		let id = firstId < 32 ? -(firstId + (highByte << 5)) : firstId + (highByte << 5);
 		let structure = currentStructures[id] || loadStructures()[id];
 		if (!structure) {
-			throw new Error('Record id is not defined for ' + id)
+			throw new Error('Record id is not defined for ' + id);
 		}
 		if (!structure.read)
 			structure.read = createStructureReader(structure, firstId);
-		return structure.read()
-	}
+		return structure.read();
+	};
 };
 
 function loadStructures() {
 	let loadedStructures = saveState(() => {
 		// save the state in case getStructures modifies our buffer
 		src = null;
-		return currentUnpackr.getStructures()
+		return currentUnpackr.getStructures();
 	});
-	return currentStructures = currentUnpackr._mergeStructures(loadedStructures, currentStructures)
+	return currentStructures = currentUnpackr._mergeStructures(loadedStructures, currentStructures);
 }
 
 var readFixedString = readStringJS;
@@ -548,10 +562,10 @@ function readStringJS(length) {
 	let result;
 	if (length < 16) {
 		if (result = shortStringInJS(length))
-			return result
+			return result;
 	}
 	if (length > 64 && decoder)
-		return decoder.decode(src.subarray(position$1, position$1 += length))
+		return decoder.decode(src.subarray(position$1, position$1 += length));
 	const end = position$1 + length;
 	const units = [];
 	result = '';
@@ -563,26 +577,45 @@ function readStringJS(length) {
 		} else if ((byte1 & 0xe0) === 0xc0) {
 			// 2 bytes
 			const byte2 = src[position$1++] & 0x3f;
-			units.push(((byte1 & 0x1f) << 6) | byte2);
+			const codePoint = ((byte1 & 0x1f) << 6) | byte2;
+			// Reject overlong encoding: 2-byte sequences must encode values >= 0x80
+			if (codePoint < 0x80) {
+				units.push(0xFFFD); // replacement character
+			} else {
+				units.push(codePoint);
+			}
 		} else if ((byte1 & 0xf0) === 0xe0) {
 			// 3 bytes
 			const byte2 = src[position$1++] & 0x3f;
 			const byte3 = src[position$1++] & 0x3f;
-			units.push(((byte1 & 0x1f) << 12) | (byte2 << 6) | byte3);
+			const codePoint = ((byte1 & 0x1f) << 12) | (byte2 << 6) | byte3;
+			// Reject overlong encoding: 3-byte sequences must encode values >= 0x800
+			// Also reject surrogates (0xD800-0xDFFF)
+			if (codePoint < 0x800 || (codePoint >= 0xD800 && codePoint <= 0xDFFF)) {
+				units.push(0xFFFD); // replacement character
+			} else {
+				units.push(codePoint);
+			}
 		} else if ((byte1 & 0xf8) === 0xf0) {
 			// 4 bytes
 			const byte2 = src[position$1++] & 0x3f;
 			const byte3 = src[position$1++] & 0x3f;
 			const byte4 = src[position$1++] & 0x3f;
 			let unit = ((byte1 & 0x07) << 0x12) | (byte2 << 0x0c) | (byte3 << 0x06) | byte4;
-			if (unit > 0xffff) {
+			// Reject overlong encoding: 4-byte sequences must encode values >= 0x10000
+			// Also reject values > 0x10FFFF (maximum valid Unicode)
+			if (unit < 0x10000 || unit > 0x10FFFF) {
+				units.push(0xFFFD); // replacement character
+			} else if (unit > 0xffff) {
 				unit -= 0x10000;
 				units.push(((unit >>> 10) & 0x3ff) | 0xd800);
 				unit = 0xdc00 | (unit & 0x3ff);
+				units.push(unit);
+			} else {
+				units.push(unit);
 			}
-			units.push(unit);
 		} else {
-			units.push(byte1);
+			units.push(0xFFFD); // replacement character for invalid lead byte
 		}
 
 		if (units.length >= 0x1000) {
@@ -595,7 +628,7 @@ function readStringJS(length) {
 		result += fromCharCode.apply(String, units);
 	}
 
-	return result
+	return result;
 }
 
 function readArray(length) {
@@ -604,8 +637,8 @@ function readArray(length) {
 		array[i] = read();
 	}
 	if (currentUnpackr.freezeData)
-		return Object.freeze(array)
-	return array
+		return Object.freeze(array);
+	return array;
 }
 
 function readMap(length) {
@@ -617,13 +650,13 @@ function readMap(length) {
 				key = '__proto_';
 			object[key] = read();
 		}
-		return object
+		return object;
 	} else {
 		let map = new Map();
 		for (let i = 0; i < length; i++) {
 			map.set(read(), read());
 		}
-		return map
+		return map;
 	}
 }
 
@@ -635,40 +668,40 @@ function longStringInJS(length) {
 		const byte = src[position$1++];
 		if ((byte & 0x80) > 0) {
 				position$1 = start;
-				return
+				return;
 			}
 			bytes[i] = byte;
 		}
-		return fromCharCode.apply(String, bytes)
+		return fromCharCode.apply(String, bytes);
 }
 function shortStringInJS(length) {
 	if (length < 4) {
 		if (length < 2) {
 			if (length === 0)
-				return ''
+				return '';
 			else {
 				let a = src[position$1++];
 				if ((a & 0x80) > 1) {
 					position$1 -= 1;
-					return
+					return;
 				}
-				return fromCharCode(a)
+				return fromCharCode(a);
 			}
 		} else {
 			let a = src[position$1++];
 			let b = src[position$1++];
 			if ((a & 0x80) > 0 || (b & 0x80) > 0) {
 				position$1 -= 2;
-				return
+				return;
 			}
 			if (length < 3)
-				return fromCharCode(a, b)
+				return fromCharCode(a, b);
 			let c = src[position$1++];
 			if ((c & 0x80) > 0) {
 				position$1 -= 3;
-				return
+				return;
 			}
-			return fromCharCode(a, b, c)
+			return fromCharCode(a, b, c);
 		}
 	} else {
 		let a = src[position$1++];
@@ -677,34 +710,34 @@ function shortStringInJS(length) {
 		let d = src[position$1++];
 		if ((a & 0x80) > 0 || (b & 0x80) > 0 || (c & 0x80) > 0 || (d & 0x80) > 0) {
 			position$1 -= 4;
-			return
+			return;
 		}
 		if (length < 6) {
 			if (length === 4)
-				return fromCharCode(a, b, c, d)
+				return fromCharCode(a, b, c, d);
 			else {
 				let e = src[position$1++];
 				if ((e & 0x80) > 0) {
 					position$1 -= 5;
-					return
+					return;
 				}
-				return fromCharCode(a, b, c, d, e)
+				return fromCharCode(a, b, c, d, e);
 			}
 		} else if (length < 8) {
 			let e = src[position$1++];
 			let f = src[position$1++];
 			if ((e & 0x80) > 0 || (f & 0x80) > 0) {
 				position$1 -= 6;
-				return
+				return;
 			}
 			if (length < 7)
-				return fromCharCode(a, b, c, d, e, f)
+				return fromCharCode(a, b, c, d, e, f);
 			let g = src[position$1++];
 			if ((g & 0x80) > 0) {
 				position$1 -= 7;
-				return
+				return;
 			}
-			return fromCharCode(a, b, c, d, e, f, g)
+			return fromCharCode(a, b, c, d, e, f, g);
 		} else {
 			let e = src[position$1++];
 			let f = src[position$1++];
@@ -712,34 +745,34 @@ function shortStringInJS(length) {
 			let h = src[position$1++];
 			if ((e & 0x80) > 0 || (f & 0x80) > 0 || (g & 0x80) > 0 || (h & 0x80) > 0) {
 				position$1 -= 8;
-				return
+				return;
 			}
 			if (length < 10) {
 				if (length === 8)
-					return fromCharCode(a, b, c, d, e, f, g, h)
+					return fromCharCode(a, b, c, d, e, f, g, h);
 				else {
 					let i = src[position$1++];
 					if ((i & 0x80) > 0) {
 						position$1 -= 9;
-						return
+						return;
 					}
-					return fromCharCode(a, b, c, d, e, f, g, h, i)
+					return fromCharCode(a, b, c, d, e, f, g, h, i);
 				}
 			} else if (length < 12) {
 				let i = src[position$1++];
 				let j = src[position$1++];
 				if ((i & 0x80) > 0 || (j & 0x80) > 0) {
 					position$1 -= 10;
-					return
+					return;
 				}
 				if (length < 11)
-					return fromCharCode(a, b, c, d, e, f, g, h, i, j)
+					return fromCharCode(a, b, c, d, e, f, g, h, i, j);
 				let k = src[position$1++];
 				if ((k & 0x80) > 0) {
 					position$1 -= 11;
-					return
+					return;
 				}
-				return fromCharCode(a, b, c, d, e, f, g, h, i, j, k)
+				return fromCharCode(a, b, c, d, e, f, g, h, i, j, k);
 			} else {
 				let i = src[position$1++];
 				let j = src[position$1++];
@@ -747,34 +780,34 @@ function shortStringInJS(length) {
 				let l = src[position$1++];
 				if ((i & 0x80) > 0 || (j & 0x80) > 0 || (k & 0x80) > 0 || (l & 0x80) > 0) {
 					position$1 -= 12;
-					return
+					return;
 				}
 				if (length < 14) {
 					if (length === 12)
-						return fromCharCode(a, b, c, d, e, f, g, h, i, j, k, l)
+						return fromCharCode(a, b, c, d, e, f, g, h, i, j, k, l);
 					else {
 						let m = src[position$1++];
 						if ((m & 0x80) > 0) {
 							position$1 -= 13;
-							return
+							return;
 						}
-						return fromCharCode(a, b, c, d, e, f, g, h, i, j, k, l, m)
+						return fromCharCode(a, b, c, d, e, f, g, h, i, j, k, l, m);
 					}
 				} else {
 					let m = src[position$1++];
 					let n = src[position$1++];
 					if ((m & 0x80) > 0 || (n & 0x80) > 0) {
 						position$1 -= 14;
-						return
+						return;
 					}
 					if (length < 15)
-						return fromCharCode(a, b, c, d, e, f, g, h, i, j, k, l, m, n)
+						return fromCharCode(a, b, c, d, e, f, g, h, i, j, k, l, m, n);
 					let o = src[position$1++];
 					if ((o & 0x80) > 0) {
 						position$1 -= 15;
-						return
+						return;
 					}
-					return fromCharCode(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o)
+					return fromCharCode(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o);
 				}
 			}
 		}
@@ -792,22 +825,22 @@ function readOnlyJSString() {
 			case 0xd9:
 			// str 8
 				length = src[position$1++];
-				break
+				break;
 			case 0xda:
 			// str 16
 				length = dataView.getUint16(position$1);
 				position$1 += 2;
-				break
+				break;
 			case 0xdb:
 			// str 32
 				length = dataView.getUint32(position$1);
 				position$1 += 4;
-				break
+				break;
 			default:
-				throw new Error('Expected string')
+				throw new Error('Expected string');
 		}
 	}
-	return readStringJS(length)
+	return readStringJS(length);
 }
 
 
@@ -815,7 +848,7 @@ function readBin(length) {
 	return currentUnpackr.copyBuffers ?
 		// specifically use the copying slice (not the node one)
 		Uint8Array.prototype.slice.call(src, position$1, position$1 += length) :
-		src.subarray(position$1, position$1 += length)
+		src.subarray(position$1, position$1 += length);
 }
 function readExt(length) {
 	let type = src[position$1++];
@@ -828,10 +861,10 @@ function readExt(length) {
 			} finally {
 				position$1 = end;
 			}
-		})
+		});
 	}
 	else
-		throw new Error('Unknown extension type ' + type)
+		throw new Error('Unknown extension type ' + type);
 }
 
 var keyCache = new Array(4096);
@@ -841,12 +874,12 @@ function readKey() {
 		// fixstr, potentially use key cache
 		length = length - 0xa0;
 		if (srcStringEnd >= position$1) // if it has been extracted, must use it (and faster anyway)
-			return srcString.slice(position$1 - srcStringStart, (position$1 += length) - srcStringStart)
+			return srcString.slice(position$1 - srcStringStart, (position$1 += length) - srcStringStart);
 		else if (!(srcStringEnd == 0 && srcEnd < 180))
-			return readFixedString(length)
+			return readFixedString(length);
 	} else { // not cacheable, go back and do a standard read
 		position$1--;
-		return asSafeString(read())
+		return asSafeString(read());
 	}
 	let key = ((length << 5) ^ (length > 1 ? dataView.getUint16(position$1) : length > 0 ? src[position$1] : 0)) & 0xfff;
 	let entry = keyCache[key];
@@ -859,7 +892,7 @@ function readKey() {
 			chunk = dataView.getUint32(checkPosition);
 			if (chunk != entry[i++]) {
 				checkPosition = 0x70000000;
-				break
+				break;
 			}
 			checkPosition += 4;
 		}
@@ -868,12 +901,12 @@ function readKey() {
 			chunk = src[checkPosition++];
 			if (chunk != entry[i++]) {
 				checkPosition = 0x70000000;
-				break
+				break;
 			}
 		}
 		if (checkPosition === end) {
 			position$1 = checkPosition;
-			return entry.string
+			return entry.string;
 		}
 		end -= 3;
 		checkPosition = position$1;
@@ -894,8 +927,8 @@ function readKey() {
 	// for small blocks, avoiding the overhead of the extract call is helpful
 	let string = length < 16 ? shortStringInJS(length) : longStringInJS(length);
 	if (string != null)
-		return entry.string = string
-	return entry.string = readFixedString(length)
+		return entry.string = string;
+	return entry.string = readFixedString(length);
 }
 
 function asSafeString(property) {
@@ -926,7 +959,12 @@ const recordDefinition = (id, highByte) => {
 	}
 	currentStructures[id] = structure;
 	structure.read = createStructureReader(structure, firstByte);
-	return structure.read()
+	// The high byte (if any) was already consumed as the `highByte` argument above, so read the
+	// record body directly. Going through structure.read (a second-byte reader when highByte === 0)
+	// would misinterpret the first value byte as a high byte — corrupting two-byte own-record
+	// definitions (0xd5 0x72 ...). createStructureReader stashes the un-wrapped body reader on
+	// structure.read0 precisely for this immediate post-definition read.
+	return (structure.read0 || structure.read)();
 };
 currentExtensions[0] = () => {}; // notepack defines extension 0 to mean undefined, so use that as the default here
 currentExtensions[0].noBuffer = true;
@@ -945,20 +983,20 @@ currentExtensions[0x42] = data => {
 			if (length <= 40) {
 				let out = view.getBigUint64(start);
 				for (let i = start + 8; i < end; i += 8) {
-					out <<= BigInt(64n);
+					out <<= BigInt(64);
 					out |= view.getBigUint64(i);
 				}
-				return out
+				return out;
 			}
 			// if (length === 8) return view.getBigUint64(start)
 			let middle = start + (length >> 4 << 3);
 			let left = decode(start, middle);
 			let right = decode(middle, end);
-			return (left << BigInt((end - middle) * 8)) | right
+			return (left << BigInt((end - middle) * 8)) | right;
 		};
 		head = (head << BigInt((view.byteLength - headLength) * 8)) | decode(headLength, view.byteLength);
 	}
-	return head
+	return head;
 };
 
 let errors = {
@@ -969,14 +1007,14 @@ currentExtensions[0x65] = () => {
 	if (!errors[data[0]]) {
 		let error = Error(data[1], { cause: data[2] });
 		error.name = data[0];
-		return error
+		return error;
 	}
-	return errors[data[0]](data[1], { cause: data[2] })
+	return errors[data[0]](data[1], { cause: data[2] });
 };
 
 currentExtensions[0x69] = (data) => {
 	// id extension (for structured clones)
-	if (currentUnpackr.structuredClone === false) throw new Error('Structured clone extension is disabled')
+	if (currentUnpackr.structuredClone === false) throw new Error('Structured clone extension is disabled');
 	let id = dataView.getUint32(position$1 - 4);
 	if (!referenceMap)
 		referenceMap = new Map();
@@ -997,7 +1035,7 @@ currentExtensions[0x69] = (data) => {
 	let targetProperties = read(); // read the next value as the target object to id
 	if (!refEntry.used) {
 		// no cycle, can just use the returned read object
-		return refEntry.target = targetProperties // replace the placeholder with the real one
+		return refEntry.target = targetProperties; // replace the placeholder with the real one
 	} else {
 		// there is a cycle, so we have to assign properties to original target
 		Object.assign(target, targetProperties);
@@ -1008,16 +1046,16 @@ currentExtensions[0x69] = (data) => {
 		for (let [k, v] of targetProperties.entries()) target.set(k, v);
 	if (target instanceof Set)
 		for (let i of Array.from(targetProperties)) target.add(i);
-	return target
+	return target;
 };
 
 currentExtensions[0x70] = (data) => {
 	// pointer extension (for structured clones)
-	if (currentUnpackr.structuredClone === false) throw new Error('Structured clone extension is disabled')
+	if (currentUnpackr.structuredClone === false) throw new Error('Structured clone extension is disabled');
 	let id = dataView.getUint32(position$1 - 4);
 	let refEntry = referenceMap.get(id);
 	refEntry.used = true;
-	return refEntry.target
+	return refEntry.target;
 };
 
 currentExtensions[0x73] = () => new Set(read());
@@ -1032,15 +1070,15 @@ currentExtensions[0x74] = (data) => {
 
 	let typedArrayName = typedArrays[typeCode];
 	if (!typedArrayName) {
-		if (typeCode === 16) return buffer
-		if (typeCode === 17) return new DataView(buffer)
-		throw new Error('Could not find typed array for code ' + typeCode)
+		if (typeCode === 16) return buffer;
+		if (typeCode === 17) return new DataView(buffer);
+		throw new Error('Could not find typed array for code ' + typeCode);
 	}
-	return new glbl[typedArrayName](buffer)
+	return new glbl[typedArrayName](buffer);
 };
 currentExtensions[0x78] = () => {
 	let data = read();
-	return new RegExp(data[0], data[1])
+	return new RegExp(data[0], data[1]);
 };
 const TEMP_BUNDLE = [];
 currentExtensions[0x62] = (data) => {
@@ -1053,28 +1091,30 @@ currentExtensions[0x62] = (data) => {
 	bundledStrings$1.position1 = 0;
 	bundledStrings$1.postBundlePosition = position$1;
 	position$1 = dataPosition;
-	return read()
+	return read();
 };
 
 currentExtensions[0xff] = (data) => {
 	// 32-bit date extension
 	if (data.length == 4)
-		return new Date((data[0] * 0x1000000 + (data[1] << 16) + (data[2] << 8) + data[3]) * 1000)
+		return new Date((data[0] * 0x1000000 + (data[1] << 16) + (data[2] << 8) + data[3]) * 1000);
 	else if (data.length == 8)
 		return new Date(
 			((data[0] << 22) + (data[1] << 14) + (data[2] << 6) + (data[3] >> 2)) / 1000000 +
-			((data[3] & 0x3) * 0x100000000 + data[4] * 0x1000000 + (data[5] << 16) + (data[6] << 8) + data[7]) * 1000)
+			((data[3] & 0x3) * 0x100000000 + data[4] * 0x1000000 + (data[5] << 16) + (data[6] << 8) + data[7]) * 1000);
 	else if (data.length == 12)
 		return new Date(
 			((data[0] << 24) + (data[1] << 16) + (data[2] << 8) + data[3]) / 1000000 +
-			(((data[4] & 0x80) ? -281474976710656 : 0) + data[6] * 0x10000000000 + data[7] * 0x100000000 + data[8] * 0x1000000 + (data[9] << 16) + (data[10] << 8) + data[11]) * 1000)
+			(((data[4] & 0x80) ? -281474976710656 : 0) + data[6] * 0x10000000000 + data[7] * 0x100000000 + data[8] * 0x1000000 + (data[9] << 16) + (data[10] << 8) + data[11]) * 1000);
 	else
-		return new Date('invalid')
+		return new Date('invalid');
 };
 // registration of bulk record definition?
 // currentExtensions[0x52] = () =>
 
 function saveState(callback) {
+	if (currentUnpackr && currentUnpackr._onSaveState)
+		currentUnpackr._onSaveState();
 	let savedSrcEnd = srcEnd;
 	let savedPosition = position$1;
 	let savedSrcStringStart = srcStringStart;
@@ -1103,7 +1143,7 @@ function saveState(callback) {
 	currentStructures.splice(0, currentStructures.length, ...savedStructuresContents);
 	currentUnpackr = savedPackr;
 	dataView = new DataView(src.buffer, src.byteOffset, src.byteLength);
-	return value
+	return value;
 }
 function clearSource() {
 	src = null;
@@ -1138,8 +1178,12 @@ let u8Array = new Uint8Array(f32Array.buffer, 0, 4);
 function roundFloat32(float32Number) {
 	f32Array[0] = float32Number;
 	let multiplier = mult10[((u8Array[3] & 0x7f) << 1) | (u8Array[2] >> 7)];
-	return ((multiplier * float32Number + (float32Number > 0 ? 0.5 : -0.5)) >> 0) / multiplier
+	return ((multiplier * float32Number + (float32Number > 0 ? 0.5 : -0.5)) >> 0) / multiplier;
 }
+// Marker for downstream libraries (e.g. structon) to detect per-instance
+// struct-decoding hooks (this._readStruct, this._onLoadedStructures,
+// this._onSaveState).  See `checkedRead` for the dispatch.
+Unpackr.SUPPORTS_STRUCT_HOOKS = true;
 
 let textEncoder;
 try {
@@ -1148,7 +1192,7 @@ try {
 let extensions, extensionClasses;
 const hasNodeBuffer = typeof Buffer !== 'undefined';
 const ByteArrayAllocate = hasNodeBuffer ?
-	function(length) { return Buffer.allocUnsafeSlow(length) } : Uint8Array;
+	function(length) { return Buffer.allocUnsafeSlow(length); } : Uint8Array;
 const ByteArray = hasNodeBuffer ? Buffer : Uint8Array;
 const MAX_BUFFER_SIZE = hasNodeBuffer ? 0x100000000 : 0x7fd00000;
 let target, keysTarget;
@@ -1156,7 +1200,6 @@ let targetView;
 let position = 0;
 let safeEnd;
 let bundledStrings = null;
-let writeStructSlots;
 const MAX_BUNDLE_SIZE = 0x5500; // maximum characters such that the encoded bytes fits in 16 bits.
 const hasNonLatin = /[\u0080-\uFFFF]/;
 const RECORD_SYMBOL = Symbol('record-id');
@@ -1169,10 +1212,10 @@ class Packr extends Unpackr {
 		let structures;
 		let referenceMap;
 		let encodeUtf8 = ByteArray.prototype.utf8Write ? function(string, position) {
-			return target.utf8Write(string, position, target.byteLength - position)
+			return target.utf8Write(string, position, target.byteLength - position);
 		} : (textEncoder && textEncoder.encodeInto) ?
 			function(string, position) {
-				return textEncoder.encodeInto(string, target.subarray(position)).written
+				return textEncoder.encodeInto(string, target.subarray(position)).written;
 			} : false;
 
 		let packr = this;
@@ -1184,7 +1227,7 @@ class Packr extends Unpackr {
 		if (maxSharedStructures == null)
 			maxSharedStructures = hasSharedStructures ? 32 : 0;
 		if (maxSharedStructures > 8160)
-			throw new Error('Maximum maxSharedStructure is 8160')
+			throw new Error('Maximum maxSharedStructure is 8160');
 		if (options.structuredClone && options.moreTypes == undefined) {
 			this.moreTypes = true;
 		}
@@ -1198,7 +1241,7 @@ class Packr extends Unpackr {
 		let sharedLimitId = maxSharedStructures + 0x40;
 		let maxStructureId = maxSharedStructures + maxOwnStructures + 0x40;
 		if (maxStructureId > 8256) {
-			throw new Error('Maximum maxSharedStructure + maxOwnStructure is 8192')
+			throw new Error('Maximum maxSharedStructure + maxOwnStructure is 8192');
 		}
 		let recordIdsToRemove = [];
 		let transitionsCount = 0;
@@ -1234,7 +1277,7 @@ class Packr extends Unpackr {
 				let sharedLength = structures.sharedLength || 0;
 				if (sharedLength > maxSharedStructures) {
 					//if (maxSharedStructures <= 32 && structures.sharedLength > 32) // TODO: could support this, but would need to update the limit ids
-					throw new Error('Shared structures is larger than maximum shared structures, try increasing maxSharedStructures to ' + structures.sharedLength)
+					throw new Error('Shared structures is larger than maximum shared structures, try increasing maxSharedStructures to ' + structures.sharedLength);
 				}
 				if (!structures.transitions) {
 					// rebuild our structure transitions
@@ -1242,7 +1285,7 @@ class Packr extends Unpackr {
 					for (let i = 0; i < sharedLength; i++) {
 						let keys = structures[i];
 						if (!keys)
-							continue
+							continue;
 						let nextTransition, transition = structures.transitions;
 						for (let j = 0, l = keys.length; j < l; j++) {
 							let key = keys[j];
@@ -1264,7 +1307,7 @@ class Packr extends Unpackr {
 				hasSharedUpdate = false;
 			let encodingError;
 			try {
-				if (packr.randomAccessStructure && value && typeof value === 'object') {
+				if (packr._writeStruct && value && typeof value === 'object') {
 					if (value.constructor === Object) writeStruct(value); // simple object
 					else if (value.constructor !== Map && !Array.isArray(value) && !extensionClasses.some(extClass => value instanceof extClass)) {
 						// allow user classes, if they don't need special handling (but do use toJSON if available)
@@ -1308,15 +1351,15 @@ class Packr extends Unpackr {
 					packr.offset = position;
 					let serialized = insertIds(target.subarray(start, position), idsToInsert);
 					referenceMap = null;
-					return serialized
+					return serialized;
 				}
 				packr.offset = position; // update the offset so next serialization doesn't write over our buffer, but can continue writing to same buffer sequentially
 				if (encodeOptions & REUSE_BUFFER_MODE) {
 					target.start = start;
 					target.end = position;
-					return target
+					return target;
 				}
-				return target.subarray(start, position) // position can change if we call pack again in saveStructures, so we get the buffer now
+				return target.subarray(start, position); // position can change if we call pack again in saveStructures, so we get the buffer now
 			} catch(error) {
 				encodingError = error;
 				throw error;
@@ -1327,16 +1370,23 @@ class Packr extends Unpackr {
 						let sharedLength = structures.sharedLength || 0;
 						// we can't rely on start/end with REUSE_BUFFER_MODE since they will (probably) change when we save
 						let returnBuffer = target.subarray(start, position);
-						let newSharedData = prepareStructures(structures, packr);
+						let newSharedData = (packr._prepareStructures || prepareStructures)(structures, packr);
 						if (!encodingError) { // TODO: If there is an encoding error, should make the structures as uninitialized so they get rebuilt next time
 							if (packr.saveStructures(newSharedData, newSharedData.isCompatible) === false) {
-								// get updated structures and try again if the update failed
-								return packr.pack(value, encodeOptions)
+								// The save was declined (a concurrent writer updated the shared structures,
+								// or the store transaction did not durably commit). Our in-memory
+								// structures + transition trie may now reference record ids that were
+								// never persisted; re-packing as-is would re-emit the same record pointing
+								// at an unpersisted structure (-> "Record id is not defined" on decode).
+								// Mark structures uninitialized so the re-pack reloads durable structures
+								// via getStructures, rebuilds the transition trie, and re-mints + re-saves.
+								structures.uninitialized = true;
+								return packr.pack(value, encodeOptions);
 							}
 							packr.lastNamedStructuresLength = sharedLength;
 							// don't keep large buffers around
 							if (target.length > 0x40000000) target = null;
-							return returnBuffer
+							return returnBuffer;
 						}
 					}
 				}
@@ -1422,7 +1472,7 @@ class Packr extends Unpackr {
 					bundledStrings[twoByte ? 0 : 1] += value;
 					target[position++] = 0xc1;
 					pack(twoByte ? -strLength : strLength);
-					return
+					return;
 				}
 				let headerSize;
 				// first we estimate the header size, so we can write to the correct location
@@ -1496,7 +1546,7 @@ class Packr extends Unpackr {
 			} else if (type === 'number') {
 				if (value >>> 0 === value) {// positive integer, 32-bit or less
 					// positive uint
-					if (value < 0x20 || (value < 0x80 && this.useRecords === false) || (value < 0x40 && !this.randomAccessStructure)) {
+					if (value < 0x20 || (value < 0x80 && this.useRecords === false) || (value < 0x40 && !this._writeStruct)) {
 						target[position++] = value;
 					} else if (value < 0x100) {
 						target[position++] = 0xcc;
@@ -1535,7 +1585,7 @@ class Packr extends Unpackr {
 								// this checks for rounding of numbers that were encoded in 32-bit float to nearest significant decimal digit that could be preserved
 								((xShifted = value * mult10[((target[position] & 0x7f) << 1) | (target[position + 1] >> 7)]) >> 0) === xShifted) {
 							position += 4;
-							return
+							return;
 						} else
 							position--; // move back into position for writing a double
 					}
@@ -1558,7 +1608,7 @@ class Packr extends Unpackr {
 							target[position++] = 0x70; // "p" for pointer
 							targetView.setUint32(position, referee.id);
 							position += 4;
-							return
+							return;
 						} else
 							referenceMap.set(value, { offset: position - start });
 					}
@@ -1608,7 +1658,7 @@ class Packr extends Unpackr {
 									} else {
 										pack(writeResult);
 									}
-									return
+									return;
 								}
 								let currentTarget = target;
 								let currentTargetView = targetView;
@@ -1625,7 +1675,7 @@ class Packr extends Unpackr {
 											makeRoom(position);
 										return {
 											target, targetView, position: position - size
-										}
+										};
 									}, pack);
 								} finally {
 									// restore current target information (unless already restored)
@@ -1641,7 +1691,7 @@ class Packr extends Unpackr {
 										makeRoom(result.length + position);
 									position = writeExtensionData(result, target, position, extension.type);
 								}
-								return
+								return;
 							}
 						}
 						// check isArray after extensions, because extensions can extend Array
@@ -1653,7 +1703,7 @@ class Packr extends Unpackr {
 								const json = value.toJSON();
 								// if for some reason value.toJSON returns itself it'll loop forever
 								if (json !== value)
-									return pack(json)
+									return pack(json);
 							}
 
 							// if there is a writeFunction, use it, otherwise just encode as undefined
@@ -1692,7 +1742,7 @@ class Packr extends Unpackr {
 							let chunks = [];
 							while (true) {
 								chunks.push(value & mask);
-								if ((value >> BigInt(63)) === empty) break
+								if ((value >> BigInt(63)) === empty) break;
 								value >>= BigInt(64);
 							}
 
@@ -1724,11 +1774,11 @@ class Packr extends Unpackr {
 						if (array.length + position > safeEnd)
 							makeRoom(array.length + position);
 						position = writeExtensionData(array, target, position, 0x42);
-						return
+						return;
 					} else {
 						throw new RangeError(value + ' was too large to fit in MessagePack 64-bit integer format, use' +
 							' useBigIntExtension, or set largeBigIntToFloat to convert to float-64, or set' +
-							' largeBigIntToString to convert to string')
+							' largeBigIntToString to convert to string');
 					}
 				}
 				position += 8;
@@ -1741,7 +1791,7 @@ class Packr extends Unpackr {
 					target[position++] = 0;
 				}
 			} else {
-				throw new Error('Unknown type: ' + type)
+				throw new Error('Unknown type: ' + type);
 			}
 		};
 
@@ -1887,12 +1937,30 @@ class Packr extends Unpackr {
 			checkUseRecords(object) ? writeRecord(object) : writePlainObject(object);
 		} : writeRecord;
 
+		const writeStruct = (object) => {
+			let newPosition = packr._writeStruct(object, target, start, position, structures, makeRoom, (value, newPosition, notifySharedUpdate) => {
+				if (notifySharedUpdate)
+					return hasSharedUpdate = true;
+				position = newPosition;
+				let startTarget = target;
+				pack(value);
+				resetStructures();
+				if (startTarget !== target) {
+					return { position, targetView, target }; // indicate the buffer was re-allocated
+				}
+				return position;
+			});
+			if (newPosition === 0) // bail and go to a msgpack object
+				return writeObject(object);
+			position = newPosition;
+		};
+
 		const makeRoom = (end) => {
 			let newSize;
 			if (end > 0x1000000) {
 				// special handling for really large buffers
 				if ((end - start) > MAX_BUFFER_SIZE)
-					throw new Error('Packed buffer would be larger than maximum buffer size')
+					throw new Error('Packed buffer would be larger than maximum buffer size');
 				newSize = Math.min(MAX_BUFFER_SIZE,
 					Math.round(Math.max((end - start) * (end > 0x4000000 ? 1.25 : 2), 0x400000) / 0x1000) * 0x1000);
 			} else // faster handling for smaller buffers
@@ -1907,7 +1975,7 @@ class Packr extends Unpackr {
 			position -= start;
 			start = 0;
 			safeEnd = newBuffer.length - 10;
-			return target = newBuffer
+			return target = newBuffer;
 		};
 		const newRecord = (transition, keys, newTransitions) => {
 			let recordId = structures.nextId;
@@ -1989,23 +2057,6 @@ class Packr extends Unpackr {
 				target[insertionOffset + start] = keysTarget[0];
 			}
 		};
-		const writeStruct = (object) => {
-			let newPosition = writeStructSlots(object, target, start, position, structures, makeRoom, (value, newPosition, notifySharedUpdate) => {
-				if (notifySharedUpdate)
-					return hasSharedUpdate = true;
-				position = newPosition;
-				let startTarget = target;
-				pack(value);
-				resetStructures();
-				if (startTarget !== target) {
-					return { position, targetView, target }; // indicate the buffer was re-allocated
-				}
-				return position;
-			}, this);
-			if (newPosition === 0) // bail and go to a msgpack object
-				return writeObject(object);
-			position = newPosition;
-		};
 	}
 	useBuffer(buffer) {
 		// this means we are finished using our own buffer and we can write over it safely
@@ -2048,7 +2099,7 @@ extensions = [{
 		} else if (isNaN(seconds)) {
 			if (this.onInvalidDate) {
 				allocateForWrite(0);
-				return pack(this.onInvalidDate())
+				return pack(this.onInvalidDate());
 			}
 			// Intentionally invalid timestamp
 			let { target, targetView, position} = allocateForWrite(3);
@@ -2069,7 +2120,7 @@ extensions = [{
 	pack(set, allocateForWrite, pack) {
 		if (this.setAsEmptyObject) {
 			allocateForWrite(0);
-			return pack({})
+			return pack({});
 		}
 		let array = Array.from(set);
 		let { target, position} = allocateForWrite(this.moreTypes ? 3 : 0);
@@ -2177,19 +2228,19 @@ function writeExtensionData(result, target, position, type) {
 	switch (length) {
 		case 1:
 			target[position++] = 0xd4;
-			break
+			break;
 		case 2:
 			target[position++] = 0xd5;
-			break
+			break;
 		case 4:
 			target[position++] = 0xd6;
-			break
+			break;
 		case 8:
 			target[position++] = 0xd7;
-			break
+			break;
 		case 16:
 			target[position++] = 0xd8;
-			break
+			break;
 		default:
 			if (length < 0x100) {
 				target[position++] = 0xc7;
@@ -2209,7 +2260,7 @@ function writeExtensionData(result, target, position, type) {
 	target[position++] = type;
 	target.set(result, position);
 	position += length;
-	return position
+	return position;
 }
 
 function insertIds(serialized, idsToInsert) {
@@ -2231,7 +2282,7 @@ function insertIds(serialized, idsToInsert) {
 		serialized[position++] = id & 0xff;
 		lastEnd = offset;
 	}
-	return serialized
+	return serialized;
 }
 
 function writeBundles(start, pack, incrementPosition) {
@@ -2248,9 +2299,9 @@ function writeBundles(start, pack, incrementPosition) {
 function addExtension(extension) {
 	if (extension.Class) {
 		if (!extension.pack && !extension.write)
-			throw new Error('Extension has no pack or write function')
+			throw new Error('Extension has no pack or write function');
 		if (extension.pack && !extension.type)
-			throw new Error('Extension has no type (numeric code to identify the extension)')
+			throw new Error('Extension has no type (numeric code to identify the extension)');
 		extensionClasses.unshift(extension.Class);
 		extensions.unshift(extension);
 	}
@@ -2263,8 +2314,13 @@ function prepareStructures(structures, packr) {
 			packr._mergeStructures(existingStructures);
 		return compatible;
 	};
-	return structures
+	return structures;
 }
+
+// Marker for downstream libraries (e.g. structon) to detect that this Packr
+// supports per-instance struct-encoding hooks (this._writeStruct,
+// this._prepareStructures).  See `pack` for the dispatch.
+Packr.SUPPORTS_STRUCT_HOOKS = true;
 
 let defaultPackr = new Packr({ useRecords: false });
 const pack = defaultPackr.pack;
@@ -2284,13 +2340,13 @@ const RESERVE_START_SPACE = 2048;
  */
 function packIter (objectIterator, options = {}) {
   if (!objectIterator || typeof objectIterator !== 'object') {
-    throw new Error('first argument must be an Iterable, Async Iterable, or a Promise for an Async Iterable')
+    throw new Error('first argument must be an Iterable, Async Iterable, or a Promise for an Async Iterable');
   } else if (typeof objectIterator[Symbol.iterator] === 'function') {
-    return packIterSync(objectIterator, options)
+    return packIterSync(objectIterator, options);
   } else if (typeof objectIterator.then === 'function' || typeof objectIterator[Symbol.asyncIterator] === 'function') {
-    return packIterAsync(objectIterator, options)
+    return packIterAsync(objectIterator, options);
   } else {
-    throw new Error('first argument must be an Iterable, Async Iterable, Iterator, Async Iterator, or a Promise')
+    throw new Error('first argument must be an Iterable, Async Iterable, Iterator, Async Iterator, or a Promise');
   }
 }
 
@@ -2317,7 +2373,7 @@ async function * packIterAsync (objectIterator, options) {
  */
 function unpackIter (bufferIterator, options = {}) {
   if (!bufferIterator || typeof bufferIterator !== 'object') {
-    throw new Error('first argument must be an Iterable, Async Iterable, Iterator, Async Iterator, or a promise')
+    throw new Error('first argument must be an Iterable, Async Iterable, Iterator, Async Iterator, or a promise');
   }
 
   const unpackr = new Unpackr(options);
@@ -2337,10 +2393,10 @@ function unpackIter (bufferIterator, options = {}) {
         incomplete = chunk.slice(err.lastPosition);
         yields = err.values;
       } else {
-        throw err
+        throw err;
       }
     }
-    return yields
+    return yields;
   };
 
   if (typeof bufferIterator[Symbol.iterator] === 'function') {
@@ -2348,13 +2404,13 @@ function unpackIter (bufferIterator, options = {}) {
       for (const value of bufferIterator) {
         yield * parser(value);
       }
-    })()
+    })();
   } else if (typeof bufferIterator[Symbol.asyncIterator] === 'function') {
     return (async function * iter () {
       for await (const value of bufferIterator) {
         yield * parser(value);
       }
-    })()
+    })();
   }
 }
 const decodeIter = unpackIter;

@@ -1,4 +1,4 @@
-import { Readable, Writable, Subscriber, Unsubscriber, Updater } from 'svelte/store';
+import { Readable, Updater, Writable, Subscriber, Unsubscriber } from 'svelte/store';
 
 /**
  * Provides a basic test for a given variable to test if it has the shape of a readable store by having a `subscribe`

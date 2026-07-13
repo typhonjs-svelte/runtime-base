@@ -65,6 +65,22 @@ declare function decode(messagePack: Buffer | Uint8Array, options?: UnpackOption
 declare function addExtension(extension: Extension): void;
 declare function clearSource(): void;
 declare function roundFloat32(float32Number: number): number;
+declare function decodeIter(
+  bufferIterator:
+    | Iterable<Buffer | Uint8Array>
+    | Iterator<Buffer | Uint8Array>
+    | AsyncIterable<Buffer | Uint8Array>
+    | AsyncIterator<Buffer | Uint8Array>,
+  options?: Options,
+): AsyncGenerator<any>;
+declare function encodeIter(
+  objectIterator:
+    | Iterable<Buffer | Uint8Array>
+    | Iterator<Buffer | Uint8Array>
+    | AsyncIterable<Buffer | Uint8Array>
+    | AsyncIterator<Buffer | Uint8Array>,
+  options?: Options,
+): IterableIterator<Buffer> | Promise<AsyncIterableIterator<Buffer>>;
 declare const C1: {};
 declare let isNativeAccelerationEnabled: boolean;
 
@@ -108,7 +124,9 @@ export {
   addExtension,
   clearSource,
   decode,
+  decodeIter,
   encode,
+  encodeIter,
   isNativeAccelerationEnabled,
   pack,
   roundFloat32,
