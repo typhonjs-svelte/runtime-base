@@ -10,6 +10,7 @@ export default defineConfig({
       coverage: {
          include: [
             'src/svelte/reactivity/**',
+            'src/svelte/util/control/**',
             'src/util/dom/style/resolve/**'
          ],
          exclude: ['test/**', 'src/**/*.d.ts'],
