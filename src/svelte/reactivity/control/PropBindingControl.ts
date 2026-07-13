@@ -35,26 +35,29 @@ import type { TypePredicate } from '#runtime/util/predicate';
  * @example Svelte component store resolution
  *
  * ```svelte
- * <script>
+ * <script lang="ts">
  *    import { writable } from 'svelte/store';
  *
- *    import { PropBindingControl } from './PropBindingControl';
- *    import { isMinimalWritableStore } from '#runtime/svelte/store/util';
+ *    import { PropBindingControl }       from '#runtime/svelte/reactivity';
+ *    import { isMinimalWritableStore }   from '#runtime/svelte/store/util';
  *
- *    export let input = {};
+ *    // Combined all options object.
+ *    export let options = {};
+ *
+ *    // Individual prop
  *    export let store = void 0;
  *
  *    const storeControl = new PropBindingControl(
  *       isMinimalWritableStore,
- *       writable(void 0)
+ *       writable(void 0)  // Default internal store when no prop or options stores provided.
  *    );
  *
- *    // A directly supplied `store` takes precedence. Otherwise, `input.store` is selected, followed by the
+ *    // A directly supplied `store` takes precedence. Otherwise, `options.store` is selected, followed by the
  *    // component-owned writable fallback.
  *    //
  *    // Assigning the result back to `store` publishes the effective store through `bind:store` without causing
  *    // that published value to become a permanent direct override.
- *    $: store = storeControl.resolve(store, input.store);
+ *    $: store = storeControl.resolve(store, options.store);
  * </script>
  * ```
  */
