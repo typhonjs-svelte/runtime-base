@@ -1,8 +1,8 @@
 import { degToRad }              from '#runtime/math/util';
 import { Mat4, Vec3 }            from '#runtime/math/gl-matrix';
+import { isFinite }              from '#runtime/util/predicate';
 
 import { TJSTransformData }      from './TJSTransformData';
-import { NumberGuard }           from '../util';
 
 import type {
    Mat4Like,
@@ -390,8 +390,8 @@ export class TJSTransforms implements TransformAPI
       position.top! += valOffsetTop;
       position.left! += valOffsetLeft;
 
-      const width: number = NumberGuard.isFinite(position.width) ? position.width : valWidth;
-      const height: number = NumberGuard.isFinite(position.height) ? position.height : valHeight;
+      const width: number = isFinite(position.width) ? position.width : valWidth;
+      const height: number = isFinite(position.height) ? position.height : valHeight;
 
       const rect: Vec3[] = output.corners;
 
@@ -755,7 +755,7 @@ export class TJSTransforms implements TransformAPI
          {
             const value: any = data[key];
 
-            if (NumberGuard.isFinite(value))
+            if (isFinite(value))
             {
                this.#data[key] = value;
             }

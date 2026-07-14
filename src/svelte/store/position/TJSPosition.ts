@@ -9,6 +9,10 @@ import {
    isPlainObject }                  from '#runtime/util/object';
 
 import {
+   isFinite,
+   isFiniteOrNull }                 from '#runtime/util/predicate';
+
+import {
    AnimationAPIImpl,
    AnimationGroupAPIImpl }          from './animation';
 
@@ -34,9 +38,7 @@ import {
    UpdateElementData,
    UpdateElementManager }           from './update';
 
-import {
-   NumberGuard,
-   TJSPositionStyleCache }          from './util';
+import { TJSPositionStyleCache }    from './util';
 
 import type {
    Subscriber,
@@ -936,49 +938,49 @@ class TJSPosition implements TJSPosition.WritableExt
          if (position === null) { return this; }
       }
 
-      if (NumberGuard.isFinite(position.left))
+      if (isFinite(position.left))
       {
          position.left = Math.round(position.left);
 
          if (data.left !== position.left) { data.left = position.left; changeSet.left = true; }
       }
 
-      if (NumberGuard.isFinite(position.top))
+      if (isFinite(position.top))
       {
          position.top = Math.round(position.top);
 
          if (data.top !== position.top) { data.top = position.top; changeSet.top = true; }
       }
 
-      if (NumberGuard.isFiniteOrNull(position.maxHeight))
+      if (isFiniteOrNull(position.maxHeight))
       {
          position.maxHeight = typeof position.maxHeight === 'number' ? Math.round(position.maxHeight) : null;
 
          if (data.maxHeight !== position.maxHeight) { data.maxHeight = position.maxHeight; changeSet.maxHeight = true; }
       }
 
-      if (NumberGuard.isFiniteOrNull(position.maxWidth))
+      if (isFiniteOrNull(position.maxWidth))
       {
          position.maxWidth = typeof position.maxWidth === 'number' ? Math.round(position.maxWidth) : null;
 
          if (data.maxWidth !== position.maxWidth) { data.maxWidth = position.maxWidth; changeSet.maxWidth = true; }
       }
 
-      if (NumberGuard.isFiniteOrNull(position.minHeight))
+      if (isFiniteOrNull(position.minHeight))
       {
          position.minHeight = typeof position.minHeight === 'number' ? Math.round(position.minHeight) : null;
 
          if (data.minHeight !== position.minHeight) { data.minHeight = position.minHeight; changeSet.minHeight = true; }
       }
 
-      if (NumberGuard.isFiniteOrNull(position.minWidth))
+      if (isFiniteOrNull(position.minWidth))
       {
          position.minWidth = typeof position.minWidth === 'number' ? Math.round(position.minWidth) : null;
 
          if (data.minWidth !== position.minWidth) { data.minWidth = position.minWidth; changeSet.minWidth = true; }
       }
 
-      if (NumberGuard.isFiniteOrNull(position.rotateX))
+      if (isFiniteOrNull(position.rotateX))
       {
          if (data.rotateX !== position.rotateX)
          {
@@ -987,7 +989,7 @@ class TJSPosition implements TJSPosition.WritableExt
          }
       }
 
-      if (NumberGuard.isFiniteOrNull(position.rotateY))
+      if (isFiniteOrNull(position.rotateY))
       {
          if (data.rotateY !== position.rotateY)
          {
@@ -996,7 +998,7 @@ class TJSPosition implements TJSPosition.WritableExt
          }
       }
 
-      if (NumberGuard.isFiniteOrNull(position.rotateZ))
+      if (isFiniteOrNull(position.rotateZ))
       {
          if (data.rotateZ !== position.rotateZ)
          {
@@ -1005,7 +1007,7 @@ class TJSPosition implements TJSPosition.WritableExt
          }
       }
 
-      if (NumberGuard.isFiniteOrNull(position.scale))
+      if (isFiniteOrNull(position.scale))
       {
          position.scale = typeof position.scale === 'number' ? clamp(position.scale, 0, 1000) : null;
 
@@ -1026,7 +1028,7 @@ class TJSPosition implements TJSPosition.WritableExt
          }
       }
 
-      if (NumberGuard.isFiniteOrNull(position.translateX))
+      if (isFiniteOrNull(position.translateX))
       {
          if (data.translateX !== position.translateX)
          {
@@ -1035,7 +1037,7 @@ class TJSPosition implements TJSPosition.WritableExt
          }
       }
 
-      if (NumberGuard.isFiniteOrNull(position.translateY))
+      if (isFiniteOrNull(position.translateY))
       {
          if (data.translateY !== position.translateY)
          {
@@ -1044,7 +1046,7 @@ class TJSPosition implements TJSPosition.WritableExt
          }
       }
 
-      if (NumberGuard.isFiniteOrNull(position.translateZ))
+      if (isFiniteOrNull(position.translateZ))
       {
          if (data.translateZ !== position.translateZ)
          {
@@ -1053,7 +1055,7 @@ class TJSPosition implements TJSPosition.WritableExt
          }
       }
 
-      if (NumberGuard.isFinite(position.zIndex))
+      if (isFinite(position.zIndex))
       {
          position.zIndex = Math.round(position.zIndex);
 
@@ -1062,7 +1064,7 @@ class TJSPosition implements TJSPosition.WritableExt
 
       const widthIsObservable: boolean = position.width === 'auto' || position.width === 'inherit';
 
-      if (NumberGuard.isFiniteOrNull(position.width) || widthIsObservable)
+      if (isFiniteOrNull(position.width) || widthIsObservable)
       {
          position.width = typeof position.width === 'number' ? Math.round(position.width) : position.width;
 
@@ -1075,7 +1077,7 @@ class TJSPosition implements TJSPosition.WritableExt
 
       const heightIsObservable: boolean = position.height === 'auto' || position.height === 'inherit';
 
-      if (NumberGuard.isFiniteOrNull(position.height) || heightIsObservable)
+      if (isFiniteOrNull(position.height) || heightIsObservable)
       {
          position.height = typeof position.height === 'number' ? Math.round(position.height) : position.height;
 
@@ -1245,10 +1247,10 @@ class TJSPosition implements TJSPosition.WritableExt
          }
          else
          {
-            const newWidth: number | 'auto' | 'inherit' | null = NumberGuard.isFinite(width) ? width :
+            const newWidth: number | 'auto' | 'inherit' | null = isFinite(width) ? width :
              currentPosition.width;
 
-            currentPosition.width = width = NumberGuard.isFinite(newWidth) ? Math.round(newWidth) :
+            currentPosition.width = width = isFinite(newWidth) ? Math.round(newWidth) :
              styleCache.offsetWidth;
          }
       }
@@ -1274,10 +1276,10 @@ class TJSPosition implements TJSPosition.WritableExt
          }
          else
          {
-            const newHeight: number | 'auto' | 'inherit' | null = NumberGuard.isFinite(height) ? height :
+            const newHeight: number | 'auto' | 'inherit' | null = isFinite(height) ? height :
              currentPosition.height;
 
-            currentPosition.height = height = NumberGuard.isFinite(newHeight) ? Math.round(newHeight) :
+            currentPosition.height = height = isFinite(newHeight) ? Math.round(newHeight) :
              styleCache.offsetHeight;
          }
       }
@@ -1287,7 +1289,7 @@ class TJSPosition implements TJSPosition.WritableExt
       }
 
       // Update left
-      if (NumberGuard.isFinite(left))
+      if (isFinite(left))
       {
          currentPosition.left = left;
       }
@@ -1310,46 +1312,46 @@ class TJSPosition implements TJSPosition.WritableExt
           this.#options.initial.getTop(height as number) : 0;
       }
 
-      if (NumberGuard.isFiniteOrNull(maxHeight))
+      if (isFiniteOrNull(maxHeight))
       {
-         currentPosition.maxHeight = NumberGuard.isFinite(maxHeight) ? Math.round(maxHeight) : null;
+         currentPosition.maxHeight = isFinite(maxHeight) ? Math.round(maxHeight) : null;
       }
 
-      if (NumberGuard.isFiniteOrNull(maxWidth))
+      if (isFiniteOrNull(maxWidth))
       {
-         currentPosition.maxWidth = NumberGuard.isFinite(maxWidth) ? Math.round(maxWidth) : null;
+         currentPosition.maxWidth = isFinite(maxWidth) ? Math.round(maxWidth) : null;
       }
 
-      if (NumberGuard.isFiniteOrNull(minHeight))
+      if (isFiniteOrNull(minHeight))
       {
-         currentPosition.minHeight = NumberGuard.isFinite(minHeight) ? Math.round(minHeight) : null;
+         currentPosition.minHeight = isFinite(minHeight) ? Math.round(minHeight) : null;
       }
 
-      if (NumberGuard.isFiniteOrNull(minWidth))
+      if (isFiniteOrNull(minWidth))
       {
-         currentPosition.minWidth = NumberGuard.isFinite(minWidth) ? Math.round(minWidth) : null;
+         currentPosition.minWidth = isFinite(minWidth) ? Math.round(minWidth) : null;
       }
 
       // Update rotate X/Y/Z, scale, z-index
-      if (NumberGuard.isFiniteOrNull(rotateX)) { currentPosition.rotateX = rotateX; }
-      if (NumberGuard.isFiniteOrNull(rotateY)) { currentPosition.rotateY = rotateY; }
+      if (isFiniteOrNull(rotateX)) { currentPosition.rotateX = rotateX; }
+      if (isFiniteOrNull(rotateY)) { currentPosition.rotateY = rotateY; }
 
       // Handle alias for rotateZ. First check if `rotateZ` is valid and different from the current value. Next, check
       // if `rotation` is valid and use it for `rotateZ`.
-      if (rotateZ !== currentPosition.rotateZ && (NumberGuard.isFiniteOrNull(rotateZ)))
+      if (rotateZ !== currentPosition.rotateZ && (isFiniteOrNull(rotateZ)))
       {
          currentPosition.rotateZ = rotateZ;
       }
-      else if (rotation !== currentPosition.rotateZ && (NumberGuard.isFiniteOrNull(rotation)))
+      else if (rotation !== currentPosition.rotateZ && (isFiniteOrNull(rotation)))
       {
          currentPosition.rotateZ = rotation;
       }
 
-      if (NumberGuard.isFiniteOrNull(translateX)) { currentPosition.translateX = translateX; }
-      if (NumberGuard.isFiniteOrNull(translateY)) { currentPosition.translateY = translateY; }
-      if (NumberGuard.isFiniteOrNull(translateZ)) { currentPosition.translateZ = translateZ; }
+      if (isFiniteOrNull(translateX)) { currentPosition.translateX = translateX; }
+      if (isFiniteOrNull(translateY)) { currentPosition.translateY = translateY; }
+      if (isFiniteOrNull(translateZ)) { currentPosition.translateZ = translateZ; }
 
-      if (NumberGuard.isFiniteOrNull(scale))
+      if (isFiniteOrNull(scale))
       {
          currentPosition.scale = typeof scale === 'number' ? clamp(scale, 0, 1000) : null;
       }
@@ -1360,7 +1362,7 @@ class TJSPosition implements TJSPosition.WritableExt
           null;
       }
 
-      if (NumberGuard.isFiniteOrNull(zIndex))
+      if (isFiniteOrNull(zIndex))
       {
          currentPosition.zIndex = typeof zIndex === 'number' ? Math.round(zIndex) : zIndex;
       }

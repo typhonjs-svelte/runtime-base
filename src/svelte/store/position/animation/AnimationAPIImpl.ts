@@ -8,6 +8,8 @@ import {
    isIterable,
    isObject }                    from '#runtime/util/object';
 
+import { isFinite }              from '#runtime/util/predicate';
+
 import { AnimationControl }      from './AnimationControl';
 import { AnimationManager }      from './AnimationManager';
 import { AnimationScheduler }    from './AnimationScheduler';
@@ -15,8 +17,6 @@ import { AnimationScheduler }    from './AnimationScheduler';
 import {
    ConvertStringData,
    TJSPositionDataUtil }         from '../data';
-
-import { NumberGuard }           from '../util';
 
 import type { BasicAnimation }   from '#runtime/util/animate';
 
@@ -325,7 +325,7 @@ export class AnimationAPIImpl implements AnimationAPI
 
             // TODO: In the future potentially support more interpolation functions besides `lerp`.
 
-            if (NumberGuard.isFinite(duration) && duration >= 0) { animationData.duration = duration * 1000; }
+            if (isFinite(duration) && duration >= 0) { animationData.duration = duration * 1000; }
             if (ease) { animationData.ease = ease; }
 
             return quickToCB as AnimationAPI.QuickToCallback;
