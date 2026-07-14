@@ -318,6 +318,8 @@ class TJSPosition implements TJSPosition.WritableExt
          // Readable stores based on updates or from resize observer changes.
          dimension: { subscribe: updateData.storeDimension.subscribe },
          element: { subscribe: this.#styleCache.stores.element.subscribe },
+         intrinsicHeight: { subscribe: updateData.storeIntrinsicHeight.subscribe },
+         intrinsicWidth: { subscribe: updateData.storeIntrinsicWidth.subscribe },
          resizeContentHeight: { subscribe: this.#styleCache.stores.resizeContentHeight.subscribe },
          resizeContentWidth: { subscribe: this.#styleCache.stores.resizeContentWidth.subscribe },
          resizeObservable: { subscribe: this.#styleCache.stores.resizeObservable.subscribe },

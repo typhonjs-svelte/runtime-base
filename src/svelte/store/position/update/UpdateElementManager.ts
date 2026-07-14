@@ -163,9 +163,19 @@ export class UpdateElementManager
          for (let cntr = 0; cntr < subscribers.length; cntr++) { subscribers[cntr](output); }
       }
 
-      // Update dimension data if width / height has changed.
+      // Update dimension data and intrinsic state if width / height has changed.
       if (changeSet.width || changeSet.height)
       {
+         if (typeof updateData.dimensionData.height !== typeof data.height)
+         {
+            updateData.storeIntrinsicHeight.set(typeof data.height === 'string');
+         }
+
+         if (typeof updateData.dimensionData.width !== typeof data.width)
+         {
+            updateData.storeIntrinsicWidth.set(typeof data.width === 'string');
+         }
+
          updateData.dimensionData.width = data.width;
          updateData.dimensionData.height = data.height;
          updateData.storeDimension.set(updateData.dimensionData);

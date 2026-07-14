@@ -34,6 +34,8 @@ export class UpdateElementData
    queued: boolean;
 
    storeDimension: Writable<{ width: number | 'auto' | 'inherit' | null, height: number | 'auto' | 'inherit' | null }>;
+   storeIntrinsicHeight: Writable<boolean>;
+   storeIntrinsicWidth: Writable<boolean>;
    storeTransform: Writable<TransformAPI.TransformData>;
 
    styleCache: TJSPositionStyleCache;
@@ -85,6 +87,23 @@ export class UpdateElementData
 
       /**
        */
+      this.storeIntrinsicHeight = writable(false);
+
+      /**
+       */
+      this.storeIntrinsicWidth = writable(false);
+
+      /**
+       * When there are subscribers set option to calculate transform updates; set to false when no subscribers.
+       */
+      this.storeTransform = writable(this.transformData, () =>
+      {
+         this.options.transformSubscribed = true;
+         return () => this.options.transformSubscribed = false;
+      });
+
+      /**
+       */
       this.subscribers = subscribers;
 
       /**
@@ -96,14 +115,5 @@ export class UpdateElementData
        * subscribers to the store or calculateTransform options is true.
        */
       this.transformData = new TJSTransformData();
-
-      /**
-       * When there are subscribers set option to calculate transform updates; set to false when no subscribers.
-       */
-      this.storeTransform = writable(this.transformData, () =>
-      {
-         this.options.transformSubscribed = true;
-         return () => this.options.transformSubscribed = false;
-      });
    }
 }

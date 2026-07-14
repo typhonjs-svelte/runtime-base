@@ -154,6 +154,16 @@ interface Stores {
    element: Readable<HTMLElement | undefined>;
 
    /**
+    * Readable store for when the height is intrinsic; `auto` or `inherit`.
+    */
+   intrinsicHeight: Readable<boolean>;
+
+   /**
+    * Readable store for when the width is intrinsic; `auto` or `inherit`.
+    */
+   intrinsicWidth: Readable<boolean>;
+
+   /**
     * Readable store for `contentHeight`.
     */
    resizeContentHeight: Readable<number | undefined>;
