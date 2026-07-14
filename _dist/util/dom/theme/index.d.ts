@@ -49,7 +49,7 @@ declare class ThemeObserver {
     {
       strict,
     }?: {
-      strict?: boolean;
+      strict?: boolean | undefined;
     },
   ): boolean;
   /**
@@ -74,9 +74,9 @@ declare class ThemeObserver {
     strict,
   }: {
     element: Element | EventTarget;
-    output?: Set<string>;
-    override?: boolean;
-    strict?: boolean;
+    output?: Set<string> | undefined;
+    override?: boolean | undefined;
+    strict?: boolean | undefined;
   }): Iterable<string>;
 }
 

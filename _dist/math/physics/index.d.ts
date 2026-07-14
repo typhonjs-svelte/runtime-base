@@ -16,7 +16,7 @@ declare class TJSVelocityTrack {
    * @param {number}   [opts.scaleTime=1000] - Scales velocity calculation to new time frame. 1000 is velocity per
    *                                           second.
    */
-  constructor({ resetDeltaTime, scaleTime }?: { resetDeltaTime?: number; scaleTime?: number });
+  constructor({ resetDeltaTime, scaleTime }?: { resetDeltaTime?: number | undefined; scaleTime?: number | undefined });
   /**
    * Sets `resetDeltaTime`.
    *

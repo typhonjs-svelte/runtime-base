@@ -28,11 +28,11 @@ import * as _runtime_svelte_easing from '@typhonjs-svelte/runtime-base/svelte/ea
 declare function rotate(
   node: HTMLElement,
   options?: {
-    delay?: number;
-    duration?: number;
-    easing?: _runtime_svelte_easing.EasingReference;
-    end?: number;
-    initial?: number;
+    delay?: number | undefined;
+    duration?: number | undefined;
+    easing?: _runtime_svelte_easing.EasingReference | undefined;
+    end?: number | undefined;
+    initial?: number | undefined;
   },
 ): svelte_transition.TransitionConfig;
 
@@ -70,13 +70,13 @@ declare function rotate(
 declare function rotateFade(
   node: HTMLElement,
   options?: {
-    delay?: number;
-    duration?: number;
-    easing?: _runtime_svelte_easing.EasingReference;
-    easingFade?: _runtime_svelte_easing.EasingReference;
-    easingRotate?: _runtime_svelte_easing.EasingReference;
-    end?: number;
-    initial?: number;
+    delay?: number | undefined;
+    duration?: number | undefined;
+    easing?: _runtime_svelte_easing.EasingReference | undefined;
+    easingFade?: _runtime_svelte_easing.EasingReference | undefined;
+    easingRotate?: _runtime_svelte_easing.EasingReference | undefined;
+    end?: number | undefined;
+    initial?: number | undefined;
   },
 ): svelte_transition.TransitionConfig;
 
@@ -108,12 +108,12 @@ declare function rotateFade(
 declare function slideFade(
   node: HTMLElement,
   options?: {
-    axis?: 'x' | 'y';
-    delay?: number;
-    duration?: number;
-    easing?: _runtime_svelte_easing.EasingReference;
-    easingFade?: _runtime_svelte_easing.EasingReference;
-    easingSlide?: _runtime_svelte_easing.EasingReference;
+    axis?: 'x' | 'y' | undefined;
+    delay?: number | undefined;
+    duration?: number | undefined;
+    easing?: _runtime_svelte_easing.EasingReference | undefined;
+    easingFade?: _runtime_svelte_easing.EasingReference | undefined;
+    easingSlide?: _runtime_svelte_easing.EasingReference | undefined;
   },
 ): svelte_transition.TransitionConfig;
 

@@ -16,7 +16,7 @@ declare function inflateAndUnpack(
   {
     inflateOptions,
   }?: {
-    inflateOptions?: _runtime_data_compress.InflateOptions;
+    inflateOptions?: _runtime_data_compress.InflateOptions<ArrayBufferLike> | undefined;
   },
 ): any;
 
@@ -37,7 +37,7 @@ declare function inflateAndUnpackB64(
   {
     inflateOptions,
   }?: {
-    inflateOptions?: _runtime_data_compress.InflateOptions;
+    inflateOptions?: _runtime_data_compress.InflateOptions<ArrayBufferLike> | undefined;
   },
 ): any;
 
@@ -58,7 +58,7 @@ declare function packAndDeflate(
   {
     deflateOptions,
   }?: {
-    deflateOptions?: _runtime_data_compress.DeflateOptions;
+    deflateOptions?: _runtime_data_compress.DeflateOptions | undefined;
   },
 ): Uint8Array;
 
@@ -82,8 +82,8 @@ declare function packAndDeflateB64(
     deflateOptions,
     urlsafe,
   }?: {
-    deflateOptions?: _runtime_data_compress.DeflateOptions;
-    urlsafe?: boolean;
+    deflateOptions?: _runtime_data_compress.DeflateOptions | undefined;
+    urlsafe?: boolean | undefined;
   },
 ): string;
 

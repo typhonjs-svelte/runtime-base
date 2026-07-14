@@ -30,9 +30,9 @@ declare function processHTML({
   html: string;
   process: (HTMLElement: any) => void;
   selector: string;
-  containerElement?: string;
-  firstMatchOnly?: boolean;
-  namespaceURI?: string;
+  containerElement?: string | undefined;
+  firstMatchOnly?: boolean | undefined;
+  namespaceURI?: string | undefined;
 }): string;
 
 export { processHTML };

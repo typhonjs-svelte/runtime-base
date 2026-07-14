@@ -19,11 +19,11 @@ type TooltipOptions = {
   /**
    * Tooltip value or language key.
    */
-  tooltip?: string;
+  tooltip?: string | undefined;
   /**
    * When true, the tooltip value is also set to the `aria-label` attribute.
    */
-  ariaLabel?: boolean;
+  ariaLabel?: boolean | undefined;
 };
 
 export { popoverTooltip };

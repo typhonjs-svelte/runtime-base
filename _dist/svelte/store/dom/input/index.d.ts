@@ -100,15 +100,15 @@ type KeyStoreOptions = {
   /**
    * Invoke `preventDefault` on key events.
    */
-  preventDefault?: boolean;
+  preventDefault?: boolean | undefined;
   /**
    * When true use `event.code` otherwise use `event.key` to get active key.
    */
-  useCode?: boolean;
+  useCode?: boolean | undefined;
   /**
    * Invoke `stopPropagation` on key events.
    */
-  stopPropagation?: boolean;
+  stopPropagation?: boolean | undefined;
 };
 
 export { KeyStore };

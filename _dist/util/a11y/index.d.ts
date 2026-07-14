@@ -100,11 +100,11 @@ declare class A11yHelper {
     focusEl,
     debug,
   }: {
-    event?: KeyboardEvent | MouseEvent;
-    debug?: boolean;
-    focusEl?: FocusableElement | string;
-    x?: number;
-    y?: number;
+    event?: MouseEvent | KeyboardEvent | undefined;
+    debug?: boolean | undefined;
+    focusEl?: string | FocusableElement | undefined;
+    x?: number | undefined;
+    y?: number | undefined;
   }): A11yFocusSource;
   /**
    * Returns first focusable element within a specified element.
@@ -138,8 +138,8 @@ declare class A11yHelper {
       anchorHref,
       ignoreClasses,
     }?: {
-      anchorHref?: boolean;
-      ignoreClasses?: Iterable<string>;
+      anchorHref?: boolean | undefined;
+      ignoreClasses?: Iterable<string> | undefined;
     },
   ): boolean;
   /**
@@ -194,24 +194,24 @@ type FocusableElementOptions = {
   /**
    * When true anchors must have an HREF; default: `true`.
    */
-  anchorHref?: boolean;
+  anchorHref?: boolean | undefined;
   /**
    * Iterable list of classes to ignore elements.
    */
-  ignoreClasses?: Iterable<string>;
+  ignoreClasses?: Iterable<string> | undefined;
   /**
    * Set of elements to ignore.
    */
-  ignoreElements?: Set<Element>;
+  ignoreElements?: Set<Element> | undefined;
   /**
    * When true elements with hidden parents will be removed;
    * default: `false`.
    */
-  parentHidden?: boolean;
+  parentHidden?: boolean | undefined;
   /**
    * Custom list of focusable selectors for `querySelectorAll`.
    */
-  selectors?: string;
+  selectors?: string | undefined;
 };
 /**
  * Provides essential data to return focus to an HTMLElement / SVGElement after a
@@ -221,23 +221,23 @@ type A11yFocusSource = {
   /**
    * When true logs to console the actions taken in {@link A11yHelper.applyFocusSource}.
    */
-  debug?: boolean;
+  debug?: boolean | undefined;
   /**
    * List of targets to attempt to focus.
    */
-  focusEl?: Iterable<FocusableElement | string>;
+  focusEl?: Iterable<string | FocusableElement> | undefined;
   /**
    * The source of the event: 'keyboard' for instance.
    */
-  source?: string;
+  source?: string | undefined;
   /**
    * Potential X coordinate of initial event.
    */
-  x?: number;
+  x?: number | undefined;
   /**
    * Potential Y coordinate of initial event.
    */
-  y?: number;
+  y?: number | undefined;
 };
 
 export { A11yHelper };

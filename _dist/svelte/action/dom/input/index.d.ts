@@ -44,7 +44,7 @@ type UseTinykeysData = {
   /**
    * Options to pass to `tinykeys`.
    */
-  options?: _runtime_util_dom_input_tinykeys.KeyBindingOptions;
+  options?: _runtime_util_dom_input_tinykeys.KeyBindingOptions | undefined;
 };
 
 export { keyforward, useTinykeys };

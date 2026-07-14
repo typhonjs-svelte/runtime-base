@@ -16,7 +16,7 @@ declare class StyleManager implements Iterable<[string, StyleManager.RuleManager
    *
    * @param   options - Options.
    */
-  static connect({ id, range, document, warn }: StyleManager.Options.Connect): StyleManager;
+  static connect({ id, range, document, warn }: StyleManager.Options.Connect): StyleManager | undefined;
   /**
    * @param   options - Options.
    *

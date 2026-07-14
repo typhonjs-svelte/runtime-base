@@ -80,7 +80,7 @@ declare const easingFunc: Readonly<{ [key in EasingFunctionName]: _runtime_svelt
 declare function getEasingFunc(
   easingRef: EasingReference,
   options?: {
-    default?: EasingFunctionName | false;
+    default?: false | EasingFunctionName | undefined;
   },
 ): _runtime_svelte_easing.EasingFunction;
 

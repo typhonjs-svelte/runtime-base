@@ -37,8 +37,8 @@ declare class ImageData {
       accessor,
       warn,
     }?: {
-      accessor?: string;
-      warn?: boolean;
+      accessor?: string | undefined;
+      warn?: boolean | undefined;
     },
   ): Promise<{
     fulfilled: {
@@ -89,7 +89,7 @@ declare class ManagedPromise {
    *
    * @returns {Promise<T>} The new current managed Promise.
    */
-  create<T>({ reuse }?: { reuse?: boolean }): Promise<T>;
+  create<T>({ reuse }?: { reuse?: boolean | undefined }): Promise<T>;
   /**
    * Gets the current Promise if any.
    *
