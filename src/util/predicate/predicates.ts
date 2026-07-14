@@ -54,9 +54,21 @@ export function isFunction<T extends (...args: any[]) => any>(
  *
  * @returns True if the value is a finite number.
  */
-export function isFiniteNumber(value: unknown): value is number
+export function isFinite(value: unknown): value is number
 {
    return typeof value === 'number' && Number.isFinite(value);
+}
+
+/**
+ * Determines if the given value is a finite number or null.
+ *
+ * @param value - Value to test.
+ *
+ * @returns True if the value is a finite number or null.
+ */
+export function isFiniteOrNull(value: unknown): value is number | null
+{
+   return value === null || (typeof value === 'number' && Number.isFinite(value));
 }
 
 /**
