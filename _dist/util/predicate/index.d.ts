@@ -48,7 +48,15 @@ declare function isFunction<T extends (...args: any[]) => any>(value: unknown): 
  *
  * @returns True if the value is a finite number.
  */
-declare function isFiniteNumber(value: unknown): value is number;
+declare function isFinite(value: unknown): value is number;
+/**
+ * Determines if the given value is a finite number or null.
+ *
+ * @param value - Value to test.
+ *
+ * @returns True if the value is a finite number or null.
+ */
+declare function isFiniteOrNull(value: unknown): value is number | null;
 /**
  * Determines if the given value is an integer number.
  *
@@ -133,7 +141,8 @@ export {
   isBigInt,
   isBoolean,
   isDefined,
-  isFiniteNumber,
+  isFinite,
+  isFiniteOrNull,
   isFunction,
   isInteger,
   isNumber,

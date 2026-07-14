@@ -5,12 +5,13 @@ import { BrowserSupports } from '@typhonjs-svelte/runtime-base/util/browser';
 import { radToDeg, degToRad, clamp } from '@typhonjs-svelte/runtime-base/math/util';
 import { subscribeIgnoreFirst } from '@typhonjs-svelte/runtime-base/svelte/store/util';
 import { propertyStore } from '@typhonjs-svelte/runtime-base/svelte/store/writable-derived';
+import { isFinite, isFiniteOrNull } from '@typhonjs-svelte/runtime-base/util/predicate';
 import { lerp } from '@typhonjs-svelte/runtime-base/math/interpolate';
 import { CrossRealm } from '@typhonjs-svelte/runtime-base/util/realm';
 import { Vec3, Mat4 } from '@typhonjs-svelte/runtime-base/math/gl-matrix';
 import { writable } from 'svelte/store';
-import { StyleParse } from '@typhonjs-svelte/runtime-base/util/dom/style';
 import { nextAnimationFrame } from '@typhonjs-svelte/runtime-base/util/animate';
+import { StyleParse } from '@typhonjs-svelte/runtime-base/util/dom/style';
 
 /**
  * Provides an action to apply a TJSPosition instance to a HTMLElement and invoke `position.parent`
@@ -1307,148 +1308,6 @@ class TJSTransformData {
 }
 
 /**
- * Provides type guards for `Number`.
- */
-class NumberGuard {
-    constructor() {
-        throw new Error('NumberGuard constructor: This is a static class and should not be constructed.');
-    }
-    static isFinite(value) {
-        return typeof value === 'number' && Number.isFinite(value);
-    }
-    static isFiniteOrNull(value) {
-        return value === null || (typeof value === 'number' && Number.isFinite(value));
-    }
-}
-
-/**
- * Caches computed styles of a {@link TJSPosition} target element.
- */
-class TJSPositionStyleCache {
-    el;
-    computed;
-    marginLeft;
-    marginTop;
-    maxHeight;
-    maxWidth;
-    minHeight;
-    minWidth;
-    hasWillChange;
-    stores;
-    resizeObserved;
-    constructor() {
-        this.el = void 0;
-        this.computed = void 0;
-        this.marginLeft = void 0;
-        this.marginTop = void 0;
-        this.maxHeight = void 0;
-        this.maxWidth = void 0;
-        this.minHeight = void 0;
-        this.minWidth = void 0;
-        this.hasWillChange = false;
-        this.resizeObserved = Object.seal({
-            contentHeight: void 0,
-            contentWidth: void 0,
-            offsetHeight: void 0,
-            offsetWidth: void 0
-        });
-        /**
-         * Provides a writable store to track offset & content width / height from an associated `resizeObserver` action.
-         */
-        const storeResizeObserved = writable(this.resizeObserved);
-        this.stores = {
-            element: writable(this.el),
-            resizeContentHeight: propertyStore(storeResizeObserved, 'contentHeight'),
-            resizeContentWidth: propertyStore(storeResizeObserved, 'contentWidth'),
-            resizeObserved: storeResizeObserved,
-            resizeObservable: writable(false),
-            resizeObservableHeight: writable(false),
-            resizeObservableWidth: writable(false),
-            resizeOffsetHeight: propertyStore(storeResizeObserved, 'offsetHeight'),
-            resizeOffsetWidth: propertyStore(storeResizeObserved, 'offsetWidth')
-        };
-    }
-    /**
-     * Returns the cached offsetHeight from any attached `resizeObserver` action otherwise gets the offsetHeight from
-     * the element directly. The more optimized path is using `resizeObserver` as getting it from the element
-     * directly is more expensive and alters the execution order of an animation frame.
-     *
-     * @returns The element offsetHeight.
-     */
-    get offsetHeight() {
-        if (this.el !== void 0 && A11yHelper.isFocusTarget(this.el)) {
-            return this.resizeObserved.offsetHeight !== void 0 ? this.resizeObserved.offsetHeight : this.el.offsetHeight;
-        }
-        throw new Error(`TJSPositionStyleCache - get offsetHeight error: no element assigned.`);
-    }
-    /**
-     * Returns the cached offsetWidth from any attached `resizeObserver` action otherwise gets the offsetWidth from
-     * the element directly. The more optimized path is using `resizeObserver` as getting it from the element
-     * directly is more expensive and alters the execution order of an animation frame.
-     *
-     * @returns The element offsetHeight.
-     */
-    get offsetWidth() {
-        if (this.el !== void 0 && A11yHelper.isFocusTarget(this.el)) {
-            return this.resizeObserved.offsetWidth !== void 0 ? this.resizeObserved.offsetWidth : this.el.offsetWidth;
-        }
-        throw new Error(`TJSPositionStyleCache - get offsetWidth error: no element assigned.`);
-    }
-    /**
-     * @param el -
-     *
-     * @returns Does element match cached element.
-     */
-    hasData(el) { return this.el === el; }
-    /**
-     * Resets the style cache.
-     */
-    reset() {
-        // Remove will-change inline style from previous element if it is still connected.
-        if (this.el !== void 0 && A11yHelper.isFocusTarget(this.el) && this.el.isConnected && !this.hasWillChange) {
-            this.el.style.willChange = '';
-        }
-        this.el = void 0;
-        this.computed = void 0;
-        this.marginLeft = void 0;
-        this.marginTop = void 0;
-        this.maxHeight = void 0;
-        this.maxWidth = void 0;
-        this.minHeight = void 0;
-        this.minWidth = void 0;
-        this.hasWillChange = false;
-        // Silently reset `resizedObserved`; With proper usage the `resizeObserver` action issues an update on removal.
-        this.resizeObserved.contentHeight = void 0;
-        this.resizeObserved.contentWidth = void 0;
-        this.resizeObserved.offsetHeight = void 0;
-        this.resizeObserved.offsetWidth = void 0;
-        // Reset the tracked element this TJSPosition instance is modifying.
-        this.stores.element.set(void 0);
-    }
-    /**
-     * Updates the style cache with new data from the given element.
-     *
-     * @param el - An HTML element.
-     */
-    update(el) {
-        this.el = el;
-        this.computed = globalThis.getComputedStyle(el);
-        this.marginLeft = StyleParse.pixels(el.style.marginLeft) ?? StyleParse.pixels(this.computed.marginLeft);
-        this.marginTop = StyleParse.pixels(el.style.marginTop) ?? StyleParse.pixels(this.computed.marginTop);
-        this.maxHeight = StyleParse.pixels(el.style.maxHeight) ?? StyleParse.pixels(this.computed.maxHeight);
-        this.maxWidth = StyleParse.pixels(el.style.maxWidth) ?? StyleParse.pixels(this.computed.maxWidth);
-        // Note that the computed styles for below will always be 0px / 0 when no style is active.
-        this.minHeight = StyleParse.pixels(el.style.minHeight) ?? StyleParse.pixels(this.computed.minHeight);
-        this.minWidth = StyleParse.pixels(el.style.minWidth) ?? StyleParse.pixels(this.computed.minWidth);
-        // Tracks if there already is a will-change property on the inline or computed styles.
-        const willChange = el.style.willChange !== '' ? el.style.willChange : this.computed.willChange ?? '';
-        this.hasWillChange = willChange !== '' && willChange !== 'auto';
-        // Update the tracked element this TJSPosition instance is modifying.
-        this.stores.element.set(el);
-    }
-}
-
-/**
  *
  */
 class TJSTransforms {
@@ -1763,8 +1622,8 @@ class TJSTransforms {
         const valOffsetLeft = validationData?.offsetLeft ?? validationData?.marginLeft ?? 0;
         position.top += valOffsetTop;
         position.left += valOffsetLeft;
-        const width = NumberGuard.isFinite(position.width) ? position.width : valWidth;
-        const height = NumberGuard.isFinite(position.height) ? position.height : valHeight;
+        const width = isFinite(position.width) ? position.width : valWidth;
+        const height = isFinite(position.height) ? position.height : valHeight;
         const rect = output.corners;
         if (this.hasTransform(position)) {
             rect[0][0] = rect[0][1] = rect[0][2] = 0;
@@ -2056,7 +1915,7 @@ class TJSTransforms {
         for (const key in data) {
             if (TJSTransforms.#isTransformKey(key)) {
                 const value = data[key];
-                if (NumberGuard.isFinite(value)) {
+                if (isFinite(value)) {
                     this.#data[key] = value;
                 }
                 else {
@@ -2716,7 +2575,7 @@ class AnimationAPIImpl {
                     throw new TypeError(`AnimationAPI.quickTo.options error: 'ease' is not a function or valid Svelte easing function name.`);
                 }
                 // TODO: In the future potentially support more interpolation functions besides `lerp`.
-                if (NumberGuard.isFinite(duration) && duration >= 0) {
+                if (isFinite(duration) && duration >= 0) {
                     animationData.duration = duration * 1000;
                 }
                 if (ease) {
@@ -4386,6 +4245,8 @@ class UpdateElementData {
     options;
     queued;
     storeDimension;
+    storeIntrinsicHeight;
+    storeIntrinsicWidth;
     storeTransform;
     styleCache;
     subscribers;
@@ -4422,6 +4283,19 @@ class UpdateElementData {
         this.storeDimension = writable(this.dimensionData);
         /**
          */
+        this.storeIntrinsicHeight = writable(false);
+        /**
+         */
+        this.storeIntrinsicWidth = writable(false);
+        /**
+         * When there are subscribers set option to calculate transform updates; set to false when no subscribers.
+         */
+        this.storeTransform = writable(this.transformData, () => {
+            this.options.transformSubscribed = true;
+            return () => this.options.transformSubscribed = false;
+        });
+        /**
+         */
         this.subscribers = subscribers;
         /**
          */
@@ -4431,13 +4305,6 @@ class UpdateElementData {
          * subscribers to the store or calculateTransform options is true.
          */
         this.transformData = new TJSTransformData();
-        /**
-         * When there are subscribers set option to calculate transform updates; set to false when no subscribers.
-         */
-        this.storeTransform = writable(this.transformData, () => {
-            this.options.transformSubscribed = true;
-            return () => this.options.transformSubscribed = false;
-        });
     }
 }
 
@@ -4559,8 +4426,14 @@ class UpdateElementManager {
                 subscribers[cntr](output);
             }
         }
-        // Update dimension data if width / height has changed.
+        // Update dimension data and intrinsic state if width / height has changed.
         if (changeSet.width || changeSet.height) {
+            if (typeof updateData.dimensionData.height !== typeof data.height) {
+                updateData.storeIntrinsicHeight.set(typeof data.height === 'string');
+            }
+            if (typeof updateData.dimensionData.width !== typeof data.width) {
+                updateData.storeIntrinsicWidth.set(typeof data.width === 'string');
+            }
             updateData.dimensionData.width = data.width;
             updateData.dimensionData.height = data.height;
             updateData.storeDimension.set(updateData.dimensionData);
@@ -4660,6 +4533,133 @@ class UpdateElementManager {
         // when position width / height is 'auto'.
         updateData.transforms.getData(updateData.data, updateData.transformData, validationData);
         updateData.storeTransform.set(updateData.transformData);
+    }
+}
+
+/**
+ * Caches computed styles of a {@link TJSPosition} target element.
+ */
+class TJSPositionStyleCache {
+    el;
+    computed;
+    marginLeft;
+    marginTop;
+    maxHeight;
+    maxWidth;
+    minHeight;
+    minWidth;
+    hasWillChange;
+    stores;
+    resizeObserved;
+    constructor() {
+        this.el = void 0;
+        this.computed = void 0;
+        this.marginLeft = void 0;
+        this.marginTop = void 0;
+        this.maxHeight = void 0;
+        this.maxWidth = void 0;
+        this.minHeight = void 0;
+        this.minWidth = void 0;
+        this.hasWillChange = false;
+        this.resizeObserved = Object.seal({
+            contentHeight: void 0,
+            contentWidth: void 0,
+            offsetHeight: void 0,
+            offsetWidth: void 0
+        });
+        /**
+         * Provides a writable store to track offset & content width / height from an associated `resizeObserver` action.
+         */
+        const storeResizeObserved = writable(this.resizeObserved);
+        this.stores = {
+            element: writable(this.el),
+            resizeContentHeight: propertyStore(storeResizeObserved, 'contentHeight'),
+            resizeContentWidth: propertyStore(storeResizeObserved, 'contentWidth'),
+            resizeObserved: storeResizeObserved,
+            resizeObservable: writable(false),
+            resizeObservableHeight: writable(false),
+            resizeObservableWidth: writable(false),
+            resizeOffsetHeight: propertyStore(storeResizeObserved, 'offsetHeight'),
+            resizeOffsetWidth: propertyStore(storeResizeObserved, 'offsetWidth')
+        };
+    }
+    /**
+     * Returns the cached offsetHeight from any attached `resizeObserver` action otherwise gets the offsetHeight from
+     * the element directly. The more optimized path is using `resizeObserver` as getting it from the element
+     * directly is more expensive and alters the execution order of an animation frame.
+     *
+     * @returns The element offsetHeight.
+     */
+    get offsetHeight() {
+        if (this.el !== void 0 && A11yHelper.isFocusTarget(this.el)) {
+            return this.resizeObserved.offsetHeight !== void 0 ? this.resizeObserved.offsetHeight : this.el.offsetHeight;
+        }
+        throw new Error(`TJSPositionStyleCache - get offsetHeight error: no element assigned.`);
+    }
+    /**
+     * Returns the cached offsetWidth from any attached `resizeObserver` action otherwise gets the offsetWidth from
+     * the element directly. The more optimized path is using `resizeObserver` as getting it from the element
+     * directly is more expensive and alters the execution order of an animation frame.
+     *
+     * @returns The element offsetHeight.
+     */
+    get offsetWidth() {
+        if (this.el !== void 0 && A11yHelper.isFocusTarget(this.el)) {
+            return this.resizeObserved.offsetWidth !== void 0 ? this.resizeObserved.offsetWidth : this.el.offsetWidth;
+        }
+        throw new Error(`TJSPositionStyleCache - get offsetWidth error: no element assigned.`);
+    }
+    /**
+     * @param el -
+     *
+     * @returns Does element match cached element.
+     */
+    hasData(el) { return this.el === el; }
+    /**
+     * Resets the style cache.
+     */
+    reset() {
+        // Remove will-change inline style from previous element if it is still connected.
+        if (this.el !== void 0 && A11yHelper.isFocusTarget(this.el) && this.el.isConnected && !this.hasWillChange) {
+            this.el.style.willChange = '';
+        }
+        this.el = void 0;
+        this.computed = void 0;
+        this.marginLeft = void 0;
+        this.marginTop = void 0;
+        this.maxHeight = void 0;
+        this.maxWidth = void 0;
+        this.minHeight = void 0;
+        this.minWidth = void 0;
+        this.hasWillChange = false;
+        // Silently reset `resizedObserved`; With proper usage the `resizeObserver` action issues an update on removal.
+        this.resizeObserved.contentHeight = void 0;
+        this.resizeObserved.contentWidth = void 0;
+        this.resizeObserved.offsetHeight = void 0;
+        this.resizeObserved.offsetWidth = void 0;
+        // Reset the tracked element this TJSPosition instance is modifying.
+        this.stores.element.set(void 0);
+    }
+    /**
+     * Updates the style cache with new data from the given element.
+     *
+     * @param el - An HTML element.
+     */
+    update(el) {
+        this.el = el;
+        this.computed = globalThis.getComputedStyle(el);
+        this.marginLeft = StyleParse.pixels(el.style.marginLeft) ?? StyleParse.pixels(this.computed.marginLeft);
+        this.marginTop = StyleParse.pixels(el.style.marginTop) ?? StyleParse.pixels(this.computed.marginTop);
+        this.maxHeight = StyleParse.pixels(el.style.maxHeight) ?? StyleParse.pixels(this.computed.maxHeight);
+        this.maxWidth = StyleParse.pixels(el.style.maxWidth) ?? StyleParse.pixels(this.computed.maxWidth);
+        // Note that the computed styles for below will always be 0px / 0 when no style is active.
+        this.minHeight = StyleParse.pixels(el.style.minHeight) ?? StyleParse.pixels(this.computed.minHeight);
+        this.minWidth = StyleParse.pixels(el.style.minWidth) ?? StyleParse.pixels(this.computed.minWidth);
+        // Tracks if there already is a will-change property on the inline or computed styles.
+        const willChange = el.style.willChange !== '' ? el.style.willChange : this.computed.willChange ?? '';
+        this.hasWillChange = willChange !== '' && willChange !== 'auto';
+        // Update the tracked element this TJSPosition instance is modifying.
+        this.stores.element.set(el);
     }
 }
 
@@ -4875,6 +4875,8 @@ class TJSPosition {
             // Readable stores based on updates or from resize observer changes.
             dimension: { subscribe: updateData.storeDimension.subscribe },
             element: { subscribe: this.#styleCache.stores.element.subscribe },
+            intrinsicHeight: { subscribe: updateData.storeIntrinsicHeight.subscribe },
+            intrinsicWidth: { subscribe: updateData.storeIntrinsicWidth.subscribe },
             resizeContentHeight: { subscribe: this.#styleCache.stores.resizeContentHeight.subscribe },
             resizeContentWidth: { subscribe: this.#styleCache.stores.resizeContentWidth.subscribe },
             resizeObservable: { subscribe: this.#styleCache.stores.resizeObservable.subscribe },
@@ -5360,67 +5362,67 @@ class TJSPosition {
                 return this;
             }
         }
-        if (NumberGuard.isFinite(position.left)) {
+        if (isFinite(position.left)) {
             position.left = Math.round(position.left);
             if (data.left !== position.left) {
                 data.left = position.left;
                 changeSet.left = true;
             }
         }
-        if (NumberGuard.isFinite(position.top)) {
+        if (isFinite(position.top)) {
             position.top = Math.round(position.top);
             if (data.top !== position.top) {
                 data.top = position.top;
                 changeSet.top = true;
             }
         }
-        if (NumberGuard.isFiniteOrNull(position.maxHeight)) {
+        if (isFiniteOrNull(position.maxHeight)) {
             position.maxHeight = typeof position.maxHeight === 'number' ? Math.round(position.maxHeight) : null;
             if (data.maxHeight !== position.maxHeight) {
                 data.maxHeight = position.maxHeight;
                 changeSet.maxHeight = true;
             }
         }
-        if (NumberGuard.isFiniteOrNull(position.maxWidth)) {
+        if (isFiniteOrNull(position.maxWidth)) {
             position.maxWidth = typeof position.maxWidth === 'number' ? Math.round(position.maxWidth) : null;
             if (data.maxWidth !== position.maxWidth) {
                 data.maxWidth = position.maxWidth;
                 changeSet.maxWidth = true;
             }
         }
-        if (NumberGuard.isFiniteOrNull(position.minHeight)) {
+        if (isFiniteOrNull(position.minHeight)) {
             position.minHeight = typeof position.minHeight === 'number' ? Math.round(position.minHeight) : null;
             if (data.minHeight !== position.minHeight) {
                 data.minHeight = position.minHeight;
                 changeSet.minHeight = true;
             }
         }
-        if (NumberGuard.isFiniteOrNull(position.minWidth)) {
+        if (isFiniteOrNull(position.minWidth)) {
             position.minWidth = typeof position.minWidth === 'number' ? Math.round(position.minWidth) : null;
             if (data.minWidth !== position.minWidth) {
                 data.minWidth = position.minWidth;
                 changeSet.minWidth = true;
             }
         }
-        if (NumberGuard.isFiniteOrNull(position.rotateX)) {
+        if (isFiniteOrNull(position.rotateX)) {
             if (data.rotateX !== position.rotateX) {
                 data.rotateX = transforms.rotateX = position.rotateX;
                 changeSet.transform = true;
             }
         }
-        if (NumberGuard.isFiniteOrNull(position.rotateY)) {
+        if (isFiniteOrNull(position.rotateY)) {
             if (data.rotateY !== position.rotateY) {
                 data.rotateY = transforms.rotateY = position.rotateY;
                 changeSet.transform = true;
             }
         }
-        if (NumberGuard.isFiniteOrNull(position.rotateZ)) {
+        if (isFiniteOrNull(position.rotateZ)) {
             if (data.rotateZ !== position.rotateZ) {
                 data.rotateZ = transforms.rotateZ = position.rotateZ;
                 changeSet.transform = true;
             }
         }
-        if (NumberGuard.isFiniteOrNull(position.scale)) {
+        if (isFiniteOrNull(position.scale)) {
             position.scale = typeof position.scale === 'number' ? clamp(position.scale, 0, 1000) : null;
             if (data.scale !== position.scale) {
                 data.scale = transforms.scale = position.scale;
@@ -5433,25 +5435,25 @@ class TJSPosition {
                 changeSet.transformOrigin = true;
             }
         }
-        if (NumberGuard.isFiniteOrNull(position.translateX)) {
+        if (isFiniteOrNull(position.translateX)) {
             if (data.translateX !== position.translateX) {
                 data.translateX = transforms.translateX = position.translateX;
                 changeSet.transform = true;
             }
         }
-        if (NumberGuard.isFiniteOrNull(position.translateY)) {
+        if (isFiniteOrNull(position.translateY)) {
             if (data.translateY !== position.translateY) {
                 data.translateY = transforms.translateY = position.translateY;
                 changeSet.transform = true;
             }
         }
-        if (NumberGuard.isFiniteOrNull(position.translateZ)) {
+        if (isFiniteOrNull(position.translateZ)) {
             if (data.translateZ !== position.translateZ) {
                 data.translateZ = transforms.translateZ = position.translateZ;
                 changeSet.transform = true;
             }
         }
-        if (NumberGuard.isFinite(position.zIndex)) {
+        if (isFinite(position.zIndex)) {
             position.zIndex = Math.round(position.zIndex);
             if (data.zIndex !== position.zIndex) {
                 data.zIndex = position.zIndex;
@@ -5459,7 +5461,7 @@ class TJSPosition {
             }
         }
         const widthIsObservable = position.width === 'auto' || position.width === 'inherit';
-        if (NumberGuard.isFiniteOrNull(position.width) || widthIsObservable) {
+        if (isFiniteOrNull(position.width) || widthIsObservable) {
             position.width = typeof position.width === 'number' ? Math.round(position.width) : position.width;
             if (data.width !== position.width) {
                 data.width = position.width;
@@ -5467,7 +5469,7 @@ class TJSPosition {
             }
         }
         const heightIsObservable = position.height === 'auto' || position.height === 'inherit';
-        if (NumberGuard.isFiniteOrNull(position.height) || heightIsObservable) {
+        if (isFiniteOrNull(position.height) || heightIsObservable) {
             position.height = typeof position.height === 'number' ? Math.round(position.height) : position.height;
             if (data.height !== position.height) {
                 data.height = position.height;
@@ -5599,9 +5601,9 @@ class TJSPosition {
                 width = styleCache.offsetWidth;
             }
             else {
-                const newWidth = NumberGuard.isFinite(width) ? width :
+                const newWidth = isFinite(width) ? width :
                     currentPosition.width;
-                currentPosition.width = width = NumberGuard.isFinite(newWidth) ? Math.round(newWidth) :
+                currentPosition.width = width = isFinite(newWidth) ? Math.round(newWidth) :
                     styleCache.offsetWidth;
             }
         }
@@ -5620,9 +5622,9 @@ class TJSPosition {
                 height = styleCache.offsetHeight;
             }
             else {
-                const newHeight = NumberGuard.isFinite(height) ? height :
+                const newHeight = isFinite(height) ? height :
                     currentPosition.height;
-                currentPosition.height = height = NumberGuard.isFinite(newHeight) ? Math.round(newHeight) :
+                currentPosition.height = height = isFinite(newHeight) ? Math.round(newHeight) :
                     styleCache.offsetHeight;
             }
         }
@@ -5630,7 +5632,7 @@ class TJSPosition {
             height = Number.isFinite(currentPosition.height) ? currentPosition.height : styleCache.offsetHeight;
         }
         // Update left
-        if (NumberGuard.isFinite(left)) {
+        if (isFinite(left)) {
             currentPosition.left = left;
         }
         else if (!Number.isFinite(currentPosition.left)) {
@@ -5647,50 +5649,50 @@ class TJSPosition {
             currentPosition.top = typeof this.#options?.initial?.getTop === 'function' ?
                 this.#options.initial.getTop(height) : 0;
         }
-        if (NumberGuard.isFiniteOrNull(maxHeight)) {
-            currentPosition.maxHeight = NumberGuard.isFinite(maxHeight) ? Math.round(maxHeight) : null;
+        if (isFiniteOrNull(maxHeight)) {
+            currentPosition.maxHeight = isFinite(maxHeight) ? Math.round(maxHeight) : null;
         }
-        if (NumberGuard.isFiniteOrNull(maxWidth)) {
-            currentPosition.maxWidth = NumberGuard.isFinite(maxWidth) ? Math.round(maxWidth) : null;
+        if (isFiniteOrNull(maxWidth)) {
+            currentPosition.maxWidth = isFinite(maxWidth) ? Math.round(maxWidth) : null;
         }
-        if (NumberGuard.isFiniteOrNull(minHeight)) {
-            currentPosition.minHeight = NumberGuard.isFinite(minHeight) ? Math.round(minHeight) : null;
+        if (isFiniteOrNull(minHeight)) {
+            currentPosition.minHeight = isFinite(minHeight) ? Math.round(minHeight) : null;
         }
-        if (NumberGuard.isFiniteOrNull(minWidth)) {
-            currentPosition.minWidth = NumberGuard.isFinite(minWidth) ? Math.round(minWidth) : null;
+        if (isFiniteOrNull(minWidth)) {
+            currentPosition.minWidth = isFinite(minWidth) ? Math.round(minWidth) : null;
         }
         // Update rotate X/Y/Z, scale, z-index
-        if (NumberGuard.isFiniteOrNull(rotateX)) {
+        if (isFiniteOrNull(rotateX)) {
             currentPosition.rotateX = rotateX;
         }
-        if (NumberGuard.isFiniteOrNull(rotateY)) {
+        if (isFiniteOrNull(rotateY)) {
             currentPosition.rotateY = rotateY;
         }
         // Handle alias for rotateZ. First check if `rotateZ` is valid and different from the current value. Next, check
         // if `rotation` is valid and use it for `rotateZ`.
-        if (rotateZ !== currentPosition.rotateZ && (NumberGuard.isFiniteOrNull(rotateZ))) {
+        if (rotateZ !== currentPosition.rotateZ && (isFiniteOrNull(rotateZ))) {
             currentPosition.rotateZ = rotateZ;
         }
-        else if (rotation !== currentPosition.rotateZ && (NumberGuard.isFiniteOrNull(rotation))) {
+        else if (rotation !== currentPosition.rotateZ && (isFiniteOrNull(rotation))) {
             currentPosition.rotateZ = rotation;
         }
-        if (NumberGuard.isFiniteOrNull(translateX)) {
+        if (isFiniteOrNull(translateX)) {
             currentPosition.translateX = translateX;
         }
-        if (NumberGuard.isFiniteOrNull(translateY)) {
+        if (isFiniteOrNull(translateY)) {
             currentPosition.translateY = translateY;
         }
-        if (NumberGuard.isFiniteOrNull(translateZ)) {
+        if (isFiniteOrNull(translateZ)) {
             currentPosition.translateZ = translateZ;
         }
-        if (NumberGuard.isFiniteOrNull(scale)) {
+        if (isFiniteOrNull(scale)) {
             currentPosition.scale = typeof scale === 'number' ? clamp(scale, 0, 1000) : null;
         }
         if (typeof transformOrigin === 'string' || transformOrigin === null) {
             currentPosition.transformOrigin = TJSTransforms.transformOrigins.includes(transformOrigin) ? transformOrigin :
                 null;
         }
-        if (NumberGuard.isFiniteOrNull(zIndex)) {
+        if (isFiniteOrNull(zIndex)) {
             currentPosition.zIndex = typeof zIndex === 'number' ? Math.round(zIndex) : zIndex;
         }
         const validatorData = this.#validatorData;

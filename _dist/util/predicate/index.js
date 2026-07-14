@@ -45,8 +45,18 @@ function isFunction(value) {
  *
  * @returns True if the value is a finite number.
  */
-function isFiniteNumber(value) {
+function isFinite(value) {
     return typeof value === 'number' && Number.isFinite(value);
+}
+/**
+ * Determines if the given value is a finite number or null.
+ *
+ * @param value - Value to test.
+ *
+ * @returns True if the value is a finite number or null.
+ */
+function isFiniteOrNull(value) {
+    return value === null || (typeof value === 'number' && Number.isFinite(value));
 }
 /**
  * Determines if the given value is an integer number.
@@ -134,5 +144,5 @@ function resolveByPredicate(predicate, ...values) {
     return void 0;
 }
 
-export { isBigInt, isBoolean, isDefined, isFiniteNumber, isFunction, isInteger, isNumber, isSafeInteger, isString, isSymbol, isUndefined, resolveByPredicate };
+export { isBigInt, isBoolean, isDefined, isFinite, isFiniteOrNull, isFunction, isInteger, isNumber, isSafeInteger, isString, isSymbol, isUndefined, resolveByPredicate };
 //# sourceMappingURL=index.js.map
