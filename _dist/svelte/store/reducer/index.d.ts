@@ -1,5 +1,4 @@
 import { Readable } from 'svelte/store';
-import { DynReducer as DynReducer$1 } from '@typhonjs-svelte/runtime-base/svelte/store/reducer';
 import { MinimalWritableFn, MinimalWritable } from '@typhonjs-svelte/runtime-base/svelte/store/util';
 
 /**
@@ -1330,7 +1329,7 @@ declare namespace DynReducerHelper {
      * These custom comparators override the default `typeof` handling for the property keys specified in the
      * `customCompareFnMap`.
      */
-    interface ObjectByProp<T> extends Omit<DynReducer$1.Data.Sort<T>, 'subscribe'>, Readable<ObjectByPropData> {
+    interface ObjectByProp<T> extends Omit<DynReducer.Data.Sort<T>, 'subscribe'>, Readable<ObjectByPropData> {
       /**
        * Get the current object property being sorted.
        */
@@ -1349,7 +1348,7 @@ declare namespace DynReducerHelper {
        */
       getCustomCompareFnMap():
         | {
-            [key: string]: DynReducer$1.Data.CompareFn<T> | DynReducer$1.Data.Sort<T>;
+            [key: string]: DynReducer.Data.CompareFn<T> | DynReducer.Data.Sort<T>;
           }
         | undefined;
       /**
@@ -1371,7 +1370,7 @@ declare namespace DynReducerHelper {
       setCustomCompareFnMap(
         customCompareFnMap:
           | {
-              [key: string]: DynReducer$1.Data.CompareFn<T> | DynReducer$1.Data.Sort<T>;
+              [key: string]: DynReducer.Data.CompareFn<T> | DynReducer.Data.Sort<T>;
             }
           | undefined,
       ): void;
@@ -1425,7 +1424,7 @@ declare namespace DynReducerHelper {
     >(options: {
       store?: MinimalWritable<unknown>;
       customCompareFnMap?: {
-        [key: string]: DynReducer$1.Data.CompareFn<T> | DynReducer$1.Data.Sort<T>;
+        [key: string]: DynReducer.Data.CompareFn<T> | DynReducer.Data.Sort<T>;
       };
     }) => Sort.ObjectByProp<T>;
   }
