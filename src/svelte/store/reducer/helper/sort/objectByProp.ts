@@ -1,11 +1,9 @@
-import { get, writable }            from 'svelte/store';
+import { ObjectByProp }             from './impl/ObjectByProp';
 
 import type { DynReducerHelper }    from '../DynReducerHelper';
 
 import type { DynReducer }          from '#runtime/svelte/store/reducer';
 import type { MinimalWritable }     from '#runtime/svelte/store/util';
-
-import { ObjectByProp }             from './impl/ObjectByProp';
 
 /**
  * @param [options] - Options.

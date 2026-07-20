@@ -1,9 +1,9 @@
 import * as filters        from './filter';
 import * as sort           from './sort';
 
-import type { Readable }   from 'svelte/store';
+import type { DynReducer } from '@typhonjs-svelte/dynamic-reducer';
 
-import type { DynReducer } from '#runtime/svelte/store/reducer';
+import type { Readable }   from 'svelte/store';
 
 import type {
    MinimalWritable,
