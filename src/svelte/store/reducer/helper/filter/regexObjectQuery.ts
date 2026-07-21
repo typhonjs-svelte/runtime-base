@@ -92,7 +92,6 @@ export function regexObjectQuery(paths: PropertyPath | Iterable<PropertyPath>,
 
          for (const path of propertyPathIterator(paths))
          {
-console.log(`!!! TJS - regexObjectQuery - path: `, path);
             const value: any = safeAccess(data, path);
             if (typeof value !== 'string')
             {
@@ -108,42 +107,6 @@ console.log(`!!! TJS - regexObjectQuery - path: `, path);
          }
 
          return false;
-
-         // if (isIterable(paths))
-         // {
-         //    for (const path of paths)
-         //    {
-         //       const value: any = safeAccess(data, path);
-         //       if (typeof value !== 'string')
-         //       {
-         //          if (accessWarn)
-         //          {
-         //             console.warn(`regexObjectQuery warning: could not access string data from '${String(path)}'.`);
-         //          }
-         //
-         //          continue;
-         //       }
-         //
-         //       if (regex.test(Strings.normalize(value))) { return true; }
-         //    }
-         //
-         //    return false;
-         // }
-         // else
-         // {
-         //    const value: any = safeAccess(data, accessors);
-         //    if (typeof value !== 'string')
-         //    {
-         //       if (accessWarn)
-         //       {
-         //          console.warn(`regexObjectQuery warning: could not access string data from '${accessors}'.`);
-         //       }
-         //
-         //       return false;
-         //    }
-         //
-         //    return regex.test(Strings.normalize(value));
-         // }
       },
       {
          /**
