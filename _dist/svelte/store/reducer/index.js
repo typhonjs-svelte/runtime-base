@@ -1,7 +1,7 @@
 import { writable, get } from 'svelte/store';
 import { isMinimalWritableStore } from '@typhonjs-svelte/runtime-base/svelte/store/util';
 import { Strings } from '@typhonjs-svelte/runtime-base/util';
-import { isIterable, safeAccess, isObject } from '@typhonjs-svelte/runtime-base/util/object';
+import { propertyPathIterator, safeAccess, PropertyPathMap, isPropertyPath, isPropertyPathEqual, isObject } from '@typhonjs-svelte/runtime-base/util/object';
 import { CrossRealm } from '@typhonjs-svelte/runtime-base/util/realm';
 
 class DynReducerUtils {
@@ -1923,25 +1923,35 @@ class DynMapReducer {
 }
 
 /**
- * Creates a filter function to compare objects by a given accessor key against a regex test. The returned function
- * is also a writable Svelte store that builds a regex from the stores value.
+ * Creates a filter function to compare objects by a given property path or list of paths against a regex test.
+ * The property path must return a string for this filter to process. The returned function is also a minimal
+ * writable Svelte store that builds a regex from the stores value.
+ *
+ * Suitable for object reducers matching one or more property paths against the store value as a
+ * regex. To access deeper entries into the object format the path as a dotted string with `.` between entries to
+ * walk or as a {@link PropertyKey} array.
  *
  * This filter function can be used w/ a dynamic reducer and bound as a store to input elements.
  *
- * @param accessors - Property key / accessors to lookup key to compare. To access deeper
- *        entries into the object format the accessor string with `.` between entries to walk.
+ * Note: To specify multiple dotted string paths in an iterable manner you must wrap in a {@link Set} or use
+ * an array of property-key arrays.
  *
- * @param [opts] - Optional parameters.
+ * @param paths - Property paths to lookup key to compare. To access deeper entries into the object format the
+ * paths as a dotted between entries to walk or use a {@link PropertyKey} array.
  *
- * @param [opts.accessWarn=false] - When true warnings will be posted if accessor not retrieved.
+ * @param [options] - Optional parameters.
  *
- * @param [opts.caseSensitive=false] - When true regex test is case-sensitive.
+ * @param [options.accessWarn=false] - When true warnings will be posted if accessor not retrieved; default:
+ *        `false`.
  *
- * @param [opts.store] - Use the provided minimal writable store to instead of creating a default `writable` store.
+ * @param [options.caseSensitive=false] - When true regex test is case-sensitive; default: `false`.
+ *
+ * @param [options.store] - Use the provided minimal writable store instead of creating a default `writable`
+ *        store.
  *
  * @returns The query string filter.
  */
-function regexObjectQuery(accessors, { accessWarn = false, caseSensitive = false, store } = {}) {
+function regexObjectQuery(paths, { accessWarn = false, caseSensitive = false, store } = {}) {
     let keyword = '';
     let regex;
     if (store !== void 0 && !isMinimalWritableStore(store)) {
@@ -1972,31 +1982,19 @@ function regexObjectQuery(accessors, { accessWarn = false, caseSensitive = false
         if (keyword === '' || !regex) {
             return true;
         }
-        if (isIterable(accessors)) {
-            for (const accessor of accessors) {
-                const value = safeAccess(data, accessor);
-                if (typeof value !== 'string') {
-                    if (accessWarn) {
-                        console.warn(`regexObjectQuery warning: could not access string data from '${accessor}'.`);
-                    }
-                    continue;
-                }
-                if (regex.test(Strings.normalize(value))) {
-                    return true;
-                }
-            }
-            return false;
-        }
-        else {
-            const value = safeAccess(data, accessors);
+        for (const path of propertyPathIterator(paths)) {
+            const value = safeAccess(data, path);
             if (typeof value !== 'string') {
                 if (accessWarn) {
-                    console.warn(`regexObjectQuery warning: could not access string data from '${accessors}'.`);
+                    console.warn(`regexObjectQuery warning: could not access string data from '${String(path)}'.`);
                 }
-                return false;
+                continue;
             }
-            return regex.test(Strings.normalize(value));
+            if (regex.test(Strings.normalize(value))) {
+                return true;
+            }
         }
+        return false;
     }, {
         /**
          * Create a custom store that changes when the search keyword changes.
@@ -2028,7 +2026,7 @@ const filters = /*#__PURE__*/Object.freeze({
 });
 
 /**
- * Defines the data object and sort / comparison function returned by {@link DynReducerHelper.sort.objectByProp}
+ * Defines the data object and sort / comparison function returned by {@link DynReducerHelper.sort.objectByPath}
  * providing managed sorting and comparison utility for dynamic reducers.
  *
  * Several built-in sorting strategies are applied automatically based on the `typeof` the values being compared. This
@@ -2056,7 +2054,7 @@ const filters = /*#__PURE__*/Object.freeze({
  * These custom comparators override the default `typeof` handling for the property keys specified in the
  * `customCompareFnMap`.
  */
-class ObjectByProp {
+class ObjectByPath {
     /**
      * Custom property to compare function or instance lookup.
      */
@@ -2073,7 +2071,7 @@ class ObjectByProp {
     /**
      * Current object property being sorted.
      */
-    #prop;
+    #path;
     /**
      * Managed sort / comparison function added to a dynamic reducer.
      */
@@ -2089,23 +2087,23 @@ class ObjectByProp {
     /**
      * @param [options] - Options.
      */
-    constructor({ prop, state, store = writable({ prop: void 0, state: void 0 }), customCompareFnMap } = {}) {
+    constructor({ path, state, store = writable({ path: void 0, state: void 0 }), customCompareFnMap } = {}) {
         if (!isMinimalWritableStore(store)) {
             throw new TypeError(`'store' is not a MinimalWritable store.`);
         }
-        if (customCompareFnMap !== void 0 && !isObject(customCompareFnMap)) {
-            throw new TypeError(`'customCompareFnMap' is not an object or undefined.`);
+        if (customCompareFnMap !== void 0 && !(customCompareFnMap instanceof PropertyPathMap)) {
+            throw new TypeError(`'customCompareFnMap' is not an PropertyPathMap or undefined.`);
         }
-        if (prop !== void 0 && typeof prop !== 'string') {
-            throw new TypeError(`'prop' must be a string or undefined.`);
+        if (path !== void 0 && !isPropertyPath(path)) {
+            throw new TypeError(`'path' must be a string or undefined.`);
         }
         if (state !== void 0 && state !== 'none' && state !== 'asc' && state !== 'desc') {
             throw new TypeError(`'state' must be 'none, 'asc', or 'desc'.`);
         }
         this.#customCompareFnMap = customCompareFnMap;
         this.#store = store;
-        if (typeof prop === 'string') {
-            this.#prop = prop;
+        if (path) {
+            this.#path = path;
         }
         if (typeof state === 'string') {
             this.#state = state;
@@ -2123,8 +2121,8 @@ class ObjectByProp {
     /**
      * Get the current object property being sorted.
      */
-    get prop() {
-        return this.#prop;
+    get path() {
+        return this.#path;
     }
     /**
      * Get the current sort state:
@@ -2144,13 +2142,13 @@ class ObjectByProp {
         return this.#customCompareFnMap;
     }
     /**
-     * Resets `prop` and `state`.
+     * Resets `path` and `state`.
      */
     reset() {
-        this.#prop = void 0;
+        this.#path = void 0;
         this.#state = 'none';
         this.#updateCustomCompareFn();
-        this.#store.set({ prop: this.#prop, state: this.#state });
+        this.#store.set({ path: this.#path, state: this.#state });
         // Forces an index update / sorting is triggered.
         this.#indexUpdateFn?.({ reversed: this.#state === 'desc' });
     }
@@ -2158,12 +2156,12 @@ class ObjectByProp {
      * Sets the current sorted object property and sort state. You may provide partial data, but state must be
      * one of: `none`, `asc`, or `desc`.
      *
-     * @param data - New prop / state data to set.
+     * @param data - New path / state data to set.
      */
-    set({ prop, state } = {}) {
+    set({ path, state } = {}) {
         let update = false;
-        if ((prop === void 0 || typeof prop === 'string') && this.#prop !== prop) {
-            this.#prop = prop;
+        if ((path === void 0 || isPropertyPath(path)) && !isPropertyPathEqual(this.#path, path)) {
+            this.#path = path;
             this.#updateCustomCompareFn();
             update = true;
         }
@@ -2172,7 +2170,7 @@ class ObjectByProp {
             update = true;
         }
         if (update) {
-            this.#store.set({ prop: this.#prop, state: this.#state });
+            this.#store.set({ path: this.#path, state: this.#state });
             // Forces an index update / sorting is triggered.
             this.#indexUpdateFn?.({ reversed: this.#state === 'desc' });
         }
@@ -2184,8 +2182,8 @@ class ObjectByProp {
      * @param customCompareFnMap - New custom compare function map to set.
      */
     setCustomCompareFnMap(customCompareFnMap) {
-        if (customCompareFnMap !== void 0 && !isObject(customCompareFnMap)) {
-            throw new TypeError(`'customCompareFnMap' is not an object or undefined.`);
+        if (customCompareFnMap !== void 0 && !(customCompareFnMap instanceof PropertyPathMap)) {
+            throw new TypeError(`'customCompareFnMap' is not a PropertyPathMap or undefined.`);
         }
         this.#customCompareFnMap = customCompareFnMap;
         this.#updateCustomCompareFn();
@@ -2202,20 +2200,21 @@ class ObjectByProp {
         return this.#store.subscribe(handler);
     }
     /**
-     * Toggles current prop state and or initializes a new prop sort state. A property that is selected multiple
+     * Toggles current path state and or initializes a new path sort state. A property that is selected multiple
      * times will cycle through ascending -> descending -> no sorting.
      *
-     * @param prop - Object property to activate.
+     * @param path - Object property to activate.
      */
-    toggleProp(prop) {
-        if (prop !== void 0 && typeof prop !== 'string') {
-            throw TypeError(`'prop' is not a string or undefined.`);
+    togglePath(path) {
+        if (path !== void 0 && !isPropertyPath(path)) {
+            throw TypeError(`'path' is not a PropertyPath or undefined.`);
         }
         /**
-         * Determine current state. If the `prop` being toggled is the current `sortBy` prop then use the stored state.
+         * Determine current state. If the `path` being toggled is the current `sortBy` path then use the stored state.
          * Otherwise, this is a new property to toggle and start from `none`.
          */
-        const currentState = this.#prop === prop ? this.#state : 'none';
+        const isPropPathEqual = isPropertyPathEqual(this.#path, path);
+        const currentState = isPropPathEqual ? this.#state : 'none';
         switch (currentState) {
             case 'none':
                 this.#state = 'asc';
@@ -2230,12 +2229,11 @@ class ObjectByProp {
                 this.#state = 'none';
                 break;
         }
-        const updateCompareFn = this.#prop !== prop;
-        this.#prop = prop;
-        if (updateCompareFn) {
+        this.#path = path;
+        if (!isPropPathEqual) {
             this.#updateCustomCompareFn();
         }
-        this.#store.set({ prop: this.#prop, state: this.#state });
+        this.#store.set({ path: this.#path, state: this.#state });
         // Forces an index update / sorting is triggered.
         this.#indexUpdateFn?.({ reversed: this.#state === 'desc' });
     }
@@ -2245,47 +2243,50 @@ class ObjectByProp {
      */
     #initializeStore() {
         const storeValue = get(this.#store);
-        if (!isObject(storeValue)) {
-            this.#store.set({ prop: this.#prop, state: this.#state });
+        if (!isObject(storeValue) || !isPropertyPath(storeValue?.path)) {
+            this.#store.set({ path: this.#path, state: this.#state });
         }
         else {
-            const prevProp = storeValue.prop;
+            const prevProp = storeValue.path;
             const prevState = storeValue.state;
-            // Accept previous prop value.
-            if (typeof prevProp === 'string') {
-                this.#prop = prevProp;
+            // Accept previous path value.
+            if (isPropertyPath(prevProp)) {
+                this.#path = prevProp;
             }
-            if (typeof prevState === 'string') {
+            if (isPropertyPath(prevState)) {
                 // Set previous state if valid or reset store value.
                 if (prevState === 'none' || prevState === 'asc' || prevState === 'desc') {
                     this.#state = prevState;
                 }
                 else {
-                    this.#store.set({ prop: this.#prop, state: this.#state });
+                    this.#store.set({ path: this.#path, state: this.#state });
                 }
             }
             // Potentially detect errant / extra keys and reset store value.
             for (const key of Object.keys(storeValue)) {
-                if (key !== 'prop' && key !== 'state') {
-                    this.#store.set({ prop: this.#prop, state: this.#state });
+                if (key !== 'path' && key !== 'state') {
+                    this.#store.set({ path: this.#path, state: this.#state });
                     break;
                 }
             }
         }
     }
     /**
-     * Create sort function that is returned by {@link ObjectByProp.compare}.
+     * Create sort function that is returned by {@link ObjectByPath.compare}.
      */
     #initializeSortByFn() {
         const sortByFn = (a, b) => {
-            if (this.#prop === void 0 || this.#state === 'none') {
+            if (this.#path === void 0 || this.#state === 'none') {
                 return 0;
             }
-            const aVal = a?.[this.#prop];
-            const bVal = b?.[this.#prop];
+            const aVal = safeAccess(a, this.#path);
+            const bVal = safeAccess(b, this.#path);
             // Custom compare -------------------------------------------------------------------------------------------
             if (this.#customCompareFn) {
-                return 'compare' in this.#customCompareFn ? this.#customCompareFn.compare?.(aVal, bVal) :
+                return 'compare' in this.#customCompareFn ?
+                    // @ts-ignore
+                    this.#customCompareFn.compare?.(aVal, bVal) :
+                    // @ts-ignore
                     this.#customCompareFn(aVal, bVal);
             }
             // Default compare ------------------------------------------------------------------------------------------
@@ -2338,10 +2339,10 @@ class ObjectByProp {
         return sortByFn;
     }
     /**
-     * Updates the cached custom compare function based on current prop value and any custom compare function map.
+     * Updates the cached custom compare function based on current path value and any custom compare function map.
      */
     #updateCustomCompareFn() {
-        const customCompare = this.#prop ? this.#customCompareFnMap?.[this.#prop] : void 0;
+        const customCompare = this.#path ? this.#customCompareFnMap?.get(this.#path) : void 0;
         if (customCompare === void 0) {
             this.#customCompareFn = void 0;
         }
@@ -2365,13 +2366,13 @@ class ObjectByProp {
  *
  * @returns Sort object by prop instance that fulfills {@link DynReducer.Data.Sort}.
  */
-function objectByProp(options = {}) {
-    return new ObjectByProp(options);
+function objectByPath(options = {}) {
+    return new ObjectByPath(options);
 }
 
 const sort = /*#__PURE__*/Object.freeze({
     __proto__: null,
-    objectByProp: objectByProp
+    objectByPath: objectByPath
 });
 
 /**
@@ -2384,17 +2385,17 @@ class DynReducerHelper {
     }
     /**
      * Returns the following filter functions:
-     * - regexObjectQuery(accessors, options); suitable for object reducers matching one or more property keys /
-     *   accessors against the store value as a regex. To access deeper entries into the object format the accessor
-     *   string with `.` between entries to walk. Optional parameters include logging access warnings, case sensitivity,
-     *   and passing in an existing store.
+     * - regexObjectQuery(paths, options); suitable for object reducers matching one or more property paths
+     *   against the store value as a regex. To access deeper entries into the object format the path as a dotted
+     *   string between entries to walk or as a {@link PropertyKey} array. Optional parameters include logging
+     *   access warnings, case sensitivity, and passing in an existing store.
      *
      * @returns All available filters.
      */
     static get filters() { return filters; }
     /**
      * Returns the following sort functions:
-     * - objectByProp
+     * - objectByPath
      *
      * @returns All available sort functions.
      */
