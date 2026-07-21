@@ -1,13 +1,15 @@
-import * as filters        from './filter';
-import * as sort           from './sort';
+import * as filters           from './filter';
+import * as sort              from './sort';
 
-import type { DynReducer } from '@typhonjs-svelte/dynamic-reducer';
+import type { DynReducer }    from '@typhonjs-svelte/dynamic-reducer';
 
-import type { Readable }   from 'svelte/store';
+import type { Readable }      from 'svelte/store';
 
 import type {
    MinimalWritable,
-   MinimalWritableFn }     from '#runtime/svelte/store/util';
+   MinimalWritableFn }        from '#runtime/svelte/store/util';
+
+import type { PropertyPath }  from '#runtime/util/object';
 
 /**
  * Provides helper functions to create dynamic store driven filters and sort functions for dynamic reducers. The
@@ -22,10 +24,10 @@ abstract class DynReducerHelper
 
    /**
     * Returns the following filter functions:
-    * - regexObjectQuery(accessors, options); suitable for object reducers matching one or more property keys /
-    *   accessors against the store value as a regex. To access deeper entries into the object format the accessor
-    *   string with `.` between entries to walk. Optional parameters include logging access warnings, case sensitivity,
-    *   and passing in an existing store.
+    * - regexObjectQuery(paths, options); suitable for object reducers matching one or more property paths
+    *   against the store value as a regex. To access deeper entries into the object format the path as a dotted
+    *   string between entries to walk or as a {@link PropertyKey} array. Optional parameters include logging
+    *   access warnings, case sensitivity, and passing in an existing store.
     *
     * @returns All available filters.
     */
@@ -59,16 +61,21 @@ declare namespace DynReducerHelper {
     */
    export interface FilterAPI {
       /**
-       * Creates a filter function to compare objects by a given accessor key against a regex test. The returned
-       * function is also a minimal writable Svelte store that builds a regex from the stores value.
+       * Creates a filter function to compare objects by a given property path or list of paths against a regex test.
+       * The property path must return a string for this filter to process. The returned function is also a minimal
+       * writable Svelte store that builds a regex from the stores value.
        *
-       * Suitable for object reducers matching one or more property keys / accessors against the store value as a
-       * regex. To access deeper entries into the object format the accessor string with `.` between entries to walk.
+       * Suitable for object reducers matching one or more property paths against the store value as a
+       * regex. To access deeper entries into the object format the path as a dotted string with `.` between entries to
+       * walk or as a {@link PropertyKey} array.
        *
        * This filter function can be used w/ a dynamic reducer and bound as a store to input elements.
        *
-       * @param accessors - Property key / accessors to lookup key to compare. To access deeper entries into the object
-       *        format the accessor string with `.` between entries to walk.
+       * Note: To specify multiple dotted string paths in an iterable manner you must wrap in a {@link Set} or use
+       * an array of property-key arrays.
+       *
+       * @param paths - Property paths to lookup key to compare. To access deeper entries into the object format the
+       * paths as a dotted between entries to walk or use a {@link PropertyKey} array.
        *
        * @param [options] - Optional parameters.
        *
@@ -83,7 +90,7 @@ declare namespace DynReducerHelper {
        * @returns The query string filter.
        */
       regexObjectQuery: (
-         accessors: string | Iterable<string>,
+         paths: PropertyPath | Iterable<PropertyPath>,
          options?: {
             accessWarn?: boolean,
             caseSensitive?: boolean,

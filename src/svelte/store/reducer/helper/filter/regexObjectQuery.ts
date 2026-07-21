@@ -4,7 +4,7 @@ import { isMinimalWritableStore }   from '#runtime/svelte/store/util';
 import { Strings }                  from '#runtime/util';
 
 import {
-   isIterable,
+   propertyPathIterator,
    safeAccess }                     from '#runtime/util/object';
 
 import type {
@@ -13,30 +13,43 @@ import type {
 
 import type { MinimalWritable }     from '#runtime/svelte/store/util';
 
+import type { PropertyPath }        from '#runtime/util/object';
+
 import type { DynReducerHelper }    from '../DynReducerHelper';
 
 /**
- * Creates a filter function to compare objects by a given accessor key against a regex test. The returned function
- * is also a writable Svelte store that builds a regex from the stores value.
+ * Creates a filter function to compare objects by a given property path or list of paths against a regex test.
+ * The property path must return a string for this filter to process. The returned function is also a minimal
+ * writable Svelte store that builds a regex from the stores value.
+ *
+ * Suitable for object reducers matching one or more property paths against the store value as a
+ * regex. To access deeper entries into the object format the path as a dotted string with `.` between entries to
+ * walk or as a {@link PropertyKey} array.
  *
  * This filter function can be used w/ a dynamic reducer and bound as a store to input elements.
  *
- * @param accessors - Property key / accessors to lookup key to compare. To access deeper
- *        entries into the object format the accessor string with `.` between entries to walk.
+ * Note: To specify multiple dotted string paths in an iterable manner you must wrap in a {@link Set} or use
+ * an array of property-key arrays.
  *
- * @param [opts] - Optional parameters.
+ * @param paths - Property paths to lookup key to compare. To access deeper entries into the object format the
+ * paths as a dotted between entries to walk or use a {@link PropertyKey} array.
  *
- * @param [opts.accessWarn=false] - When true warnings will be posted if accessor not retrieved.
+ * @param [options] - Optional parameters.
  *
- * @param [opts.caseSensitive=false] - When true regex test is case-sensitive.
+ * @param [options.accessWarn=false] - When true warnings will be posted if accessor not retrieved; default:
+ *        `false`.
  *
- * @param [opts.store] - Use the provided minimal writable store to instead of creating a default `writable` store.
+ * @param [options.caseSensitive=false] - When true regex test is case-sensitive; default: `false`.
+ *
+ * @param [options.store] - Use the provided minimal writable store instead of creating a default `writable`
+ *        store.
  *
  * @returns The query string filter.
  */
-export function regexObjectQuery(accessors: string | Iterable<string>, { accessWarn = false, caseSensitive = false,
- store }: { accessWarn?: boolean, caseSensitive?: boolean, store?: MinimalWritable<string> } = {}):
-  ReturnType<DynReducerHelper.FilterAPI['regexObjectQuery']>
+export function regexObjectQuery(paths: PropertyPath | Iterable<PropertyPath>,
+ { accessWarn = false, caseSensitive = false, store }:
+  { accessWarn?: boolean, caseSensitive?: boolean, store?: MinimalWritable<string> } = {}):
+   ReturnType<DynReducerHelper.FilterAPI['regexObjectQuery']>
 {
    let keyword: string = '';
    let regex: RegExp;
@@ -77,41 +90,60 @@ export function regexObjectQuery(accessors: string | Iterable<string>, { accessW
       {
          if (keyword === '' || !regex) { return true; }
 
-         if (isIterable(accessors))
+         for (const path of propertyPathIterator(paths))
          {
-            for (const accessor of accessors)
-            {
-               const value: any = safeAccess(data, accessor);
-               if (typeof value !== 'string')
-               {
-                  if (accessWarn)
-                  {
-                     console.warn(`regexObjectQuery warning: could not access string data from '${accessor}'.`);
-                  }
-
-                  continue;
-               }
-
-               if (regex.test(Strings.normalize(value))) { return true; }
-            }
-
-            return false;
-         }
-         else
-         {
-            const value: any = safeAccess(data, accessors);
+console.log(`!!! TJS - regexObjectQuery - path: `, path);
+            const value: any = safeAccess(data, path);
             if (typeof value !== 'string')
             {
                if (accessWarn)
                {
-                  console.warn(`regexObjectQuery warning: could not access string data from '${accessors}'.`);
+                  console.warn(`regexObjectQuery warning: could not access string data from '${String(path)}'.`);
                }
 
-               return false;
+               continue;
             }
 
-            return regex.test(Strings.normalize(value));
+            if (regex.test(Strings.normalize(value))) { return true; }
          }
+
+         return false;
+
+         // if (isIterable(paths))
+         // {
+         //    for (const path of paths)
+         //    {
+         //       const value: any = safeAccess(data, path);
+         //       if (typeof value !== 'string')
+         //       {
+         //          if (accessWarn)
+         //          {
+         //             console.warn(`regexObjectQuery warning: could not access string data from '${String(path)}'.`);
+         //          }
+         //
+         //          continue;
+         //       }
+         //
+         //       if (regex.test(Strings.normalize(value))) { return true; }
+         //    }
+         //
+         //    return false;
+         // }
+         // else
+         // {
+         //    const value: any = safeAccess(data, accessors);
+         //    if (typeof value !== 'string')
+         //    {
+         //       if (accessWarn)
+         //       {
+         //          console.warn(`regexObjectQuery warning: could not access string data from '${accessors}'.`);
+         //       }
+         //
+         //       return false;
+         //    }
+         //
+         //    return regex.test(Strings.normalize(value));
+         // }
       },
       {
          /**
