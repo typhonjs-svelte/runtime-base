@@ -1,7 +1,14 @@
 import { get, writable }            from 'svelte/store';
 
 import { isMinimalWritableStore }   from '#runtime/svelte/store/util';
-import { isObject }                 from '#runtime/util/object';
+
+import {
+   isObject,
+   isPropertyPath,
+   isPropertyPathEqual,
+   PropertyPathMap,
+   safeAccess }                     from '#runtime/util/object';
+
 import { CrossRealm }               from '#runtime/util/realm';
 
 import type {
@@ -10,6 +17,8 @@ import type {
 
 import type { DynReducer }          from '#runtime/svelte/store/reducer';
 import type { MinimalWritable }     from '#runtime/svelte/store/util';
+
+import type { PropertyPath }        from '#runtime/util/object';
 
 import type { DynReducerHelper }    from '../../DynReducerHelper';
 
@@ -42,12 +51,12 @@ import type { DynReducerHelper }    from '../../DynReducerHelper';
  * These custom comparators override the default `typeof` handling for the property keys specified in the
  * `customCompareFnMap`.
  */
-export class ObjectByProp<T extends { [key: string]: any }> implements DynReducerHelper.Sort.ObjectByProp<T>
+export class ObjectByProp<T extends { [key: PropertyKey]: any }> implements DynReducerHelper.Sort.ObjectByProp<T>
 {
    /**
     * Custom property to compare function or instance lookup.
     */
-   #customCompareFnMap?: { [key: string]: DynReducer.Data.CompareFn<T> | DynReducer.Data.Sort<T> };
+   #customCompareFnMap?: PropertyPathMap<DynReducer.Data.CompareFn<T> | DynReducer.Data.Sort<T>>;
 
    /**
     * Current custom compare function that is found in `#customCompareFnMap` when properties change.
@@ -63,7 +72,7 @@ export class ObjectByProp<T extends { [key: string]: any }> implements DynReduce
    /**
     * Current object property being sorted.
     */
-   #prop?: string;
+   #prop?: PropertyPath;
 
    /**
     * Managed sort / comparison function added to a dynamic reducer.
@@ -78,7 +87,7 @@ export class ObjectByProp<T extends { [key: string]: any }> implements DynReduce
    /**
     * Target external store to serialize the sort property and state.
     */
-   readonly #store: MinimalWritable<any>;
+   readonly #store: MinimalWritable<DynReducerHelper.Sort.ObjectByPropData>;
 
    /**
     * @param [options] - Options.
@@ -91,12 +100,12 @@ export class ObjectByProp<T extends { [key: string]: any }> implements DynReduce
          throw new TypeError(`'store' is not a MinimalWritable store.`);
       }
 
-      if (customCompareFnMap !== void 0 && !isObject(customCompareFnMap))
+      if (customCompareFnMap !== void 0 && !(customCompareFnMap instanceof PropertyPathMap))
       {
-         throw new TypeError(`'customCompareFnMap' is not an object or undefined.`);
+         throw new TypeError(`'customCompareFnMap' is not an PropertyPathMap or undefined.`);
       }
 
-      if (prop !== void 0 && typeof prop !== 'string')
+      if (prop !== void 0 && !isPropertyPath(prop))
       {
          throw new TypeError(`'prop' must be a string or undefined.`);
       }
@@ -109,7 +118,7 @@ export class ObjectByProp<T extends { [key: string]: any }> implements DynReduce
       this.#customCompareFnMap = customCompareFnMap;
       this.#store = store;
 
-      if (typeof prop === 'string') { this.#prop = prop; }
+      if (prop) { this.#prop = prop; }
       if (typeof state === 'string') { this.#state = state; }
 
       this.#initializeStore();
@@ -128,7 +137,7 @@ export class ObjectByProp<T extends { [key: string]: any }> implements DynReduce
    /**
     * Get the current object property being sorted.
     */
-   get prop(): string | undefined
+   get prop(): PropertyPath | undefined
    {
       return this.#prop;
    }
@@ -149,7 +158,7 @@ export class ObjectByProp<T extends { [key: string]: any }> implements DynReduce
    /**
     * Returns any current custom compare function lookup map.
     */
-   getCustomCompareFnMap()
+   getCustomCompareFnMap(): PropertyPathMap<DynReducer.Data.CompareFn<T> | DynReducer.Data.Sort<T>> | undefined
    {
       return this.#customCompareFnMap;
    }
@@ -180,7 +189,7 @@ export class ObjectByProp<T extends { [key: string]: any }> implements DynReduce
    {
       let update = false;
 
-      if ((prop === void 0 || typeof prop === 'string') && this.#prop !== prop)
+      if ((prop === void 0 || isPropertyPath(prop)) && !isPropertyPathEqual(this.#prop, prop))
       {
          this.#prop = prop;
          this.#updateCustomCompareFn();
@@ -207,12 +216,12 @@ export class ObjectByProp<T extends { [key: string]: any }> implements DynReduce
     *
     * @param customCompareFnMap - New custom compare function map to set.
     */
-   setCustomCompareFnMap(customCompareFnMap: { [key: string]: DynReducer.Data.CompareFn<T> | DynReducer.Data.Sort<T> }
-    | undefined)
+   setCustomCompareFnMap(customCompareFnMap: PropertyPathMap<DynReducer.Data.CompareFn<T> | DynReducer.Data.Sort<T>> |
+    undefined)
    {
-      if (customCompareFnMap !== void 0 && !isObject(customCompareFnMap))
+      if (customCompareFnMap !== void 0 && !(customCompareFnMap instanceof PropertyPathMap))
       {
-         throw new TypeError(`'customCompareFnMap' is not an object or undefined.`)
+         throw new TypeError(`'customCompareFnMap' is not a PropertyPathMap or undefined.`)
       }
 
       this.#customCompareFnMap = customCompareFnMap;
@@ -229,9 +238,9 @@ export class ObjectByProp<T extends { [key: string]: any }> implements DynReduce
     *
     * @returns Unsubscribe function.
     */
-   subscribe(handler: Subscriber<{ prop?: string, state?: string }>): Unsubscriber
+   subscribe(handler: Subscriber<DynReducerHelper.Sort.ObjectByPropData>): Unsubscriber
    {
-      return (this.#store as MinimalWritable<{ prop?: string, state?: string }>).subscribe(handler);
+      return this.#store.subscribe(handler);
    }
 
    /**
@@ -240,11 +249,11 @@ export class ObjectByProp<T extends { [key: string]: any }> implements DynReduce
     *
     * @param prop - Object property to activate.
     */
-   toggleProp(prop: string | undefined)
+   toggleProp(prop: PropertyPath | undefined)
    {
-      if (prop !== void 0 && typeof prop !== 'string')
+      if (prop !== void 0 && !isPropertyPath(prop))
       {
-         throw TypeError(`'prop' is not a string or undefined.`);
+         throw TypeError(`'prop' is not a PropertyPath or undefined.`);
       }
 
       /**
@@ -252,7 +261,9 @@ export class ObjectByProp<T extends { [key: string]: any }> implements DynReduce
        * Otherwise, this is a new property to toggle and start from `none`.
        */
 
-      const currentState: string | undefined = this.#prop === prop ? this.#state : 'none';
+      const isPropPathEqual = isPropertyPathEqual(this.#prop, prop);
+
+      const currentState: string | undefined = isPropPathEqual ? this.#state : 'none';
 
       switch (currentState)
       {
@@ -273,11 +284,9 @@ export class ObjectByProp<T extends { [key: string]: any }> implements DynReduce
             break;
       }
 
-      const updateCompareFn = this.#prop !== prop;
-
       this.#prop = prop;
 
-      if (updateCompareFn) { this.#updateCustomCompareFn(); }
+      if (!isPropPathEqual) { this.#updateCustomCompareFn(); }
 
       this.#store.set({ prop: this.#prop, state: this.#state });
 
@@ -294,7 +303,7 @@ export class ObjectByProp<T extends { [key: string]: any }> implements DynReduce
    {
       const storeValue = get(this.#store);
 
-      if (!isObject(storeValue))
+      if (!isObject(storeValue) || !isPropertyPath(storeValue?.prop))
       {
          this.#store.set({ prop: this.#prop, state: this.#state });
       }
@@ -304,9 +313,9 @@ export class ObjectByProp<T extends { [key: string]: any }> implements DynReduce
          const prevState = storeValue.state;
 
          // Accept previous prop value.
-         if (typeof prevProp === 'string') { this.#prop = prevProp; }
+         if (isPropertyPath(prevProp)) { this.#prop = prevProp; }
 
-         if (typeof prevState === 'string')
+         if (isPropertyPath(prevState))
          {
             // Set previous state if valid or reset store value.
             if (prevState === 'none' || prevState === 'asc' || prevState === 'desc')
@@ -340,15 +349,16 @@ export class ObjectByProp<T extends { [key: string]: any }> implements DynReduce
       {
          if (this.#prop === void 0 || this.#state === 'none') { return 0; }
 
-         const aVal = a?.[this.#prop];
-         const bVal = b?.[this.#prop];
+         const aVal = safeAccess(a, this.#prop);
+         const bVal = safeAccess(b, this.#prop);
 
          // Custom compare -------------------------------------------------------------------------------------------
 
          if (this.#customCompareFn)
          {
-            return 'compare' in this.#customCompareFn ? this.#customCompareFn.compare?.(aVal, bVal) :
-             this.#customCompareFn(aVal, bVal);
+            return 'compare' in this.#customCompareFn ?
+             (this.#customCompareFn as DynReducer.Data.Sort<T>).compare?.(aVal, bVal) :
+              (this.#customCompareFn as DynReducer.Data.CompareFn<T>)(aVal, bVal);
          }
 
          // Default compare ------------------------------------------------------------------------------------------
@@ -411,7 +421,11 @@ export class ObjectByProp<T extends { [key: string]: any }> implements DynReduce
     */
    #updateCustomCompareFn()
    {
-      const customCompare = this.#prop ? this.#customCompareFnMap?.[this.#prop] : void 0;
+      // const customCompare = this.#prop && this.#customCompareFnMap ? safeAccess(this.#customCompareFnMap, this.#prop) :
+      //  void 0;
+      const customCompare: DynReducer.Data.CompareFn<T> | DynReducer.Data.Sort<T> | undefined =
+       this.#prop ? this.#customCompareFnMap?.get(this.#prop) : void 0;
+
       if (customCompare === void 0)
       {
          this.#customCompareFn = void 0;
@@ -419,13 +433,13 @@ export class ObjectByProp<T extends { [key: string]: any }> implements DynReduce
       else if (typeof customCompare === 'function')
       {
          // Case 1: It's a class with a static compare method.
-         if ('compare' in customCompare && typeof (customCompare as any).compare === 'function')
+         if ('compare' in customCompare && typeof customCompare.compare === 'function')
          {
-            this.#customCompareFn = customCompare;
+            this.#customCompareFn = customCompare as DynReducer.Data.Sort<T>;
          }
 
          // Case 2: It's a plain function comparator.
-         this.#customCompareFn = customCompare;
+         this.#customCompareFn = customCompare as DynReducer.Data.CompareFn<T>;
       }
       else if (typeof customCompare?.compare === 'function')
       {

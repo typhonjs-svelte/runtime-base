@@ -1,15 +1,17 @@
-import * as filters           from './filter';
-import * as sort              from './sort';
+import * as filters        from './filter';
+import * as sort           from './sort';
 
-import type { DynReducer }    from '@typhonjs-svelte/dynamic-reducer';
+import type { DynReducer } from '@typhonjs-svelte/dynamic-reducer';
 
-import type { Readable }      from 'svelte/store';
+import type { Readable }   from 'svelte/store';
 
 import type {
    MinimalWritable,
-   MinimalWritableFn }        from '#runtime/svelte/store/util';
+   MinimalWritableFn }     from '#runtime/svelte/store/util';
 
-import type { PropertyPath }  from '#runtime/util/object';
+import type {
+   PropertyPath,
+   PropertyPathMap }       from '#runtime/util/object';
 
 /**
  * Provides helper functions to create dynamic store driven filters and sort functions for dynamic reducers. The
@@ -53,7 +55,8 @@ declare namespace DynReducerHelper {
       /**
        * The returned filter function from `regexObjectQuery` helper.
        */
-      export interface regexObjectQuery extends MinimalWritableFn<string, [data: { [key: string]: any }], boolean> {}
+      export interface regexObjectQuery extends
+       MinimalWritableFn<string, [data: { [key: PropertyKey]: any }], boolean> {}
    }
 
    /**
@@ -71,7 +74,7 @@ declare namespace DynReducerHelper {
        *
        * This filter function can be used w/ a dynamic reducer and bound as a store to input elements.
        *
-       * Note: To specify multiple dotted string paths in an iterable manner you must wrap in a {@link Set} or use
+       * Note: To specify multiple dotted string paths in an iterable manner you must wrap them in a {@link Set} or use
        * an array of property-key arrays.
        *
        * @param paths - Property paths to lookup key to compare. To access deeper entries into the object format the
@@ -137,7 +140,7 @@ declare namespace DynReducerHelper {
          /**
           * Get the current object property being sorted.
           */
-         get prop(): string | undefined;
+         get prop(): PropertyPath | undefined;
 
          /**
           * Get the current sort state:
@@ -152,7 +155,7 @@ declare namespace DynReducerHelper {
          /**
           * Returns any current custom compare function lookup map.
           */
-         getCustomCompareFnMap(): { [key: string]: DynReducer.Data.CompareFn<T> | DynReducer.Data.Sort<T> } | undefined;
+         getCustomCompareFnMap(): PropertyPathMap<DynReducer.Data.CompareFn<T> | DynReducer.Data.Sort<T>> | undefined;
 
          /**
           * Resets `prop` and `state`.
@@ -173,15 +176,15 @@ declare namespace DynReducerHelper {
           * @param customCompareFnMap - New custom compare function map to set.
           */
          setCustomCompareFnMap(customCompareFnMap:
-          { [key: string]: DynReducer.Data.CompareFn<T> | DynReducer.Data.Sort<T> } | undefined): void;
+          PropertyPathMap<DynReducer.Data.CompareFn<T> | DynReducer.Data.Sort<T>> | undefined): void;
 
          /**
           * Toggles current prop state and or initializes a new prop sort state. A property that is selected multiple
           * times will cycle through ascending -> descending -> no sorting.
           *
-          * @param prop - Object property to activate.
+          * @param prop - Object property path to activate.
           */
-         toggleProp(prop: string): void;
+         toggleProp(prop: PropertyPath): void;
       }
 
       /**
@@ -191,7 +194,7 @@ declare namespace DynReducerHelper {
          /**
           * Current sorted object property if any.
           */
-         prop?: string,
+         prop?: PropertyPath,
 
          /**
           * Current sort state:
@@ -207,16 +210,16 @@ declare namespace DynReducerHelper {
       /**
        * Defines the options for {@link DynReducerHelper.SortAPI.objectByProp} serialized for current property and sort state.
        */
-      export interface ObjectByPropOptions<T extends { [key: string]: any }> extends ObjectByPropData {
+      export interface ObjectByPropOptions<T extends { [key: PropertyKey]: any }> extends ObjectByPropData {
          /**
           * An external store that serializes the tracked prop and sorting state as {@link ObjectByPropData}.
           */
-         store?: MinimalWritable<unknown>,
+         store?: MinimalWritable<ObjectByPropData>,
 
          /**
-          * An object with property keys associated with custom compare functions for those keys.
+          * An property path map with property paths associated with custom compare functions for those keys.
           */
-         customCompareFnMap?: { [key: string]: DynReducer.Data.CompareFn<T> | DynReducer.Data.Sort<T> }
+         customCompareFnMap?: PropertyPathMap<DynReducer.Data.CompareFn<T> | DynReducer.Data.Sort<T>>
       }
    }
 
@@ -234,7 +237,8 @@ declare namespace DynReducerHelper {
        *
        * @param [options] - ObjectByProp options.
        */
-      objectByProp: <T extends { [key: string]: any }>(options?: Sort.ObjectByPropOptions<T>) => Sort.ObjectByProp<T>
+      objectByProp: <T extends { [key: PropertyKey]: any }>(options?: Sort.ObjectByPropOptions<T>) =>
+       Sort.ObjectByProp<T>
    }
 }
 

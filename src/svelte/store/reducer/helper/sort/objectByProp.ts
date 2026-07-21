@@ -9,8 +9,8 @@ import type { DynReducer }          from '#runtime/svelte/store/reducer';
  *
  * @returns Sort object by prop instance that fulfills {@link DynReducer.Data.Sort}.
  */
-function objectByProp<T extends { [key: string]: any }>(options: DynReducerHelper.Sort.ObjectByPropOptions<T> = {}):
- DynReducerHelper.Sort.ObjectByProp<T>
+function objectByProp<T extends { [key: PropertyKey]: any }>(
+ options: DynReducerHelper.Sort.ObjectByPropOptions<T> = {}): DynReducerHelper.Sort.ObjectByProp<T>
 {
    return new ObjectByProp(options);
 }
