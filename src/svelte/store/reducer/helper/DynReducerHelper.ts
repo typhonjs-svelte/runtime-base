@@ -180,7 +180,7 @@ declare namespace DynReducerHelper {
       /**
        * Defines the data serialized for current property and sort state.
        */
-      export type ObjectByPropData = {
+      export interface ObjectByPropData {
          /**
           * Current sorted object property if any.
           */
@@ -196,6 +196,21 @@ declare namespace DynReducerHelper {
           */
          state?: string
       }
+
+      /**
+       * Defines the options for {@link DynReducerHelper.SortAPI.objectByProp} serialized for current property and sort state.
+       */
+      export interface ObjectByPropOptions<T extends { [key: string]: any }> extends ObjectByPropData {
+         /**
+          * An external store that serializes the tracked prop and sorting state as {@link ObjectByPropData}.
+          */
+         store?: MinimalWritable<unknown>,
+
+         /**
+          * An object with property keys associated with custom compare functions for those keys.
+          */
+         customCompareFnMap?: { [key: string]: DynReducer.Data.CompareFn<T> | DynReducer.Data.Sort<T> }
+      }
    }
 
    /**
@@ -207,16 +222,12 @@ declare namespace DynReducerHelper {
        * providing several default sort comparisons for object properties with additional customization for complex data
        * types.
        *
+       * Note that either a store with {@link Sort.ObjectByPropData} should be provided or initial `prop` and `state`
+       * values specified for the internal store.
+       *
        * @param [options] - ObjectByProp options.
-       *
-       * @param [options.store] - An external store that serializes the tracked prop and sorting state.
-       *
-       * @param [options.customCompareFnMap] - An object with property keys associated with custom compare functions for
-       *        those keys.
        */
-      objectByProp: <T extends { [key: string]: any }>(options: { store?: MinimalWritable<unknown>,
-       customCompareFnMap?: { [key: string]: DynReducer.Data.CompareFn<T> | DynReducer.Data.Sort<T> }}) =>
-        Sort.ObjectByProp<T>
+      objectByProp: <T extends { [key: string]: any }>(options?: Sort.ObjectByPropOptions<T>) => Sort.ObjectByProp<T>
    }
 }
 

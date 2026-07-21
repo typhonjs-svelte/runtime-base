@@ -2088,21 +2088,28 @@ class ObjectByProp {
     #store;
     /**
      * @param [options] - Options.
-     *
-     * @param [options.store] - An external store that serializes the tracked prop and sorting state.
-     *
-     * @param [options.customCompareFnMap] - An object with property keys associated with custom compare functions for
-     *        those keys.
      */
-    constructor({ store = writable({ prop: void 0, state: void 0 }), customCompareFnMap } = {}) {
+    constructor({ prop, state, store = writable({ prop: void 0, state: void 0 }), customCompareFnMap } = {}) {
         if (!isMinimalWritableStore(store)) {
             throw new TypeError(`'store' is not a MinimalWritable store.`);
         }
         if (customCompareFnMap !== void 0 && !isObject(customCompareFnMap)) {
             throw new TypeError(`'customCompareFnMap' is not an object or undefined.`);
         }
+        if (prop !== void 0 && typeof prop !== 'string') {
+            throw new TypeError(`'prop' must be a string or undefined.`);
+        }
+        if (state !== void 0 && state !== 'none' && state !== 'asc' && state !== 'desc') {
+            throw new TypeError(`'state' must be 'none, 'asc', or 'desc'.`);
+        }
         this.#customCompareFnMap = customCompareFnMap;
         this.#store = store;
+        if (typeof prop === 'string') {
+            this.#prop = prop;
+        }
+        if (typeof state === 'string') {
+            this.#state = state;
+        }
         this.#initializeStore();
         this.#sortByFn = this.#initializeSortByFn();
         this.#updateCustomCompareFn();
@@ -2356,15 +2363,10 @@ class ObjectByProp {
 /**
  * @param [options] - Options.
  *
- * @param [options.store] - An external store that serializes the tracked prop and sorting state.
- *
- * @param [options.customCompareFnMap] - An object with property keys associated with custom compare functions for those
- *        keys.
- *
  * @returns Sort object by prop instance that fulfills {@link DynReducer.Data.Sort}.
  */
-function objectByProp({ store, customCompareFnMap } = {}) {
-    return new ObjectByProp({ store, customCompareFnMap });
+function objectByProp(options = {}) {
+    return new ObjectByProp(options);
 }
 
 const sort = /*#__PURE__*/Object.freeze({
