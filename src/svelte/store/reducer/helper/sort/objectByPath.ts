@@ -1,4 +1,4 @@
-import { ObjectByProp }             from './impl/ObjectByProp';
+import { ObjectByPath }             from './impl/ObjectByPath';
 
 import type { DynReducerHelper }    from '../DynReducerHelper';
 
@@ -9,12 +9,12 @@ import type { DynReducer }          from '#runtime/svelte/store/reducer';
  *
  * @returns Sort object by prop instance that fulfills {@link DynReducer.Data.Sort}.
  */
-function objectByProp<T extends { [key: PropertyKey]: any }>(
- options: DynReducerHelper.Sort.ObjectByPropOptions<T> = {}): DynReducerHelper.Sort.ObjectByProp<T>
+function objectByPath<T extends { [key: PropertyKey]: any }>(
+ options: DynReducerHelper.Sort.ObjectByPathOptions<T> = {}): DynReducerHelper.Sort.ObjectByPath<T>
 {
-   return new ObjectByProp(options);
+   return new ObjectByPath(options);
 }
 
 export {
-   objectByProp
+   objectByPath
 }

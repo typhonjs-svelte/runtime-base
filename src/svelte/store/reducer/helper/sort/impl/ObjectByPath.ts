@@ -23,7 +23,7 @@ import type { PropertyPath }        from '#runtime/util/object';
 import type { DynReducerHelper }    from '../../DynReducerHelper';
 
 /**
- * Defines the data object and sort / comparison function returned by {@link DynReducerHelper.sort.objectByProp}
+ * Defines the data object and sort / comparison function returned by {@link DynReducerHelper.sort.objectByPath}
  * providing managed sorting and comparison utility for dynamic reducers.
  *
  * Several built-in sorting strategies are applied automatically based on the `typeof` the values being compared. This
@@ -51,7 +51,7 @@ import type { DynReducerHelper }    from '../../DynReducerHelper';
  * These custom comparators override the default `typeof` handling for the property keys specified in the
  * `customCompareFnMap`.
  */
-export class ObjectByProp<T extends { [key: PropertyKey]: any }> implements DynReducerHelper.Sort.ObjectByProp<T>
+export class ObjectByPath<T extends { [key: PropertyKey]: any }> implements DynReducerHelper.Sort.ObjectByPath<T>
 {
    /**
     * Custom property to compare function or instance lookup.
@@ -72,7 +72,7 @@ export class ObjectByProp<T extends { [key: PropertyKey]: any }> implements DynR
    /**
     * Current object property being sorted.
     */
-   #prop?: PropertyPath;
+   #path?: PropertyPath;
 
    /**
     * Managed sort / comparison function added to a dynamic reducer.
@@ -87,13 +87,13 @@ export class ObjectByProp<T extends { [key: PropertyKey]: any }> implements DynR
    /**
     * Target external store to serialize the sort property and state.
     */
-   readonly #store: MinimalWritable<DynReducerHelper.Sort.ObjectByPropData>;
+   readonly #store: MinimalWritable<DynReducerHelper.Sort.ObjectByPathData>;
 
    /**
     * @param [options] - Options.
     */
-   constructor({ prop, state, store = writable({ prop: void 0, state: void 0 }), customCompareFnMap }:
-    DynReducerHelper.Sort.ObjectByPropOptions<T> = {})
+   constructor({ path, state, store = writable({ path: void 0, state: void 0 }), customCompareFnMap }:
+    DynReducerHelper.Sort.ObjectByPathOptions<T> = {})
    {
       if (!isMinimalWritableStore(store))
       {
@@ -105,9 +105,9 @@ export class ObjectByProp<T extends { [key: PropertyKey]: any }> implements DynR
          throw new TypeError(`'customCompareFnMap' is not an PropertyPathMap or undefined.`);
       }
 
-      if (prop !== void 0 && !isPropertyPath(prop))
+      if (path !== void 0 && !isPropertyPath(path))
       {
-         throw new TypeError(`'prop' must be a string or undefined.`);
+         throw new TypeError(`'path' must be a string or undefined.`);
       }
 
       if (state !== void 0 && state !== 'none' && state !== 'asc' && state !== 'desc')
@@ -118,7 +118,7 @@ export class ObjectByProp<T extends { [key: PropertyKey]: any }> implements DynR
       this.#customCompareFnMap = customCompareFnMap;
       this.#store = store;
 
-      if (prop) { this.#prop = prop; }
+      if (path) { this.#path = path; }
       if (typeof state === 'string') { this.#state = state; }
 
       this.#initializeStore();
@@ -137,9 +137,9 @@ export class ObjectByProp<T extends { [key: PropertyKey]: any }> implements DynR
    /**
     * Get the current object property being sorted.
     */
-   get prop(): PropertyPath | undefined
+   get path(): PropertyPath | undefined
    {
-      return this.#prop;
+      return this.#path;
    }
 
    /**
@@ -164,16 +164,16 @@ export class ObjectByProp<T extends { [key: PropertyKey]: any }> implements DynR
    }
 
    /**
-    * Resets `prop` and `state`.
+    * Resets `path` and `state`.
     */
    reset()
    {
-      this.#prop = void 0;
+      this.#path = void 0;
       this.#state = 'none';
 
       this.#updateCustomCompareFn();
 
-      this.#store.set({ prop: this.#prop, state: this.#state });
+      this.#store.set({ path: this.#path, state: this.#state });
 
       // Forces an index update / sorting is triggered.
       this.#indexUpdateFn?.({ reversed: this.#state === 'desc' });
@@ -183,15 +183,15 @@ export class ObjectByProp<T extends { [key: PropertyKey]: any }> implements DynR
     * Sets the current sorted object property and sort state. You may provide partial data, but state must be
     * one of: `none`, `asc`, or `desc`.
     *
-    * @param data - New prop / state data to set.
+    * @param data - New path / state data to set.
     */
-   set({ prop, state }: DynReducerHelper.Sort.ObjectByPropData = {})
+   set({ path, state }: DynReducerHelper.Sort.ObjectByPathData = {})
    {
       let update = false;
 
-      if ((prop === void 0 || isPropertyPath(prop)) && !isPropertyPathEqual(this.#prop, prop))
+      if ((path === void 0 || isPropertyPath(path)) && !isPropertyPathEqual(this.#path, path))
       {
-         this.#prop = prop;
+         this.#path = path;
          this.#updateCustomCompareFn();
          update = true;
       }
@@ -204,7 +204,7 @@ export class ObjectByProp<T extends { [key: PropertyKey]: any }> implements DynR
 
       if (update)
       {
-         this.#store.set({ prop: this.#prop, state: this.#state });
+         this.#store.set({ path: this.#path, state: this.#state });
 
          // Forces an index update / sorting is triggered.
          this.#indexUpdateFn?.({ reversed: this.#state === 'desc' });
@@ -238,30 +238,30 @@ export class ObjectByProp<T extends { [key: PropertyKey]: any }> implements DynR
     *
     * @returns Unsubscribe function.
     */
-   subscribe(handler: Subscriber<DynReducerHelper.Sort.ObjectByPropData>): Unsubscriber
+   subscribe(handler: Subscriber<DynReducerHelper.Sort.ObjectByPathData>): Unsubscriber
    {
       return this.#store.subscribe(handler);
    }
 
    /**
-    * Toggles current prop state and or initializes a new prop sort state. A property that is selected multiple
+    * Toggles current path state and or initializes a new path sort state. A property that is selected multiple
     * times will cycle through ascending -> descending -> no sorting.
     *
-    * @param prop - Object property to activate.
+    * @param path - Object property to activate.
     */
-   toggleProp(prop: PropertyPath | undefined)
+   togglePath(path: PropertyPath | undefined)
    {
-      if (prop !== void 0 && !isPropertyPath(prop))
+      if (path !== void 0 && !isPropertyPath(path))
       {
-         throw TypeError(`'prop' is not a PropertyPath or undefined.`);
+         throw TypeError(`'path' is not a PropertyPath or undefined.`);
       }
 
       /**
-       * Determine current state. If the `prop` being toggled is the current `sortBy` prop then use the stored state.
+       * Determine current state. If the `path` being toggled is the current `sortBy` path then use the stored state.
        * Otherwise, this is a new property to toggle and start from `none`.
        */
 
-      const isPropPathEqual = isPropertyPathEqual(this.#prop, prop);
+      const isPropPathEqual = isPropertyPathEqual(this.#path, path);
 
       const currentState: string | undefined = isPropPathEqual ? this.#state : 'none';
 
@@ -284,11 +284,11 @@ export class ObjectByProp<T extends { [key: PropertyKey]: any }> implements DynR
             break;
       }
 
-      this.#prop = prop;
+      this.#path = path;
 
       if (!isPropPathEqual) { this.#updateCustomCompareFn(); }
 
-      this.#store.set({ prop: this.#prop, state: this.#state });
+      this.#store.set({ path: this.#path, state: this.#state });
 
       // Forces an index update / sorting is triggered.
       this.#indexUpdateFn?.({ reversed: this.#state === 'desc' });
@@ -303,17 +303,17 @@ export class ObjectByProp<T extends { [key: PropertyKey]: any }> implements DynR
    {
       const storeValue = get(this.#store);
 
-      if (!isObject(storeValue) || !isPropertyPath(storeValue?.prop))
+      if (!isObject(storeValue) || !isPropertyPath(storeValue?.path))
       {
-         this.#store.set({ prop: this.#prop, state: this.#state });
+         this.#store.set({ path: this.#path, state: this.#state });
       }
       else
       {
-         const prevProp = storeValue.prop;
+         const prevProp = storeValue.path;
          const prevState = storeValue.state;
 
-         // Accept previous prop value.
-         if (isPropertyPath(prevProp)) { this.#prop = prevProp; }
+         // Accept previous path value.
+         if (isPropertyPath(prevProp)) { this.#path = prevProp; }
 
          if (isPropertyPath(prevState))
          {
@@ -324,16 +324,16 @@ export class ObjectByProp<T extends { [key: PropertyKey]: any }> implements DynR
             }
             else
             {
-               this.#store.set({ prop: this.#prop, state: this.#state });
+               this.#store.set({ path: this.#path, state: this.#state });
             }
          }
 
          // Potentially detect errant / extra keys and reset store value.
          for (const key of Object.keys(storeValue))
          {
-            if (key !== 'prop' && key !== 'state')
+            if (key !== 'path' && key !== 'state')
             {
-               this.#store.set({ prop: this.#prop, state: this.#state });
+               this.#store.set({ path: this.#path, state: this.#state });
                break;
             }
          }
@@ -341,23 +341,25 @@ export class ObjectByProp<T extends { [key: PropertyKey]: any }> implements DynR
    }
 
    /**
-    * Create sort function that is returned by {@link ObjectByProp.compare}.
+    * Create sort function that is returned by {@link ObjectByPath.compare}.
     */
    #initializeSortByFn(): DynReducer.Data.CompareFn<T>
    {
       const sortByFn = (a: T, b: T): number =>
       {
-         if (this.#prop === void 0 || this.#state === 'none') { return 0; }
+         if (this.#path === void 0 || this.#state === 'none') { return 0; }
 
-         const aVal = safeAccess(a, this.#prop);
-         const bVal = safeAccess(b, this.#prop);
+         const aVal = safeAccess(a, this.#path);
+         const bVal = safeAccess(b, this.#path);
 
          // Custom compare -------------------------------------------------------------------------------------------
 
          if (this.#customCompareFn)
          {
             return 'compare' in this.#customCompareFn ?
+             // @ts-ignore
              (this.#customCompareFn as DynReducer.Data.Sort<T>).compare?.(aVal, bVal) :
+              // @ts-ignore
               (this.#customCompareFn as DynReducer.Data.CompareFn<T>)(aVal, bVal);
          }
 
@@ -417,14 +419,12 @@ export class ObjectByProp<T extends { [key: PropertyKey]: any }> implements DynR
    }
 
    /**
-    * Updates the cached custom compare function based on current prop value and any custom compare function map.
+    * Updates the cached custom compare function based on current path value and any custom compare function map.
     */
    #updateCustomCompareFn()
    {
-      // const customCompare = this.#prop && this.#customCompareFnMap ? safeAccess(this.#customCompareFnMap, this.#prop) :
-      //  void 0;
       const customCompare: DynReducer.Data.CompareFn<T> | DynReducer.Data.Sort<T> | undefined =
-       this.#prop ? this.#customCompareFnMap?.get(this.#prop) : void 0;
+       this.#path ? this.#customCompareFnMap?.get(this.#path) : void 0;
 
       if (customCompare === void 0)
       {

@@ -37,7 +37,7 @@ abstract class DynReducerHelper
 
    /**
     * Returns the following sort functions:
-    * - objectByProp
+    * - objectByPath
     *
     * @returns All available sort functions.
     */
@@ -107,7 +107,7 @@ declare namespace DynReducerHelper {
     */
    export namespace Sort {
       /**
-       * Defines the data object and sort / comparison function returned by {@link DynReducerHelper.sort.objectByProp}
+       * Defines the data object and sort / comparison function returned by {@link DynReducerHelper.sort.objectByPath}
        * providing managed sorting and comparison utility for dynamic reducers.
        *
        * Several built-in sorting strategies are applied automatically based on the `typeof` the values being compared. This
@@ -135,12 +135,12 @@ declare namespace DynReducerHelper {
        * These custom comparators override the default `typeof` handling for the property keys specified in the
        * `customCompareFnMap`.
        */
-      export interface ObjectByProp<T> extends Omit<DynReducer.Data.Sort<T>, 'subscribe'>, Readable<ObjectByPropData>
+      export interface ObjectByPath<T> extends Omit<DynReducer.Data.Sort<T>, 'subscribe'>, Readable<ObjectByPathData>
       {
          /**
           * Get the current object property being sorted.
           */
-         get prop(): PropertyPath | undefined;
+         get path(): PropertyPath | undefined;
 
          /**
           * Get the current sort state:
@@ -168,7 +168,7 @@ declare namespace DynReducerHelper {
           *
           * @param data - New prop / state data to set.
           */
-         set(data: ObjectByPropData): void;
+         set(data: ObjectByPathData): void;
 
          /**
           * Sets the current custom compare function lookup map for object properties that require unique sorting.
@@ -182,19 +182,20 @@ declare namespace DynReducerHelper {
           * Toggles current prop state and or initializes a new prop sort state. A property that is selected multiple
           * times will cycle through ascending -> descending -> no sorting.
           *
-          * @param prop - Object property path to activate.
+          * @param path - Object property path to activate.
           */
-         toggleProp(prop: PropertyPath): void;
+         togglePath(path: PropertyPath): void;
       }
 
       /**
-       * Defines the data serialized for current property and sort state.
+       * Defines the data serialized for current property path and sort state.
        */
-      export interface ObjectByPropData {
+      export interface ObjectByPathData
+      {
          /**
           * Current sorted object property if any.
           */
-         prop?: PropertyPath,
+         path?: PropertyPath,
 
          /**
           * Current sort state:
@@ -208,13 +209,13 @@ declare namespace DynReducerHelper {
       }
 
       /**
-       * Defines the options for {@link DynReducerHelper.SortAPI.objectByProp} serialized for current property and sort state.
+       * Defines the options for {@link DynReducerHelper.SortAPI.objectByPath} serialized for current property and sort state.
        */
-      export interface ObjectByPropOptions<T extends { [key: PropertyKey]: any }> extends ObjectByPropData {
+      export interface ObjectByPathOptions<T extends { [key: PropertyKey]: any }> extends ObjectByPathData {
          /**
-          * An external store that serializes the tracked prop and sorting state as {@link ObjectByPropData}.
+          * An external store that serializes the tracked prop and sorting state as {@link ObjectByPathData}.
           */
-         store?: MinimalWritable<ObjectByPropData>,
+         store?: MinimalWritable<ObjectByPathData>,
 
          /**
           * An property path map with property paths associated with custom compare functions for those keys.
@@ -228,17 +229,17 @@ declare namespace DynReducerHelper {
     */
    export interface SortAPI {
       /**
-       * Creates an instance of {@link Sort.ObjectByProp} which is a managed sorting mechanism for dynamic reducers
+       * Creates an instance of {@link Sort.ObjectByPath} which is a managed sorting mechanism for dynamic reducers
        * providing several default sort comparisons for object properties with additional customization for complex data
        * types.
        *
-       * Note that either a store with {@link Sort.ObjectByPropData} should be provided or initial `prop` and `state`
+       * Note that either a store with {@link Sort.ObjectByPathData} should be provided or initial `prop` and `state`
        * values specified for the internal store.
        *
-       * @param [options] - ObjectByProp options.
+       * @param [options] - ObjectByPath options.
        */
-      objectByProp: <T extends { [key: PropertyKey]: any }>(options?: Sort.ObjectByPropOptions<T>) =>
-       Sort.ObjectByProp<T>
+      objectByPath: <T extends { [key: PropertyKey]: any }>(options?: Sort.ObjectByPathOptions<T>) =>
+       Sort.ObjectByPath<T>
    }
 }
 

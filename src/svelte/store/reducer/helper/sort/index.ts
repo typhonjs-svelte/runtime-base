@@ -1,1 +1,1 @@
-export * from './objectByProp';
+export * from './objectByPath';
