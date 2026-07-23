@@ -988,6 +988,23 @@ const rollupConfigs = [
          generatedCode: { constBindings: true },
          sourcemap
       }
+   },
+   {
+      input: {
+         input: 'src/util/types/index.ts',
+         plugins: [
+            importsExternal(),
+            resolve(resolveOptions),
+            typescript({ tsconfig: './src/util/types/tsconfig.json' }),
+            generateDTS.plugin(dtsPluginOptions)
+         ]
+      },
+      output: {
+         file: '_dist/util/types/index.js',
+         format: 'es',
+         generatedCode: { constBindings: true },
+         sourcemap
+      }
    }
 ];
 
