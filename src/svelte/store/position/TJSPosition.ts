@@ -175,10 +175,10 @@ class TJSPosition implements TJSPosition.WritableExt
    /**
     * @returns Public Animation Group API.
     */
-   static get Animate(): AnimationGroupAPI 
-   { 
+   static get Animate(): AnimationGroupAPI
+   {
       // @ts-expect-error - static class implementation of interface.
-      return AnimationGroupAPIImpl; 
+      return AnimationGroupAPIImpl;
    }
 
    /**
@@ -215,7 +215,7 @@ class TJSPosition implements TJSPosition.WritableExt
     *
     * @returns The supported transform origin strings.
     */
-   static get transformOrigins(): Readonly<TransformAPI.TransformOrigin[]>
+   static get transformOrigins(): Readonly<TransformAPI.Origin[]>
    {
       return TJSTransforms.transformOrigins;
    }
@@ -306,7 +306,7 @@ class TJSPosition implements TJSPosition.WritableExt
          rotateZ: propertyStore<TJSPositionData, 'rotateZ'>(this, 'rotateZ'),
          scale: propertyStore<TJSPositionData, 'scale'>(this, 'scale'),
          top: propertyStore<TJSPositionData, 'top'>(this, 'top'),
-         transformOrigin: propertyStore(this, 'transformOrigin') as TransformAPI.TransformOriginWritable,
+         transformOrigin: propertyStore(this, 'transformOrigin') as TransformAPI.OriginWritable,
          translateX: propertyStore<TJSPositionData, 'translateX'>(this, 'translateX'),
          translateY: propertyStore<TJSPositionData, 'translateY'>(this, 'translateY'),
          translateZ: propertyStore<TJSPositionData, 'translateZ'>(this, 'translateZ'),
@@ -341,7 +341,7 @@ class TJSPosition implements TJSPosition.WritableExt
        * Define 'values' getter to retrieve static transform origins.
        */
       Object.defineProperty(this.#stores.transformOrigin, 'values', {
-         get: (): Readonly<TransformAPI.TransformOrigin[]> => TJSPosition.transformOrigins
+         get: (): Readonly<TransformAPI.Origin[]> => TJSPosition.transformOrigins
       });
 
       // When resize change from any applied `resizeObserver` action automatically set data for new validation run.
@@ -607,7 +607,7 @@ class TJSPosition implements TJSPosition.WritableExt
    /**
     * @returns transformOrigin
     */
-   get transformOrigin(): TransformAPI.TransformOrigin | null { return this.#data.transformOrigin; }
+   get transformOrigin(): TransformAPI.Origin | null { return this.#data.transformOrigin; }
 
    /**
     * @returns translateX
@@ -733,7 +733,7 @@ class TJSPosition implements TJSPosition.WritableExt
    /**
     * @param transformOrigin -
     */
-   set transformOrigin(transformOrigin: TransformAPI.TransformOrigin)
+   set transformOrigin(transformOrigin: TransformAPI.Origin)
    {
       if (TJSTransforms.transformOrigins.includes(transformOrigin))
       {

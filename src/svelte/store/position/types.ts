@@ -119,7 +119,7 @@ interface Stores {
    /**
     * Derived store for `transformOrigin` updates.
     */
-   transformOrigin: TransformAPI.TransformOriginWritable;
+   transformOrigin: TransformAPI.OriginWritable;
 
    /**
     * Derived store for `translateX` updates.

@@ -32,7 +32,7 @@ declare namespace Data {
 
       top: number | null;
 
-      transformOrigin: TransformAPI.TransformOrigin | null;
+      transformOrigin: TransformAPI.Origin | null;
 
       translateX: number | null;
 
@@ -118,7 +118,7 @@ declare namespace Data {
          rotateZ?: number | null,
          scale?: number | null,
          top?: number | null,
-         transformOrigin?: TransformAPI.TransformOrigin | null,
+         transformOrigin?: TransformAPI.Origin | null,
          translateX?: number | null,
          translateY?: number | null,
          translateZ?: number | null,

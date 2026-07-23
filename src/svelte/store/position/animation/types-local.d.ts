@@ -112,12 +112,12 @@ export type AnimationData = {
    /**
     * A transform origin for the animation.
     */
-   transformOrigin?: TransformAPI.TransformOrigin;
+   transformOrigin?: TransformAPI.Origin;
 
    /**
     * The initial transform origin to set after the animation finishes.
     */
-   transformOriginInitial?: TransformAPI.TransformOrigin;
+   transformOriginInitial?: TransformAPI.Origin;
 }
 
 /**

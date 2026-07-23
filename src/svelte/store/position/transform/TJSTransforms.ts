@@ -64,12 +64,12 @@ export class TJSTransforms implements TransformAPI
    /**
     * Defines the default transform origin.
     */
-   static #transformOriginDefault: Readonly<TransformAPI.TransformOrigin> = 'top left';
+   static #transformOriginDefault: Readonly<TransformAPI.Origin> = 'top left';
 
    /**
     * Defines the valid transform origins.
     */
-   static #transformOrigins: readonly TransformAPI.TransformOrigin[] = Object.freeze([
+   static #transformOrigins: readonly TransformAPI.Origin[] = Object.freeze([
       'top left', 'top center', 'top right', 'center left', 'center', 'center right', 'bottom left', 'bottom center',
       'bottom right'
    ]);
@@ -106,19 +106,19 @@ export class TJSTransforms implements TransformAPI
     *
     * @returns The supported transform origin strings.
     */
-   static get transformOrigins(): readonly TransformAPI.TransformOrigin[]
+   static get transformOrigins(): readonly TransformAPI.Origin[]
    {
       return this.#transformOrigins;
    }
 
    /**
-    * Returns whether the given string is a {@link TransformAPI.TransformOrigin}.
+    * Returns whether the given string is a {@link TransformAPI.Origin}.
     *
     * @param origin - A potential transform origin string.
     *
     * @returns True if origin is a TransformOrigin string.
     */
-   static isTransformOrigin(origin: unknown): origin is TransformAPI.TransformOrigin
+   static isTransformOrigin(origin: unknown): origin is TransformAPI.Origin
    {
       return this.#transformOriginsSet.has(origin as string);
    }

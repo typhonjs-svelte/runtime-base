@@ -222,7 +222,7 @@ declare namespace TransformAPI {
    /**
     * The supported transform origin strings.
     */
-   export type TransformOrigin = 'top left' |
+   export type Origin = 'top left' |
     'top center' |
     'top right' |
     'center left' |
@@ -236,9 +236,9 @@ declare namespace TransformAPI {
     * Provides a custom writable for the `transformOrigin` store adding a read only property `values` that contains a
     * list of all transform origin values.
     */
-   export interface TransformOriginWritable extends Writable<TransformOrigin>
+   export interface OriginWritable extends Writable<Origin>
    {
-      get values(): Readonly<TransformOrigin[]>;
+      get values(): Readonly<Origin[]>;
    }
 }
 

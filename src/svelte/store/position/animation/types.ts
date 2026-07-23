@@ -383,7 +383,7 @@ declare namespace AnimationAPI {
        * A transform origin to apply for the animation. The initial transform origin is reset when the animation
        * finishes.
        */
-      transformOrigin?: TransformAPI.TransformOrigin;
+      transformOrigin?: TransformAPI.Origin;
    };
 
    /**

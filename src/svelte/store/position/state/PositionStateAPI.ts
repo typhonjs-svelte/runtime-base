@@ -209,7 +209,7 @@ export class PositionStateAPI implements StateAPI
             // Provide special handling to potentially change transform origin as this parameter is not animated.
             if (data.transformOrigin !== this.#position.transformOrigin)
             {
-               this.#position.transformOrigin = data.transformOrigin as TransformAPI.TransformOrigin;
+               this.#position.transformOrigin = data.transformOrigin as TransformAPI.Origin;
             }
 
             // Return a Promise with saved data that resolves after animation ends.

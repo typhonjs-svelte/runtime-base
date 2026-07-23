@@ -19,7 +19,7 @@ export class TJSPositionData implements Data.TJSPositionData
 
    top: number | null;
 
-   transformOrigin: TransformAPI.TransformOrigin | null;
+   transformOrigin: TransformAPI.Origin | null;
 
    translateX: number | null;
    translateY: number | null;
@@ -73,7 +73,7 @@ export class TJSPositionData implements Data.TJSPositionData
       maxWidth?: number | null; minHeight?: number | null; minWidth?: number | null; rotateX?: number | null;
        rotateY?: number | null; rotateZ?: number | null; scale?: number | null; translateX?: number | null;
         translateY?: number | null; translateZ?: number | null; top?: number | null;
-         transformOrigin?: TransformAPI.TransformOrigin | null;
+         transformOrigin?: TransformAPI.Origin | null;
           width?: number | 'auto' | 'inherit' | null; zIndex?: number | null
    } = {})
    {
