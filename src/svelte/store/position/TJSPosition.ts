@@ -175,7 +175,11 @@ class TJSPosition implements TJSPosition.WritableExt
    /**
     * @returns Public Animation Group API.
     */
-   static get Animate(): AnimationGroupAPI { return AnimationGroupAPIImpl; }
+   static get Animate(): AnimationGroupAPI 
+   { 
+      // @ts-expect-error - static class implementation of interface.
+      return AnimationGroupAPIImpl; 
+   }
 
    /**
     * @returns TJSPositionData constructor.
@@ -876,7 +880,7 @@ class TJSPosition implements TJSPosition.WritableExt
     *
     * @returns This TJSPosition instance.
     */
-   set(position: Data.TJSPositionDataRelative = {}, options: TJSPosition.Options.Set = {}): this
+   set(position: Data.TJSPositionDataRelative | Data.TJSPositionData = {}, options: TJSPosition.Options.Set = {}): this
    {
       if (!isObject(position)) { throw new TypeError(`TJSPosition - set error: 'position' is not an object.`); }
 
@@ -934,10 +938,12 @@ class TJSPosition implements TJSPosition.WritableExt
          // Converts any string position data to numeric inputs.
          ConvertStringData.process(position, this.#data, el);
 
-         position = this.#updatePosition(position as TJSPositionDataWithAlias, parent, el, styleCache);
+         const result = this.#updatePosition(position as TJSPositionDataWithAlias, parent, el, styleCache);
 
          // Check if a validator cancelled the update.
-         if (position === null) { return this; }
+         if (result === null) { return this; }
+
+         position = result;
       }
 
       if (isFinite(position.left))

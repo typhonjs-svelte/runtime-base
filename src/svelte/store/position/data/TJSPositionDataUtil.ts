@@ -98,6 +98,11 @@ export class TJSPositionDataUtil
       return this.#animateKeyAliases.get(key) as AnimationAPI.AnimationKey ?? key;
    }
 
+   // static getAnimationKey(key: AnimationAPI.AnimationKey): keyof Data.TJSPositionData | undefined
+   // {
+   //    return this.#animateKeyAliases.get(key) ??
+   //     key in TJSPositionDataUtil.#numericDefaults ? key as keyof Data.TJSPositionData : void 0;
+   // }
    /**
     * Queries an object by the given key or otherwise returns any numeric default.
     *

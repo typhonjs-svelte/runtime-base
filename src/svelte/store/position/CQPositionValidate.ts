@@ -19,7 +19,7 @@ export class CQPositionValidate implements Readable<CQPositionValidate>
    /**
     * Associated TJSPosition.
     */
-   #position: WeakRef<TJSPosition>;
+   #position: WeakRef<TJSPosition> | undefined;
 
    /**
     * Stores the subscribers.
@@ -180,7 +180,7 @@ export class CQPositionValidate implements Readable<CQPositionValidate>
       if (notify) { this.#updateSubscribers(); }
    }
 
-   #deref(): TJSPosition
+   #deref(): TJSPosition | undefined
    {
       const position = this.#position?.deref();
 

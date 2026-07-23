@@ -224,13 +224,12 @@ declare namespace AnimationAPI {
       /**
        * The index of the {@link TJSPosition.PositionGroup} being processed.
        */
-      index?: number;
+      index: number;
 
       /**
        * The actual TJSPosition instance being processed.
        */
-      // position?: TJSPosition;
-      position?: object;
+      position: TJSPosition;
 
       /**
        * Any associated positionable entry / object.
@@ -251,7 +250,7 @@ declare namespace AnimationAPI {
        * @returns The unique position data target to animate for this position / positionable instance.  When null or
        *          undefined is returned the current position / positionable is removed from the animation.
        */
-      (options?: GroupCallbackOptions): Data.TJSPositionDataRelative | null | undefined;
+      (options: GroupCallbackOptions): Data.TJSPositionDataRelative | null | undefined;
    }
 
    /**
@@ -267,7 +266,7 @@ declare namespace AnimationAPI {
        * @returns The unique tween options to set for this position / positionable instance. When null or undefined is
        *          returned the current position / positionable is removed from the animation.
        */
-      (options?: GroupCallbackOptions): TweenOptions | null | undefined;
+      (options: GroupCallbackOptions): TweenOptions | null | undefined;
    }
 
    /**
@@ -304,7 +303,7 @@ declare namespace AnimationAPI {
        * @returns The unique quick tween options to set for this position / positionable instance. When null or
        *          undefined is returned the current position / positionable is removed from the animation.
        */
-      (options?: GroupCallbackOptions): QuickTweenOptions | null | undefined;
+      (options: GroupCallbackOptions): QuickTweenOptions | null | undefined;
    }
 
    /**

@@ -37,7 +37,7 @@ export type AnimationData = {
    /**
     * Associated AnimationControl.
     */
-   control: AnimationControl | undefined;
+   control?: AnimationControl;
 
    /**
     * Current time.
@@ -47,7 +47,7 @@ export type AnimationData = {
    /**
     * Target destination for animation.
     */
-   destination: Partial<Record<AnimationAPI.AnimationKey, number>> | undefined;
+   destination?: Partial<Record<AnimationAPI.AnimationKey, number>>;
 
    /**
     * Duration of animation in milliseconds.
@@ -62,7 +62,7 @@ export type AnimationData = {
    /**
     * Associated Element.
     */
-   el: Element | undefined;
+   el?: Element;
 
    /**
     * Animation finished state.
@@ -82,7 +82,7 @@ export type AnimationData = {
    /**
     * Animation keys.
     */
-   keys: string[];
+   keys: AnimationAPI.AnimationKey[];
 
    /**
     * Copy of initial data. Used as temporary storage.
@@ -102,7 +102,7 @@ export type AnimationData = {
    /**
     * Any Promise resolve function; added when `finished` is accessed on AnimationControl.
     */
-   resolve: Function | undefined;
+   resolve?: Function;
 
    /**
     * Starting time of animation.
@@ -123,7 +123,7 @@ export type AnimationData = {
 /**
  * A cleanup function to run when the animation is finished / cancelled.
  */
-export type AnimationCleanupFunction = (data: AnimationData) => any;
+export type AnimationCleanupFunction = (data: AnimationData) => boolean;
 
 /**
  * Defines a cancel function that `AnimationManager.cancel` invokes for additional filtering / exclusion of cancelling.

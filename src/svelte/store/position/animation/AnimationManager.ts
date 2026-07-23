@@ -159,10 +159,13 @@ export class AnimationManager
          if (data.current >= data.duration)
          {
             // Prepare final update with end position data.
-            for (let dataCntr: number = data.keys.length; --dataCntr >= 0;)
+            if (data.destination)
             {
-               const key: string = data.keys[dataCntr];
-               data.newData[key] = data.destination[key];
+               for (let dataCntr: number = data.keys.length; --dataCntr >= 0;)
+               {
+                  const key: AnimationAPI.AnimationKey = data.keys[dataCntr];
+                  if (data.destination[key]) { data.newData[key] = data.destination[key]; }
+               }
             }
 
             data.position.set(data.newData, AnimationManager.#tjsPositionSetOptions);
@@ -176,10 +179,13 @@ export class AnimationManager
          // Apply easing to create an eased time.
          const easedTime: number = data.ease(data.current / data.duration);
 
-         for (let dataCntr: number = data.keys.length; --dataCntr >= 0;)
+         if (data.initial && data.destination)
          {
-            const key: string = data.keys[dataCntr];
-            data.newData[key] = data.interpolate(data.initial[key], data.destination[key], easedTime);
+            for (let dataCntr: number = data.keys.length; --dataCntr >= 0;)
+            {
+               const key: AnimationAPI.AnimationKey = data.keys[dataCntr];
+               data.newData[key] = data.interpolate(data.initial[key], data.destination[key], easedTime);
+            }
          }
 
          data.position.set(data.newData, AnimationManager.#tjsPositionSetOptions);
@@ -266,13 +272,23 @@ export class AnimationManager
          data.control = void 0;
          data.destination = void 0;
          data.el = void 0;
-         data.ease = void 0;
-         data.initial = void 0;
-         data.interpolate = void 0;
-         data.keys = void 0;
-         data.newData = void 0;
-         data.position = void 0;
          data.resolve = void 0;
+
+
+         // `data` is going out of scope. Remove retained data that must be defined otherwise.
+
+         // @ts-expect-error   
+         data.ease = void 0;
+         // @ts-expect-error   
+         data.initial = void 0;
+         // @ts-expect-error   
+         data.interpolate = void 0;
+         // @ts-expect-error   
+         data.keys = void 0;
+         // @ts-expect-error   
+         data.newData = void 0;
+         // @ts-expect-error   
+         data.position = void 0;
       }
    }
 

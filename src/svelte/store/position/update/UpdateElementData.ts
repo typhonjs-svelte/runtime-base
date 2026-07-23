@@ -94,15 +94,6 @@ export class UpdateElementData
       this.storeIntrinsicWidth = writable(false);
 
       /**
-       * When there are subscribers set option to calculate transform updates; set to false when no subscribers.
-       */
-      this.storeTransform = writable(this.transformData, () =>
-      {
-         this.options.transformSubscribed = true;
-         return () => this.options.transformSubscribed = false;
-      });
-
-      /**
        */
       this.subscribers = subscribers;
 
@@ -115,5 +106,14 @@ export class UpdateElementData
        * subscribers to the store or calculateTransform options is true.
        */
       this.transformData = new TJSTransformData();
+
+      /**
+       * When there are subscribers set option to calculate transform updates; set to false when no subscribers.
+       */
+      this.storeTransform = writable(this.transformData, () =>
+      {
+         this.options.transformSubscribed = true;
+         return () => this.options.transformSubscribed = false;
+      });
    }
 }

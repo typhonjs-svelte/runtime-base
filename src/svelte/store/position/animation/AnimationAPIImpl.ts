@@ -27,6 +27,10 @@ import type { Data }             from '../data/types';
 
 import type { AnimationData }    from './types-local';
 
+import type { 
+   TJSPositionDataWithAlias }    from '../types-local';
+
+
 /**
  */
 export class AnimationAPIImpl implements AnimationAPI
@@ -175,8 +179,8 @@ export class AnimationAPIImpl implements AnimationAPI
 
       // TODO: In the future potentially support more interpolation functions besides `lerp`.
 
-      const initial = {};
-      const destination = {};
+      const initial: Partial<Record<AnimationAPI.AnimationKey, number>> = {};
+      const destination: Partial<Record<AnimationAPI.AnimationKey, number>> = {};
 
       const data: Data.TJSPositionData = this.#data;
 
@@ -241,9 +245,9 @@ export class AnimationAPIImpl implements AnimationAPI
             const key: AnimationAPI.AnimationKey = keysArray[cntr];
 
             // Must use actual key from any aliases.
-            const animKey: AnimationAPI.AnimationKey = TJSPositionDataUtil.getAnimationKey(key);
+            const animKey: keyof Data.TJSPositionData = TJSPositionDataUtil.getAnimationKey(key) as keyof Data.TJSPositionData;
 
-            if (data[animKey] !== void 0) { initial[key] = data[animKey]; }
+            if (data[animKey] !== void 0 && typeof data[animKey] === 'number') { initial[key] = data[animKey]; }
          }
 
          // Handle case where the first arg is an object. Update all quickTo keys from data contained in the object.
@@ -253,7 +257,11 @@ export class AnimationAPIImpl implements AnimationAPI
 
             for (const key in objData)
             {
-               if (destination[key] !== void 0) { destination[key] = objData[key]; }
+               if (TJSPositionDataUtil.isAnimationKey(key) && destination[key] !== void 0 && 
+                (typeof objData[key] === 'number' || objData[key] === void 0)) 
+               { 
+                  destination[key] = objData[key]; 
+               }
             }
          }
          else // Assign each variable argument to the key specified in the initial `keys` array above.

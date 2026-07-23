@@ -135,7 +135,7 @@ abstract class AnimationGroupAPIImpl
          {
             index++;
 
-            const actualPosition: TJSPosition = this.#getPosition(entry);
+            const actualPosition: TJSPosition | null = this.#getPosition(entry);
 
             if (!actualPosition)
             {
@@ -156,7 +156,7 @@ abstract class AnimationGroupAPIImpl
       }
       else
       {
-         const actualPosition: TJSPosition = this.#getPosition(positionGroup);
+         const actualPosition: TJSPosition | null = this.#getPosition(positionGroup);
 
          if (!actualPosition)
          {
@@ -208,7 +208,7 @@ abstract class AnimationGroupAPIImpl
          {
             index++;
 
-            const actualPosition: TJSPosition = this.#getPosition(entry);
+            const actualPosition: TJSPosition | null = this.#getPosition(entry);
 
             if (!actualPosition)
             {
@@ -222,7 +222,7 @@ abstract class AnimationGroupAPIImpl
       }
       else
       {
-         const actualPosition: TJSPosition = this.#getPosition(positionGroup);
+         const actualPosition: TJSPosition | null = this.#getPosition(positionGroup);
 
          if (!actualPosition)
          {
@@ -270,24 +270,30 @@ abstract class AnimationGroupAPIImpl
       /**
        */
       const cleanupFn: AnimationCleanupFunction = (data: AnimationData): boolean =>
-       animationControls.delete(data.control);
+      {
+         return data.control ? animationControls.delete(data.control) : true;
+      }
 
       let index: number = -1;
 
       /**
        */
-      let callbackOptions: AnimationAPI.GroupCallbackOptions;
+      let callbackOptions: AnimationAPI.GroupCallbackOptions | undefined;
 
       const hasDataCallback: boolean = typeof fromData === 'function';
       const hasOptionCallback: boolean = typeof options === 'function';
       const hasCallback: boolean = hasDataCallback || hasOptionCallback;
 
-      if (hasCallback) { callbackOptions = { index, position: void 0, entry: void 0 }; }
+      if (hasCallback) 
+      { 
+         // @ts-expect-error - `position` is absolutely filled below, but reuse this object by instantiating early.
+         callbackOptions = { index, position: void 0, entry: void 0 }; 
+      }
 
       let actualFromData: Data.TJSPositionDataRelative |
-       AnimationAPI.GroupDataCallback = fromData;
+       AnimationAPI.GroupDataCallback | null | undefined = fromData;
 
-      let actualOptions: AnimationAPI.TweenOptions = isObject(options) && typeof options !== 'function' ? options :
+      let actualOptions: AnimationAPI.TweenOptions | null | undefined = isObject(options) && typeof options !== 'function' ? options :
        void 0;
 
       if (isIterable(positionGroup))
@@ -296,7 +302,7 @@ abstract class AnimationGroupAPIImpl
          {
             index++;
 
-            const actualPosition: TJSPosition = this.#getPosition(entry);
+            const actualPosition: TJSPosition | null = this.#getPosition(entry);
 
             if (!actualPosition)
             {
@@ -304,14 +310,14 @@ abstract class AnimationGroupAPIImpl
                continue;
             }
 
-            if (hasCallback)
+            if (hasCallback && callbackOptions)
             {
                callbackOptions.index = index;
                callbackOptions.position = actualPosition;
                callbackOptions.entry = actualPosition !== entry ? entry as TJSPosition.Positionable : void 0;
             }
 
-            if (hasDataCallback && typeof fromData === 'function')
+            if (hasDataCallback && callbackOptions && typeof fromData === 'function')
             {
                actualFromData = fromData(callbackOptions);
 
@@ -325,7 +331,7 @@ abstract class AnimationGroupAPIImpl
                }
             }
 
-            if (hasOptionCallback && typeof options === 'function')
+            if (hasOptionCallback && callbackOptions && typeof options === 'function')
             {
                actualOptions = options(callbackOptions);
 
@@ -339,7 +345,7 @@ abstract class AnimationGroupAPIImpl
                }
             }
 
-            const animationControl = AnimationScheduler.from(actualPosition, actualFromData, actualOptions, cleanupFn);
+            const animationControl = AnimationScheduler.from(actualPosition, actualFromData!, actualOptions!, cleanupFn);
             if (animationControl) { animationControls.add(animationControl); }
          }
       }
@@ -353,7 +359,7 @@ abstract class AnimationGroupAPIImpl
             return AnimationGroupControl.voidControl;
          }
 
-         if (hasCallback)
+         if (hasCallback && callbackOptions)
          {
             callbackOptions.index = 0;
             callbackOptions.position = actualPosition;
@@ -361,7 +367,7 @@ abstract class AnimationGroupAPIImpl
              void 0;
          }
 
-         if (hasDataCallback && typeof fromData === 'function')
+         if (hasDataCallback && callbackOptions && typeof fromData === 'function')
          {
             actualFromData = fromData(callbackOptions);
 
@@ -375,7 +381,7 @@ abstract class AnimationGroupAPIImpl
             }
          }
 
-         if (hasOptionCallback && typeof options === 'function')
+         if (hasOptionCallback && callbackOptions && typeof options === 'function')
          {
             actualOptions = options(callbackOptions);
 
@@ -389,8 +395,8 @@ abstract class AnimationGroupAPIImpl
             }
          }
 
-         const animationControl: AnimationControl = AnimationScheduler.from(actualPosition, actualFromData,
-          actualOptions, cleanupFn);
+         const animationControl: AnimationControl | null = AnimationScheduler.from(actualPosition, actualFromData!,
+          actualOptions!, cleanupFn);
 
          if (animationControl) { animationControls.add(animationControl); }
       }
@@ -439,25 +445,31 @@ abstract class AnimationGroupAPIImpl
       /**
        */
       const cleanupFn: AnimationCleanupFunction = (data: AnimationData): boolean =>
-       animationControls.delete(data.control);
+      {
+         return data.control ? animationControls.delete(data.control) : true;
+      }
 
       let index: number = -1;
 
       /**
        */
-      let callbackOptions: AnimationAPI.GroupCallbackOptions;
+      let callbackOptions: AnimationAPI.GroupCallbackOptions | undefined;
 
       const hasFromCallback: boolean = typeof fromData === 'function';
       const hasToCallback: boolean = typeof toData === 'function';
       const hasOptionCallback: boolean = typeof options === 'function';
       const hasCallback: boolean = hasFromCallback || hasToCallback || hasOptionCallback;
 
-      if (hasCallback) { callbackOptions = { index, position: void 0, entry: void 0 }; }
+      if (hasCallback) 
+      { 
+         // @ts-expect-error - `position` is absolutely filled below, but reuse this object by instantiating early.
+         callbackOptions = { index, position: void 0, entry: void 0 }; 
+      }
 
-      let actualFromData: Data.TJSPositionDataRelative = fromData;
-      let actualToData: Data.TJSPositionDataRelative = toData;
+      let actualFromData: Data.TJSPositionDataRelative | null | undefined = fromData;
+      let actualToData: Data.TJSPositionDataRelative | null | undefined = toData;
 
-      let actualOptions: AnimationAPI.TweenOptions = isObject(options) && typeof options !== 'function' ? options :
+      let actualOptions: AnimationAPI.TweenOptions | null | undefined = isObject(options) && typeof options !== 'function' ? options :
        void 0;
 
       if (isIterable(positionGroup))
@@ -466,7 +478,7 @@ abstract class AnimationGroupAPIImpl
          {
             index++;
 
-            const actualPosition: TJSPosition = this.#getPosition(entry);
+            const actualPosition: TJSPosition | null = this.#getPosition(entry);
 
             if (!actualPosition)
             {
@@ -474,14 +486,14 @@ abstract class AnimationGroupAPIImpl
                continue;
             }
 
-            if (hasCallback)
+            if (hasCallback && callbackOptions)
             {
                callbackOptions.index = index;
                callbackOptions.position = actualPosition;
                callbackOptions.entry = actualPosition !== entry ? entry as TJSPosition.Positionable : void 0;
             }
 
-            if (hasFromCallback && typeof fromData === 'function')
+            if (hasFromCallback && callbackOptions && typeof fromData === 'function')
             {
                actualFromData = fromData(callbackOptions);
 
@@ -495,7 +507,7 @@ abstract class AnimationGroupAPIImpl
                }
             }
 
-            if (hasToCallback && typeof toData === 'function')
+            if (hasToCallback && callbackOptions && typeof toData === 'function')
             {
                actualToData = toData(callbackOptions);
 
@@ -509,7 +521,7 @@ abstract class AnimationGroupAPIImpl
                }
             }
 
-            if (hasOptionCallback && typeof options === 'function')
+            if (hasOptionCallback && callbackOptions && typeof options === 'function')
             {
                actualOptions = options(callbackOptions);
 
@@ -523,15 +535,15 @@ abstract class AnimationGroupAPIImpl
                }
             }
 
-            const animationControl: AnimationControl = AnimationScheduler.fromTo(actualPosition, actualFromData,
-             actualToData, actualOptions, cleanupFn);
+            const animationControl: AnimationControl | null = AnimationScheduler.fromTo(actualPosition, actualFromData!,
+             actualToData!, actualOptions!, cleanupFn);
 
             if (animationControl) { animationControls.add(animationControl); }
          }
       }
       else
       {
-         const actualPosition: TJSPosition = this.#getPosition(positionGroup);
+         const actualPosition: TJSPosition | null = this.#getPosition(positionGroup);
 
          if (!actualPosition)
          {
@@ -539,7 +551,7 @@ abstract class AnimationGroupAPIImpl
             return AnimationGroupControl.voidControl;
          }
 
-         if (hasCallback)
+         if (hasCallback && callbackOptions)
          {
             callbackOptions.index = 0;
             callbackOptions.position = actualPosition;
@@ -547,7 +559,7 @@ abstract class AnimationGroupAPIImpl
              void 0;
          }
 
-         if (hasFromCallback && typeof fromData === 'function')
+         if (hasFromCallback && callbackOptions && typeof fromData === 'function')
          {
             actualFromData = fromData(callbackOptions);
 
@@ -561,7 +573,7 @@ abstract class AnimationGroupAPIImpl
             }
          }
 
-         if (hasToCallback && typeof toData === 'function')
+         if (hasToCallback && callbackOptions && typeof toData === 'function')
          {
             actualToData = toData(callbackOptions);
 
@@ -575,7 +587,7 @@ abstract class AnimationGroupAPIImpl
             }
          }
 
-         if (hasOptionCallback && typeof options === 'function')
+         if (hasOptionCallback && callbackOptions && typeof options === 'function')
          {
             actualOptions = options(callbackOptions);
 
@@ -589,7 +601,7 @@ abstract class AnimationGroupAPIImpl
             }
          }
 
-         const animationControl: AnimationControl = AnimationScheduler.fromTo(actualPosition, actualFromData,
+         const animationControl: AnimationControl | null = AnimationScheduler.fromTo(actualPosition, actualFromData,
           actualToData, actualOptions, cleanupFn);
 
          if (animationControl) { animationControls.add(animationControl); }
@@ -632,23 +644,30 @@ abstract class AnimationGroupAPIImpl
       /**
        */
       const cleanupFn: AnimationCleanupFunction = (data: AnimationData): boolean =>
-       animationControls.delete(data.control);
+      {
+         return data.control ? animationControls.delete(data.control) : true;
+      }
+         
 
       let index: number = -1;
 
       /**
        */
-      let callbackOptions: AnimationAPI.GroupCallbackOptions;
+      let callbackOptions: AnimationAPI.GroupCallbackOptions | undefined;
 
       const hasDataCallback: boolean = typeof toData === 'function';
       const hasOptionCallback: boolean = typeof options === 'function';
       const hasCallback: boolean = hasDataCallback || hasOptionCallback;
 
-      if (hasCallback) { callbackOptions = { index, position: void 0, entry: void 0 }; }
+      if (hasCallback) 
+      { 
+         // @ts-expect-error - `position` is absolutely filled below, but reuse this object by instantiating early.
+         callbackOptions = { index, position: void 0, entry: void 0 }; 
+      }
 
-      let actualToData: Data.TJSPositionDataRelative = toData;
+      let actualToData: Data.TJSPositionDataRelative | null | undefined = toData;
 
-      let actualOptions: AnimationAPI.TweenOptions = isObject(options) && typeof options !== 'function' ? options :
+      let actualOptions: AnimationAPI.TweenOptions | null | undefined = isObject(options) && typeof options !== 'function' ? options :
        void 0;
 
       if (isIterable(positionGroup))
@@ -665,14 +684,14 @@ abstract class AnimationGroupAPIImpl
                continue;
             }
 
-            if (hasCallback)
+            if (hasCallback && callbackOptions)
             {
                callbackOptions.index = index;
                callbackOptions.position = actualPosition;
                callbackOptions.entry = actualPosition !== entry ? entry as TJSPosition.Positionable : void 0;
             }
 
-            if (hasDataCallback && typeof toData === 'function')
+            if (hasDataCallback && callbackOptions && typeof toData === 'function')
             {
                actualToData = toData(callbackOptions);
 
@@ -686,7 +705,7 @@ abstract class AnimationGroupAPIImpl
                }
             }
 
-            if (hasOptionCallback && typeof options === 'function')
+            if (hasOptionCallback && callbackOptions && typeof options === 'function')
             {
                actualOptions = options(callbackOptions);
 
@@ -700,15 +719,15 @@ abstract class AnimationGroupAPIImpl
                }
             }
 
-            const animationControl: AnimationControl = AnimationScheduler.to(actualPosition, actualToData,
-             actualOptions, cleanupFn);
+            const animationControl: AnimationControl | null = AnimationScheduler.to(actualPosition, actualToData!,
+             actualOptions!, cleanupFn);
 
             if (animationControl) { animationControls.add(animationControl); }
          }
       }
       else
       {
-         const actualPosition: TJSPosition = this.#getPosition(positionGroup);
+         const actualPosition: TJSPosition | null = this.#getPosition(positionGroup);
 
          if (!actualPosition)
          {
@@ -716,7 +735,7 @@ abstract class AnimationGroupAPIImpl
             return AnimationGroupControl.voidControl;
          }
 
-         if (hasCallback)
+         if (hasCallback && callbackOptions)
          {
             callbackOptions.index = 0;
             callbackOptions.position = actualPosition;
@@ -724,7 +743,7 @@ abstract class AnimationGroupAPIImpl
              void 0;
          }
 
-         if (hasDataCallback && typeof toData === 'function')
+         if (hasDataCallback && callbackOptions && typeof toData === 'function')
          {
             actualToData = toData(callbackOptions);
 
@@ -738,7 +757,7 @@ abstract class AnimationGroupAPIImpl
             }
          }
 
-         if (hasOptionCallback && typeof options === 'function')
+         if (hasOptionCallback && callbackOptions && typeof options === 'function')
          {
             actualOptions = options(callbackOptions);
 
@@ -752,7 +771,7 @@ abstract class AnimationGroupAPIImpl
             }
          }
 
-         const animationControl: AnimationControl = AnimationScheduler.to(actualPosition, actualToData, actualOptions,
+         const animationControl: AnimationControl | null = AnimationScheduler.to(actualPosition, actualToData, actualOptions!,
           cleanupFn);
 
          if (animationControl) { animationControls.add(animationControl); }
@@ -775,7 +794,7 @@ abstract class AnimationGroupAPIImpl
     */
    static quickTo(positionGroup: TJSPosition.PositionGroup, keys: Iterable<AnimationAPI.AnimationKey>,
     options?: AnimationAPI.QuickTweenOptions |
-     AnimationAPI.GroupQuickTweenOptionsCallback): AnimationAPI.GroupQuickToCallback
+     AnimationAPI.GroupQuickTweenOptionsCallback): AnimationAPI.GroupQuickToCallback | undefined
    {
       if (!isIterable(keys))
       {
@@ -795,9 +814,10 @@ abstract class AnimationGroupAPIImpl
 
       const hasOptionCallback: boolean = typeof options === 'function';
 
-      const callbackOptions = { index, position: void 0, entry: void 0 };
+      // @ts-expect-error - `position` is absolutely filled below, but reuse this object by instantiating early.
+      const callbackOptions: AnimationAPI.GroupCallbackOptions = { index, position: void 0, entry: void 0 };
 
-      let actualOptions: AnimationAPI.QuickTweenOptions = isObject(options) && typeof options !== 'function' ? options :
+      let actualOptions: AnimationAPI.QuickTweenOptions | null | undefined = isObject(options) && typeof options !== 'function' ? options :
        void 0;
 
       if (isIterable(positionGroup))
@@ -806,7 +826,7 @@ abstract class AnimationGroupAPIImpl
          {
             index++;
 
-            const actualPosition = this.#getPosition(entry);
+            const actualPosition: TJSPosition | null = this.#getPosition(entry);
 
             if (!actualPosition)
             {
@@ -816,9 +836,9 @@ abstract class AnimationGroupAPIImpl
 
             callbackOptions.index = index;
             callbackOptions.position = actualPosition;
-            callbackOptions.entry = actualPosition !== entry ? entry : void 0;
+            callbackOptions.entry = actualPosition !== entry ? entry as TJSPosition.Positionable : void 0;
 
-            if (hasOptionCallback && typeof options === 'function')
+            if (hasOptionCallback && callbackOptions && typeof options === 'function')
             {
                actualOptions = options(callbackOptions);
 
@@ -832,12 +852,12 @@ abstract class AnimationGroupAPIImpl
                }
             }
 
-            quickToCallbacks.push(actualPosition.animate.quickTo(keys, actualOptions));
+            quickToCallbacks.push(actualPosition.animate.quickTo(keys, actualOptions!));
          }
       }
       else
       {
-         const actualPosition: TJSPosition = this.#getPosition(positionGroup);
+         const actualPosition: TJSPosition | null = this.#getPosition(positionGroup);
 
          if (!actualPosition)
          {
@@ -847,7 +867,7 @@ abstract class AnimationGroupAPIImpl
 
          callbackOptions.index = 0;
          callbackOptions.position = actualPosition;
-         callbackOptions.entry = actualPosition !== positionGroup ? positionGroup : void 0;
+         callbackOptions.entry = actualPosition !== positionGroup ? positionGroup as TJSPosition.Positionable : void 0;
 
          if (hasOptionCallback && typeof options === 'function')
          {
@@ -889,13 +909,13 @@ abstract class AnimationGroupAPIImpl
                {
                   index++;
 
-                  const actualPosition: TJSPosition = this.#getPosition(entry);
+                  const actualPosition: TJSPosition | null = this.#getPosition(entry);
 
                   if (!actualPosition) { continue; }
 
                   callbackOptions.index = index;
                   callbackOptions.position = actualPosition;
-                  callbackOptions.entry = actualPosition !== entry ? entry : void 0;
+                  callbackOptions.entry = actualPosition !== entry ? entry as TJSPosition.Positionable : void 0;
 
                   const toData = dataCallback(callbackOptions);
 
@@ -924,13 +944,13 @@ abstract class AnimationGroupAPIImpl
             }
             else
             {
-               const actualPosition = this.#getPosition(positionGroup);
+               const actualPosition: TJSPosition | null = this.#getPosition(positionGroup);
 
                if (!actualPosition) { return; }
 
                callbackOptions.index = 0;
                callbackOptions.position = actualPosition;
-               callbackOptions.entry = actualPosition !== positionGroup ? positionGroup : void 0;
+               callbackOptions.entry = actualPosition !== positionGroup ? positionGroup as TJSPosition.Positionable : void 0;
 
                const toData = dataCallback(callbackOptions);
 
